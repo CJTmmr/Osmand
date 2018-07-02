@@ -16,6 +16,7 @@ android {
 			java.srcDirs = ["src"]
 			resources.srcDirs = ["src"]
 			res.srcDirs = ["res"]
+			assets.srcDirs = ["assets"]
 		}
 	}
 
@@ -111,10 +112,20 @@ task downloadPrebuiltTelegram {
 	dependsOn downloadTdLibzip, copyNativeLibs, copyJavaSources
 }
 
+task collectFonts(type: Copy) {
+	from "../../resources/fonts"
+	from "../../resources/fonts-telegram"
+	into "assets/fonts"
+	include "*.ttf"
+}
+
+task collectExternalResources {
+	dependsOn collectFonts
+}
 
 afterEvaluate {
 	android.applicationVariants.all { variant ->
-		variant.javaCompiler.dependsOn(downloadPrebuiltTelegram)
+		variant.javaCompiler.dependsOn(downloadPrebuiltTelegram, collectExternalResources)
 		variant.preBuild.dependsOn(downloadPrebuiltTelegram)
 	}
 }

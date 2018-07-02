@@ -12,8 +12,13 @@ import android.support.design.widget.BottomNavigationView
 import android.support.v4.app.*
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.*
+import android.support.v7.widget.AppCompatImageView
+import android.support.v7.widget.AppCompatTextView
+import android.support.v7.widget.RecyclerView
+import android.support.v7.widget.SwitchCompat
 import android.view.*
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import net.osmand.PlatformUtil
 import net.osmand.telegram.R
@@ -21,33 +26,27 @@ import net.osmand.telegram.TelegramApplication
 import net.osmand.telegram.helpers.TelegramHelper
 import net.osmand.telegram.helpers.TelegramHelper.*
 import net.osmand.telegram.ui.LoginDialogFragment.LoginDialogType
+import net.osmand.telegram.ui.MyLocationTabFragment.ActionButtonsListener
 import net.osmand.telegram.ui.views.LockableViewPager
 import net.osmand.telegram.utils.AndroidUtils
 import org.drinkless.td.libcore.telegram.TdApi
 import java.lang.ref.WeakReference
 
+private const val PERMISSION_REQUEST_LOCATION = 1
 
-class MainActivity : AppCompatActivity(), TelegramListener {
+private const val LOGIN_MENU_ID = 0
+private const val LOGOUT_MENU_ID = 1
+private const val PROGRESS_MENU_ID = 2
 
-	companion object {
-		private const val PERMISSION_REQUEST_LOCATION = 1
+private const val MY_LOCATION_TAB_POS = 0
+private const val LIVE_NOW_TAB_POS = 1
 
-		private const val LOGIN_MENU_ID = 0
-		private const val LOGOUT_MENU_ID = 1
-		private const val PROGRESS_MENU_ID = 2
-
-		private const val MY_LOCATION_TAB_POS = 0
-		private const val LIVE_NOW_TAB_POS = 1
-	}
+class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListener {
 
 	private val log = PlatformUtil.getLog(TelegramHelper::class.java)
 
 	private var telegramAuthorizationRequestHandler: TelegramAuthorizationRequestHandler? = null
 	private var paused: Boolean = false
-
-	private lateinit var chatsView: RecyclerView
-	private lateinit var chatViewAdapter: ChatsAdapter
-	private lateinit var chatViewManager: RecyclerView.LayoutManager
 
 	private val app: TelegramApplication
 		get() = application as TelegramApplication
@@ -58,24 +57,16 @@ class MainActivity : AppCompatActivity(), TelegramListener {
 
 	private val listeners: MutableList<WeakReference<TelegramListener>> = mutableListOf()
 
+	private var myLocationTabFragment: MyLocationTabFragment? = null
+
+	private lateinit var buttonsBar: LinearLayout
+	private lateinit var bottomNav: BottomNavigationView
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 
 		paused = false
-
-		chatViewManager = LinearLayoutManager(this)
-		chatViewAdapter = ChatsAdapter()
-
-		chatsView = findViewById<RecyclerView>(R.id.groups_view).apply {
-			//setHasFixedSize(true)
-
-			// use a linear layout manager
-			layoutManager = chatViewManager
-
-			// specify an viewAdapter (see also next example)
-			adapter = chatViewAdapter
-		}
 
 		val viewPager = findViewById<LockableViewPager>(R.id.view_pager).apply {
 			swipeLocked = true
@@ -83,17 +74,34 @@ class MainActivity : AppCompatActivity(), TelegramListener {
 			adapter = ViewPagerAdapter(supportFragmentManager)
 		}
 
-		findViewById<BottomNavigationView>(R.id.bottom_navigation).setOnNavigationItemSelectedListener {
-			var pos = -1
-			when (it.itemId) {
-				R.id.action_my_location -> pos = MY_LOCATION_TAB_POS
-				R.id.action_live_now -> pos = LIVE_NOW_TAB_POS
+		bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation).apply {
+			setOnNavigationItemSelectedListener {
+				var pos = -1
+				when (it.itemId) {
+					R.id.action_my_location -> pos = MY_LOCATION_TAB_POS
+					R.id.action_live_now -> pos = LIVE_NOW_TAB_POS
+				}
+				if (pos != -1 && pos != viewPager.currentItem) {
+					viewPager.currentItem = pos
+					return@setOnNavigationItemSelectedListener true
+				}
+				false
 			}
-			if (pos != -1 && pos != viewPager.currentItem) {
-				viewPager.currentItem = pos
-				return@setOnNavigationItemSelectedListener true
+		}
+
+		buttonsBar = findViewById<LinearLayout>(R.id.buttons_bar).apply {
+			findViewById<TextView>(R.id.primary_btn).apply {
+				text = getString(R.string.shared_string_continue)
+				setOnClickListener {
+					myLocationTabFragment?.onPrimaryBtnClick()
+				}
 			}
-			false
+			findViewById<TextView>(R.id.secondary_btn).apply {
+				text = getString(R.string.shared_string_cancel)
+				setOnClickListener {
+					myLocationTabFragment?.onSecondaryBtnClick()
+				}
+			}
 		}
 
 		if (!LoginDialogFragment.welcomeDialogShown) {
@@ -127,6 +135,9 @@ class MainActivity : AppCompatActivity(), TelegramListener {
 		if (fragment is TelegramListener) {
 			listeners.add(WeakReference(fragment))
 		}
+		if (fragment is MyLocationTabFragment) {
+			myLocationTabFragment = fragment
+		}
 	}
 
 	override fun onResume() {
@@ -135,7 +146,6 @@ class MainActivity : AppCompatActivity(), TelegramListener {
 
 		invalidateOptionsMenu()
 		updateTitle()
-		updateChatsList()
 
 		if (settings.hasAnyChatToShareLocation() && !AndroidUtils.isLocationPermissionAvailable(this)) {
 			requestLocationPermission()
@@ -175,16 +185,6 @@ class MainActivity : AppCompatActivity(), TelegramListener {
 			invalidateOptionsMenu()
 			updateTitle()
 
-			when (newTelegramAuthorizationState) {
-				TelegramAuthorizationState.READY -> {
-					updateChatsList()
-				}
-				TelegramAuthorizationState.CLOSED,
-				TelegramAuthorizationState.UNKNOWN -> {
-					chatViewAdapter.chats = emptyList()
-				}
-				else -> Unit
-			}
 			listeners.forEach {
 				it.get()?.onTelegramStatusChanged(prevTelegramAuthorizationState, newTelegramAuthorizationState)
 			}
@@ -194,21 +194,18 @@ class MainActivity : AppCompatActivity(), TelegramListener {
 	override fun onTelegramChatsRead() {
 		runOnUi {
 			removeNonexistingChatsFromSettings()
-			updateChatsList()
 			listeners.forEach { it.get()?.onTelegramChatsRead() }
 		}
 	}
 
 	override fun onTelegramChatsChanged() {
 		runOnUi {
-			updateChatsList()
 			listeners.forEach { it.get()?.onTelegramChatsChanged() }
 		}
 	}
 
 	override fun onTelegramChatChanged(chat: TdApi.Chat) {
 		runOnUi {
-			updateChatsList()
 			listeners.forEach { it.get()?.onTelegramChatChanged(chat) }
 		}
 	}
@@ -238,21 +235,17 @@ class MainActivity : AppCompatActivity(), TelegramListener {
 		}
 	}
 
+	override fun switchButtonsVisibility(visible: Boolean) {
+		val buttonsVisibility = if (visible) View.VISIBLE else View.GONE
+		if (buttonsBar.visibility != buttonsVisibility) {
+			buttonsBar.visibility = buttonsVisibility
+			bottomNav.visibility = if (visible) View.GONE else View.VISIBLE
+		}
+	}
+
 	private fun removeNonexistingChatsFromSettings() {
 		val presentChatTitles = telegramHelper.getChatTitles()
 		settings.removeNonexistingChats(presentChatTitles)
-	}
-
-	private fun updateChatsList() {
-		val chatList = telegramHelper.getChatList()
-		val chats: MutableList<TdApi.Chat> = mutableListOf()
-		for (orderedChat in chatList) {
-			val chat = telegramHelper.getChat(orderedChat.chatId)
-			if (chat != null) {
-				chats.add(chat)
-			}
-		}
-		chatViewAdapter.chats = chats
 	}
 
 	fun loginTelegram() {
@@ -381,7 +374,6 @@ class MainActivity : AppCompatActivity(), TelegramListener {
 				} else {
 					settings.stopSharingLocationToChats()
 					app.shareLocationHelper.stopSharingLocation()
-					updateChatsList()
 				}
 				if (settings.hasAnyChatToShowOnMap() && osmandHelper.isOsmandNotInstalled()) {
 					showOsmandMissingDialog()
@@ -399,8 +391,8 @@ class MainActivity : AppCompatActivity(), TelegramListener {
 		override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
 			val builder = AlertDialog.Builder(requireContext())
 			builder.setView(R.layout.install_osmand_dialog)
-					.setNegativeButton("Cancel", null)
-					.setPositiveButton("Install") { _, _ ->
+					.setNegativeButton(R.string.shared_string_cancel, null)
+					.setPositiveButton(R.string.shared_string_install) { _, _ ->
 						val intent = Intent()
 						intent.data = Uri.parse("market://details?id=net.osmand.plus")
 						startActivity(intent)

@@ -1,7 +1,5 @@
 package net.osmand.telegram.ui
 
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -15,16 +13,14 @@ import android.widget.TextView
 import android.widget.Toast
 import net.osmand.telegram.R
 import net.osmand.telegram.TelegramApplication
-import net.osmand.telegram.helpers.TelegramHelper.TelegramAuthorizationState
-import net.osmand.telegram.helpers.TelegramHelper.TelegramListener
+import net.osmand.telegram.helpers.TelegramHelper.*
+import net.osmand.telegram.helpers.TelegramUiHelper
 import org.drinkless.td.libcore.telegram.TdApi
 
-class LiveNowTabFragment : Fragment(), TelegramListener {
+private const val CHAT_VIEW_TYPE = 0
+private const val CONTACT_VIEW_TYPE = 1
 
-	companion object {
-		private const val CHAT_VIEW_TYPE = 0
-		private const val CONTACT_VIEW_TYPE = 1
-	}
+class LiveNowTabFragment : Fragment(), TelegramListener, TelegramIncomingMessagesListener {
 
 	private val app: TelegramApplication
 		get() = activity?.application as TelegramApplication
@@ -51,6 +47,12 @@ class LiveNowTabFragment : Fragment(), TelegramListener {
 	override fun onResume() {
 		super.onResume()
 		updateList()
+		telegramHelper.addIncomingMessagesListener(this)
+	}
+
+	override fun onPause() {
+		super.onPause()
+		telegramHelper.removeIncomingMessagesListener(this)
 	}
 
 	override fun onTelegramStatusChanged(
@@ -91,12 +93,19 @@ class LiveNowTabFragment : Fragment(), TelegramListener {
 	override fun onSendLiveLocationError(code: Int, message: String) {
 	}
 
+	override fun onReceiveChatLocationMessages(chatTitle: String, vararg messages: TdApi.Message) {
+		updateList()
+	}
+
+	override fun updateLocationMessages() {
+	}
+
 	private fun updateList() {
 		val res = mutableListOf<Any>()
 		for ((id, messages) in telegramHelper.getMessagesByChatIds()) {
 			telegramHelper.getChat(id)?.let { chat ->
 				res.add(chat)
-				if (chat.type !is TdApi.ChatTypePrivate && chat.type !is TdApi.ChatTypeSecret && messages.size > 1) {
+				if (chat.type is TdApi.ChatTypeBasicGroup || chat.type is TdApi.ChatTypeSupergroup) {
 					messages.forEach { message ->
 						telegramHelper.getUser(message.senderUserId)?.let { user ->
 							res.add(user)
@@ -142,7 +151,7 @@ class LiveNowTabFragment : Fragment(), TelegramListener {
 				val nextItemIsUser = !lastItem && items[position + 1] is TdApi.User
 				val chatTitle = item.title
 
-				setupIcon(holder.icon, item.photo?.small?.local?.path)
+				TelegramUiHelper.setupPhoto(app, holder.icon, item.photo?.small?.local?.path)
 				holder.title?.text = chatTitle
 				holder.description?.text = "Chat description" // FIXME
 				holder.imageButton?.setImageDrawable(app.uiUtils.getThemedIcon(R.drawable.ic_overflow_menu_white))
@@ -182,7 +191,7 @@ class LiveNowTabFragment : Fragment(), TelegramListener {
 				holder.bottomDivider?.visibility = if (nextItemIsUser) View.VISIBLE else View.GONE
 				holder.bottomShadow?.visibility = if (lastItem) View.VISIBLE else View.GONE
 			} else if (item is TdApi.User && holder is ContactViewHolder) {
-				setupIcon(holder.icon, telegramHelper.getUserPhotoPath(item))
+				TelegramUiHelper.setupPhoto(app, holder.icon, telegramHelper.getUserPhotoPath(item))
 				holder.title?.text = "${item.firstName} ${item.lastName}"
 				holder.description?.text = "User description" // FIXME
 				holder.bottomShadow?.visibility = if (lastItem) View.VISIBLE else View.GONE
@@ -190,22 +199,6 @@ class LiveNowTabFragment : Fragment(), TelegramListener {
 		}
 
 		override fun getItemCount() = items.size
-
-		private fun setupIcon(iv: ImageView?, photoPath: String?) {
-			var drawable: Drawable? = null
-			var bitmap: Bitmap? = null
-			if (photoPath != null && photoPath.isNotEmpty()) {
-				bitmap = app.uiUtils.getCircleBitmap(photoPath)
-			}
-			if (bitmap == null) {
-				drawable = app.uiUtils.getThemedIcon(R.drawable.ic_group)
-			}
-			if (bitmap != null) {
-				iv?.setImageBitmap(bitmap)
-			} else {
-				iv?.setImageDrawable(drawable)
-			}
-		}
 
 		inner class ContactViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
 			val icon: ImageView? = view.findViewById(R.id.icon)
