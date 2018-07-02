@@ -130,6 +130,9 @@ public class OsmAndLocationProvider implements SensorEventListener {
 	private OsmandPreference<Boolean> USE_FILTER_FOR_COMPASS;
 	private static final long AGPS_TO_REDOWNLOAD = 16 * 60 * 60 * 1000; // 16 hours
 
+	// Maybe should not performed .equals a million times; but just check boolean
+	private static final boolean modelIsEKGC200 = Build.MODEL.equals("EK-GC200");
+
 
 	public class SimulationProvider {
 		private int currentRoad;
@@ -466,6 +469,13 @@ public class OsmAndLocationProvider implements SensorEventListener {
 					break;
 				case Sensor.TYPE_MAGNETIC_FIELD:
 					System.arraycopy(event.values, 0, mGeoMags, 0, 3);
+					// swap X and Y for Samsung Galaxy Camera 2; CJTmmer
+					if (modelIsEKGC200) {
+						float mTemp = mGeoMags[0];
+						mGeoMags[0] = -mGeoMags[1];
+						mGeoMags[1] = mTemp;
+					}
+					// end change CJTmmr
 					break;
 				case Sensor.TYPE_ORIENTATION:
 					val = event.values[0];
@@ -522,11 +532,14 @@ public class OsmAndLocationProvider implements SensorEventListener {
 
 	private float calcScreenOrientationCorrection(float val) {
 		if (currentScreenOrientation == 1) {
-			val += 90;
+			val -= 90;
+			// CJTmmr: was val+=90; changed to fix 180 degree compass fault in portrait-upright position
 		} else if (currentScreenOrientation == 2) {
 			val += 180;
+			// CJTmmr was val=+180; changed to fix 180 degree compass fault in landscape-reverse position
 		} else if (currentScreenOrientation == 3) {
-			val -= 90;
+			val += 90;
+			// CJTmmr: was val-=90; changed to fix 180 degree compass fault in portrait-reverseposition
 		}
 		return val;
 	}
