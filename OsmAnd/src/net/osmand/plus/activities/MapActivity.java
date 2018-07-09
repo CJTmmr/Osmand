@@ -744,7 +744,8 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		app.getDownloadThread().setUiActivity(this);
 
 		if (mapViewTrackingUtilities.getShowRouteFinishDialog()) {
-			DestinationReachedMenu.show(this);
+// disable RouteFinishDialog CJT
+			//			DestinationReachedMenu.show(this);
 			mapViewTrackingUtilities.setShowRouteFinishDialog(false);
 		}
 
@@ -1785,9 +1786,10 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	@Override
 	public void routeWasFinished() {
-		if (!mIsDestroyed) {
-			DestinationReachedMenu.show(this);
-		}
+		// disable RouteFinishDialog CJT
+		// if (!mIsDestroyed) {
+		// DestinationReachedMenu.show(this);
+		// }
 	}
 
 	public void showQuickSearch(double latitude, double longitude) {
