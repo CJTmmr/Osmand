@@ -533,7 +533,9 @@ public class RoutingHelper {
 		if (currentRoute > routeNodes.size() - 3
 				&& currentLocation.distanceTo(lastPoint) < getArrivalDistance()
 				&& !isRoutePlanningMode) {
+			// CJTmmer - added message on arriving at destination
 			showMessage(app.getString(R.string.arrived_at_destination));
+			//end
 			TargetPointsHelper targets = app.getTargetPointsHelper();
 			TargetPoint tp = targets.getPointToNavigate();
 			String description = tp == null ? "" : tp.getOnlyName();
