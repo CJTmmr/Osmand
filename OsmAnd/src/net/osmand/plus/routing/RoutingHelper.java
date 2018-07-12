@@ -533,7 +533,7 @@ public class RoutingHelper {
 		if (currentRoute > routeNodes.size() - 3
 				&& currentLocation.distanceTo(lastPoint) < getArrivalDistance()
 				&& !isRoutePlanningMode) {
-			//showMessage(app.getString(R.string.arrived_at_destination));
+			showMessage(app.getString(R.string.arrived_at_destination));
 			TargetPointsHelper targets = app.getTargetPointsHelper();
 			TargetPoint tp = targets.getPointToNavigate();
 			String description = tp == null ? "" : tp.getOnlyName();
