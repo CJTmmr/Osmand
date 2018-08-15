@@ -51,6 +51,10 @@ import net.osmand.aidl.note.StopRecordingParams;
 
 import net.osmand.aidl.gpx.RemoveGpxParams;
 
+import net.osmand.aidl.maplayer.point.ShowMapPointParams;
+
+import net.osmand.aidl.navdrawer.SetNavDrawerItemsParams;
+
 // NOTE: Add new methods at the end of file!!!
 
 interface IOsmAndAidlInterface {
@@ -101,4 +105,8 @@ interface IOsmAndAidlInterface {
     boolean navigateGpx(in NavigateGpxParams params);
 
     boolean removeGpx(in RemoveGpxParams params);
+
+    boolean showMapPoint(in ShowMapPointParams params);
+
+    boolean setNavDrawerItems(in SetNavDrawerItemsParams params);
 }

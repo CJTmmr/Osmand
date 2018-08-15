@@ -16,8 +16,10 @@
 		android:orientation="vertical">
 
 		<LinearLayout
+			android:id="@+id/user_row"
 			android:layout_width="match_parent"
 			android:layout_height="@dimen/list_item_height"
+			android:background="?attr/selectableItemBackground"
 			android:gravity="center_vertical">
 
 			<ImageView
@@ -28,7 +30,7 @@
 				android:layout_marginLeft="@dimen/list_item_icon_margin_left"
 				android:layout_marginRight="@dimen/list_item_icon_margin_right"
 				android:layout_marginStart="@dimen/list_item_icon_margin_left"
-				tools:src="@drawable/ic_launcher_background"/>
+				tools:src="@drawable/img_user_picture"/>
 
 			<LinearLayout
 				android:layout_width="0dp"
@@ -49,16 +51,62 @@
 					app:typeface="@string/font_roboto_regular"
 					tools:text="Share location"/>
 
-				<net.osmand.telegram.ui.views.TextViewEx
-					android:id="@+id/description"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:ellipsize="end"
-					android:maxLines="1"
-					android:textColor="?attr/android:textColorSecondary"
-					android:textSize="@dimen/list_item_description_text_size"
-					app:typeface="@string/font_roboto_regular"
-					tools:text="Live: 1 • All: 36"/>
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content">
+
+					<LinearLayout
+						android:id="@+id/location_view_container"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:gravity="center_vertical"
+						android:visibility="gone"
+						tools:visibility="visible">
+
+						<ImageView
+							android:id="@+id/direction_icon"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_marginEnd="4dp"
+							android:layout_marginRight="4dp"
+							tools:src="@drawable/ic_direction_arrow"
+							tools:tint="@color/ctrl_active_light"/>
+
+						<net.osmand.telegram.ui.views.TextViewEx
+							android:id="@+id/distance_text"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:maxLines="1"
+							android:textSize="@dimen/list_item_description_text_size"
+							app:typeface="@string/font_roboto_medium"
+							tools:text="213 m"
+							tools:textColor="@color/ctrl_active_light"/>
+
+						<TextView
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_marginLeft="4dp"
+							android:layout_marginRight="4dp"
+							android:text="•"
+							android:textColor="?attr/android:textColorSecondary"
+							android:textSize="@dimen/list_item_description_text_size"
+							android:visibility="invisible" />
+
+					</LinearLayout>
+
+					<net.osmand.telegram.ui.views.TextViewEx
+						android:id="@+id/description"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:ellipsize="end"
+						android:maxLines="1"
+						android:textColor="?attr/android:textColorSecondary"
+						android:textSize="@dimen/list_item_description_text_size"
+						app:typeface="@string/font_roboto_regular"
+						tools:text="Live: 1 • All: 36"/>
+
+				</LinearLayout>
 
 			</LinearLayout>
 
@@ -86,7 +134,7 @@
 			android:paddingRight="@dimen/content_padding_standard"
 			android:paddingStart="@dimen/list_item_content_margin">
 
-			<TextView
+			<net.osmand.telegram.ui.views.TextViewEx
 				android:layout_width="0dp"
 				android:layout_height="wrap_content"
 				android:layout_marginEnd="@dimen/content_padding_standard"
@@ -94,13 +142,17 @@
 				android:layout_weight="1"
 				android:text="@string/show_on_map"
 				android:textAppearance="?attr/textAppearanceListItemSecondary"
-				android:textColor="?attr/ctrl_active_color"
-				android:textStyle="bold"/>
+				android:textColor="?android:attr/textColorSecondary"
+				app:typeface="@string/font_roboto_medium"/>
 
-			<Switch
-				android:id="@+id/show_on_map_switch"
+			<net.osmand.telegram.ui.views.TextViewEx
+				android:id="@+id/show_on_map_state"
 				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"/>
+				android:layout_height="wrap_content"
+				android:textAppearance="?attr/textAppearanceListItemSecondary"
+				android:textColor="?attr/ctrl_active_color"
+				app:typeface="@string/font_roboto_medium"
+				tools:text="All"/>
 
 		</LinearLayout>
 

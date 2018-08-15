@@ -2969,9 +2969,35 @@ Lon %2$s</string>
     <string name="shared_string_gpx_files">Archivos GPX</string>
     <string name="get_osmand_live">Obtén «OsmAnd Live» para desbloquear todas las características: Actualizaciones diarias de mapas con descargas ilimitadas, todos los complementos gratuitos y de pago, artículos de Wikipedia, Wikiviajes y mucho más.</string>
     <string name="quick_action_edit_actions">Editar acciones</string>
-    <string name="error_notification_desc">Por favor, envía la captura de pantalla de esta notificación a support@osmand.net</string>
+    <string name="error_notification_desc">Por favor, envía una captura de pantalla de esta notificación a support@osmand.net</string>
     <string name="coord_input_edit_point">Editar punto</string>
     <string name="coord_input_add_point">Añadir punto</string>
     <string name="coord_input_save_as_track">Guardar como traza</string>
     <string name="coord_input_save_as_track_descr">Añadiste %1$s puntos. Escribe un nombre de archivo y pulsa en «Guardar».</string>
+    <string name="point_deleted">Punto %1$s borrado</string>
+    <string name="shared_string_world">Mundo</string>
+    <string name="send_search_query_description">Enviaremos la consulta de búsqueda: <b>«%1$s»</b>, así como la ubicación.<br/><br/> No recopilamos información personal, sólo necesitamos datos de búsqueda para mejorar el algoritmo de búsqueda.<br/></string>
+    <string name="search_no_results_description">¿Sin resultados?
+\nCuéntanos sobre esto.</string>
+    <string name="send_search_query">¿Enviar consulta de búsqueda?</string>
+    <string name="release_3_1">• Navegación: Corrección en la barra de progreso, intercambio rápido del punto inicial y final de la ruta 
+\n 
+\n • Marcadores del mapa: corregido el des/activar grupos, capacidad para ocultar marcadores del mapa 
+\n 
+\n • Edición de OSM: Capacidad de edición de etiquetas para objetos que no sean puntos y de vías, corrección de los comentarios vacíos en las notas, copia de seguridad de ediciones 
+\n 
+\n • Mejor análisis de Wikipedia y Wikiviajes, los archivos actualizados ya están disponibles 
+\n 
+\n • Menú contextual: corregido el color de los escudos de transporte en el modo nocturno y los tamaños de menú adicionales 
+\n
+\n • Navegación fluvial: soporte a la navegación fluvial 
+\n 
+\n • Otras correcciones de errores 
+\n</string>
+    <string name="increase_search_radius_to">Aumentar el radio de búsqueda a %1$s</string>
+    <string name="commiting_way">Enviando vía…</string>
+    <string name="thank_you_for_feedback">Gracias por su comentario</string>
+    <string name="poi_cannot_be_found">No se puede encontrar el nodo o la vía.</string>
+    <string name="search_no_results_feedback">¿Sin resultados de búsqueda?
+\nDanos tu opinión</string>
     </resources>

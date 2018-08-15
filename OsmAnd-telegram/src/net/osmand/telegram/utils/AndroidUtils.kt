@@ -3,6 +3,7 @@ package net.osmand.telegram.utils
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.net.Uri
@@ -18,6 +19,8 @@ import android.view.inputmethod.InputMethodManager
 import java.io.File
 
 object AndroidUtils {
+	
+	private const val PERMISSION_REQUEST_LOCATION = 1
 
 	private fun isHardwareKeyboardAvailable(context: Context): Boolean {
 		return context.resources.configuration.keyboard != Configuration.KEYBOARD_NOKEYS
@@ -49,6 +52,11 @@ object AndroidUtils {
 		return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
 	}
 
+
+	fun requestLocationPermission(activity: Activity) {
+		ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSION_REQUEST_LOCATION)
+	}
+	
 	fun dpToPx(ctx: Context, dp: Float): Int {
 		val r = ctx.resources
 		return TypedValue.applyDimension(
@@ -56,6 +64,23 @@ object AndroidUtils {
 				dp,
 				r.displayMetrics
 		).toInt()
+	}
+
+	fun getStatusBarHeight(ctx: Context): Int {
+		var result = 0
+		val resourceId = ctx.resources.getIdentifier("status_bar_height", "dimen", "android")
+		if (resourceId > 0) {
+			result = ctx.resources.getDimensionPixelSize(resourceId)
+		}
+		return result
+	}
+
+	fun addStatusBarPadding19v(ctx: Context, view: View) {
+		if (Build.VERSION.SDK_INT >= 19) {
+			view.apply {
+				setPadding(paddingLeft, paddingTop + getStatusBarHeight(ctx), paddingRight, paddingBottom)
+			}
+		}
 	}
 
 	@ColorInt
@@ -73,4 +98,24 @@ object AndroidUtils {
 			FileProvider.getUriForFile(context,  "net.osmand.telegram.fileprovider", file)
 		}
 	}
+
+	fun isGooglePlayInstalled(ctx: Context): Boolean {
+		try {
+			ctx.packageManager.getPackageInfo("com.android.vending", 0)
+		} catch (e: PackageManager.NameNotFoundException) {
+			return false
+		}
+
+		return true
+	}
+
+	fun getPlayMarketLink(ctx: Context, packageName: String): String {
+		if (isGooglePlayInstalled(ctx)) {
+			return "market://details?id=$packageName"
+		}
+		return "https://play.google.com/store/apps/details?id=$packageName"
+	}
+
+	fun isIntentSafe(ctx: Context, intent: Intent) =
+		ctx.packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY).isNotEmpty()
 }

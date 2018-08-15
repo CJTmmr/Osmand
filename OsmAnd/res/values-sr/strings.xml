@@ -428,7 +428,7 @@
 	<string name="osb_comment_dialog_author">Име аутора</string>
 	<string name="osb_comment_dialog_error">Коментар не може да се дода</string>
 	<string name="osb_comment_dialog_success">Коментар додат</string>
-	<string name="shared_string_commit">Отпреми</string>
+	<string name="shared_string_commit">Предај</string>
 	
     <string name="shared_string_location">Положај</string>
     <string name="lang_mk">Македонски</string>
@@ -1164,7 +1164,7 @@
     <string name="skip_map_downloading_desc">Немате уграђених карата. Можете изабрати карту са списка или преузети карте касније преко \'Мени - %1$s\'.</string>
     <string name="search_another_country">Одаберите другу област</string>
     <string name="search_map">Претражујем карте…</string>
-    <string name="first_usage_wizard_desc">Нека OsmAnd одреди Ваш положај и предложи карте за преузимање те области према томе.</string>
+    <string name="first_usage_wizard_desc">Пусти да OsmAnd одреди Ваш положај и да према томе предложи карте за преузимање те области.</string>
     <string name="location_not_found">Није препознат положај</string>
     <string name="no_inet_connection">Нема мрежне везе</string>
     <string name="no_inet_connection_desc_map">Захтеване за преузимање.</string>
@@ -1173,7 +1173,7 @@
     <string name="storage_place_description">OsmAnd складиште података (за карте, GPX фајлове итд.): %1$s.</string>
     <string name="give_permission">Дајте дозволе</string>
     <string name="allow_access_location">Омогућите приступ одређивању положаја</string>
-    <string name="first_usage_greeting">Добави упутства и откриј нова места без везе са интернетом</string>
+    <string name="first_usage_greeting">Узми упутства и откриј нова места, и без интернета</string>
     <string name="search_my_location">Пронађи мој положај</string>
     <string name="no_update_info_desc">Не проверавај да ли постоје нове верзије нити за OsmAnd попусте.</string>
     <string name="no_update_info">Не приказуј нове верзије</string>
@@ -2810,7 +2810,7 @@
     <string name="osmand_background_plugin_description">Приказује подешавања за укључивање праћења у позадини и навођења тако што се GPS уређај периодично буди (а екран остаје угашен).</string>
     <string name="choose_audio_stream_descr">Одаберите говорника да пустите гласовно навођење.</string>
     <string name="send_location_email_pattern">Да видите положај, пратите везу ка веб локацији %1$s или Андроид intent везу %2$s</string>
-    <string name="voice_is_not_available_msg">Нема доступног гласовног навођења, идите у \"Поставке\" → \"Опште\" → \"Гласовно навођење\" и одаберите или скините пакет са гласовима.</string>
+    <string name="voice_is_not_available_msg">Нема доступног гласовног навођења, идите у \"Поставке\" → \"Поставке навођења\" → \"Гласовно навођење\" и одаберите или скините пакет са гласовима.</string>
     <string name="number_of_rows_in_dash">Број редова на табли %1$s</string>
     <string name="shared_string_bookmark">Забележи</string>
     <string name="switch_to_vector_map_to_see">Постојеће векторске карте за овај положај. 
@@ -2965,4 +2965,31 @@
 \nНије потребно скидање посебне карте, поглед се прави од стандардних карти.
 \n
 \nОвај поглед се може искључити тако што се или овде деактивира, или тако што се, по жељи, промени \"Стил карте\" под \"Подеси карту\".</string>
+    <string name="point_deleted">Тачка %1$s обрисана</string>
+    <string name="shared_string_world">Свет</string>
+    <string name="send_search_query_description">Послаћемо упит Ваше претраге: <b>\"%1$s\"</b>, као и Вашу локацију.<br/><br/> Не сакупљамо личне податке, само нам требају подаци о претрагама да бисмо побољшавали алгоритам претраге.<br/></string>
+    <string name="search_no_results_description">Нема резултата?
+\nРеците нам о овоме.</string>
+    <string name="send_search_query">Пошаљи упит претраге?</string>
+    <string name="increase_search_radius_to">Повећај полупречник претраге на %1$s</string>
+    <string name="thank_you_for_feedback">Хвала за повратну информацију</string>
+    <string name="poi_cannot_be_found">Чвор или пут није нађен.</string>
+    <string name="search_no_results_feedback">Нема резултата у претрази?
+\nЈавите нам</string>
+    <string name="release_3_1">• Навођење: Исправка у траци прогреса, брза замена почетне и крајње тачке пута
+\n
+\n • Ознаке на карти: fix turn on/off groups, ability to hide markers from the map
+\n
+\n • OSM измене: Могућност измена ознака за објекте и путеве који нису обичне тачке, исправка недостајућих коментара на белешкама, прављење резервне копије измена
+\n
+\n • Побољшано парсирање Википедије и Wikivoyage-а, ажурирани фајлови су већ доступни
+\n
+\n • Контекстни мени: исправка боје превоза у ноћном режиму, исправка величине додатних менија
+\n
+\n • Бродско навођење: подршка за пловне канале
+\n
+\n • Остале исправке грешака
+\n
+\n</string>
+    <string name="commiting_way">Предајем пут…</string>
     </resources>

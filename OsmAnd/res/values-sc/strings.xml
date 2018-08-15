@@ -1098,7 +1098,7 @@ Memòria in proportzione %4$s MB (lìmite de Android %5$s MB, Dalvik %6$s MB).</
 
 
     <string name="shared_string_next">Sighi</string>
-    <string name="shared_string_previous">Pretzedente</string>
+    <string name="shared_string_previous">Antepostu</string>
     <string name="unit_of_length_descr">Muda sas unidades de mèdida de sa distàntzia.</string>
     <string name="unit_of_length">Unidades de longària</string>
     <string name="si_mi_feet">Mìglios/pedes</string>
@@ -1253,7 +1253,7 @@ Memòria in proportzione %4$s MB (lìmite de Android %5$s MB, Dalvik %6$s MB).</
 \nSu servìtziu de nàvigu benit frunidu intertantu pro mèdiu de CloudMade in lìnia.</string>
     <string name="osmand_net_previously_installed">Totu sos datos in s\'aplicatzione installada betza ant a èssere suportados dae s’aplicatzione noa, ma sos puntos preferidos depent èssere esportados dae s’aplicatzione betza e importados in sa noa.</string>
     <string name="gps_status_app_not_found">Aplicatzione istadu GPS no installada. La boles chircare in su Market?</string>
-    <string name="voice_is_not_available_msg">Boghe de ghia non disponìbile. Intra in \'Impostatziones\' → \'Impostatziones generales\' → \'Ghia vocale\', issèbera su pachete preferidu e/o iscàrrigalu.</string>
+    <string name="voice_is_not_available_msg">Boghe de ghia non disponìbile. Intra in \'Impostatziones\' → \'Impostatziones de nàvigu\' → \'Ghia vocale\', issèbera su pachete preferidu e/o iscàrrigalu.</string>
     <string name="daynight_descr">Issèbera sas règulas pro sa modìfica de sa modalidade die/note.</string>
     <string name="download_files_question">Iscarrigare {0} documentu/os ({1} MB)?</string>
     <string name="shared_string_refresh">Torra a carrigare</string>
@@ -3103,4 +3103,31 @@ Pro praghere iscrie su còdighe intreu</string>
     <string name="coord_input_add_point">Annanghe puntu</string>
     <string name="coord_input_save_as_track">Sarva comente rasta</string>
     <string name="coord_input_save_as_track_descr">As annantu %1$s puntos. Iscrie unu nùmene pro su documentu e incarca \"Sarva\".</string>
+    <string name="point_deleted">Puntu %1$s iscantzelladu</string>
+    <string name="shared_string_world">Mundu</string>
+    <string name="send_search_query_description">Amos a imbiare sos tèrmines de sa chirca tua: <b>\"%1$s\"</b>, in paris cun sa positzione tua.<br/><br/> Non collimus informatziones personales, nos serbint petzi sos datos de chirca pro megiorare s\'algoritmu de chirca.<br/></string>
+    <string name="search_no_results_description">Perunu risultadu?
+\nFaghide·nos·lu ischire.</string>
+    <string name="send_search_query">Imbiare sos tèrmines de chirca?</string>
+    <string name="release_3_1">• Nàvigu: Barra de progressu acontzada, cuncàmbiu lestru intre sos puntos de incumintzu e de acabu de s\'àndala 
+\n 
+\n • Marcadores de sa mapa: acontzu de s\'allughidura/istudadura de sos grupos, possibilidade de istichire marcadores dae sa mapa 
+\n 
+\n • Modìficas OSM: Possibilidade de modificare sas etichetas pro sos ogetos e sas bias chi non sunt puntos, acontzu de su problema de sos cummentos chi mancaiant in sas notas, còpia de seguresa de sas modìficas 
+\n 
+\n • Anàlisi de Wikipedia e de Wikivoyage megioradas, sos documentos agiornados sunt giai disponìbiles 
+\n 
+\n • Menù de cuntestu: colores de sos iscudos de trasportu in sa modalidade pro sa note acontzados, mannàrias pro sos menùs additzionales acontzadas 
+\n
+\n • Nàvigu in barca: suportu pro sos canales navigàbiles
+\n 
+\n • Àteros acontzos de errores 
+\n 
+\n</string>
+    <string name="increase_search_radius_to">Ismànnia su raju de chirca finas a %1$s</string>
+    <string name="thank_you_for_feedback">Gràtzias pro s\'opinione tua</string>
+    <string name="poi_cannot_be_found">Impossìbile agatare su nodu o sa bia.</string>
+    <string name="search_no_results_feedback">Perunu risultadu de chirca?
+\nDaghe·nos s\'opinione tua</string>
+    <string name="commiting_way">Imbiende sa bia…</string>
     </resources>

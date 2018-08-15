@@ -246,10 +246,18 @@ class TelegramService : Service(), LocationListener, TelegramIncomingMessagesLis
 		}
 	}
 
-	override fun onReceiveChatLocationMessages(chatTitle: String, vararg messages: TdApi.Message) {
+	override fun onReceiveChatLocationMessages(chatId: Long, vararg messages: TdApi.Message) {
 		val app = app()
-		if (app.settings.isShowingChatOnMap(chatTitle)) {
+		if (app.settings.isShowingChatOnMap(chatId)) {
 			ShowMessagesTask(app).executeOnExecutor(executor, *messages)
+		}
+	}
+
+	override fun onDeleteChatLocationMessages(chatId: Long, messages: List<TdApi.Message>) {
+		// TODO: handle notification?
+		val app = app()
+		if (app.settings.isShowingChatOnMap(chatId)) {
+			DeleteMessagesTask(app).executeOnExecutor(executor, messages)
 		}
 	}
 
@@ -261,7 +269,17 @@ class TelegramService : Service(), LocationListener, TelegramIncomingMessagesLis
 
 		override fun doInBackground(vararg messages: TdApi.Message): Void? {
 			for (message in messages) {
-				app.showLocationHelper.showLocationOnMap(message)
+				app.showLocationHelper.addLocationToMap(message)
+			}
+			return null
+		}
+	}
+
+	private class DeleteMessagesTask(private val app: TelegramApplication) : AsyncTask<List<TdApi.Message>, Void, Void?>() {
+
+		override fun doInBackground(vararg messages: List<TdApi.Message>): Void? {
+			for (list in messages) {
+				app.showLocationHelper.hideMessages(list)
 			}
 			return null
 		}

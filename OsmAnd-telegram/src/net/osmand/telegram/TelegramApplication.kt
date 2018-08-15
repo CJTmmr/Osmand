@@ -24,7 +24,8 @@ class TelegramApplication : Application(), OsmandHelperListener {
 	lateinit var shareLocationHelper: ShareLocationHelper private set
 	lateinit var showLocationHelper: ShowLocationHelper private set
 	lateinit var notificationHelper: NotificationHelper private set
-	lateinit var osmandHelper: OsmandAidlHelper private set
+	lateinit var osmandAidlHelper: OsmandAidlHelper private set
+	lateinit var locationProvider: TelegramLocationProvider private set
 
 	var telegramService: TelegramService? = null
 
@@ -39,10 +40,26 @@ class TelegramApplication : Application(), OsmandHelperListener {
 
 		settings = TelegramSettings(this)
 		uiUtils = UiUtils(this)
-		osmandHelper = OsmandAidlHelper(this)
+		osmandAidlHelper = OsmandAidlHelper(this)
+		osmandAidlHelper.listener = object : OsmandAidlHelper.OsmandHelperListener {
+			override fun onOsmandConnectionStateChanged(connected: Boolean) {
+				if (connected) {
+					val basePackage = "net.osmand.telegram"
+					val appPackage = if (BuildConfig.DEBUG) "$basePackage.debug" else basePackage
+					osmandAidlHelper.setNavDrawerItems(
+						appPackage,
+						listOf(getString(R.string.app_name)),
+						listOf("osmand_telegram://main_activity"),
+						listOf("ic_action_location_sharing_app"),
+						listOf(-1)
+					)
+				}
+			}
+		}
 		shareLocationHelper = ShareLocationHelper(this)
 		showLocationHelper = ShowLocationHelper(this)
 		notificationHelper = NotificationHelper(this)
+		locationProvider = TelegramLocationProvider(this)
 
 		if (settings.hasAnyChatToShareLocation() && AndroidUtils.isLocationPermissionAvailable(this)) {
 			shareLocationHelper.startSharingLocation()
@@ -53,7 +70,7 @@ class TelegramApplication : Application(), OsmandHelperListener {
 	}
 
 	fun cleanupResources() {
-		osmandHelper.cleanupResources()
+		osmandAidlHelper.cleanupResources()
 		telegramHelper.close()
 	}
 

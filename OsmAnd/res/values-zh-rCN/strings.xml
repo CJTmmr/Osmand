@@ -2576,9 +2576,9 @@
     <string name="without_time_limit">没有时间限制</string>
     <string name="context_menu_points_of_group">组中所有的点</string>
     <string name="open_from">开始营业于</string>
-    <string name="will_close_at">将要关闭于</string>
-    <string name="will_open_at">将要打开于</string>
-    <string name="will_open_on">将要打开于</string>
+    <string name="will_close_at">关闭于</string>
+    <string name="will_open_at">开始营业于</string>
+    <string name="will_open_on">开始营业于</string>
     <string name="additional_actions">额外的活动</string>
     <string name="av_locations_selected_desc">GPX文件，包含所选笔记的坐标和数据。</string>
     <string name="av_locations_all_desc">GPX文件，包含所有注释的坐标和数据。</string>
@@ -2645,7 +2645,7 @@
     <string name="retry">重试</string>
     <string name="save_gpx_waypoint">保存 GPX 航点</string>
     <string name="import_track">导入轨迹</string>
-    <string name="make_as_start_point">标记为起始点</string>
+    <string name="make_as_start_point">标记该点为起始点</string>
     <string name="tap_on_map_to_hide_interface_descr">可以轻触屏幕切换显示控制按钮和小工具。</string>
     <string name="routing_attr_avoid_ice_roads_fords_name">避开结冰路面和浅滩</string>
     <string name="routing_attr_avoid_ice_roads_fords_description">避开结冰路面和浅滩。</string>
@@ -2667,7 +2667,7 @@
 	<string name="north_abbreviation">北</string>
 	<string name="enter_the_file_name">输入文件名。</string>
     <string name="map_import_error">地图导入错误</string>
-    <string name="map_imported_successfully">地图成功导入</string>
+    <string name="map_imported_successfully">地图已导入</string>
     <string name="shared_string_current">当前</string>
     <string name="clear_all_intermediates">清空所有中间点</string>
     <string name="in_app_purchase">应用内购买</string>
@@ -2681,17 +2681,17 @@
     <string name="unlimited_downloads">无限下载</string>
     <string name="wikipedia_offline">离线维基百科</string>
     <string name="open_wikipedia_link_online">在线打开维基百科链接</string>
-    <string name="open_wikipedia_link_online_description">OsmAnd 会将您重定向至浏览器并在线打开链接。</string>
+    <string name="open_wikipedia_link_online_description">链接将在网页浏览器中打开。</string>
     <string name="read_wikipedia_offline_description">获取 OsmAnd Live 订阅以离线阅读维基百科和 Wikivoyage 文章。</string>
     <string name="how_to_open_link">如何打开链接？</string>
     <string name="read_wikipedia_offline">离线阅读维基百科</string>
     <string name="download_all">下载全部</string>
-    <string name="shared_string_restart">重新开始</string>
+    <string name="shared_string_restart">应用重启</string>
     <string name="show_images">显示图像</string>
-    <string name="purchase_cancelled_dialog_title">您已取消 OsmAnd Live 订阅</string>
-    <string name="purchase_cancelled_dialog_descr">续订以继续使用以下全部功能：</string>
+    <string name="purchase_cancelled_dialog_title">您已取消您的 OsmAnd Live 订阅</string>
+    <string name="purchase_cancelled_dialog_descr">续订以继续使用全部功能：</string>
 
-    <string name="maps_you_need_descr">基于您保存的文章，我们推荐您下载下列地图：</string>
+    <string name="maps_you_need_descr">基于您书签记录的文章，我们推荐您下载下列地图：</string>
     <string name="maps_you_need">您需要的地图</string>
     <string name="osmand_team">OsmAnd 团队</string>
     <string name="popular_destinations">热门目的地</string>
@@ -2700,4 +2700,22 @@
     <string name="travel_card_update_descr">新的 Wikivoyage 数据可用，请更新以继续享用。</string>
 	<string name="get_unlimited_access">获取无限访问权限</string>
     <string name="shared_string_options">选项</string>
+    <string name="coord_input_save_as_track">保存为轨迹</string>
+    <string name="error_notification_desc">请将该通知的屏幕截图发送至 support@osmand.net</string>
+    <string name="hide_full_description">隐藏完整描述</string>
+    <string name="show_full_description">显示完整描述</string>
+    <string name="shared_string_world">世界</string>
+    <string name="coord_input_edit_point">编辑点</string>
+    <string name="coord_input_add_point">添加点</string>
+    <string name="get_osmand_live">获取 OsmAnd Live 以解锁全部功能：每日无限量地图下载与更新、所有付费与免费插件、维基百科、维基导游等等。</string>
+    <string name="shared_string_bookmark">书签</string>
+    <string name="how_to_open_wiki_title">如何打开维基百科文章？</string>
+<string name="search_no_results_description">没有结果？
+\n请告诉我们这个问题。</string>
+    <string name="download_wikipedia_label">下载维基百科数据</string>
+    <string name="open_in_browser_wiki">在线打开文章</string>
+    <string name="wiki_article_not_found">文章未找到</string>
+    <string name="increase_search_radius_to">增大搜索半径至 %1$s</string>
+    <string name="send_search_query_description">我们将会发送您的搜索请求：<b>\"%1$s\"</b>，以及您的位置。<br/><br/>我们不会搜集您的个人信息，我们只需要搜索数据以改进搜索算法。<br/></string>
+    <string name="send_search_query">发送搜索请求？</string>
     </resources>

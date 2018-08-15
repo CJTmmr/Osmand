@@ -4,8 +4,6 @@ import net.osmand.Location
 import net.osmand.telegram.TelegramApplication
 import net.osmand.telegram.notifications.TelegramNotification.NotificationType
 
-private const val MAX_LOCATION_MESSAGE_LIVE_PERIOD_SEC = 60 * 60 * 24 - 1 // day
-
 class ShareLocationHelper(private val app: TelegramApplication) {
 
 	var sharingLocation: Boolean = false
@@ -40,9 +38,9 @@ class ShareLocationHelper(private val app: TelegramApplication) {
 		lastLocation = location
 
 		if (location != null && app.isInternetConnectionAvailable) {
-			val shareLocationChats = app.settings.getShareLocationChats()
-			if (shareLocationChats.isNotEmpty()) {
-				app.telegramHelper.sendLiveLocationMessage(shareLocationChats, MAX_LOCATION_MESSAGE_LIVE_PERIOD_SEC, location.latitude, location.longitude)
+			val chatLivePeriods = app.settings.chatLivePeriods
+			if (chatLivePeriods.isNotEmpty()) {
+				app.telegramHelper.sendLiveLocationMessage(chatLivePeriods, location.latitude, location.longitude)
 			}
 			lastLocationMessageSentTime = System.currentTimeMillis()
 		}
@@ -89,5 +87,12 @@ class ShareLocationHelper(private val app: TelegramApplication) {
 		app.runInUIThread {
 			app.notificationHelper.refreshNotification(NotificationType.LOCATION)
 		}
+	}
+
+	companion object {
+
+		// min and max values for the UI
+		const val MIN_LOCATION_MESSAGE_LIVE_PERIOD_SEC = TelegramHelper.MIN_LOCATION_MESSAGE_LIVE_PERIOD_SEC - 1
+		const val MAX_LOCATION_MESSAGE_LIVE_PERIOD_SEC = TelegramHelper.MAX_LOCATION_MESSAGE_LIVE_PERIOD_SEC + 1
 	}
 }

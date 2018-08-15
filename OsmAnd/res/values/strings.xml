@@ -10,12 +10,31 @@
 	- For wording and consistency, please note http://osmand.net/help-online?id=technical-articles#Creating_a_Consistent_User_Experience
 	Thx - Hardy
 -->
+
+    <string name="thank_you_for_feedback">Thank you for feedback</string>
+    <string name="poi_cannot_be_found">Node or way cannot be found.</string>
+    <string name="search_no_results_feedback">No search results?\nGive us feedback</string>
+    <string name="release_3_1">
+    • Navigation: Fix progress bar, fast swapping of the start and end point of the route\n\n
+    • Map markers: fix turn on/off groups, ability to hide markers from the map\n\n
+    • OSM Edit: Ability to edit tags for non-point objects and ways, fix missing comments on notes, backup of edits\n\n
+    • Improve Wikipedia and Wikivoyage parsing, updated files are already available\n\n
+    • Context menu: fix transport shields color in the night mode, fix additional menu sizes\n\n
+    • Boat navigation: support for waterway fairway\n\n
+    • Other bug fixes\n\n
+    </string>
+    <string name="commiting_way">Committing way…</string>
+    <string name="increase_search_radius_to">Increase search radius to %1$s</string>
+    <string name="send_search_query_description"><![CDATA[We will send your search query: <b>\"%1$s\"</b>, as well as your location.<br/><br/>
+        We do not collect personal information, we only need search data to improve the search algorithm.<br/>]]></string>
+    <string name="send_search_query">Send search query?</string>
+    <string name="shared_string_world">World</string>
     <string name="point_deleted">Point %1$s deleted</string>
     <string name="coord_input_edit_point">Edit point</string>
     <string name="coord_input_add_point">Add point</string>
     <string name="coord_input_save_as_track">Save as track</string>
     <string name="coord_input_save_as_track_descr">You added %1$s points. Type a filename and tap \"Save\".</string>
-    <string name="error_notification_desc">Please send screenshoot of this notification to support@osmand.net</string>
+    <string name="error_notification_desc">Please send a screenshot of this notification to support@osmand.net</string>
     <string name="quick_action_edit_actions">Edit actions</string>
     <string name="get_osmand_live">Get OsmAnd Live to unlock all features: Daily map updates with unlimited downloads, all paid and free plugins, Wikipedia, Wikivoyage and much more.</string>
     <string name="unirs_render_descr">Modification of the default style to increase contrast of pedestrian and bicycle roads. Uses legacy Mapnik colors.</string>
@@ -2389,7 +2408,7 @@
     <string name="select_build_to_install">Select an OsmAnd build to install</string>
     <string name="gps_status_app_not_found">GPS status app not installed. Search in market?</string>
     <!-- Use ← for RTL languages -->
-    <string name="voice_is_not_available_msg">No voice guidance available, please go to \'Settings\' → \'General\' → \'Voice guidance\' and select or download a voice prompt package.</string>
+    <string name="voice_is_not_available_msg">No voice guidance available, please go to \'Settings\' → \'Navigation settings\' → \'Voice guidance\' and select or download a voice prompt package.</string>
     <string name="voice_is_not_available_title">No voice guidance selected</string>
     <string name="daynight_mode_day">Day</string>
     <string name="daynight_mode_night">Night</string>
@@ -2657,7 +2676,6 @@
     <string name="favourites_remove_dialog_success">Favorite point {0} deleted.</string>
     <string name="poi_edit_title">Edit POI</string>
     <string name="poi_create_title">Create POI</string>
-    <string name="poi_error_poi_not_found">Node cannot be found, or amenity consists of several nodes, which is not yet supported.</string>
     <string name="poi_remove_confirm_template">Delete {0} (comment)?</string>
     <string name="poi_remove_title">Delete POI</string>
     <string name="poi_remove_success">POI deleted</string>

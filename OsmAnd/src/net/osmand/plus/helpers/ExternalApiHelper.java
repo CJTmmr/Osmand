@@ -58,6 +58,8 @@ public class ExternalApiHelper {
 	public static final String API_CMD_ADD_FAVORITE = "add_favorite";
 	public static final String API_CMD_ADD_MAP_MARKER = "add_map_marker";
 
+	public static final String API_CMD_SHOW_LOCATION = "show_location";
+
 	public static final String API_CMD_START_GPX_REC = "start_gpx_rec";
 	public static final String API_CMD_STOP_GPX_REC = "stop_gpx_rec";
 
@@ -383,6 +385,11 @@ public class ExternalApiHelper {
 				}
 				resultCode = Activity.RESULT_OK;
 
+			} else if (API_CMD_SHOW_LOCATION.equals(cmd)) {
+				double lat = Double.parseDouble(uri.getQueryParameter(PARAM_LAT));
+				double lon = Double.parseDouble(uri.getQueryParameter(PARAM_LON));
+				showOnMap(lat, lon, null, null);
+				resultCode = Activity.RESULT_OK;
 			} else if (API_CMD_START_GPX_REC.equals(cmd)) {
 				OsmandMonitoringPlugin plugin = OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
 				if (plugin == null) {
@@ -518,6 +525,11 @@ public class ExternalApiHelper {
 			if (API_CMD_ADD_MAP_MARKER.equals(command)) {
 				// test marker
 				uri = Uri.parse("osmand.api://add_map_marker?lat=" + lat + "&lon=" + lon + "&name=Marker");
+			}
+
+			if (API_CMD_SHOW_LOCATION.equals(command)) {
+				// test location
+				uri = Uri.parse("osmand.api://show_location?lat=" + lat + "&lon=" + lon);
 			}
 
 			if (API_CMD_ADD_FAVORITE.equals(command)) {

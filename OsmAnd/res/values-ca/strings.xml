@@ -709,7 +709,7 @@ Memòria proporcional %4$s MB (límit de l\'Android %5$s MB, Dalvik %6$s MB).</s
     <string name="downloading_build">Baixant compilació…</string>
     <string name="loading_builds">Carregant paquets de l\'OsmAnd…</string>
     <string name="select_build_to_install">Seleccioneu un dels paquets de l\'OsmAnd per instal·lar-lo</string>
-    <string name="voice_is_not_available_msg">El guiatge per veu no està disponible. Aneu a «Configuració» → «Paràmetres generals» → «Guiatge per veu» i seleccioneu o baixeu un paquet d\'indicadors de veu.</string>
+    <string name="voice_is_not_available_msg">El guiatge per veu no està disponible. Aneu a «Configuració» → «Paràmetres de navegació» → «Guiatge per veu» i seleccioneu o baixeu un paquet d\'indicacions de veu.</string>
     <string name="voice_is_not_available_title">Cap guiatge de veu seleccionat</string>
     <string name="daynight_descr">Indiqueu el criteri de commutació entre el mode nocturn i el diürn.</string>
     <string name="maps_could_not_be_downloaded">Aquest mapa podria no haver-se baixat</string>
@@ -2983,4 +2983,30 @@ Abasta l\'àrea: %1$s x %2$s</string>
     <string name="coord_input_add_point">Afegeix un punt</string>
     <string name="coord_input_save_as_track">Desa com una traça</string>
     <string name="coord_input_save_as_track_descr">Heu afegit %1$s punts. Introduïu un nom de fitxer i premeu \"Desa\".</string>
+    <string name="point_deleted">El punt %1$s s\'ha esborrat</string>
+    <string name="shared_string_world">Mundial</string>
+    <string name="send_search_query_description">Enviarem la vostra consulta de cerca: <b>\"%1$s\"</b>, així com la vostra ubicació.<br/><br/> No desem cap informació personal, només volem les dades de la cerca per millorar-ne l\'algorisme.<br/></string>
+    <string name="search_no_results_description">Cap resultat?
+\nParleu-nos-en al respecte.</string>
+    <string name="send_search_query">Voleu enviar la consulta de cerca?</string>
+    <string name="release_3_1">"• Navegació: Correcció en la barra de progrés, intercanvi ràpid del punt inicial i final de la ruta 
+\n 
+\n• Marcadors de mapa: Correcció de l\'activació/desactivació de grups, possibilitat d\'amagar marcadors del mapa 
+\n 
+\n• Edició OSM: Capacitat per editar les etiquetes per objectes no puntuals, correcció de la pèrdua de comentaris a les notes, còpia de seguretat de les edicions 
+\n 
+\n• Millora la anàlisi de Viquipèdia i Wikiviatge, els fitxers actualitzats ja estan disponibles 
+\n 
+\n• Menú contextual: Arregla el color dels indicadors de nom de via en el mode nocturn, correcció de la mida del menú addicional 
+\n 
+\n• Nàutica: guiatge pels canals de navegació 
+\n 
+\n• Altres correccions d\'errors  
+\n"</string>
+    <string name="increase_search_radius_to">Augmenta el radi de cerca fins %1s</string>
+    <string name="commiting_way">Executant via…</string>
+    <string name="thank_you_for_feedback">Gràcies per els comentaris</string>
+    <string name="poi_cannot_be_found">No es pot trobar el node o la via.</string>
+    <string name="search_no_results_feedback">Cap resultat en la cerca?
+\nComenteu-nos-ho</string>
     </resources>

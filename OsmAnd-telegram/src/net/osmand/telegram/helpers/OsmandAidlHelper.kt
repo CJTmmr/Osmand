@@ -24,10 +24,7 @@ import net.osmand.aidl.maplayer.AMapLayer
 import net.osmand.aidl.maplayer.AddMapLayerParams
 import net.osmand.aidl.maplayer.RemoveMapLayerParams
 import net.osmand.aidl.maplayer.UpdateMapLayerParams
-import net.osmand.aidl.maplayer.point.AMapPoint
-import net.osmand.aidl.maplayer.point.AddMapPointParams
-import net.osmand.aidl.maplayer.point.RemoveMapPointParams
-import net.osmand.aidl.maplayer.point.UpdateMapPointParams
+import net.osmand.aidl.maplayer.point.*
 import net.osmand.aidl.mapmarker.AMapMarker
 import net.osmand.aidl.mapmarker.AddMapMarkerParams
 import net.osmand.aidl.mapmarker.RemoveMapMarkerParams
@@ -36,6 +33,8 @@ import net.osmand.aidl.mapwidget.AMapWidget
 import net.osmand.aidl.mapwidget.AddMapWidgetParams
 import net.osmand.aidl.mapwidget.RemoveMapWidgetParams
 import net.osmand.aidl.mapwidget.UpdateMapWidgetParams
+import net.osmand.aidl.navdrawer.NavDrawerItem
+import net.osmand.aidl.navdrawer.SetNavDrawerItemsParams
 import net.osmand.aidl.navigation.NavigateGpxParams
 import net.osmand.aidl.navigation.NavigateParams
 import net.osmand.aidl.note.StartAudioRecordingParams
@@ -477,6 +476,7 @@ class OsmandAidlHelper(private val app: Application) {
 		if (mIOsmAndAidlInterface != null) {
 			try {
 				val layer = AMapLayer(id, name, zOrder, points)
+				layer.isImagePoints = true
 				return mIOsmAndAidlInterface!!.addMapLayer(AddMapLayerParams(layer))
 			} catch (e: RemoteException) {
 				e.printStackTrace()
@@ -498,6 +498,7 @@ class OsmandAidlHelper(private val app: Application) {
 		if (mIOsmAndAidlInterface != null) {
 			try {
 				val layer = AMapLayer(id, name, zOrder, points)
+				layer.isImagePoints = true
 				return mIOsmAndAidlInterface!!.updateMapLayer(UpdateMapLayerParams(layer))
 			} catch (e: RemoteException) {
 				e.printStackTrace()
@@ -520,6 +521,31 @@ class OsmandAidlHelper(private val app: Application) {
 				e.printStackTrace()
 			}
 
+		}
+		return false
+	}
+
+	/**
+	 * Show AMapPoint on map in OsmAnd.
+	 *
+	 * @param layerId - layer id. Note: layer should be added first.
+	 * @param pointId - point id.
+	 * @param shortName - short name (single char). Displayed on the map.
+	 * @param fullName - full name. Displayed in the context menu on first row.
+	 * @param typeName - type name. Displayed in context menu on second row.
+	 * @param color - color of circle's background.
+	 * @param location - location of the point.
+	 * @param details - list of details. Displayed under context menu.
+	 */
+	fun showMapPoint(layerId: String, pointId: String, shortName: String, fullName: String,
+							typeName: String, color: Int, location: ALatLon, details: List<String>?, params: Map<String, String>?): Boolean {
+		if (mIOsmAndAidlInterface != null) {
+			try {
+				val point = AMapPoint(pointId, shortName, fullName, typeName, color, location, details, params)
+				return mIOsmAndAidlInterface!!.showMapPoint(ShowMapPointParams(layerId, point))
+			} catch (e: RemoteException) {
+				e.printStackTrace()
+			}
 		}
 		return false
 	}
@@ -839,6 +865,21 @@ class OsmandAidlHelper(private val app: Application) {
 				e.printStackTrace()
 			}
 
+		}
+		return false
+	}
+
+	fun setNavDrawerItems(appPackage: String, names: List<String>, uris: List<String>, iconNames: List<String>, flags: List<Int>): Boolean {
+		if (mIOsmAndAidlInterface != null) {
+			try {
+				val items = mutableListOf<NavDrawerItem>()
+				for (i in names.indices) {
+					items.add(NavDrawerItem(names[i], uris[i], iconNames[i], flags[i]))
+				}
+				return mIOsmAndAidlInterface!!.setNavDrawerItems(SetNavDrawerItemsParams(appPackage, items))
+			} catch (e: RemoteException) {
+				e.printStackTrace()
+			}
 		}
 		return false
 	}

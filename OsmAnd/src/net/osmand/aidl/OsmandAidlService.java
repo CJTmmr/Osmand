@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
+
 import net.osmand.PlatformUtil;
 import net.osmand.aidl.calculateroute.CalculateRouteParams;
 import net.osmand.aidl.favorite.AddFavoriteParams;
@@ -25,6 +26,7 @@ import net.osmand.aidl.maplayer.RemoveMapLayerParams;
 import net.osmand.aidl.maplayer.UpdateMapLayerParams;
 import net.osmand.aidl.maplayer.point.AddMapPointParams;
 import net.osmand.aidl.maplayer.point.RemoveMapPointParams;
+import net.osmand.aidl.maplayer.point.ShowMapPointParams;
 import net.osmand.aidl.maplayer.point.UpdateMapPointParams;
 import net.osmand.aidl.mapmarker.AddMapMarkerParams;
 import net.osmand.aidl.mapmarker.RemoveMapMarkerParams;
@@ -32,18 +34,19 @@ import net.osmand.aidl.mapmarker.UpdateMapMarkerParams;
 import net.osmand.aidl.mapwidget.AddMapWidgetParams;
 import net.osmand.aidl.mapwidget.RemoveMapWidgetParams;
 import net.osmand.aidl.mapwidget.UpdateMapWidgetParams;
+import net.osmand.aidl.navdrawer.SetNavDrawerItemsParams;
 import net.osmand.aidl.navigation.NavigateGpxParams;
 import net.osmand.aidl.navigation.NavigateParams;
 import net.osmand.aidl.note.StartAudioRecordingParams;
+import net.osmand.aidl.note.StartVideoRecordingParams;
 import net.osmand.aidl.note.StopRecordingParams;
 import net.osmand.aidl.note.TakePhotoNoteParams;
-import net.osmand.aidl.note.StartVideoRecordingParams;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.util.Algorithms;
 
-import java.util.List;
-
 import org.apache.commons.logging.Log;
+
+import java.util.List;
 
 public class OsmandAidlService extends Service {
 	
@@ -194,6 +197,16 @@ public class OsmandAidlService extends Service {
 		public boolean updateMapWidget(UpdateMapWidgetParams params) throws RemoteException {
 			try {
 				return params != null && getApi("updateMapWidget").updateMapWidget(params.getWidget());
+			} catch (Exception e) {
+				handleException(e);
+				return false;
+			}
+		}
+
+		@Override
+		public boolean showMapPoint(ShowMapPointParams params) throws RemoteException {
+			try {
+				return params != null && getApi("showMapPoint").showMapPoint(params.getLayerId(), params.getPoint());
 			} catch (Exception e) {
 				handleException(e);
 				return false;
@@ -440,6 +453,16 @@ public class OsmandAidlService extends Service {
 		public boolean navigateGpx(NavigateGpxParams params) throws RemoteException {
 			try {
 				return params != null && getApi("navigateGpx").navigateGpx(params.getData(), params.getUri(), params.isForce());
+			} catch (Exception e) {
+				handleException(e);
+				return false;
+			}
+		}
+
+		@Override
+		public boolean setNavDrawerItems(SetNavDrawerItemsParams params) throws RemoteException {
+			try {
+				return params != null && getApi("setNavDrawerItems").setNavDrawerItems(params.getAppPackage(), params.getItems());
 			} catch (Exception e) {
 				handleException(e);
 				return false;
