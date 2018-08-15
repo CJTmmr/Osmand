@@ -59,8 +59,8 @@ class TelegramService : Service(), LocationListener, TelegramIncomingMessagesLis
 			ctx.stopService(serviceIntent)
 		} else if (isUsedByMyLocation(usedBy)) {
 			val app = app()
-			if (app.settings.sendMyLocationInterval >= OFF_INTERVAL_THRESHOLD && serviceOffInterval == 0L) {
-				serviceOffInterval = app.settings.sendMyLocationInterval
+			if (app.settings.sendMyLocInterval >= OFF_INTERVAL_THRESHOLD && serviceOffInterval == 0L) {
+				serviceOffInterval = app.settings.sendMyLocInterval
 				setupServiceErrorInterval()
 				setupAlarm()
 			}
@@ -84,7 +84,7 @@ class TelegramService : Service(), LocationListener, TelegramIncomingMessagesLis
 			initLocationUpdates()
 		}
 		if (isUsedByUsersLocations(usedBy)) {
-			app.telegramHelper.startLiveMessagesUpdates()
+			app.telegramHelper.startLiveMessagesUpdates(app.settings.sendMyLocInterval)
 		}
 
 		val locationNotification = app.notificationHelper.locationNotification
@@ -130,6 +130,10 @@ class TelegramService : Service(), LocationListener, TelegramIncomingMessagesLis
 		stopForeground(java.lang.Boolean.TRUE)
 	}
 
+	fun updateSendLocationInterval(newInterval: Long) {
+		sendLocationInterval = newInterval
+	}
+	
 	fun forceLocationUpdate() {
 		val location = getFirstTimeRunDefaultLocation()
 		app().shareLocationHelper.updateLocation(location)
@@ -220,7 +224,7 @@ class TelegramService : Service(), LocationListener, TelegramIncomingMessagesLis
 					lock.release()
 				}
 				app().shareLocationHelper.updateLocation(location)
-			} else if (System.currentTimeMillis() - lastLocationSentTime > sendLocationInterval) {
+			} else if (System.currentTimeMillis() - lastLocationSentTime > sendLocationInterval * 1000) {
 				lastLocationSentTime = System.currentTimeMillis()
 				app().shareLocationHelper.updateLocation(location)
 			}

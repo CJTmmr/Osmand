@@ -68,6 +68,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static net.osmand.plus.download.DownloadOsmandIndexesHelper.assetMapping;
+
 /**
  * Resource manager is responsible to work with all resources 
  * that could consume memory (especially with file resources).
@@ -386,8 +388,11 @@ public class ResourceManager {
 				for (File f : lf) {
 					if (f.isDirectory()) {
 						File conf = new File(f, "_config.p");
+						boolean useJS = context.getSettings().USE_JS_VOICE_GUIDANCE.get();
 						if (!conf.exists()) {
-							conf = new File(f, "_ttsconfig.p");
+							String lang = f.getName().replace("-tts", "");
+							conf = useJS ? new File(f, lang + "_" + IndexConstants.TTSVOICE_INDEX_EXT_JS) :
+									new File(f, "_ttsconfig.p");
 						}
 						if (conf.exists()) {
 							indexFileNames.put(f.getName(), dateFormat.format(conf.lastModified())); //$NON-NLS-1$
@@ -415,9 +420,38 @@ public class ResourceManager {
 		}
 		return warnings;
 	}
+
+	public void copyMissingJSAssets() {
+		try {
+			Map<String, String> mapping = assetMapping(context.getAssets());
+			File appPath = context.getAppPath(null);
+			if (appPath.canWrite()) {
+				for (Map.Entry<String,String> entry : mapping.entrySet()) {
+					File jsFile = new File(appPath, entry.getValue());
+					if (entry.getValue().contains("-tts") && entry.getValue()
+							.endsWith(IndexConstants.TTSVOICE_INDEX_EXT_JS)) {
+						File oggFile = new File(appPath, entry.getValue().replace("-tts", ""));
+						if (oggFile.getParentFile().exists() && !oggFile.exists()) {
+							copyAssets(context.getAssets(), entry.getKey(), oggFile);
+						}
+					}
+					if (jsFile.getParentFile().exists() && !jsFile.exists()) {
+						copyAssets(context.getAssets(), entry.getKey(), jsFile);
+					}
+				}
+			}
+		} catch (XmlPullParserException e) {
+			log.error("Error while loading tts files from assets", e);
+		} catch (IOException e) {
+			log.error("Error while loading tts files from assets", e);
+		}
+	}
 	
 	public List<String> checkAssets(IProgress progress, boolean forceUpdate) {
 		String fv = Version.getFullVersion(context);
+		if(context.getAppInitializer().isAppVersionChanged()) {
+			copyMissingJSAssets();
+		}
 		if (!fv.equalsIgnoreCase(context.getSettings().PREVIOUS_INSTALLED_VERSION.get()) || forceUpdate) {
 			File applicationDataDir = context.getAppPath(null);
 			applicationDataDir.mkdirs();

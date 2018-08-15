@@ -657,8 +657,8 @@
 	<string name="settings_preset_descr">نمای نقشه و تنظیمات راهبری برای هر پروفایل جداگانه ذخیره می‌شود. پروفایل پیش‌فرض خود را اینجا تنظیم کنید.</string>
     <string name="osmand_background_plugin_description">تنظیمات مربوط به فعال‌سازی ردگیری و راهبری در پس‌زمینه را نشان می‌دهد که با ارسال پیام‌های بیدارباش متناوب به جی‌پی‌اس دستگاه این کار را انجام می‌دهد (با نمایشگر خاموش).</string>
     <string name="av_def_action_choose">انتخاب برحسب تقاضا</string>
-    <string name="audionotes_location_not_defined">مکانی برای یادداشت‌گذاری تعیین نشده است.
-\nمکانی را مشخص و از طریق منوی زمینه اقدام کنید.</string>
+    <string name="audionotes_location_not_defined">مکانی برای یادداشت‌گذاری تعیین نشده. 
+\nمکانی را مشخص و از منوی زمینه اقدام کنید.</string>
     <string name="rendering_attr_showRoadMaps_description">انتخاب کنید چه زمانی نقشه‌های فقط-جاده‌ای نشان داده شود:</string>
 	<string name="shared_string_target_points">مقصدها</string>
     <string name="ending_point_too_far">نقطهٔ پایانی از نزدیک‌ترین جاده خیلی دور است.</string>
@@ -738,7 +738,7 @@
 	<string name="fav_export_confirmation">قبلاً از نقاط برگزیده یک خروجی تهیه کرده‌اید و فایلش وجود دارد. خروجی جدید را جایگزین آن می‌کنید؟</string>
 	
 	
-	<string name="osmand_development_plugin_description">به‌وسیلهٔ این افزونه می‌توانید تنظیمات توسعه‌ای و امکانات عیب‌یابی را مشاهده کنید؛ مانند شبیه‌سازی مسیریابی، آزمایش عملکرد رندرینگ یا امتحان‌کردن پیام‌های صوتی. 
+	<string name="osmand_development_plugin_description">به‌وسیلهٔ این افزونه می‌توانید تنظیمات توسعه‌ای و امکانات عیب‌یابی را مشاهده کنید؛ مانند شبیه‌سازی مسیریابی، آزمایش عملکرد رندر یا امتحان‌کردن پیام‌های صوتی. 
 \nاین تنظیمات برای توسعه‌دهندگان فراهم شده است و به‌کار کاربران عادی نمی‌آید.</string>
 	<string name="animate_route_off">پایان شبیه‌سازی</string>
 	<string name="animate_route">شروع شبیه‌سازی</string>
@@ -892,7 +892,7 @@
     <string name="monitoring_control_start">GPX</string>
     <string name="rendering_attr_noPolygons_description">همهٔ عوارض زمین را روی نقشه ناپدید کنید.</string>
 	<string name="rendering_attr_noPolygons_name">چندضلعی‌ها</string>
-	<string name="rendering_attr_appMode_name">حالت رندرکردن</string>
+	<string name="rendering_attr_appMode_name">حالت رندرگیری</string>
 	<string name="rendering_attr_appMode_description">بهینه‌سازی نقشه برای</string>
 	<string name="rendering_attr_contourLines_description">از این زوم نمایان شود (نیازمند داده‌های منحنی تراز):</string>
 	<string name="rendering_attr_contourLines_name">نشان‌دادن منحنی‌های تراز</string>
@@ -999,7 +999,7 @@
 	<string name="loading_builds_failed">بازیابی لیست ساخت‌های OsmAnd ناموفق بود</string>
 	<string name="loading_builds">بارگیری ساخت‌های OsmAnd…</string>
 	<string name="select_build_to_install">یک ساخت OsmAnd را برای نصب انتخاب کنید</string>
-	<string name="gps_status_app_not_found">برنامهٔ GPS Status نصب نیست. در فروشگاه اندروید جست‌وجو می‌کنید؟</string>
+	<string name="gps_status_app_not_found">این برنامهٔ وضعیت GPS نصب نیست. در بازار اندروید بگردیم؟</string>
 	<string name="voice_is_not_available_msg">راهنمای صوتی موجود نیست. لطفاً به «تنطیمات» ← «تنظیمات راهبری» ← «راهنمای صوتی» بروید و یکی از بسته‌های پیام صوتی را انتخاب یا دانلود کنید.</string>
 	<string name="voice_is_not_available_title">راهنمای صوتی انتخاب نشده</string>
 	<string name="download_files_question">آیا {0} فایل دانلود شود ({1} مگابایت)؟</string>
@@ -1170,8 +1170,8 @@
 	<string name="local_index_no_items_to_do">هیچ‌موردی برای %1$s وجود ندارد</string>
 	<string name="local_index_action_do">دارید %2$s مورد را %1$s می‌کنید. ادامه می‌دهید؟</string>
 	
-	<string name="trace_rendering">اطلاعات عیب‌یابی رندرینگ</string>
-	<string name="trace_rendering_descr">عملکرد رندرینگ را نمایش می‌دهد.</string>
+	<string name="trace_rendering">اطلاعات عیب‌یابی رندرگیری</string>
+	<string name="trace_rendering_descr">عملکرد رندرگیری را نمایش می‌دهد.</string>
 	
 	<string name="choose_audio_stream_descr">بلندگوی پخش راهنمای صوتی را انتخاب کنید.</string>
 	<string name="voice_stream_voice_call">منبع صدای تماس تلفنی (همچنین برای وقفه‌انداختن در دستگاه پخش خودرو)</string>
@@ -1195,11 +1195,11 @@
 	
 	<string name="send_location_email_pattern">برای مشاهدهٔ مکان، پیوند اینترنتی %1$s یا پیوند اندرویدی %2$s را باز کنید</string>
 	<string name="amenity_type_geocache">Geocache</string>
-	<string name="continuous_rendering_descr">به‌جای نمایش یکبارهٔ تصویر از رندرینگ پیوسته استفاده شود.</string>
+	<string name="continuous_rendering_descr">به‌جای نمایش یکبارهٔ تصویر از رندرکردن پیوسته استفاده شود.</string>
 	<string name="renderer_load_sucess">رندرکننده بارگذاری شد</string>
 	<string name="renderer_load_exception">بارگذاری رندرکننده ناموفق بود</string>
-	<string name="renderers">رسم‌کنندهٔ بُرداری</string>
-	<string name="renderers_descr">شکل‌وشمایل رندر را انتخاب نمایید.</string>
+	<string name="renderers">رندرکنندهٔ بُرداری</string>
+	<string name="renderers_descr">شکل‌وشمایل رندرگیری را انتخاب نمایید.</string>
 	<string name="download_type_to_filter">فیلتر</string>
 	<string name="transport_context_menu">جست‌وجوی وسیلهٔ حمل‌ونقل در ایستگاه</string>
 	<string name="rotate_map_to_bearing_descr">نحوهٔ چرخش نقشه را انتخاب کنید.</string>
@@ -1751,8 +1751,8 @@
     <string name="download_tab_downloads">همهٔ دانلودها</string>
     <string name="download_tab_updates">به‌روز‌رسانی‌ها</string>
     <string name="shared_string_dismiss">بی‌خیال</string>
-    <string name="use_opengl_render">استفاده از رندرینگ OpenGL</string>
-    <string name="use_opengl_render_descr">از رندرینگ سرعت‌یافتهٔ سخت‌افزاری OpenGL استفاده کن (شاید مصرف باتری افزایش یابد یا روی دستگاه‌های خیلی قدیمی کار نکند).</string>
+    <string name="use_opengl_render">استفاده از رندرگیری OpenGL</string>
+    <string name="use_opengl_render_descr">از رندرگیری سرعت‌یافتهٔ سخت‌افزاری OpenGL استفاده کن (شاید مصرف باتری افزایش یابد یا روی دستگاه‌های خیلی قدیمی کار نکند).</string>
     <string name="lock_screen_request_explanation">%1$s به این مجوز نیاز دارد تا برای صرفه‌جویی در انرژی، بتواند نمایشگر را خاموش کند.</string>
     <string name="wake_on_voice_descr">قبل از رسیدن به پیچ، نمایشگر روشن شود (اگر خاموش است).</string>
     <string name="shared_string_never">هرگز</string>
@@ -2241,7 +2241,7 @@
     <string name="active_markers">نشانه‌های فعال</string>
     <string name="map_markers">نشانه‌های نقشه</string>
     <string name="map_marker">نشانهٔ نقشه</string>
-    <string name="consider_turning_polygons_off">توصیه می‌کنیم رسم چندضلعی‌ها را غیرفعال کنید.</string>
+    <string name="consider_turning_polygons_off">توصیه می‌کنیم رندرشدن چندضلعی‌ها را غیرفعال کنید.</string>
     <string name="rendering_attr_showMtbRoutes_name">نمایش مسیرهای دوچرخه‌سواری کوهستانی (MTB)</string>
     <string name="show_polygons">چندضلعی‌ها را نشان بده</string>
     <string name="shared_string_status">وضعیت</string>
@@ -2958,7 +2958,7 @@
     <string name="shared_string_edited">ویرایش شد</string>
     <string name="shared_string_added">افزوده شد</string>
     <string name="marker_activated">نشانهٔ %s فعال شد.</string>
-    <string name="one_tap_active_descr">یکی از نشانه‌های روی نقشه لمس کنید تا بدون نیاز به بازکردن منوی زمینه، آن را در صدر نشانه‌های فعال قرار دهید.</string>
+    <string name="one_tap_active_descr">یکی از نشانه‌های روی نقشه را لمس کنید تا بدون نیاز به بازکردن منوی زمینه، آن را در صدر نشانه‌های فعال قرار دهید.</string>
     <string name="one_tap_active">فعال‌کردن «با یک لمس»</string>
     <string name="empty_state_av_notes">یادداشت بگذارید!</string>
     <string name="empty_state_av_notes_desc">با استفاده از ابزارک یا منوی زمینه، برای هر نقطه‌ای روی نقشه یادداشت صوتی، عکسی یا ویدئویی بگذارید.</string>
@@ -3175,4 +3175,19 @@
     <string name="poi_cannot_be_found">گره یا راه پیدا نمی‌شود.</string>
     <string name="search_no_results_feedback">چیزی پیدا نشد؟
 \nنظرتان را به ما بگویید</string>
+    <string name="release_3_1">"• ناوبری: اصلاح نوار پیشرفت، تعویض فوریِ نقاط ابتدا و انتهای مسیر
+\n
+\n • نشانه‌های نقشه: اصلاح خاموش/روشن‌کردن گروه‌ها، امکان مخفی‌سازی نشانه‌ها روی نقشه
+\n
+\n • ویرایش OSM: امکان ویرایش تگ‌های اشیای غیرنقطه‌ای و راه‌ها، اصلاح مشکل ازقلم‌افتادن پیام‌ها در توضیحات ویرایشی، پشتیبان‌گیری از ویرایش‌ها
+\n
+\n • بهبود تجزیهٔ ویکی‌پدیا و ویکی‌سفر، فایل‌های به‌روزشده اکنون در دسترس قرار دارند
+\n
+\n • منوی زمینه: اصلاح رنگ شمارهٔ پلاک‌های  حمل‌ونقل (مثل شمارهٔ ایستگاه‌های مترو) در حالت شب، اصلاحات دیگر در اندازه‌های منو
+\n
+\n • ناوبری با قایق: پشتیبانی از آبراه روگاه (fairway)
+\n
+\n • اصلاح مشکلاتی دیگر
+\n
+\n"</string>
     </resources>

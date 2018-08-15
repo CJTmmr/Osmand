@@ -54,7 +54,7 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 			val messages = telegramHelper.getMessages()
 			for (message in messages) {
 				val date = Math.max(message.date, message.editDate) * 1000L
-				val expired = System.currentTimeMillis() - date > app.settings.userLocationExpireTime
+				val expired = System.currentTimeMillis() - date > app.settings.locHistoryTime
 				if (expired) {
 					removeMapPoint(message.chatId, message)
 				}
@@ -141,7 +141,7 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		}
 		val photoUri = AndroidUtils.getUriForFile(app, File(photoPath))
 		app.grantUriPermission(
-			OsmandAidlHelper.OSMAND_PACKAGE_NAME,
+			app.settings.appToConnectPackage,
 			photoUri,
 			Intent.FLAG_GRANT_READ_URI_PERMISSION
 		)

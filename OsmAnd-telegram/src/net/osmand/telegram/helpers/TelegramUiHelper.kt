@@ -52,6 +52,10 @@ object TelegramUiHelper {
 			placeholderId = R.drawable.img_user_picture
 		}
 		val type = chat.type
+		val message = messages.firstOrNull()
+		if (message != null) {
+			res.lastUpdated = message.editDate
+		}
 		if (type is TdApi.ChatTypePrivate || type is TdApi.ChatTypeSecret) {
 			val userId = getUserIdFromChatType(type)
 			val chatWithBot = helper.isBot(userId)
@@ -59,7 +63,7 @@ object TelegramUiHelper {
 			res.chatWithBot = chatWithBot
 			if (!chatWithBot) {
 				res.userId = userId
-				val content = messages.firstOrNull()?.content
+				val content = message?.content
 				if (content is TdApi.MessageLocation) {
 					res.latLon = LatLon(content.location.latitude, content.location.longitude)
 				}
@@ -82,6 +86,17 @@ object TelegramUiHelper {
 		is TdApi.ChatTypePrivate -> type.userId
 		is TdApi.ChatTypeSecret -> type.userId
 		else -> 0
+	}
+
+	fun getUserName(user: TdApi.User): String {
+		var name = "${user.firstName} ${user.lastName}".trim()
+		if (name.isEmpty()) {
+			name = user.username
+		}
+		if (name.isEmpty()) {
+			name = user.phoneNumber
+		}
+		return name
 	}
 
 	fun messageToLocationItem(
@@ -108,6 +123,7 @@ object TelegramUiHelper {
 				name = content.name
 				latLon = LatLon(content.lat, content.lon)
 				placeholderId = R.drawable.img_user_picture
+				lastUpdated = content.lastUpdated
 			}
 		} else {
 			null
@@ -124,17 +140,12 @@ object TelegramUiHelper {
 		return LocationItem().apply {
 			chatId = chat.id
 			chatTitle = chat.title
-			name = "${user.firstName} ${user.lastName}".trim()
-			if (name.isEmpty()) {
-				name = user.username
-			}
-			if (name.isEmpty()) {
-				name = user.phoneNumber
-			}
+			name = TelegramUiHelper.getUserName(user)
 			latLon = LatLon(content.location.latitude, content.location.longitude)
 			photoPath = helper.getUserPhotoPath(user)
 			placeholderId = R.drawable.img_user_picture
 			userId = message.senderUserId
+			lastUpdated = message.editDate
 		}
 	}
 
@@ -151,6 +162,8 @@ object TelegramUiHelper {
 		var placeholderId: Int = 0
 			internal set
 		var userId: Int = 0
+			internal set
+		var lastUpdated: Int = 0
 			internal set
 
 		abstract fun canBeOpenedOnMap(): Boolean

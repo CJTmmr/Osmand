@@ -1,9 +1,7 @@
 package net.osmand.telegram.ui
 
 import android.app.Dialog
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v4.app.DialogFragment
@@ -12,13 +10,14 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.ListPopupWindow
+import android.view.Gravity
 import android.view.View
-import android.widget.LinearLayout
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import net.osmand.PlatformUtil
 import net.osmand.telegram.R
 import net.osmand.telegram.TelegramApplication
+import net.osmand.telegram.helpers.OsmandAidlHelper
 import net.osmand.telegram.helpers.TelegramHelper
 import net.osmand.telegram.helpers.TelegramHelper.*
 import net.osmand.telegram.ui.LoginDialogFragment.LoginDialogType
@@ -76,8 +75,8 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 				}
 				if (pos != -1 && pos != viewPager.currentItem) {
 					when (pos) {
-						MY_LOCATION_TAB_POS -> liveNowTabFragment?.stopLocationUpdate()
-						LIVE_NOW_TAB_POS -> liveNowTabFragment?.startLocationUpdate()
+						MY_LOCATION_TAB_POS -> liveNowTabFragment?.tabClosed()
+						LIVE_NOW_TAB_POS -> liveNowTabFragment?.tabOpened()
 					}
 					viewPager.currentItem = pos
 					return@setOnNavigationItemSelectedListener true
@@ -119,9 +118,7 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 			}
 		})
 		telegramHelper.listener = this
-		if (!telegramHelper.isInit()) {
-			telegramHelper.init()
-		}
+		telegramHelper.requestAuthorizationState()
 
 		if (osmandAidlHelper.isOsmandBound() && !osmandAidlHelper.isOsmandConnected()) {
 			osmandAidlHelper.connectOsmand()
@@ -142,6 +139,10 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 	override fun onResume() {
 		super.onResume()
 		paused = false
+
+		if (telegramHelper.listener != this) {
+			telegramHelper.listener = this
+		}
 
 		app.locationProvider.checkIfLastKnownLocationIsValid()
 
@@ -167,6 +168,7 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 	override fun onStop() {
 		super.onStop()
 		settings.save()
+		app.messagesDbHelper.saveMessages()
 	}
 
 	override fun onDestroy() {
@@ -253,13 +255,59 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 		if (telegramHelper.getTelegramAuthorizationState() != TelegramAuthorizationState.CLOSED) {
 			telegramHelper.logout()
 		}
-		telegramHelper.init()
+		// FIXME: update UI
 	}
-
+	
+	private fun logoutTelegram(silent: Boolean = false) {
+		if (telegramHelper.getTelegramAuthorizationState() == TelegramHelper.TelegramAuthorizationState.READY) {
+			telegramHelper.logout()
+		} else if (!silent) {
+			Toast.makeText(this, R.string.not_logged_in, Toast.LENGTH_SHORT).show()
+		}
+	}
+	
 	fun closeTelegram() {
 		telegramHelper.close()
 	}
 
+	fun setupOptionsBtn(imageView: ImageView) {
+		imageView.setImageDrawable(app.uiUtils.getThemedIcon(R.drawable.ic_action_other_menu))
+		imageView.setOnClickListener { showOptionsPopupMenu(imageView) }
+	}
+
+	fun showOptionsPopupMenu(anchor: View) {
+		val menuList = ArrayList<String>()
+		val settings = getString(R.string.shared_string_settings)
+		val logout = getString(R.string.shared_string_logout)
+		val login = getString(R.string.shared_string_login)
+
+		menuList.add(settings)
+		@Suppress("NON_EXHAUSTIVE_WHEN")
+		when (telegramHelper.getTelegramAuthorizationState()) {
+			TelegramHelper.TelegramAuthorizationState.READY -> menuList.add(logout)
+			TelegramHelper.TelegramAuthorizationState.CLOSED -> menuList.add(login)
+		}
+
+		ListPopupWindow(this@MainActivity).apply {
+			isModal = true
+			anchorView = anchor
+			setContentWidth(AndroidUtils.getPopupMenuWidth(this@MainActivity, menuList))
+			setDropDownGravity(Gravity.END or Gravity.TOP)
+			setAdapter(ArrayAdapter(this@MainActivity, R.layout.popup_list_text_item, menuList))
+			setOnItemClickListener { _, _, position, _ ->
+				when (position) {
+					menuList.indexOf(settings) -> {
+						supportFragmentManager?.also { SettingsDialogFragment.showInstance(it) }
+					}
+					menuList.indexOf(logout) -> logoutTelegram()
+					menuList.indexOf(login) -> loginTelegram()
+				}
+				dismiss()
+			}
+			show()
+		}
+	}
+	
 	private fun runOnUi(action: (() -> Unit)) {
 		if (!paused) {
 			runOnUiThread(action)
@@ -317,9 +365,9 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 			builder.setView(R.layout.install_osmand_dialog)
 					.setNegativeButton(R.string.shared_string_cancel, null)
 					.setPositiveButton(R.string.shared_string_install) { _, _ ->
-						val intent = Intent()
-						intent.data = Uri.parse("market://details?id=net.osmand.plus")
-						startActivity(intent)
+						context?.also {
+							startActivity(AndroidUtils.getPlayMarketIntent(it, OsmandAidlHelper.OSMAND_PLUS_PACKAGE_NAME))
+						}
 					}
 			return builder.create()
 		}

@@ -1,12 +1,13 @@
 package net.osmand.telegram.utils
 
 import android.content.Context
-
 import net.osmand.telegram.R
 import net.osmand.telegram.TelegramApplication
-
+import java.text.DateFormatSymbols
 import java.text.DecimalFormat
 import java.text.MessageFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 object OsmandFormatter {
 
@@ -18,6 +19,12 @@ object OsmandFormatter {
 	val FEET_IN_ONE_METER = YARDS_IN_ONE_METER * 3f
 	private val fixed2 = DecimalFormat("0.00")
 	private val fixed1 = DecimalFormat("0.0")
+	
+	private const val SHORT_TIME_FORMAT = "%02d:%02d"
+	private const val SIMPLE_TIME_OF_DAY_FORMAT = "HH:mm"
+
+	private val dateFormatSymbols = DateFormatSymbols.getInstance()
+	private val localDaysStr = getLettersStringArray(dateFormatSymbols.shortWeekdays, 2)
 
 	init {
 		fixed2.minimumFractionDigits = 2
@@ -26,19 +33,40 @@ object OsmandFormatter {
 		fixed2.minimumIntegerDigits = 1
 	}
 
-	fun getFormattedDuration(seconds: Int, ctx: TelegramApplication): String {
+	fun getFormattedDuration(ctx: Context, seconds: Long, short: Boolean = false): String {
 		val hours = seconds / (60 * 60)
 		val minutes = seconds / 60 % 60
-		return if (hours > 0) {
-			(hours.toString() + " "
-					+ ctx.getString(R.string.shared_string_hour_short)
-					+ if (minutes > 0)
-				" " + minutes + " "
-						+ ctx.getString(R.string.shared_string_minute_short)
-			else
-				"")
+		val secs = seconds - minutes * 60
+		if (short) {
+			return String.format(SHORT_TIME_FORMAT, hours, minutes)
+		}
+		return when {
+			hours > 0 -> {
+				var res = "$hours ${ctx.getString(R.string.shared_string_hour_short)}"
+				if (minutes > 0) {
+					res += " $minutes ${ctx.getString(R.string.shared_string_minute_short)}"
+				}
+				res
+			}
+			minutes > 0 -> {
+				var res = "$minutes ${ctx.getString(R.string.shared_string_minute_short)}"
+				if (secs > 0) {
+					res += " $secs ${ctx.getString(R.string.shared_string_second_short)}"
+				}
+				res
+			}
+			else -> "$seconds ${ctx.getString(R.string.shared_string_second_short)}"
+		}
+	}
+
+	fun getFormattedTime(seconds: Long): String {
+		val calendar = Calendar.getInstance()
+		calendar.timeInMillis = System.currentTimeMillis() + (seconds * 1000)
+		return if (isSameDay(calendar, Calendar.getInstance())) {
+			SimpleDateFormat(SIMPLE_TIME_OF_DAY_FORMAT, Locale.getDefault()).format(calendar.time)
 		} else {
-			minutes.toString() + " " + ctx.getString(R.string.shared_string_minute_short)
+			SimpleDateFormat(SIMPLE_TIME_OF_DAY_FORMAT, Locale.getDefault()).format(calendar.time) +
+					" " + localDaysStr[calendar.get(Calendar.DAY_OF_WEEK)]
 		}
 	}
 
@@ -224,6 +252,24 @@ object OsmandFormatter {
 		}
 	}
 
+	private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {
+		return cal1.get(Calendar.ERA) == cal2.get(Calendar.ERA) &&
+				cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+				cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
+	}
+
+	private fun getLettersStringArray(strings: Array<String>, letters: Int): Array<String?> {
+		val newStrings = arrayOfNulls<String>(strings.size)
+		for (i in strings.indices) {
+			if (strings[i].length > letters) {
+				newStrings[i] = (strings[i].substring(0, letters)).capitalize()
+			} else {
+				newStrings[i] = strings[i].capitalize()
+			}
+		}
+		return newStrings
+	}
+	
 	enum class MetricsConstants private constructor(private val key: Int) {
 		KILOMETERS_AND_METERS(R.string.si_km_m),
 		MILES_AND_FEET(R.string.si_mi_feet),

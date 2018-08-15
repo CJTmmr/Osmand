@@ -124,7 +124,7 @@ public class DownloadOsmandIndexesHelper {
 		return result;
 	}
 	
-	private static Map<String, String>  assetMapping(AssetManager assetManager) throws XmlPullParserException, IOException {
+	public static Map<String, String>  assetMapping(AssetManager assetManager) throws XmlPullParserException, IOException {
 		XmlPullParser xmlParser = XmlPullParserFactory.newInstance().newPullParser(); 
 		InputStream isBundledAssetsXml = assetManager.open("bundled_assets.xml");
 		xmlParser.setInput(isBundledAssetsXml, "UTF-8");
@@ -141,7 +141,7 @@ public class DownloadOsmandIndexesHelper {
 		return assets;
 	}
 	
-	private static void listVoiceAssets(IndexFileList result, AssetManager amanager, PackageManager pm, 
+	private static void listVoiceAssets(IndexFileList result, AssetManager amanager, PackageManager pm,
 			OsmandSettings settings) {
 		try {
 			String ext = DownloadActivityType.addVersionToExt(IndexConstants.TTSVOICE_INDEX_EXT_ZIP, IndexConstants.TTSVOICE_VERSION);
@@ -164,6 +164,13 @@ public class DownloadOsmandIndexesHelper {
 					File destFile = new File(voicePath, voice + File.separatorChar + "_ttsconfig.p");
 					
 					result.add(new AssetIndexItem(voice + ext, "voice", date, dateModified, "0.1", destFile.length(), key,
+							destFile.getPath(), DownloadActivityType.VOICE_FILE));
+				} else if (target.endsWith(IndexConstants.TTSVOICE_INDEX_EXT_JS) && target.startsWith("voice/")) {
+					String lang = target.substring("voice/".length(), target.indexOf("-tts"));
+					File destFile = new File(voicePath, target.substring("voice/".length(),
+							target.indexOf("/", "voice/".length())) + "/" + lang + "_tts.js");
+					result.add(new AssetIndexItem(lang + "_" + IndexConstants.TTSVOICE_INDEX_EXT_JS,
+							"voice", date, dateModified, "0.1", destFile.length(), key,
 							destFile.getPath(), DownloadActivityType.VOICE_FILE));
 				}
 			}

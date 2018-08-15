@@ -1,6 +1,5 @@
 package net.osmand.telegram.ui
 
-import android.graphics.Paint
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -10,8 +9,8 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import net.osmand.Location
@@ -19,7 +18,6 @@ import net.osmand.telegram.R
 import net.osmand.telegram.TelegramApplication
 import net.osmand.telegram.TelegramLocationProvider.TelegramCompassListener
 import net.osmand.telegram.TelegramLocationProvider.TelegramLocationListener
-import net.osmand.telegram.helpers.OsmandAidlHelper
 import net.osmand.telegram.helpers.TelegramHelper.*
 import net.osmand.telegram.helpers.TelegramUiHelper
 import net.osmand.telegram.helpers.TelegramUiHelper.ChatItem
@@ -47,6 +45,8 @@ class LiveNowTabFragment : Fragment(), TelegramListener, TelegramIncomingMessage
 	private lateinit var adapter: LiveNowListAdapter
 	private lateinit var locationViewCache: UpdateLocationViewCache
 
+	private lateinit var openOsmAndBtn: TextView
+
 	private var location: Location? = null
 	private var heading: Float? = null
 	private var locationUiUpdateAllowed: Boolean = true
@@ -57,22 +57,32 @@ class LiveNowTabFragment : Fragment(), TelegramListener, TelegramIncomingMessage
 		savedInstanceState: Bundle?
 	): View? {
 		val mainView = inflater.inflate(R.layout.fragment_live_now_tab, container, false)
-		AndroidUtils.addStatusBarPadding19v(context!!, mainView)
+		val appBarLayout = mainView.findViewById<View>(R.id.app_bar_layout)
+		AndroidUtils.addStatusBarPadding19v(context!!, appBarLayout)
 		adapter = LiveNowListAdapter()
 		mainView.findViewById<RecyclerView>(R.id.recycler_view).apply {
 			layoutManager = LinearLayoutManager(context)
 			adapter = this@LiveNowTabFragment.adapter
 			addOnScrollListener(object : RecyclerView.OnScrollListener() {
-				override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+				override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
 					super.onScrollStateChanged(recyclerView, newState)
 					locationUiUpdateAllowed = newState == RecyclerView.SCROLL_STATE_IDLE
+					when (newState) {
+						RecyclerView.SCROLL_STATE_DRAGGING -> animateOpenOsmAndBtn(false)
+						RecyclerView.SCROLL_STATE_IDLE -> animateOpenOsmAndBtn(true)
+					}
 				}
 			})
 		}
-		mainView.findViewById<Button>(R.id.open_osmand_btn).setOnClickListener {
-			val intent = activity?.packageManager?.getLaunchIntentForPackage(OsmandAidlHelper.OSMAND_PACKAGE_NAME)
-			if (intent != null) {
-				startActivity(intent)
+
+		(activity as MainActivity).setupOptionsBtn(mainView.findViewById<ImageView>(R.id.options))
+
+		openOsmAndBtn = mainView.findViewById<TextView>(R.id.open_osmand_btn).apply {
+			setOnClickListener {
+				activity?.packageManager?.getLaunchIntentForPackage(settings.appToConnectPackage)
+					?.also { intent ->
+						startActivity(intent)
+					}
 			}
 		}
 		return mainView
@@ -85,6 +95,7 @@ class LiveNowTabFragment : Fragment(), TelegramListener, TelegramIncomingMessage
 		telegramHelper.addIncomingMessagesListener(this)
 		telegramHelper.addFullInfoUpdatesListener(this)
 		startLocationUpdate()
+		updateOpenOsmAndIcon()
 	}
 
 	override fun onPause() {
@@ -102,6 +113,7 @@ class LiveNowTabFragment : Fragment(), TelegramListener, TelegramIncomingMessage
 			TelegramAuthorizationState.READY -> {
 				updateList()
 			}
+			TelegramAuthorizationState.LOGGING_OUT,
 			TelegramAuthorizationState.CLOSED,
 			TelegramAuthorizationState.UNKNOWN -> {
 				adapter.items = emptyList()
@@ -172,13 +184,27 @@ class LiveNowTabFragment : Fragment(), TelegramListener, TelegramIncomingMessage
 		}
 	}
 
-	fun startLocationUpdate() {
+	fun tabOpened() {
+		startLocationUpdate()
+		updateOpenOsmAndIcon()
+	}
+
+	fun tabClosed() {
+		stopLocationUpdate()
+	}
+
+	private fun updateOpenOsmAndIcon() {
+		val ic = SettingsDialogFragment.AppConnect.getWhiteIconId(settings.appToConnectPackage)
+		openOsmAndBtn.setCompoundDrawablesWithIntrinsicBounds(ic, 0, 0, 0)
+	}
+
+	private fun startLocationUpdate() {
 		app.locationProvider.addLocationListener(this)
 		app.locationProvider.addCompassListener(this)
 		updateLocationUi()
 	}
 
-	fun stopLocationUpdate() {
+	private fun stopLocationUpdate() {
 		app.locationProvider.removeLocationListener(this)
 		app.locationProvider.removeCompassListener(this)
 	}
@@ -228,6 +254,16 @@ class LiveNowTabFragment : Fragment(), TelegramListener, TelegramIncomingMessage
 		activity?.let {
 			MainActivity.OsmandMissingDialogFragment().show(it.supportFragmentManager, null)
 		}
+	}
+
+	private fun animateOpenOsmAndBtn(show: Boolean) {
+		val scale = if (show) 1f else 0f
+		openOsmAndBtn.animate()
+			.scaleX(scale)
+			.scaleY(scale)
+			.setDuration(200)
+			.setInterpolator(LinearInterpolator())
+			.start()
 	}
 
 	inner class LiveNowListAdapter : RecyclerView.Adapter<BaseViewHolder>() {
@@ -282,7 +318,7 @@ class LiveNowTabFragment : Fragment(), TelegramListener, TelegramIncomingMessage
 			}
 			if (location != null && item.latLon != null) {
 				holder.locationViewContainer?.visibility = View.VISIBLE
-				// TODO: locationViewCache.outdatedLocation
+				locationViewCache.outdatedLocation = System.currentTimeMillis() / 1000 - item.lastUpdated > settings.staleLocTime
 				app.uiUtils.updateLocationView(
 					holder.directionIcon,
 					holder.distanceText,
@@ -327,17 +363,10 @@ class LiveNowTabFragment : Fragment(), TelegramListener, TelegramIncomingMessage
 		private fun showPopupMenu(holder: ChatViewHolder, chatId: Long) {
 			val ctx = holder.itemView.context
 
-			val paint = Paint()
-			paint.textSize =
-					resources.getDimensionPixelSize(R.dimen.list_item_title_text_size).toFloat()
-			val textWidth = Math.max(paint.measureText(menuList[0]), paint.measureText(menuList[1]))
-			val itemWidth = textWidth.toInt() + AndroidUtils.dpToPx(ctx, 32F)
-			val minWidth = AndroidUtils.dpToPx(ctx, 100F)
-
 			ListPopupWindow(ctx).apply {
 				isModal = true
 				anchorView = holder.showOnMapState
-				setContentWidth(Math.max(minWidth, itemWidth))
+				setContentWidth(AndroidUtils.getPopupMenuWidth(ctx, menuList))
 				setDropDownGravity(Gravity.END or Gravity.TOP)
 				setAdapter(ArrayAdapter(ctx, R.layout.popup_list_text_item, menuList))
 				setOnItemClickListener { _, _, position, _ ->

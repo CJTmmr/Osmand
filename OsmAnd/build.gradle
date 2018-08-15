@@ -52,10 +52,10 @@ android {
 		minSdkVersion System.getenv("MIN_SDK_VERSION") ? System.getenv("MIN_SDK_VERSION").toInteger() :
 				 (analytics ? 15 : 14)
 		targetSdkVersion 26
-		versionCode 300
+		versionCode 320
 		versionCode System.getenv("APK_NUMBER_VERSION") ? System.getenv("APK_NUMBER_VERSION").toInteger() : versionCode
 		multiDexEnabled true
-		versionName "3.0.0"
+		versionName "3.2.0"
 		versionName System.getenv("APK_VERSION")? System.getenv("APK_VERSION").toString(): versionName
 		versionName System.getenv("APK_VERSION_SUFFIX")? versionName + System.getenv("APK_VERSION_SUFFIX").toString(): versionName
 	}
@@ -103,7 +103,7 @@ android {
 		}
 
 		legacy {
-			jniLibs.srcDirs = ["libgnustl"]
+			jniLibs.srcDirs = ["libc++"]
 		}
 	}
 
@@ -238,6 +238,7 @@ task collectVoiceAssets(type: Sync) {
 	from "../../resources/voice"
 	into "assets/voice"
 	include "**/*.p"
+	include "**/*.js"
 }
 
 task cleanNoTranslate(type: Delete) {
@@ -311,14 +312,12 @@ task cleanupDuplicatesInCore() {
 	dependsOn buildOsmAndCore
 	// doesn't work for legacy debug builds
 	doLast {
-		file("libgnustl/armeabi").mkdirs()
-		file("libs/armeabi/libgnustl_shared.so").renameTo(file("libgnustl/armeabi/libgnustl_shared.so"))
-		file("libgnustl/armeabi-v7a").mkdirs()
-		file("libs/armeabi-v7a/libgnustl_shared.so").renameTo(file("libgnustl/armeabi-v7a/libgnustl_shared.so"))
-		file("libgnustl/mips").mkdirs()
-		file("libs/mips/libgnustl_shared.so").renameTo(file("libgnustl/mips/libgnustl_shared.so"))
-		file("libgnustl/x86").mkdirs()
-		file("libs/x86/libgnustl_shared.so").renameTo(file("libgnustl/x86/libgnustl_shared.so"))
+		file("libc++/armeabi-v7a").mkdirs()
+		file("libs/armeabi-v7a/libc++_shared.so").renameTo(file("libc++/armeabi-v7a/libc++_shared.so"))
+		file("libc++/arm64-v8a").mkdirs()
+		file("libs/arm64-v8a/libc++_shared.so").renameTo(file("libc++/arm64-v8a/libc++_shared.so"))
+		file("libc++/x86").mkdirs()
+		file("libs/x86/libc++_shared.so").renameTo(file("libc++/x86/libc++_shared.so"))
 	}
 }
 afterEvaluate {
@@ -363,6 +362,9 @@ dependencies {
 	implementation 'com.vividsolutions:jts-core:1.14.0'
 
 	implementation 'com.squareup.picasso:picasso:2.71828'
+	// JS core
+	implementation group: 'org.mozilla', name: 'rhino', version: '1.7.9'
+
 // size restrictions
 // implementation 'com.ibm.icu:icu4j:50.1' 
 // implementation 'net.sf.trove4j:trove4j:3.0.3'

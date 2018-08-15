@@ -7,12 +7,15 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import net.osmand.binary.BinaryMapIndexReader.SearchRequest;
+import net.osmand.binary.OsmandOdb.TransportRouteSchedule;
+import net.osmand.data.TransportSchedule;
 import net.osmand.data.TransportStop;
 import net.osmand.osm.edit.Node;
 import net.osmand.osm.edit.Way;
 import net.osmand.util.MapUtils;
 import net.sf.junidecode.Junidecode;
 
+import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.WireFormat;
 
@@ -307,6 +310,12 @@ public class BinaryMapTransportReaderAdapter {
 			// deprecated
 //			case OsmandOdb.TransportRoute.REVERSESTOPS_FIELD_NUMBER:
 //				break;
+			case OsmandOdb.TransportRoute.SCHEDULETRIP_FIELD_NUMBER:
+				sizeL = codedIS.readRawVarint32();
+				pold = codedIS.pushLimit(sizeL);
+				readTransportSchedule(dataObject.getOrCreateSchedule());
+				codedIS.popLimit(pold);
+				break;
 			case OsmandOdb.TransportRoute.DIRECTSTOPS_FIELD_NUMBER:
 				if(onlyDescription){
 					end = true;
@@ -333,6 +342,51 @@ public class BinaryMapTransportReaderAdapter {
 		return dataObject;
 	}
 	
+	private void readTransportSchedule(TransportSchedule schedule) throws IOException {
+		while(true){
+			int t = codedIS.readTag();
+			int interval, sizeL, old;
+			int tag = WireFormat.getTagFieldNumber(t);
+			switch (tag) {
+			case 0:
+				return;
+			case OsmandOdb.TransportRouteSchedule.TRIPINTERVALS_FIELD_NUMBER:
+				sizeL = codedIS.readRawVarint32();
+				old = codedIS.pushLimit(sizeL);
+				while (codedIS.getBytesUntilLimit() > 0) {
+					interval = codedIS.readRawVarint32();
+					schedule.tripIntervals.add(interval);
+				}
+				codedIS.popLimit(old);				
+				break;
+			case OsmandOdb.TransportRouteSchedule.AVGSTOPINTERVALS_FIELD_NUMBER:
+				sizeL = codedIS.readRawVarint32();
+				old = codedIS.pushLimit(sizeL);
+				while (codedIS.getBytesUntilLimit() > 0) {
+					interval = codedIS.readRawVarint32();
+					schedule.avgStopIntervals.add(interval);
+				}
+				codedIS.popLimit(old);
+				break;
+			case OsmandOdb.TransportRouteSchedule.AVGWAITINTERVALS_FIELD_NUMBER:
+				sizeL = codedIS.readRawVarint32();
+				old = codedIS.pushLimit(sizeL);
+				while (codedIS.getBytesUntilLimit() > 0) {
+					interval = codedIS.readRawVarint32();
+					schedule.avgWaitIntervals.add(interval);
+				}
+				codedIS.popLimit(old);
+				break;
+//			case OsmandOdb.TransportRouteSchedule.EXCEPTIONS_FIELD_NUMBER:
+//				break;
+			default:
+				skipUnknownField(t);
+				break;
+			}
+		}
+		
+	}
+
 	protected void initializeStringTable(TransportIndex ind, TIntObjectHashMap<String> stringTable) throws IOException {
 		int[] values = stringTable.keys();
 		Arrays.sort(values);
@@ -375,13 +429,13 @@ public class BinaryMapTransportReaderAdapter {
 		if(dataObject.getName().length() > 0 && dataObject.getName("en").length() == 0){
 			dataObject.setEnName(Junidecode.unidecode(dataObject.getName()));
 		}
-		if(dataObject.getOperator().length() > 0){
+		if(dataObject.getOperator() != null && dataObject.getOperator().length() > 0){
 			dataObject.setOperator(stringTable.get(dataObject.getOperator().charAt(0)));
 		}
 		if(dataObject.getColor() != null && dataObject.getColor().length() > 0){
 			dataObject.setColor(stringTable.get(dataObject.getColor().charAt(0)));
 		}
-		if(dataObject.getType().length() > 0){
+		if(dataObject.getType() != null && dataObject.getType().length() > 0){
 			dataObject.setType(stringTable.get(dataObject.getType().charAt(0)));
 		}
 		if (!onlyDescription) {
@@ -436,7 +490,7 @@ public class BinaryMapTransportReaderAdapter {
 			}
 		}
 		dataObject.setId(did);
-		dataObject.setLocation(MapUtils.getLatitudeFromTile(BinaryMapIndexReader.TRANSPORT_STOP_ZOOM, dy), MapUtils.getLongitudeFromTile(BinaryMapIndexReader.TRANSPORT_STOP_ZOOM, dx));
+		dataObject.setLocation(BinaryMapIndexReader.TRANSPORT_STOP_ZOOM, dx, dy);
 		return dataObject;
 	}
 	
@@ -461,7 +515,7 @@ public class BinaryMapTransportReaderAdapter {
 		req.cacheTypes.clear();
 		
 		TransportStop dataObject = new TransportStop();
-		dataObject.setLocation(MapUtils.getLatitudeFromTile(BinaryMapIndexReader.TRANSPORT_STOP_ZOOM, y), MapUtils.getLongitudeFromTile(BinaryMapIndexReader.TRANSPORT_STOP_ZOOM, x));
+		dataObject.setLocation(BinaryMapIndexReader.TRANSPORT_STOP_ZOOM, x, y);
 		dataObject.setFileOffset(shift);
 		while(true){
 			int t = codedIS.readTag();

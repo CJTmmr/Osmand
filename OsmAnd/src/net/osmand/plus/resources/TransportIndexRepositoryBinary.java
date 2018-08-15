@@ -1,8 +1,10 @@
 package net.osmand.plus.resources;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import net.osmand.PlatformUtil;
@@ -12,6 +14,7 @@ import net.osmand.data.TransportRoute;
 import net.osmand.data.TransportStop;
 import net.osmand.plus.resources.ResourceManager.BinaryMapReaderResource;
 import net.osmand.plus.resources.ResourceManager.BinaryMapReaderResourceType;
+import net.osmand.util.Algorithms;
 import net.osmand.util.MapUtils;
 
 import org.apache.commons.logging.Log;
@@ -55,11 +58,25 @@ public class TransportIndexRepositoryBinary implements TransportIndexRepository 
 	}
 
 	@Override
-	public synchronized Collection<TransportRoute> getRouteForStop(TransportStop stop){
+	public synchronized List<TransportRoute> getRouteForStop(TransportStop stop){
 		try {
 			Collection<TransportRoute> res = getOpenFile().getTransportRoutes(stop.getReferencesToRoutes()).valueCollection();
+
 			if(res != null){
-				return res;
+				List<TransportRoute> lst =  new ArrayList<>(res);
+				Collections.sort(lst, new Comparator<TransportRoute>() {
+					@Override
+					public int compare(TransportRoute o1, TransportRoute o2) {
+						int i1 = Algorithms.extractFirstIntegerNumber(o1.getRef());
+						int i2 = Algorithms.extractFirstIntegerNumber(o2.getRef());
+						int r = Integer.compare(i1, i2);
+						if( r == 0){
+							r = Algorithms.compare(o1.getName(), o2.getName());
+						}
+						return r;
+					}
+				});
+				return lst;
 			}
 		} catch (IOException e) {
 			log.error("Disk error ", e); //$NON-NLS-1$
