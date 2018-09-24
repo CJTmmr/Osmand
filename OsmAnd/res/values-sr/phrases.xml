@@ -714,7 +714,7 @@
 	<string name="poi_club_sailing">Клуб једриличара</string>
 	<string name="poi_club_scout">Извиђачки клуб</string>
 
-	<string name="poi_piste">Стазса</string>
+	<string name="poi_piste">Стаза</string>
 	<string name="poi_piste_downhill">Стаза низбрдо</string>
 	<string name="poi_piste_nordic">Нордијска стаза</string>
 	<string name="poi_piste_hike">Пешачка стаза</string>
@@ -766,7 +766,7 @@
 	<string name="poi_craft_hvac">Грејање, вентилација, клима</string>
 	<string name="poi_craft_insulation">Изолација</string>
 	<string name="poi_craft_optician">Оптичар</string>
-	<string name="poi_craft_painter">Молер</string>
+	<string name="poi_craft_painter">Сликар</string>
 	<string name="poi_craft_parquet_layer">Паркетар</string>
 	<string name="poi_craft_photographer">Фотограф</string>
 	<string name="poi_craft_plumber">Водоинсталатер</string>
@@ -988,7 +988,7 @@
 	<string name="poi_wheelchair_yes">Да</string>
 	<string name="poi_wheelchair_no">Не</string>
 	<string name="poi_wheelchair_limited">Ограничен</string>
-	<string name="poi_wholesale"/>
+	<string name="poi_wholesale">Маркет продаја</string>
 
 	<string name="poi_access_private">Приватни посед</string>
 	<string name="poi_access_no">Без приступа</string>
@@ -1018,7 +1018,7 @@
 
 	<string name="poi_bicycle_parking_informal">Неформалан</string>
 
-	<string name="poi_leaf_type_broadleaved"/>
+	<string name="poi_leaf_type_broadleaved">Широколисно</string>
 	<string name="poi_trees_olive">Маслина</string>
 	<string name="poi_trees_apple">Јабука</string>
 	<string name="poi_trees_oil">Палмино уље</string>
@@ -1618,4 +1618,757 @@
 	<string name="poi_register_office">Канцеларија за грађане</string>
 	<string name="poi_place_allotments">Парцелна група</string>
 	<string name="poi_baby_hatch">Прихватилиште беба</string>
+	<string name="poi_occupational_therapist">Терапеут професија</string>
+	<string name="poi_podiatrist">Ортопед доњих екстремитета</string>
+	<string name="poi_speech_therapist">Логопед</string>
+	<string name="poi_office_telecommunication">Телекомуникациона канцеларија</string>
+	<string name="poi_employment_agency">Канцеларија бироа рада</string>
+	<string name="poi_research">Истраживачка канцеларија</string>
+	<string name="poi_newspaper">Новинарска канцеларија</string>
+	<string name="poi_architect">Канцеларија архитекта</string>
+	<string name="poi_bookmaker">Штампарија</string>
+	<string name="poi_office_religion">Канцеларија за религије</string>
+	<string name="poi_association">Канцеларија удружења</string>
+	<string name="poi_financial">Финансијска канцеларија</string>
+	<string name="poi_foundation">Оснивачка канцеларија</string>
+	<string name="poi_tax_advisor">Канцеларија пореског саветника</string>
+
+	<string name="poi_ice_rink">Клизалиште</string>
+	<string name="poi_pitch">Спортски терен</string>
+	<string name="poi_base">Скакање</string>
+	<string name="poi_boules">Куглање</string>
+	<string name="poi_bowls">Куглање</string>
+	<string name="poi_equestrian">Коњички</string>
+	<string name="poi_ice_stock">Куглање на леду</string>
+	<string name="poi_paddle_tennis">Мали тенис</string>
+	<string name="poi_shooting">Стрељаштво</string>
+	<string name="poi_artwork">Уметност</string>
+	<string name="poi_battlefield">Војни полигон</string>
+	<string name="poi_boundary_stone">Гранични камен</string>
+	<string name="poi_rune_stone">Рунски камен</string>
+	<string name="poi_attraction_amusement_ride">Забавна вожња</string>
+	<string name="poi_attraction_big_wheel">Точак рингишпил</string>
+	<string name="poi_chalet">Издвојена кабина</string>
+	<string name="poi_cabin">Колиба</string>
+	<string name="poi_lean_to">Отворена колиба</string>
+	<string name="poi_hunting_lodge">Ловачка колиба</string>
+
+	<string name="poi_place_of_worship">Поклоничко место</string>
+	<string name="poi_religion_unitarian_universalist">Унитарни универзализам</string>
+	<string name="poi_religion_multifaith">Више-верски</string>
+	<string name="poi_religion_tenrikyo">Тенрикио</string>
+	<string name="poi_denomination_lutheran">Лутеризам</string>
+	<string name="poi_denomination_anglican">Англиканизам</string>
+	<string name="poi_denomination_presbyterian">Презбитеријанизам</string>
+	<string name="poi_denomination_evangelical">Евангелизам</string>
+	<string name="poi_denomination_pentecostal">Пентакостализам</string>
+	<string name="poi_denomination_reformed">Реформизам</string>
+	<string name="poi_denomination_new_apostolic">Ново-апостолизам</string>
+	<string name="poi_denomination_episcopal">Епископализам</string>
+	<string name="poi_denomination_shia">Шиа ислам</string>
+	<string name="poi_denomination_united">Унитаризам</string>
+	<string name="poi_denomination_greek_catholic">Грчки католицизам</string>
+	<string name="poi_denomination_tibetan">Тибетанизам</string>
+	<string name="poi_denomination_united_reformed">Реформисан унитаризам</string>
+	<string name="poi_denomination_iglesia_ni_cristo">Црква Христос</string>
+	<string name="poi_denomination_uniting">Уједињење</string>
+	<string name="poi_denomination_mennonite">Менонитизам</string>
+	<string name="poi_denomination_assemblies_of_god">Божји сабори</string>
+	<string name="poi_denomination_nondenominational">Неденоминацијски</string>
+	<string name="poi_denomination_nazarene">Назарећани</string>
+	<string name="poi_denomination_united_methodist">Унитарни методисти</string>
+	<string name="poi_denomination_congregational">Конгрегационализам</string>
+	<string name="poi_denomination_latter_day_saints">Свеци каснијег дана</string>
+	<string name="poi_denomination_united_church_of_christ">Уједињена Црква Христова</string>
+	<string name="poi_denomination_scientist">Научна религија</string>
+	<string name="poi_denomination_ethiopian_orthodox_tewahedo">Етиопско Тевахедо православље</string>
+	<string name="poi_denomination_unitarian">Унитарци</string>
+	<string name="poi_denomination_coptic_orthodox">Коптско православље</string>
+	<string name="poi_denomination_wesleyan">Веслејани</string>
+	<string name="poi_denomination_shaktism">Шактизам</string>
+	<string name="poi_denomination_shingon_shu">Шингон Шу</string>
+	<string name="poi_denomination_maronite">Маронити</string>
+	<string name="poi_internet_access_wlan">Интернет приступ: ВЛАН</string>
+	<string name="poi_internet_access_terminal">Интернет приступ: терминал</string>
+	<string name="poi_internet_access_service">Интернет приступ: сервис</string>
+	<string name="poi_religious">Религиозна област</string>
+	<string name="poi_wayside_cross">Крст спута</string>
+	<string name="poi_wayside_shrine">Храм спута</string>
+	<string name="poi_caravan_site">Караван локација</string>
+	<string name="poi_grave_yard">Гробље</string>
+	<string name="poi_funicular">Транвај успонски</string>
+	<string name="poi_hanami">Ханами</string>
+	<string name="poi_club_art">Уметнички клуб</string>
+	<string name="poi_club_board_games">Клуб игара за столом</string>
+	<string name="poi_club_cinema">Кинематографски клуб</string>
+	<string name="poi_club_charity">Донаторски клуб</string>
+	<string name="poi_piste_skitour">Скијашка стаза</string>
+	<string name="poi_piste_sleigh">Стаза за кочије</string>
+	<string name="poi_piste_sled">Стаза за санке</string>
+	<string name="poi_arts_centre">Уметнички центар</string>
+	<string name="poi_community_centre">Саборни центар</string>
+	<string name="poi_hunting_stand">Ловачка чека</string>
+	<string name="poi_village_green">Центар села</string>
+	<string name="poi_trail_riding_station">Коњичка станица</string>
+
+	<string name="poi_food_court">Самопослужна кухиња</string>
+	<string name="poi_craft_agricultural_engines">Пољопривредне машине</string>
+	<string name="poi_craft_beekeeper">Пчелар</string>
+	<string name="poi_craft_blacksmith">Ковач</string>
+	<string name="poi_craft_bookbinder">Штампар</string>
+	<string name="poi_craft_carpet_layer">Постављач тепиха</string>
+	<string name="poi_craft_caterer">Припремач јела</string>
+	<string name="poi_craft_dressmaker">Кројач</string>
+	<string name="poi_craft_glaziery">Стаклорезач</string>
+	<string name="poi_craft_jeweller">Златар</string>
+	<string name="poi_craft_locksmith">Ковач</string>
+	<string name="poi_craft_key_cutter">Кључар</string>
+	<string name="poi_craft_metal_construction">Металорезац</string>
+	<string name="poi_craft_photographic_laboratory">Фото-тамна соба</string>
+	<string name="poi_craft_plasterer">Молер</string>
+	<string name="poi_craft_pottery">Керамичар</string>
+	<string name="poi_craft_rigger">Конопчар</string>
+	<string name="poi_craft_roofer">Конструктор кровова</string>
+	<string name="poi_craft_saddler">Седлар</string>
+	<string name="poi_craft_sailmaker">Једрар</string>
+	<string name="poi_craft_scaffolder">Конструктор скела</string>
+	<string name="poi_craft_stand_builder">Конструктор штандова</string>
+	<string name="poi_craft_stonemason">Каменорезаз</string>
+	<string name="poi_craft_sun_protection">Конструктор сунцобрана</string>
+	<string name="poi_craft_sweep">Чистач</string>
+	<string name="poi_craft_tiler">Паркетар</string>
+	<string name="poi_craft_tinsmith">Ковач посуђа</string>
+	<string name="poi_craft_upholsterer">Тапетар</string>
+	<string name="poi_craft_computer">Техничар рачунара</string>
+	<string name="poi_dry_cleaning">Хемијско чишћење</string>
+	<string name="poi_cutline">Просек</string>
+	<string name="poi_toilets">Заход</string>
+	<string name="poi_brothel">Јавна кућа</string>
+	<string name="poi_smoking_area">Пушачки део</string>
+	<string name="poi_pawnbroker">Залагаоничар</string>
+	<string name="poi_stone">Место камена</string>
+	<string name="poi_anchorage">Сидриште</string>
+	<string name="poi_anchor_berth">Сидришна бова</string>
+	<string name="poi_beacon">Светионик</string>
+	<string name="poi_beacon_cardinal">Навигациони светионик</string>
+	<string name="poi_beacon_lateral">Латерални светионик</string>
+	<string name="poi_beacon_safe_water">Светионик безбедних вода</string>
+	<string name="poi_beacon_special_purpose">Светионик посебне намене</string>
+	<string name="poi_berth">Док</string>
+	<string name="poi_seamark_building">Наутичка зграда</string>
+	<string name="poi_seamark_bridge">Наутички мост</string>
+	<string name="poi_buoy_cardinal">Навигациона бова</string>
+	<string name="poi_daymark">Дневна ознака</string>
+	<string name="poi_distance_mark">Ознака удањености</string>
+	<string name="poi_seamark_dyke">Насип</string>
+	<string name="poi_fog_signal">Сигнал магле</string>
+	<string name="poi_landmark">Ознака земље</string>
+	<string name="poi_seamark_light">Светло, наутика</string>
+	<string name="poi_seamark_light_major">Главно светло, наутика</string>
+	<string name="poi_seamark_light_minor">Споредно светло, наутика</string>
+	<string name="poi_seamark_light_float">Плутајуће светло, наутика</string>
+	<string name="poi_seamark_light_vessel">Светло пловила, наутика</string>
+	<string name="poi_mooring">Усидрење</string>
+	<string name="poi_lock_basin">Водена рампа</string>
+	<string name="poi_notice">Обавештење, наутички</string>
+	<string name="poi_pile">Сидришни анкор</string>
+	<string name="poi_radar_transponder">Радарски транспондер, наутички</string>
+	<string name="poi_radio_station">Радио станица, наутички</string>
+	<string name="poi_signal_station_traffic">Сигнална станица, саобраћај</string>
+	<string name="poi_signal_station_warning">Сигнална станица, упозорење</string>
+	<string name="poi_small_craft_facility">Простор за мања пловила</string>
+	<string name="poi_topmark">Ознака на врху, наутички</string>
+	<string name="poi_seamark_rock">Стена, наутички</string>
+	<string name="poi_seamark_wreck">Олупина, наутички</string>
+
+	<string name="poi_seamark_clearance_height">Пролазна висина</string>
+	<string name="poi_seamark_clearance_height_closed">Пролазна висина (затворена)</string>
+	<string name="poi_seamark_clearance_height_open">Пролазна висина (отворена)</string>
+	<string name="poi_seamark_clearance_width">Пролазна ширина</string>
+
+	<string name="poi_military_airfield">Војни аеродром</string>
+	<string name="poi_military_range">Војно стрелиште</string>
+	<string name="poi_wiki_lang_new">Неварска википедија</string>
+	<string name="poi_wiki_lang_als">Алзашанска википедија</string>
+	<string name="poi_wiki_lang_bpy">Бишнупријска википедија</string>
+	<string name="poi_wiki_lang_fa">Фарсанска википедија</string>
+	<string name="poi_wiki_lang_fy">Фриск википедија</string>
+	<string name="poi_wiki_lang_ml">Малајаламска википедија</string>
+	<string name="poi_wiki_lang_nds">Ниско Саксонска википедија</string>
+	<string name="poi_wiki_lang_pms">Пидмонтеска википедија</string>
+	<string name="poi_wiki_lang_war">Варајска википедија</string>
+	<string name="poi_wiki_lang_min">Минангкабуска википедија</string>
+	<string name="poi_wiki_lang_kk">Казашка википедија</string>
+	<string name="poi_wiki_lang_zhminnan">Јужно Минска википедија</string>
+	<string name="poi_wiki_lang_mg">Малагасијска википедија</string>
+	<string name="poi_wiki_lang_jv">Јаванска википедија</string>
+	<string name="poi_wiki_lang_zhyue">Кантонска википедија</string>
+	<string name="poi_wiki_lang_ast">Астур-Леонезе википедија</string>
+	<string name="poi_wiki_lang_tg">Таџичка википедија</string>
+	<string name="poi_wiki_lang_ba">Башкирска википедија</string>
+	<string name="poi_wiki_lang_sco">Шкотска википедија</string>
+	<string name="poi_wiki_lang_cv">Чувашка википедија</string>
+	<string name="poi_wiki_lang_lmo">Ломбардска википедија</string>
+	<string name="poi_wiki_lang_my">Бруманска википедија</string>
+	<string name="poi_wiki_lang_yo">Јорубска википедија</string>
+	<string name="poi_wiki_lang_gu">Гуџаратска википедија</string>
+	<string name="poi_bollard">Саобраћајни стуб</string>
+	<string name="poi_cycle_barrier">Бициклистичка баријера</string>
+	<string name="poi_motorcycle_barrier">Мотоцикличка баријера</string>
+	<string name="poi_bus_trap">Бус трака</string>
+	<string name="poi_full_height_turnstile">Обртна врата пуне висине</string>
+	<string name="poi_bump_gate">Бамп пролаз</string>
+	<string name="poi_general_barrier">Општа баријера</string>
+	<string name="poi_stile">Ниска ограда</string>
+	<string name="poi_debris">Реконструкцијски шут</string>
+	<string name="poi_jersey_barrier">Улични блокови</string>
+	<string name="poi_horse_stile">Коњски пролаз</string>
+	<string name="poi_kissing_gate">Капија са рампом</string>
+	<string name="poi_sally_port">Капија на утврђењу</string>
+	<string name="poi_swing_gate">Ротациона капија</string>
+	<string name="poi_turnstile">Обртна врата</string>
+	<string name="poi_kent_carriage_gap">Капија за кочије</string>
+	<string name="poi_icn_ref">Међународни бициклистички мрежни чвор</string>
+	<string name="poi_ncn_ref">Национални бициклистички мрежни чвор</string>
+	<string name="poi_rcn_ref">Регионални бициклистички мрежни чвор</string>
+	<string name="poi_lcn_ref">Локални бициклистички мрежни чвор</string>
+	<string name="poi_iwn_ref">Међународни планинарски мрежни чвор</string>
+	<string name="poi_nwn_ref">Национални планинарски мрежни чвор</string>
+	<string name="poi_rwn_ref">Регионални планинарски мрежни чвор</string>
+	<string name="poi_lwn_ref">Локални планинарски мрежни чвор</string>
+
+	<string name="poi_route_hiking_iwn_poi">Међународна планинарска рута</string>
+	<string name="poi_route_hiking_nwn_poi">Национална планинарска рута</string>
+	<string name="poi_route_hiking_rwn_poi">Регионална планинарска рута</string>
+	<string name="poi_route_hiking_lwn_poi">Локална планинарска рута</string>
+	<string name="poi_route_hiking_ref_poi">Референца планинарске руте</string>
+
+	<string name="poi_collection_times">Колекциони периоди</string>
+	<string name="poi_access_permissive">Дозвољен приступ</string>
+	<string name="poi_content_silage">Садржај: силосни</string>
+	<string name="poi_content_slurry">Садржај: балегна земља</string>
+	<string name="poi_content_manure">Садржај: балега</string>
+	<string name="poi_content_fodder">Садржај: сточна храна</string>
+	<string name="poi_content_grain">Садржај: зоб</string>
+
+	<string name="poi_nudism_customary">Уобичајено</string>
+	<string name="poi_trade_building_supplies">Грађевинска роба</string>
+	<string name="poi_trade_plumbing">Водоводна роба</string>
+	<string name="poi_trade_wood">Дрвена роба</string>
+	<string name="poi_trade_agricultural_supplies">Пољопривредна роба</string>
+	<string name="poi_trade_tile">Роба плочица</string>
+
+	<string name="poi_bicycle_parking_anchors">Сидриште за бицикле</string>
+	<string name="poi_bicycle_parking_wall_loops">Јунициклно сидриште</string>
+	<string name="poi_bicycle_parking_rack">Оквирно сидриште</string>
+	<string name="poi_bicycle_parking_bollard">Окасто сидриште</string>
+	<string name="poi_leaf_type_needleleaved">Игличасто</string>
+	<string name="poi_leaf_type_leafless">Безлисно</string>
+	<string name="poi_enforcement_mindistance">На снази: међурастојање</string>
+	<string name="poi_enforcement_check">На снази: контрола</string>
+	<string name="poi_enforcement_access">На снази: право приступа</string>
+	<string name="poi_deadlock">Слепа улица</string>
+
+	<string name="poi_water_point">Јавна чесма</string>
+
+	<string name="poi_information_guidepost">Путоказ</string>
+	<string name="poi_toll_hgv_yes">ХГВ путарина</string>
+	<string name="poi_tactile_paving_no">Без површне облоге</string>
+	<string name="poi_services">Услужни простор</string>
+	<string name="poi_railway_level_crossing">Пружни прелаз у нивоу</string>
+	<string name="poi_leisure_common">Заједнички простор одмора</string>
+	<string name="poi_heath">Врес</string>
+	<string name="poi_grassland">Травната земља</string>
+	<string name="poi_scrub">Жбун</string>
+	<string name="poi_farmland">Земља фарме</string>
+	<string name="poi_logging">Сеча дрвета</string>
+	<string name="poi_windfall">Опало воће</string>
+	<string name="poi_passing_place">Пролазно место</string>
+	<string name="poi_rtsa_scale">РТСА скала</string>
+
+	<string name="poi_piste_grooming_backcountry">Рурални део</string>
+	<string name="poi_payment_girocard_yes">Гирокартица</string>
+	<string name="poi_payment_pikepass_no">PIKEPASS се не прихвата</string>
+	<string name="poi_payment_pikepass_designated">PIKEPASS (намењено)</string>
+	<string name="poi_payment_visa_debit_yes">Виза дебитне картице</string>
+	<string name="poi_payment_visa_debit_no">Виза дебитне картице се не прихватају</string>
+	<string name="poi_payment_cryptocurrencies_no">Криптовалуте се не прихватају</string>
+	<string name="poi_payment_others_yes">Други методи</string>
+	<string name="poi_payment_others_no">Други методи плаћања се не прихватају</string>
+	<string name="poi_payment_routex_yes">Routex да</string>
+	<string name="poi_payment_routex_no">Routex кртице горива се не прихватају</string>
+	<string name="poi_payment_bancomat_yes">Bancomat да</string>
+	<string name="poi_payment_bancomat_no">Bancomat се не прихвата</string>
+	<string name="poi_payment_icsf_yes">IC Stored Fare - да</string>
+	<string name="poi_payment_wire_transfer_yes">Вајер трансфери</string>
+	<string name="poi_payment_wire_transfer_no">Вајер трансфери се не прихватају</string>
+	<string name="poi_events_venue">Места догађаја</string>
+
+	<string name="poi_diet_kosher_no">Кошер исхрана: не</string>
+	<string name="poi_diet_halal_filter_yes">Халал</string>
+	<string name="poi_diet_halal_only">Халал само</string>
+	<string name="poi_diet_halal_yes">Халал</string>
+	<string name="poi_diet_halal_no">Халал исхрана: не</string>
+	<string name="poi_diet_lactose_free_filter_yes">Без лактозе</string>
+	<string name="poi_diet_lactose_free_only">Без лактозе само</string>
+	<string name="poi_diet_lactose_free_yes">Без лактозе</string>
+	<string name="poi_diet_lactose_free_no">Без лактозе исхрана: не</string>
+	<string name="poi_diet_pescetarian_yes">Пескотеријан</string>
+
+	<string name="poi_drive_in_yes">Да</string>
+	<string name="poi_drive_in_no">Улазак колима: не</string>
+	<string name="poi_drive_through_yes">Да</string>
+	<string name="poi_drive_through_no">Пролазак кроз: не</string>
+
+	<string name="poi_brewery_additional">Име пиваре</string>
+	<string name="poi_microbrewery_yes">Микропивара</string>
+	<string name="poi_microbrewery_no">Не микропивара</string>
+
+	<string name="poi_takeaway_filter_yes">Да</string>
+	<string name="poi_takeaway_yes">За понети</string>
+	<string name="poi_takeaway_no">Не за понети</string>
+	<string name="poi_takeaway_only">Само за понети</string>
+
+	<string name="poi_delivery_filter_yes">Да</string>
+	<string name="poi_delivery_yes">Достава</string>
+	<string name="poi_delivery_no">Без доставе</string>
+	<string name="poi_delivery_only">Само достава</string>
+
+	<string name="poi_outdoor_seating_filter_yes">Да</string>
+	<string name="poi_outdoor_seating_yes">Седење напољу: да</string>
+	<string name="poi_outdoor_seating_no">Без седења напољу</string>
+	<string name="poi_outdoor_seating_terrace">Седење напољу: тараса</string>
+	<string name="poi_outdoor_seating_sidewalk">Седење напољу: тротоар</string>
+	<string name="poi_outdoor_seating_pedestrian_zone">Седење напољу: пешачка зона</string>
+	<string name="poi_outdoor_seating_garden">Седење напољу: башта</string>
+	<string name="poi_outdoor_seating_patio">Седење напољу: интерно двориште</string>
+
+	<string name="poi_cocktails_yes">Да</string>
+
+	<string name="poi_second_hand_yes">Секонд хенд роба</string>
+	<string name="poi_second_hand_no">Без секонд хенд робе</string>
+	<string name="poi_second_hand_only">Само секонд хенд роба</string>
+
+	<string name="poi_service_parts">Делови</string>
+	<string name="poi_service_dealer">Дилер</string>
+	<string name="poi_service_repair">Поправка</string>
+	<string name="poi_service_repair_no">Без поправке</string>
+	<string name="poi_service_electrical">Поправка електричних возила</string>
+	<string name="poi_motorcycle_repair">Поправка мотора</string>
+	<string name="poi_self_service_yes">Да</string>
+	<string name="poi_self_service_no">Без само-услуге</string>
+	<string name="poi_automated_yes">Да</string>
+	<string name="poi_automated_no">Не аутоматски</string>
+	<string name="poi_full_service_yes">Пуна услуга</string>
+	<string name="poi_brushless_yes">Да</string>
+	<string name="poi_brushless_no">Без четкица: не</string>
+	<string name="poi_car_wash_no">Прање кола: не</string>
+
+
+	<string name="poi_public_bath">Јавно купатило</string>
+
+	<string name="poi_male_yes">Мушкарци</string>
+	<string name="poi_male_no">Забрањено за мушкарце</string>
+	<string name="poi_female_yes">Жене</string>
+	<string name="poi_female_no">Забрањено за жене</string>
+	<string name="poi_indoor_yes">Унутар</string>
+	<string name="poi_indoor_no">Споља</string>
+	<string name="poi_toilets_yes">Да</string>
+	<string name="poi_toilets_no">Без тоалета</string>
+	<string name="poi_toilets_wheelchair_yes">Приступ тоалету за инвалидска колица: да</string>
+	<string name="poi_toilets_wheelchair_no">Приступ тоалету за инвалидска колица: не</string>
+	<string name="poi_toilets_access_customers">Приступ тоалету: купци</string>
+	<string name="poi_toilets_access_permissive">Приступ тоалету: допуштен</string>
+	<string name="poi_toilets_access_community">Приступ тоалету: заједнички</string>
+	<string name="poi_toilets_access_public">Приступ тоалету: јавни</string>
+
+	<string name="poi_vending_parcel_pickup_mail_in">Преузимање пакета и доспеле поште</string>
+	<string name="poi_vending_bicycle_tube">Бицикл вентили</string>
+	<string name="poi_vending_parcel_pickup">Преузимање пакета</string>
+	<string name="poi_vending_parcel_mail_in">Поштанска достава пакета</string>
+	<string name="poi_memorial_blue_plaque">Плави меморијал</string>
+	<string name="poi_memorial_jizo">Џизо</string>
+	<string name="poi_resource_dimension_stone">Димензиони камен</string>
+	<string name="poi_health_amenity_type_first_aid_kit">Прибор за прву помоћ</string>
+	<string name="poi_health_amenity_type_scales">Јавне ваге</string>
+
+	<string name="poi_car_pooling">Ауто зауставно место</string>
+	<string name="poi_wetland_marsh">Отворена нешумовита мочвара</string>
+	<string name="poi_wetland_reedbed">Затворена нешумовита мочвара</string>
+	<string name="poi_wetland_saltern">Солана</string>
+	<string name="poi_wetland_tidalflat">Плимски део</string>
+	<string name="poi_wetland_saltmarsh">Плимска мочвара</string>
+	<string name="poi_wetland_string_bog">Пругаста мочвара</string>
+	<string name="poi_wetland_fen">Мочварна пољана</string>
+	<string name="poi_wetland_palsa_bog">Палса мочвара</string>
+	<string name="poi_beach_shingle">Каменити насип</string>
+	<string name="poi_beach_rocky">Каменита</string>
+
+	<string name="poi_chimney">Димњак</string>
+	<string name="poi_palm">Палма</string>
+	<string name="poi_cypress">Чемпрес</string>
+	<string name="poi_flagpole">Стуб заставе</string>
+
+	<string name="poi_bench_yes">Да</string>
+	<string name="poi_bench_no">Без клупе</string>
+	<string name="poi_bin_yes">Са корпом</string>
+	<string name="poi_bin_no">Без корпе</string>
+
+	<string name="poi_shelter_type_public_transport">Јавни превоз</string>
+	<string name="poi_shelter_type_picnic_shelter">Пикник</string>
+	<string name="poi_shelter_type_weather_shelter">Време</string>
+	<string name="poi_shelter_type_lean_to">Надстрешница</string>
+	<string name="poi_shelter_type_basic_hut">Проста колиба</string>
+	<string name="poi_shelter_type_building">Зграда</string>
+	<string name="poi_shelter_type_wildlife_hide">Посматрачка колиба</string>
+	<string name="poi_shelter_type_rock_shelter">Каменито склониште</string>
+	<string name="poi_shelter_type_sun_shelter">Склониште од сунца</string>
+	<string name="poi_shelter_type_field_shelter">Пољско склониште</string>
+	<string name="poi_shelter_type_tent">Тип склоништа: шатор</string>
+	<string name="poi_shelter_type_abandoned">Тип склоништа: напуштено</string>
+
+	<string name="poi_internet_access_type_wlan">Вај-Фај</string>
+	<string name="poi_internet_access_type_terminal">Терминал</string>
+	<string name="poi_internet_access_type_wired">Кабловски</string>
+	<string name="poi_internet_access_type_public">Тип приступа интернету: јавни</string>
+	<string name="poi_internet_access_type_service">Тип приступа интернету: услужни</string>
+	<string name="poi_internet_access_type_no">Без приступа интернету</string>
+	<string name="poi_internet_access_type_yes">Са приступом интернету</string>
+
+	<string name="poi_maxwidth">Максимална ширина</string>
+	<string name="poi_iata">ИАТА код</string>
+	<string name="poi_icao">ИЦАО код</string>
+	<string name="poi_faa">ФАА код</string>
+	
+	<string name="poi_artwork_type_sculpture">Тип дела: скулптура</string>
+	<string name="poi_artwork_type_statue">Тип дела: статуа</string>
+	<string name="poi_artwork_type_mural">Тип дела: мурал</string>
+	<string name="poi_artwork_type_architecture">Тип дела: арихитектура</string>
+	<string name="poi_artwork_type_painting">Тип дела: слика</string>
+	<string name="poi_artwork_type_stone">Тип дела: камено</string>
+	<string name="poi_artwork_type_bust">Тип дела: биста</string>
+	<string name="poi_artwork_type_installation">Тип дела: инсталациа</string>
+	<string name="poi_artwork_type_mosaic">Тип дела: мозаик</string>
+	<string name="poi_artwork_type_relief">Тип дела: рељеф</string>
+	<string name="poi_artwork_type_graffiti">Тип дела: графити</string>
+	<string name="poi_artwork_type_stele">Тип дела: споменик</string>
+	<string name="poi_artwork_type_fountain">Тип дела: фонтана</string>
+
+	<string name="poi_width">Ширина</string>
+
+	<string name="poi_architect_name">Архитекта</string>
+
+	<string name="poi_architecture_modern">Архитектура: модерна</string>
+	<string name="poi_architecture_stalinist_neoclassicism">Архитектура: стаљинистички неокласицизам</string>
+	<string name="poi_architecture_eclectic">Архитектура: еклектична</string>
+	<string name="poi_architecture_new_objectivity">Архитектура: нова објективност</string>
+	<string name="poi_architecture_contemporary">Архитектура: савремена</string>
+	<string name="poi_architecture_constructivism">Архитектура: конструктивизам</string>
+	<string name="poi_architecture_umgebinde">Архитектура: околна</string>
+	<string name="poi_architecture_timber_frame">Архитектура: оквирна дрветом</string>
+	<string name="poi_architecture_art_nouveau">Архитектура: нова уметност</string>
+	<string name="poi_architecture_neoclassicism">Архитектура: неокласицизам</string>
+	<string name="poi_architecture_victorian">Архитектура: викторијанска</string>
+	<string name="poi_architecture_brutalism">Архитектура: брутализам</string>
+	<string name="poi_architecture_classicism">Архитектура: класицизам</string>
+	<string name="poi_architecture_gothic">Архитектура: готска</string>
+	<string name="poi_architecture_oldrussian">Архитектура: староруска</string>
+	<string name="poi_architecture_baroque">Архитектура: барокна</string>
+	<string name="poi_architecture_postconstructivism">Архитектура: постконструктивизам</string>
+	<string name="poi_architecture_wilhelminian_style">Архитектура: вилхелмински стил</string>
+	<string name="poi_architecture_renaissance">Архитектура: ренесансна</string>
+	<string name="poi_architecture_romanesque">Архитектура: романска</string>
+
+	<string name="poi_tunnel_waterway">Водени тунел</string>
+	<string name="poi_tunnel_car">Тунел путнички</string>
+	<string name="poi_tunnel_pedestrian">Тунел пешачки</string>
+	<string name="poi_tunnel_railway">Тунел железнички</string>
+	<string name="poi_bridge_car">Мост путнички</string>
+	<string name="poi_bridge_pedestrian">Мост пешачки</string>
+	<string name="poi_bridge_bicycle">Мост бициклистички</string>
+	<string name="poi_bridge_railway">Мост железнички</string>
+	<string name="poi_bridge_waterway">Мост воденог пута</string>
+	<string name="poi_bridge_structure_beam">Структура моста: прави</string>
+	<string name="poi_bridge_structure_simple_suspension">Структура моста: проста суспензија</string>
+	<string name="poi_bridge_structure_suspension">Структура моста: суспензија</string>
+	<string name="poi_bridge_structure_arch">Структура моста: лучни</string>
+	<string name="poi_bridge_structure_truss">Структура моста: везана</string>
+	<string name="poi_bridge_structure_floating">Структура моста: плутајућа</string>
+	<string name="poi_bridge_structure_humpback">Структура моста: грбава</string>
+	<string name="poi_bridge_structure_cable_stayed">Структура моста: кабло-стојећи</string>
+	<string name="poi_bridge_structure_boardwalk">Структура моста: шетачка</string>
+	<string name="poi_bridge_structure_simple_wooden">Структура моста: просто дрвена</string>
+	<string name="poi_bridge_structure_viaduct">Структура моста: вијадукт</string>
+	<string name="poi_bridge_structure_aqueduct">Структура моста: аквадукт</string>
+	<string name="poi_bridge_structure_log">Структура моста: брвнаста</string>
+	<string name="poi_bridge_type_movable">Тип моста: покретан</string>
+	<string name="poi_bridge_movable_bascule">Тип покретног моста: баскул</string>
+	<string name="poi_bridge_movable_swing">Тип покретног моста: окретни</string>
+	<string name="poi_bridge_movable_lift">Тип покретног моста: вертикални</string>
+	<string name="poi_bridge_movable_drawbridge">Тип покретног моста: ланчани</string>
+	<string name="poi_bridge_movable_submersible">Тип покретног моста: потопљујући</string>
+	<string name="poi_bridge_movable_transporter">Тип покретног моста: транспортер</string>
+	<string name="poi_bridge_movable_retractable">Тип покретног моста: увучећи</string>
+
+	<string name="poi_lit_yes">Осветљена: да</string>
+	<string name="poi_lit_no">Осветљена: не</string>
+
+	<string name="poi_surface_unpaved">Површина: непоплочана</string>
+	<string name="poi_surface_paved">Површина: поплочана</string>
+	<string name="poi_surface_asphalt">Површина: асфалт</string>
+	<string name="poi_surface_concrete">Површина: бетонска</string>
+	<string name="poi_surface_sett">Површина: разређена kaldrma</string>
+	<string name="poi_surface_cobblestone">Површина: округла калдрма</string>
+	<string name="poi_surface_paving_stones">Површина: обрађена коцка</string>
+	<string name="poi_surface_pebblestone">Површина: округла ризла</string>
+	<string name="poi_surface_stone">Површина: камена</string>
+	<string name="poi_surface_metal">Површина: метална</string>
+	<string name="poi_surface_wood">Површина: дрвена</string>
+	<string name="poi_surface_gravel">Површина: ризлана</string>
+	<string name="poi_surface_fine_gravel">Површина: фино ризлана</string>
+	<string name="poi_surface_compacted">Површина: компактована</string>
+	<string name="poi_surface_sand">Површина: песак</string>
+	<string name="poi_surface_grass">Површина: трава</string>
+	<string name="poi_surface_grass_paver">Површина: шупља калдрма</string>
+	<string name="poi_surface_ground">Површина: општа</string>
+	<string name="poi_surface_dirt">Површина: земља</string>
+	<string name="poi_surface_mud">Површина: блато</string>
+	<string name="poi_surface_ice">Површина: лед</string>
+	<string name="poi_surface_salt">Површина: со</string>
+	<string name="poi_surface_snow">Површина: снег</string>
+
+	<string name="poi_route_bus_ref">Аутобус</string>
+	<string name="poi_route_share_taxi_ref">Дељени такси</string>
+	<string name="poi_route_trolleybus_ref">Тролејбус</string>
+	<string name="poi_route_tram_ref">Трамвај</string>
+	<string name="poi_route_train_ref">Воз</string>
+	<string name="poi_route_light_rail_ref">Лака пруга</string>
+	<string name="poi_route_monorail_ref">Монопруга</string>
+	<string name="poi_route_funicular_ref">Успенска железница</string>
+	<string name="poi_route_ferry_ref">Трајект</string>
+	<string name="poi_route_subway_ref">Метро</string>
+
+	<string name="poi_route_railway_ref">Рута пруге</string>
+
+	<string name="poi_historic_yes">Историјски објекат</string>
+	<string name="poi_surveillance_yes">Надзор: да</string>
+	<string name="poi_shop_additional_yes">Са продавницом</string>
+
+	<string name="poi_service_bicycle_retail_yes">Малопродаја</string>
+	<string name="poi_service_bicycle_retail_no">Малопродаја бицикла: не</string>
+	<string name="poi_service_bicycle_repair_yes">Поправка</string>
+	<string name="poi_service_bicycle_repair_no">Поправка бицикла: не</string>
+	<string name="poi_service_bicycle_rental_yes">Изнајмљивање</string>
+	<string name="poi_service_bicycle_rental_no">Изнајмљивање бицикла: не</string>
+	<string name="poi_service_bicycle_pump_yes">Пумпа</string>
+	<string name="poi_service_bicycle_pump_no">Бицикл пумпа: не</string>
+	<string name="poi_service_bicycle_diy_yes">Алати за самопоправку</string>
+	<string name="poi_service_bicycle_diy_no">Алати за самопоправку бицикла: не</string>
+	<string name="poi_service_bicycle_cleaning_yes">Чишћење</string>
+	<string name="poi_service_bicycle_cleaning_no">Чишћење бицикла: не</string>
+	<string name="poi_service_bicycle_chaintool_yes">Алат ланца</string>
+	<string name="poi_service_bicycle_chaintool_no">Алат ланца за бицикл: не</string>
+	<string name="poi_service_bicycle_second_hand_yes">Малопродаја половних бицикла</string>
+	<string name="poi_service_bicycle_second_hand_no">Малопродаја половних бицикла: не</string>
+	<string name="poi_service_bicycle_charging_yes">Наплата: да</string>
+	<string name="poi_service_bicycle_charging_no">Наплата: не</string>
+	<string name="poi_bicycle_repair_station">Станица за самопоправку бицикла</string>
+
+	<string name="poi_wildlife_hide">Место погледа дивљег света</string>
+
+	<string name="poi_training_language">Тренинг: језик</string>
+	<string name="poi_training_music">Тренинг: музика</string>
+	<string name="poi_training_dance">Тренинг: играње</string>
+	<string name="poi_training_sport">Тренинг: спорт</string>
+	<string name="poi_training_art">Тренинг: уметност</string>
+	<string name="poi_training_cooking">Тренинг: кување</string>
+	<string name="poi_training_computer">Тренинг: рачунар</string>
+	<string name="poi_training_yoga">Тренинг: јога</string>
+	<string name="poi_training_martial_art">Тренинг: борилачке вештине</string>
+	<string name="poi_training_aviation">Тренинг: авијација</string>
+	<string name="poi_training_hairdressing">Тренинг: шишање</string>
+
+	<string name="poi_monument_yes">Монументални објекат</string>
+
+	<string name="poi_industrial_oil">Тип: нафтна индустрија</string>
+	<string name="poi_industrial_wellsite">Тип: место извора</string>
+	<string name="poi_industrial_factory">Тип: фабрика</string>
+	<string name="poi_industrial_gas">Тип: индустрија гаса</string>
+	<string name="poi_industrial_timber">Тип: дрвнопрерађивачка</string>
+	<string name="poi_industrial_refinery">Тип: рафинерија</string>
+	<string name="poi_industrial_warehouse">Тип: складиште</string>
+	<string name="poi_industrial_auto_wrecker">Тип: ауто отпад</string>
+	<string name="poi_industrial_agriculture">Тип: пољопривреда</string>
+	<string name="poi_industrial_brewery">Тип: пивара</string>
+	<string name="poi_industrial_brickyard">Тип: циглана</string>
+	<string name="poi_industrial_intermodal_freight_terminal">Тип: међумодални теретни терминал</string>
+	<string name="poi_industrial_sawmill">Тип: пилана</string>
+	<string name="poi_industrial_water_purification">Тип: пречишћење воде</string>
+	<string name="poi_industrial_port">Тип: лука</string>
+	<string name="poi_industrial_depot">Тип: депо</string>
+
+	<string name="poi_note">Белешка</string>
+	<string name="poi_watering_place">Вода за животиње</string>
+	<string name="poi_animal_boarding">Хотел за животиње</string>
+	<string name="poi_animal_boarding_dog">Тип хотела за животиње: пас</string>
+	<string name="poi_animal_boarding_cat">Тип хотела за животиње: мачка</string>
+	<string name="poi_animal_boarding_dog_cat">Тип хотела за животиње: пас, мачка</string>
+	<string name="poi_animal_boarding_horse">Тип хотела за животиње: коњ</string>
+
+	<string name="poi_historic_aircraft">Историјски авион</string>
+
+	<string name="poi_elevator_yes">Са лифтом</string>
+	<string name="poi_elevator_no">Без лифта</string>
+
+	<string name="poi_technical_monument">Технички споменик</string>
+
+	<string name="poi_office_camping">Камп канцеларија</string>
+	<string name="poi_model_aerodrome">Модел аеродрома</string>
+	<string name="poi_guide">Канцеларија водича</string>
+	<string name="poi_quango">КАНВО</string>
+	<string name="poi_consulting">Саветодавна канцеларија</string>
+	<string name="poi_cooperative">Кооперативна канцеларија</string>
+	<string name="poi_office_forestry">Шумарска канцеларија</string>
+	<string name="poi_logistics">Канцеларија логистике</string>
+	<string name="poi_parish">Парохијска канцеларија</string>
+	<string name="poi_publisher">Издавачка канцеларија</string>
+
+	<string name="poi_fuel_91ul">91УЛ гориво</string>
+	<string name="poi_fuel_100ll">100ЛЛ гориво</string>
+	<string name="poi_fuel_autogas">Аутогас</string>
+	<string name="poi_fuel_jeta1">Авионско А-1 гориво</string>
+	<string name="poi_fuel_adblue">Едблу гориво</string>
+
+	<string name="poi_fuel_wood">Гориво: дрво</string>
+	<string name="poi_fuel_charcoal">Гориво: ћумур</string>
+	<string name="poi_fuel_coal">Гориво: угаљ</string>
+
+	<string name="poi_street_lamp">Улична лампа</string>
+
+	<string name="poi_escape_lane">Зауставна трака</string>
+
+	<string name="poi_surveillance_indoor">Надзор: унутрашњи</string>
+	<string name="poi_surveillance_outdoor">Надзор: спољашњи</string>
+	<string name="poi_surveillance_public">Надзор: јавни</string>
+
+	<string name="poi_clothes_women">Жене</string>
+	<string name="poi_clothes_underwear">Доњи веш</string>
+	<string name="poi_clothes_men">Мушкарци</string>
+	<string name="poi_clothes_wedding">Венчанице</string>
+	<string name="poi_clothes_sports">Спортови</string>
+	<string name="poi_clothes_babies">Бебе</string>
+	<string name="poi_clothes_denim">Тексас</string>
+	<string name="poi_clothes_workwear">Радна одела</string>
+	<string name="poi_clothes_hats">Шешири</string>
+	<string name="poi_clothes_fur">Крзно</string>
+	<string name="poi_clothes_leather">Кожа</string>
+	<string name="poi_clothes_costumes">Костими</string>
+	<string name="poi_clothes_traditional">Традиционално</string>
+	<string name="poi_clothes_suits">Одела</string>
+	<string name="poi_clothes_maternity">Породиљска</string>
+	<string name="poi_clothes_vintage">Старомодна</string>
+	<string name="poi_clothes_oversize">Већи бројеви</string>
+	<string name="poi_clothes_schoolwear">Школска</string>
+	<string name="poi_clothes_swimwear">Пливачка</string>
+	<string name="poi_clothes_socks">Чарапе</string>
+	<string name="poi_clothes_shirts">Кошуље</string>
+	<string name="poi_clothes_dance">Плесачка</string>
+	<string name="poi_clothes_military">Војна</string>
+
+	<string name="poi_historic_milestone">Историјска прекретница</string>
+
+	<string name="poi_shoes_children">Дечја</string>
+	<string name="poi_shoes_women">Женска</string>
+	<string name="poi_shoes_sport">Спортска</string>
+	<string name="poi_shoes_men">Мушка</string>
+	<string name="poi_shoes_orthopedic">Ортопедска</string>
+
+	<string name="poi_historic_manor">Историјски посед</string>
+	<string name="poi_castle_type_stately">Тип дворца: изражајан</string>
+	<string name="poi_castle_type_defensive">Тип дворца: одбранбени</string>
+	<string name="poi_castle_type_fortress">Тип дворца: тврђава</string>
+	<string name="poi_castle_type_palace">Тип дворца: палата</string>
+	<string name="poi_castle_type_kremlin">Тип дворца: кремљ</string>
+	<string name="poi_castle_type_defensive_stately">Тип дворца: одбранбени, изражајан</string>
+	<string name="poi_castle_type_castrum">Тип дворца: утврђење</string>
+	<string name="poi_castle_type_shiro">Тип дворца: широ</string>
+
+	<string name="poi_massage_thai">Тајландска</string>
+	<string name="poi_massage_sexual">Сексуална</string>
+	<string name="poi_massage_chinese">Кинеска</string>
+	<string name="poi_massage_therapeutic">Терапеутска</string>
+
+	<string name="poi_massage_yes">Услуге масаже</string>
+	<string name="poi_sauna_yes">Услуге сауне</string>
+	<string name="poi_solarium_yes">Услуге соларијума</string>
+
+	<string name="poi_tents_yes">Допуштено</string>
+	<string name="poi_tents_no">Шатори нису дозвољени</string>
+	<string name="poi_openfire_yes">Отворена ватра дозвољена</string>
+	<string name="poi_openfire_no">Отворена ватра недозвољена</string>
+	<string name="poi_backcountry_yes">Да</string>
+	<string name="poi_backcountry_no">Не</string>
+	<string name="poi_scout_yes">Да</string>
+	<string name="poi_scout_no">Извиђачки камп: не</string>
+	<string name="poi_group_only_yes">Групно само: да</string>
+	<string name="poi_group_only_no">Групно само: не</string>
+	<string name="poi_washing_machine_yes">Да</string>
+	<string name="poi_washing_machine_no">Веш машина: не</string>
+	<string name="poi_caravans_yes">Да</string>
+	<string name="poi_caravans_no">Каравани: не</string>
+	<string name="poi_impromptu_yes">Импровизовано: да</string>
+	<string name="poi_impromptu_no">Импровизовано: не</string>
+	<string name="poi_sanitary_dump_station_yes">Санитарна отпадна станица: да</string>
+	<string name="poi_sanitary_dump_station_no">Санитарна отпадна станица: не</string>
+	<string name="poi_power_supply_no">Извор напајања: не</string>
+	<string name="poi_power_supply_cee_17_blue">Извор напајања (утичница): ЦЕЕ 17 плава</string>
+	<string name="poi_power_supply_cee_7_4">Извор напајања (утичница): ЦЕЕ 7/4</string>
+	<string name="poi_power_supply_cee_7_5">Извор напајања (утичница): ЦЕЕ 7/5</string>
+	<string name="poi_power_supply_nema_5_15">Извор напајања (утичница): НЕМА 5-15</string>
+
+	<string name="poi_capacity_tents">Максимални број шатора</string>
+	<string name="poi_capacity_caravans">Максимални број каравана</string>
+	<string name="poi_dog_yes">Дозвољено за псе</string>
+	<string name="poi_dog_no">Није дозвољено за псе</string>
+
+	<string name="poi_refugee_yes">Објекти за избеглице</string>
+	<string name="poi_refugee_no">Избеглице: не</string>
+
+	<string name="poi_social_facility_group_home">Групно место</string>
+	<string name="poi_social_facility_assisted_living">Услуга збрињавања</string>
+	<string name="poi_social_facility_outreach">Нерезидентно збрињавање</string>
+	<string name="poi_social_facility_food_bank">Јавна кухиња</string>
+	<string name="poi_social_facility_shelter">Склониште</string>
+	<string name="poi_social_facility_ambulatory_care">Амбулантна помоћ</string>
+	<string name="poi_social_facility_workshop">Радионица</string>
+	<string name="poi_social_facility_day_care">Дневна нега</string>
+
+	<string name="poi_social_facility_for_senior">Старије особе</string>
+	<string name="poi_social_facility_for_child">Деца</string>
+	<string name="poi_social_facility_for_orphan">Сирочад</string>
+	<string name="poi_social_facility_for_disabled">Особе са инвалидитетом</string>
+	<string name="poi_social_facility_for_mental_health">Ментално болесни пацијенти</string>
+	<string name="poi_social_facility_for_juvenile">Малолетници</string>
+	<string name="poi_social_facility_for_homeless">Бескућници</string>
+	<string name="poi_social_facility_for_migrant">Мигранти</string>
+	<string name="poi_social_facility_for_underprivileged">Малопривилеговани</string>
+	<string name="poi_social_facility_for_drug_addicted">Наркозависници</string>
+	<string name="poi_social_facility_for_unemployed">Незапослени</string>
+	<string name="poi_social_facility_for_diseased">Болесни</string>
+	<string name="poi_social_facility_for_child_juvenile">Млађи малолетници</string>
+
+	<string name="poi_theatre_genre_philharmonic">Филхармонија</string>
+	<string name="poi_theatre_genre_musical">Музикал</string>
+	<string name="poi_theatre_genre_drama">Драма</string>
+	<string name="poi_theatre_genre_opera">Опера</string>
+	<string name="poi_theatre_genre_cabaret">Кабаре</string>
+	<string name="poi_theatre_genre_puppet">Луткарство</string>
+	<string name="poi_theatre_genre_comedy">Комедија</string>
+	<string name="poi_theatre_genre_chamber_music">Камерна музика</string>
+	<string name="poi_theatre_genre_marionette">Марионетски</string>
+	<string name="poi_theatre_genre_ballet">Балет</string>
+	<string name="poi_theatre_genre_shadow_play">Представа сенки</string>
+
+	<string name="poi_bandstand">Полигонална бина</string>
+	<string name="poi_kiln">Затворени лонац</string>
 	</resources>

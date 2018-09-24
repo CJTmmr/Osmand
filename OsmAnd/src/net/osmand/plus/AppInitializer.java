@@ -148,7 +148,7 @@ public class AppInitializer implements IProgress {
 	}
 
 
-	@SuppressLint("CommitPrefEdits")
+	@SuppressLint({"CommitPrefEdits", "ApplySharedPref"})
 	public void initVariables() {
 		if(initSettings) {
 			return;
@@ -180,6 +180,7 @@ public class AppInitializer implements IProgress {
 			if(prevAppVersion < VERSION_2_3) {
 				startPrefs.edit().putInt(VERSION_INSTALLED_NUMBER, VERSION_2_3).commit();
 			} else if (prevAppVersion < VERSION_3_2) {
+				app.getSettings().BILLING_PURCHASE_TOKEN_SENT.set(false);
 				startPrefs.edit().putInt(VERSION_INSTALLED_NUMBER, VERSION_3_2).commit();
 			}
 			startPrefs.edit().putString(VERSION_INSTALLED, Version.getFullVersion(app)).commit();
@@ -334,8 +335,8 @@ public class AppInitializer implements IProgress {
 	}
 
 	private void initPoiTypes() {
-		if(app.getAppPath("poi_types.xml").exists()) {
-			app.poiTypes.init(app.getAppPath("poi_types.xml").getAbsolutePath());
+		if (app.getAppPath(IndexConstants.SETTINGS_DIR + "poi_types.xml").exists()) {
+			app.poiTypes.init(app.getAppPath(IndexConstants.SETTINGS_DIR + "poi_types.xml").getAbsolutePath());
 		} else {
 			app.poiTypes.init();
 		}
@@ -585,14 +586,14 @@ public class AppInitializer implements IProgress {
 					if (!voiceDir.exists()) {
 						throw new CommandPlayerException(ctx.getString(R.string.voice_data_unavailable));
 					}
-					boolean useJs = app.getSettings().USE_JS_VOICE_GUIDANCE.get();
-					if (useJs && JSTTSCommandPlayerImpl.isMyData(voiceDir)) {
+					if (JSTTSCommandPlayerImpl.isMyData(voiceDir)) {
 						return new JSTTSCommandPlayerImpl(ctx, applicationMode, osmandApplication.getRoutingHelper().getVoiceRouter(), voiceProvider);
-					} else if (MediaCommandPlayerImpl.isMyData(voiceDir)) {
-						return useJs && JSMediaCommandPlayerImpl.isMyData(voiceDir) ? new JSMediaCommandPlayerImpl(osmandApplication, applicationMode, osmandApplication.getRoutingHelper().getVoiceRouter(), voiceProvider)
-								: new MediaCommandPlayerImpl(osmandApplication, applicationMode, osmandApplication.getRoutingHelper().getVoiceRouter(), voiceProvider);
+					} else if (JSMediaCommandPlayerImpl.isMyData(voiceDir)) {
+						return new JSMediaCommandPlayerImpl(osmandApplication, applicationMode, osmandApplication.getRoutingHelper().getVoiceRouter(), voiceProvider);
 					} else if (TTSCommandPlayerImpl.isMyData(voiceDir)) {
 						return new TTSCommandPlayerImpl(ctx, applicationMode, osmandApplication.getRoutingHelper().getVoiceRouter(), voiceProvider);
+					} else if (MediaCommandPlayerImpl.isMyData((voiceDir))) {
+						return new MediaCommandPlayerImpl(osmandApplication, applicationMode, osmandApplication.getRoutingHelper().getVoiceRouter(), voiceProvider);
 					}
 					throw new CommandPlayerException(ctx.getString(R.string.voice_data_not_supported));
 				}
@@ -652,6 +653,7 @@ public class AppInitializer implements IProgress {
 			notifyEvent(InitEvents.RESTORE_BACKUPS);
 			app.mapMarkersHelper.syncAllGroupsAsync();
 			app.searchUICore.initSearchUICore();
+			app.avoidSpecificRoads.initRouteObjects();
 			
 			checkLiveUpdatesAlerts();
 			

@@ -3868,7 +3868,6 @@
 	<string name="poi_checkpoint_type_code">Còdighe</string>
 	<string name="poi_checkpoint_type_notebook">Libreddu</string>
 	<string name="poi_checkpoint_type_needler">Perforadora</string>
-	<string name="poi_checkpoint_type_quize">Chistionàriu</string>
 	<string name="poi_checkpoint_type_electronic">Eletrònicu</string>
 	<string name="poi_course">Tzircùitu</string>
 
@@ -3890,5 +3889,11 @@
 	<string name="poi_hazard_flood">Perìgulu de alluvione</string>
 	<string name="poi_hazard_minefield">Campu minadu</string>
 
+
+<string name="poi_car_pooling">Logu de cuncàmbiu de s\'àuto</string>
+	<string name="poi_ruins">Ruinas</string>
+
+
+<string name="poi_license_classes">Classes de litzèntzias</string>
 
 </resources>

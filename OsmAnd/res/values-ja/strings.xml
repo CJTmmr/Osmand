@@ -150,9 +150,9 @@
 
      
      
-     <string name="osmand_routing_experimental">OsmAndオフライン経路案内は実験的な機能であり
-20km以上の距離では動作しません。
-\n\n経路案内サービスはオンラインのCloudMadeに自動的に切り替わります。</string>
+     <string name="osmand_routing_experimental">OsmAndオフラインルート検索エンジンは実験的な機能であり 20km以上の距離では動作しません。 
+\n
+\nルート検索エンジンはオンラインのCloudMadeに切り替わりました。</string>
      <string name="specified_dir_doesnt_exist">指定されたフォルダが見つかりません。</string>
      <string name="application_dir">データ格納フォルダ</string>
      
@@ -386,8 +386,8 @@ POIの更新は利用できません</string>
      <string name="max_level_download_tile">最大オンラインズーム</string>
      <string name="max_level_download_tile_descr">オンラインマップタイル用にダウンロードする 最大ズームレベルを選びます</string>
      <string name="route_general_information">総距離 %1$s, 移動時間 %2$d 時間 %3$d 分。</string>
-     <string name="router_service_descr">オンラインまたはオフラインで使用する経路案内方法を選択します</string>
-     <string name="router_service">経路案内サービス</string>
+     <string name="router_service_descr">オンラインまたはオフラインで使用するルート検索エンジンを選択します</string>
+     <string name="router_service">ルート検索エンジン</string>
      <string name="sd_dir_not_accessible">SDカードのデータ格納フォルダにアクセスできません！</string>
      <string name="download_question">{0} - {1}をダウンロード?</string>
      <string name="download_question_exist">{0}用のオフラインデータは
@@ -1014,8 +1014,8 @@ POIの更新は利用できません</string>
 	
 	<string name="accessibility_mode">アクセシビリティモード</string>
 	<string name="accessibility_mode_descr">アクセシビリティ(ユーザー補助)機能を設定します</string>
-	<string name="shared_string_on">オン</string>
-	<string name="shared_string_off">オフ</string>
+	<string name="shared_string_on">有効</string>
+	<string name="shared_string_off">無効</string>
 	<string name="accessibility_default">デバイス側のユーザー補助設定に従う</string>
 	<string name="backToMenu">メニューに戻る</string>
 	<string name="zoomOut">縮小</string>
@@ -2099,7 +2099,7 @@ POIの更新は利用できません</string>
     <string name="show_on_start_description">ONでOsmAnd起動時ダッシュボードを自動的に表示します</string>
     <string name="copied_to_clipboard">クリップボードにコピーしました</string>
     
-    <string name="osm_save_offline">ｵﾌﾗｲﾝで保存</string>
+    <string name="osm_save_offline">オフラインで保存</string>
     <string name="osm_edit_modified_poi">OSMのPOIが変更されました</string>
     <string name="osm_edit_deleted_poi">OSMのPOIが削除されました</string>
     <string name="context_menu_item_open_note">OSMでの注釈を開く</string>
@@ -2284,7 +2284,7 @@ POIの更新は利用できません</string>
     <string name="begin_with_osmand_menu_group">OsmAndを初めて使う方へ</string>
     <string name="first_usage_item">使用方法の簡易説明</string>
     <string name="update">更新</string>
-    <string name="only_download_over_wifi">Wi-Fi経由でのみダウンロード</string>
+    <string name="only_download_over_wifi">Wi-Fi接続時のみダウンロード</string>
     <string name="live_update">ライブ更新</string>
     <string name="update_now">今すぐ更新</string>
     <string name="missing_write_external_storage_permission">SDカードにアクセスする権限がありません</string>
@@ -2831,7 +2831,7 @@ OsmAndとOSMをサポートする方法として現状最適な方法である�
 \n
 \nその為にはGoogle PlayからMapillaryというアプリのインストールが必要になります。</string>
     <string name="open_mapillary">Mapillaryを開く</string>
-    <string name="mapillary">Mapillary</string>
+    <string name="mapillary">Mapillary(ストリート写真)</string>
     <string name="mapillary_widget">Mapillaryウィジェット</string>
     <string name="mapillary_image">Mapillary画像</string>
     <string name="mapillary_action_descr">Mapillaryにて、この場所の路上表示に貢献します</string>
@@ -3054,4 +3054,187 @@ OsmAndとOSMをサポートする方法として現状最適な方法である�
     <string name="empty_state_my_tracks">GPXファイルに追加しよう</string>
     <string name="empty_state_my_tracks_desc">GPXファイルまたは記録した経路からインポートします。</string>
     <string name="import_track">GPXファイルからインポート</string>
+    <string name="access_intermediate_arrival_time">中間経由地点への到着時間</string>
+    <string name="send_search_query">検索クエリを送信しますか？</string>
+    <string name="read_wikipedia_offline_description">OsmAnd Liveサブスクリプションに登録すると、WikipediaとWikivoyageの旅行に関した各記事をオフラインで読むことができます。</string>
+    <string name="read_wikipedia_offline">オフラインでWikipedia記事を読む</string>
+    <string name="maps_you_need_descr">ブックマークした記事より、次のマップをダウンロードすることをお勧めします:</string>
+    <string name="popular_destinations">人気の目的地</string>
+    <string name="travel_card_download_descr">Wikivoyageの旅行ガイドを事前にダウンロードすれば、インターネット接続なしで世界各地の観光場所を知ることができます。</string>
+	<string name="start_editing_card_image_text">誰でも自由に編集できる世界規模の旅行ガイドです。</string>
+    <string name="welcome_to_open_beta_description">『旅行ガイド』はWikivoyageをベースとした機能です。オープンβ時に限り無料で全ての機能を利用できます。旅行ガイドは将来的にOsmAndのサブスクライブ登録者や、OsmAnd+の利用者に提供される予定です。</string>
+    <string name="start_editing_card_description">あなたもWikivoyageの記事を編集できます。場所に関する知識、旅先での経験、魅力あるスポットはもちろん注意事項なども共有できます</string>
+    <string name="start_editing">編集を開始</string>
+    <string name="get_unlimited_access">制限のないアクセス権の取得</string>
+    <string name="wikivoyage_travel_guide">旅行ガイド</string>
+    <string name="monthly_map_updates">マップ更新: <b>毎月</b></string>
+    <string name="daily_map_updates">マップ更新: <b>毎時</b></string>
+    <string name="unlimited_downloads">無制限ダウンロード</string>
+    <string name="wikipedia_offline">オフライン版Wikipedia</string>
+    <string name="purchase_dialog_travel_description">オフラインでの旅行ガイド機能を有効にするには、次のいずれかを購入してください:</string>
+    <string name="shared_string_dont">利用しない</string>
+    <string name="shared_string_only_with_wifi">Wi-Fi接続時のみ有効</string>
+    <string name="wikivoyage_download_pics">画像のダウンロード</string>
+    <string name="wikivoyage_download_pics_descr">各記事の画像をオフラインでも閲覧できるようダウンロードできます。
+\n『探索』→ 『オプション』からいつでも変更可能です。</string>
+    <string name="shared_string_wifi_only">Wi-Fi接続時のみ有効</string>
+    <string name="images_cache">画像のキャッシュ</string>
+    <string name="delete_search_history">検索履歴の削除</string>
+    <string name="download_images">画像のダウンロード</string>
+    <string name="download_maps_travel">旅行ガイド</string>
+    <string name="wikivoyage_search_hint">検索:国、都市、州 (ローマ字表記)</string>
+    <string name="saved_articles">ブックマークした記事</string>
+    <string name="shared_string_explore">探索</string>
+    <string name="shared_string_travel_guides">旅行ガイド</string>
+    <string name="index_item_world_wikivoyage">Wikivoyageの全世界記事</string>
+    <string name="mappilary_no_internet_desc">Mapillaryに登録されているストリート写真を見るためにはインターネットに接続する必要があります。</string>
+    <string name="download_wikipedia_description">%1$sに関するWikipediaの記事をダウンロードしてオフラインで読むことができます。</string>
+    <string name="thank_you_for_feedback">フィードバックに感謝いたします</string>
+    <string name="poi_cannot_be_found">ノードまたは通じる道が見つかりませんでした。</string>
+    <string name="search_no_results_feedback">検索結果が出ませんでしたか？
+\nよければフィードバックをお願いします</string>
+    <string name="release_3_1">• ナビゲーション:進捗バー(プログレスバー)の修正、ルートの出発地点と目的地点の高速入れ替え
+\n
+\n• マップマーカー:グループに関するオン/オフの修正、マップ上のマーカーの非表示機能の追加
+\n
+\n• OSM編集:地点に寄らないオブジェクトや道に含まれるタグを編集する機能、メモからコメントが欠落する現象の修正、編集のバックアップ機能
+\n
+\n• WikipediaとWikivoyageの解析方法の改善、更新されたファイルは現段階から利用可能
+\n
+\n• コンテキストメニュー:夜間モード時の乗換標識を修正、追加メニューのサイズを修正
+\n
+\n• ボートナビゲーション:ブイなどで指示された人工航路のサポート
+\n
+\n• その他バグ修正
+\n</string>
+    <string name="commiting_way">コミットする方法…</string>
+    <string name="increase_search_radius_to">検索半径を%1$sに増やす</string>
+    <string name="send_search_query_description"><b>\"%1$s\"</b>とあなたの現在地を検索クエリとして送信します。<br/><br/>我々は検索アルゴリズムを改善するために検索データを必要としており個人情報の収集を目的とはしていません。<br/></string>
+    <string name="shared_string_world">世界規模</string>
+    <string name="point_deleted">%1$s地点を削除しました</string>
+    <string name="how_to_open_link">リンクを開くには？</string>
+    <string name="download_all">全てダウンロード</string>
+    <string name="shared_string_restart">アプリの再起動</string>
+    <string name="show_images">画像の表示</string>
+    <string name="purchase_cancelled_dialog_title">OsmAnd Liveのサブスクリプションを解除しました</string>
+    <string name="purchase_cancelled_dialog_descr">すべての機能を使用し続けるには、サブスクリプションを更新してください:</string>
+
+    <string name="maps_you_need">必要なマップ</string>
+    <string name="osmand_team">OsmAndチーム</string>
+    <string name="paid_app">有料アプリ</string>
+    <string name="paid_plugin">有料プラグイン</string>
+    <string name="travel_card_update_descr">Wikivoyageの最新データが利用可能になりました。更新して有効活用して下さい。</string>
+	<string name="update_is_available">更新が可能です</string>
+	<string name="download_file">ダウンロードファイル</string>
+    <string name="welcome_to_open_beta">オープンβにようこそ</string>
+    <string name="wikivoyage_travel_guide_descr">インターネットへ接続せずにOsmAnd上で地球上のあらゆる興味深いスポットのガイドを利用することができます。</string>
+    <string name="in_app_purchase">アプリ内購入</string>
+    <string name="in_app_purchase_desc">1回払い</string>
+    <string name="in_app_purchase_desc_ex">一度購入すれば、永久に利用できるようになります。</string>
+    <string name="purchase_unlim_title">購入 - %1$s</string>
+    <string name="purchase_subscription_title">サブスクライブ(定期利用契約) - %1$s</string>
+    <string name="wikivoyage_offline">Wikivoyageオフライン</string>
+    <string name="contour_lines_hillshade_maps">等高線と陰影地図</string>
+    <string name="unlock_all_features">OsmAndの全ての機能をアンロック</string>
+    <string name="purchase_dialog_title">プランの選択</string>
+    <string name="purchase_dialog_subtitle">適切な項目を選択してください:</string>
+    <string name="shared_string_do">行動</string>
+    <string name="select_travel_book">旅行ガイドの選択</string>
+    <string name="shared_string_travel_book">旅行ガイド</string>
+    <string name="online_webpage_warning">該当ページはオンラインでしか見ることができません。 ウェブブラウザで開きますか？</string>
+    <string name="shared_string_wikivoyage">Wikivoyage</string>
+    <string name="article_removed">記事を削除しました</string>
+    <string name="shared_string_read">読む</string>
+    <string name="shared_string_contents">コンテンツ</string>
+    <string name="shared_string_result">結果</string>
+    <string name="waypoints_removed_from_map_markers">マップマーカーから経由地点を削除しました</string>
+    <string name="nothing_found_in_radius">何も見つかりませんでした:</string>
+    <string name="select_waypoints_category_description">経路内の全ての経由地点を追加する、もしくはカテゴリ別に選択してください。</string>
+    <string name="shared_string_total">トータル</string>
+    <string name="group_deleted">グループを削除しました</string>
+    <string name="rendering_attr_whiteWaterSports_name">リバースポーツ(川遊び、リバーアクティビティ)</string>
+    <string name="distance_farthest">距離:最も遠い</string>
+    <string name="distance_nearest">距離:最も近い</string>
+    <string name="dd_mm_ss_format">DD°MM′SS″</string>
+	<string name="dd_dddddd_format">DD.DDDDDD°</string>
+	<string name="dd_ddddd_format">DD.DDDDD°</string>
+	<string name="dd_mm_mmmm_format">DD°MM.MMMM′</string>
+	<string name="dd_mm_mmm_format">DD°MM.MMM′</string>
+	<string name="east_abbreviation">東</string>
+	<string name="west_abbreviation">西</string>
+	<string name="south_abbreviation">南</string>
+	<string name="north_abbreviation">北</string>
+	<string name="transport_nearby_routes_within">近くのルート</string>
+    <string name="transport_nearby_routes">以内</string>
+    <string name="enter_the_file_name">ファイル名を入力して下さい。</string>
+    <string name="map_import_error">マップインポートのエラー</string>
+    <string name="map_imported_successfully">マップをインポートしました</string>
+    <string name="make_as_start_point">ここを出発地点とする</string>
+    <string name="last_intermediate_dest_description">最後の中間経由地点として追加</string>
+    <string name="first_intermediate_dest_description">最初の中間経由地点として追加</string>
+    <string name="show_closed_notes">閉じたメモの表示</string>
+    <string name="switch_osm_notes_visibility_desc">マップ上にあるOSMメモの表示/非表示を切り替えます。</string>
+    <string name="gpx_file_desc">GPX - JOSMまたは他のOSMエディタへ適したエクスポート形式です。</string>
+    <string name="osc_file_desc">OSC - OpenStreetMapの利用に適したエクスポート形式です。</string>
+    <string name="shared_string_gpx_file">GPXファイル</string>
+    <string name="osc_file">OSCファイル</string>
+    <string name="choose_file_type">タイプを選択</string>
+    <string name="osm_edits_export_desc">OSMメモ、POI、またはその両方をエクスポートする際のタイプを選択します。</string>
+    <string name="all_data">全てのデータ</string>
+    <string name="osm_notes">OSMメモ</string>
+    <string name="will_open_tomorrow_at">明日開く</string>
+    <string name="shared_string_without_name">名無し</string>
+    <string name="release_3_2_pre">• 非ラテン文字を使用したマップを開いた場合にクラッシュしていた問題を修正
+\n
+\n• Android 8.0デバイスでのレンダリング速度を改善
+\n
+\n• ポリゴン(トイレや給水所など公共施設を除く)オブジェクトの編集をサポート
+\n</string>
+    <string name="what_is_here">要項:</string>
+    <string name="parked_at">駐車した場所</string>
+    <string name="pick_up_till">以下までに回収</string>
+    <string name="without_time_limit">時間制限なし</string>
+    <string name="context_menu_read_full_article">記事の全文を読む</string>
+    <string name="open_from">開店時間</string>
+    <string name="open_till">以下時間まで営業</string>
+    <string name="will_close_at">閉店時間</string>
+    <string name="will_open_at">開店予定時間</string>
+    <string name="will_open_on">営業予定時刻</string>
+    <string name="empty_state_markers_active">マップマーカーを作成しよう！</string>
+    <string name="empty_state_markers_history_desc">通過した地点のマーカーと通過予定地点のマーカーがこの画面に表示されます。</string>
+    <string name="shared_string_right">右</string>
+    <string name="shared_string_left">左</string>
+    <string name="show_number_pad">数字キーパッドの表示</string>
+    <string name="shared_string_paste">貼り付け</string>
+    <string name="coordinate_input_accuracy">%1$d桁</string>
+    <string name="rename_marker">マーカー名の変更</string>
+    <string name="import_gpx_file_description">お気に入りもしくはGPXファイルとしてインポートが可能です。</string>
+    <string name="import_as_favorites">お気に入りとしてインポート</string>
+    <string name="import_file">インポートファイル</string>
+	<string name="use_location">現在地の使用</string>
+    <string name="passed">最後に使用: %1$s</string>
+    <string name="shared_string_in_name">%1$s内</string>
+    <string name="lang_lo">ラーオ語</string>
+    <string name="shared_string_gpx_files">GPXファイル</string>
+    <string name="retry">再試行</string>
+    <string name="add_route_points">ルートポイントの追加</string>
+    <string name="save_gpx_waypoint">GPX経由地点の追加</string>
+    <string name="save_route_point">ルートポイントの保存</string>
+    <string name="waypoint_one">経由地点 1</string>
+    <string name="route_point_one">ルートポイント 1</string>
+    <string name="empty_state_favourites">お気に入りの追加</string>
+    <string name="empty_state_favourites_desc">お気に入りのインポート、またはマップ上でマークした地点を追加します。</string>
+    <string name="move_point">ポイントの移動</string>
+    <string name="total_donations">寄付総額</string>
+    <string name="day_off_label">オフ</string>
+    <string name="winter_and_ski_renderer">冬期およびスキー</string>
+    <string name="touring_view_renderer">ツーリングビュー</string>
+    <string name="nautical_renderer">海洋</string>
+    <string name="copy_location_name">ポイント/POI名称のコピー</string>
+    <string name="toast_empty_name_error">名前の付けられていない場所</string>
+    <string name="tunnel_warning">前方にトンネル有り</string>
+    <string name="download_wikipedia_label">Wikipediaデータのダウンロード</string>
+    <string name="open_in_browser_wiki">記事をオンラインで開く</string>
+    <string name="open_in_browser_wiki_description">ウェブブラウザで記事を閲覧します。</string>
+    <string name="download_wiki_region_placeholder">当該地域</string>
     </resources>

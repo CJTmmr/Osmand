@@ -7,13 +7,20 @@
 	   1. To not produce duplicate strings (check by name if a string already exists)
 	   2. Every apostrophe (quote) is preceded by a backslash.
 	   3. If you modify the English strings file, please add new strings at the top of the file, this makes periodic reviews before releases easier.
-	- For wording and consistency, please note http://osmand.net/help-online?id=technical-articles#Creating_a_Consistent_User_Experience
+	- For wording and consistency, please note https://osmand.net/help-online?id=technical-articles#Creating_a_Consistent_User_Experience
 	Thx - Hardy
 -->
 
+    <string name="ask_for_location_permission">Please give OsmAnd permission for location to continue.</string>
     <string name="thank_you_for_feedback">Thank you for feedback</string>
     <string name="poi_cannot_be_found">Node or way cannot be found.</string>
     <string name="search_no_results_feedback">No search results?\nGive us feedback</string>
+    <string name="release_3_2_pre">
+    • Fixed crash on startup that occurred with non-latin maps\n\n
+    • Improve rendering speed issues on Android 8.0 devices\n\n
+    • Support for polygon (non-amenity) objects editing\n\n
+    • Measure distance: add Measure button to Actions in the context menu\n\n
+    </string>
     <string name="release_3_1">
     • Navigation: Fix progress bar, fast swapping of the start and end point of the route\n\n
     • Map markers: fix turn on/off groups, ability to hide markers from the map\n\n
@@ -944,6 +951,7 @@
     <string name="rendering_value_pink_name">Pink</string>
     <string name="rendering_value_translucent_pink_name">Translucent pink</string>
     <string name="rendering_value_brown_name">Brown</string>
+    <string name="rendering_value_black_name">Black</string>
     <string name="rendering_value_translucent_purple_name">Translucent purple</string>
     <string name="restart_is_required">Restart the app manually to apply all changes.</string>
     <string name="light_theme">Light</string>
@@ -1978,7 +1986,7 @@
     <string name="avoid_unpaved">Avoid unpaved roads</string>
     <string name="avoid_ferries">Avoid ferries</string>
     <string name="avoid_in_routing_title">Avoid…</string>
-    <string name="avoid_in_routing_descr">Avoid toll roads, unpaved, ferries.</string>
+    <string name="avoid_in_routing_descr">Avoid e.g. toll roads, unpaved, ferries.</string>
     <string name="map_widget_fluorescent">Fluorescent routes</string>
     <string name="map_widget_show_ruler">Ruler</string>
     <string name="map_widget_view_direction">Viewing direction</string>

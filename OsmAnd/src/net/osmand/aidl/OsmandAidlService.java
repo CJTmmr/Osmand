@@ -2,10 +2,14 @@ package net.osmand.aidl;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.RemoteException;
 
 import net.osmand.PlatformUtil;
+import net.osmand.aidl.OsmandAidlApi.SearchCompleteCallback;
 import net.osmand.aidl.calculateroute.CalculateRouteParams;
 import net.osmand.aidl.favorite.AddFavoriteParams;
 import net.osmand.aidl.favorite.RemoveFavoriteParams;
@@ -35,22 +39,45 @@ import net.osmand.aidl.mapwidget.AddMapWidgetParams;
 import net.osmand.aidl.mapwidget.RemoveMapWidgetParams;
 import net.osmand.aidl.mapwidget.UpdateMapWidgetParams;
 import net.osmand.aidl.navdrawer.SetNavDrawerItemsParams;
+import net.osmand.aidl.navigation.MuteNavigationParams;
 import net.osmand.aidl.navigation.NavigateGpxParams;
 import net.osmand.aidl.navigation.NavigateParams;
+import net.osmand.aidl.navigation.NavigateSearchParams;
+import net.osmand.aidl.navigation.PauseNavigationParams;
+import net.osmand.aidl.navigation.ResumeNavigationParams;
+import net.osmand.aidl.navigation.StopNavigationParams;
+import net.osmand.aidl.navigation.UnmuteNavigationParams;
 import net.osmand.aidl.note.StartAudioRecordingParams;
 import net.osmand.aidl.note.StartVideoRecordingParams;
 import net.osmand.aidl.note.StopRecordingParams;
 import net.osmand.aidl.note.TakePhotoNoteParams;
+import net.osmand.aidl.search.SearchParams;
+import net.osmand.aidl.search.SearchResult;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.util.Algorithms;
 
 import org.apache.commons.logging.Log;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class OsmandAidlService extends Service {
 	
 	private static final Log LOG = PlatformUtil.getLog(OsmandAidlService.class);
+
+	private static final String DATA_KEY_RESULT_SET = "resultSet";
+
+	private static final int MIN_UPDATE_TIME_MS = 1000;
+	
+	private static final int MIN_UPDATE_TIME_MS_ERROR = -1;
+
+	private Map<Long, IOsmAndAidlCallback> callbacks;
+	private Handler mHandler = null;
+	HandlerThread mHandlerThread = new HandlerThread("OsmAndAidlServiceThread");
+
+	private long updateCallbackId = 0;
 
 	OsmandApplication getApp() {
 		return (OsmandApplication) getApplication();
@@ -63,15 +90,30 @@ public class OsmandAidlService extends Service {
 
 	@Override
 	public IBinder onBind(Intent intent) {
+		mHandlerThread.start();
+		mHandler = new Handler(mHandlerThread.getLooper());
+
 		// Return the interface
 		return mBinder;
+	}
+
+	@Override
+	public void onCreate() {
+		super.onCreate();
+		callbacks = new ConcurrentHashMap<>();
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		mHandlerThread.quit();
+		callbacks.clear();
 	}
 
 	private final IOsmAndAidlInterface.Stub mBinder = new IOsmAndAidlInterface.Stub() {
 
 		private void handleException(Exception e) {
 			LOG.error("AIDL e.getMessage()", e);
-			
 		}
 
 		@Override
@@ -442,7 +484,10 @@ public class OsmandAidlService extends Service {
 		@Override
 		public boolean navigate(NavigateParams params) throws RemoteException {
 			try {
-				return params != null && getApi("navigate").navigate(params.getStartName(), params.getStartLat(), params.getStartLon(), params.getDestName(), params.getDestLat(), params.getDestLon(), params.getProfile(), params.isForce());
+				return params != null && getApi("navigate").navigate(
+						params.getStartName(), params.getStartLat(), params.getStartLon(),
+						params.getDestName(), params.getDestLat(), params.getDestLon(),
+						params.getProfile(), params.isForce());
 			} catch (Exception e) {
 				handleException(e);
 				return false;
@@ -460,6 +505,56 @@ public class OsmandAidlService extends Service {
 		}
 
 		@Override
+		public boolean pauseNavigation(PauseNavigationParams params) throws RemoteException {
+			try {
+				return getApi("pauseNavigation").pauseNavigation();
+			} catch (Exception e) {
+				handleException(e);
+				return false;
+			}
+		}
+
+		@Override
+		public boolean resumeNavigation(ResumeNavigationParams params) throws RemoteException {
+			try {
+				return getApi("resumeNavigation").resumeNavigation();
+			} catch (Exception e) {
+				handleException(e);
+				return false;
+			}
+		}
+
+		@Override
+		public boolean stopNavigation(StopNavigationParams params) throws RemoteException {
+			try {
+				return getApi("stopNavigation").stopNavigation();
+			} catch (Exception e) {
+				handleException(e);
+				return false;
+			}
+		}
+
+		@Override
+		public boolean muteNavigation(MuteNavigationParams params) throws RemoteException {
+			try {
+				return getApi("muteNavigation").muteNavigation();
+			} catch (Exception e) {
+				handleException(e);
+				return false;
+			}
+		}
+
+		@Override
+		public boolean unmuteNavigation(UnmuteNavigationParams params) throws RemoteException {
+			try {
+				return getApi("unmuteNavigation").unmuteNavigation();
+			} catch (Exception e) {
+				handleException(e);
+				return false;
+			}
+		}
+
+		@Override
 		public boolean setNavDrawerItems(SetNavDrawerItemsParams params) throws RemoteException {
 			try {
 				return params != null && getApi("setNavDrawerItems").setNavDrawerItems(params.getAppPackage(), params.getItems());
@@ -467,6 +562,79 @@ public class OsmandAidlService extends Service {
 				handleException(e);
 				return false;
 			}
+		}
+
+		@Override
+		public boolean search(SearchParams params, final IOsmAndAidlCallback callback) throws RemoteException {
+			try {
+				return params != null && getApi("search").search(params.getSearchQuery(), params.getSearchType(),
+						params.getLatitude(), params.getLongitude(), params.getRadiusLevel(), params.getTotalLimit(), new SearchCompleteCallback() {
+							@Override
+							public void onSearchComplete(List<SearchResult> resultSet) {
+								Bundle data = new Bundle();
+								if (resultSet.size() > 0) {
+									data.putParcelableArrayList(DATA_KEY_RESULT_SET, new ArrayList<>(resultSet));
+								}
+								try {
+									callback.onSearchComplete(resultSet);
+								} catch (RemoteException e) {
+									handleException(e);
+								}
+							}
+						});
+			} catch (Exception e) {
+				handleException(e);
+				return false;
+			}
+		}
+
+		@Override
+		public boolean navigateSearch(NavigateSearchParams params) throws RemoteException {
+			try {
+				return params != null && getApi("navigateSearch").navigateSearch(
+						params.getStartName(), params.getStartLat(), params.getStartLon(),
+						params.getSearchQuery(), params.getSearchLat(), params.getSearchLon(),
+						params.getProfile(), params.isForce());
+			} catch (Exception e) {
+				handleException(e);
+				return false;
+			}
+		}
+
+		@Override
+		public long registerForUpdates(long updateTimeMS, IOsmAndAidlCallback callback) throws RemoteException {
+			if (updateTimeMS >= MIN_UPDATE_TIME_MS) {
+				updateCallbackId++;
+				callbacks.put(updateCallbackId, callback);
+				startRemoteUpdates(updateTimeMS, updateCallbackId, callback);
+				return updateCallbackId;
+			} else {
+				return MIN_UPDATE_TIME_MS_ERROR;
+			}
+		}
+
+		@Override
+		public boolean unregisterFromUpdates(long callbackId) throws RemoteException {
+			callbacks.remove(callbackId);
+			return true;
+		}
+
+		void startRemoteUpdates(final long updateTimeMS, final long callbackId, final IOsmAndAidlCallback callback) {
+			mHandler.postDelayed(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						if (callbacks.containsKey(callbackId)) {
+							if (getApi("isUpdateAllowed").isUpdateAllowed()) {
+								callback.onUpdate();
+							}
+							startRemoteUpdates(updateTimeMS, callbackId, callback);
+						}
+					} catch (RemoteException e) {
+						handleException(e);
+					}
+				}
+			}, updateTimeMS);
 		}
 	};
 }

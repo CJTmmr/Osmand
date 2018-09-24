@@ -19,6 +19,7 @@ import android.widget.Toast;
 import net.osmand.AndroidUtils;
 import net.osmand.PlatformUtil;
 import net.osmand.data.Amenity;
+import net.osmand.data.MapObject;
 import net.osmand.data.TransportStop;
 import net.osmand.osm.PoiType;
 import net.osmand.osm.edit.Entity;
@@ -197,8 +198,11 @@ public class OsmEditingPlugin extends OsmandPlugin {
 				} else if (resId == R.string.context_menu_item_modify_note) {
 					modifyOsmNote(mapActivity, (OsmNotesPoint) selectedObj);
 				} else if (resId == R.string.poi_context_menu_modify) {
-					EditPoiDialogFragment.showEditInstance(selectedObj instanceof TransportStop ?
-							((TransportStop) selectedObj).getAmenity() : (Amenity) selectedObj, mapActivity);
+					if (selectedObj instanceof TransportStop) {
+						EditPoiDialogFragment.showEditInstance(((TransportStop) selectedObj).getAmenity(), mapActivity);
+					} else if (selectedObj instanceof MapObject) {
+						EditPoiDialogFragment.showEditInstance((MapObject) selectedObj, mapActivity);
+					}
 				} else if (resId == R.string.poi_context_menu_modify_osm_change) {
 					final Entity entity = ((OpenstreetmapPoint) selectedObj).getEntity();
 					EditPoiDialogFragment.createInstance(entity, false)
@@ -217,6 +221,10 @@ public class OsmEditingPlugin extends OsmandPlugin {
 			}
 			final PoiType poiType = amenity.getType().getPoiTypeByKeyName(amenity.getSubType());
 			isEditable = !amenity.getType().isWiki() && poiType !=null && !poiType.isNotEditableOsm();
+		} else if (selectedObj instanceof MapObject) {
+			Long objectId = ((MapObject) selectedObj).getId();
+			isEditable = objectId != null && objectId > 0 && (objectId % 2 == MapObject.AMENITY_ID_RIGHT_SHIFT
+					|| (objectId >> MapObject.NON_AMENITY_ID_RIGHT_SHIFT) < Integer.MAX_VALUE);
 		}
 		if (isEditable) {
 			adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.poi_context_menu_modify, mapActivity)
@@ -488,6 +496,35 @@ public class OsmEditingPlugin extends OsmandPlugin {
 
 	public static String getPrefix(OsmPoint osmPoint) {
 		return (osmPoint.getGroup() == OsmPoint.Group.POI ? "POI" : "Bug") + " id: " + osmPoint.getId() + " ";
+	}
+
+	public static String getDescription(OsmPoint osmPoint, Context context, boolean needPrefix) {
+		String action = "";
+		if (osmPoint.getAction() == OsmPoint.Action.CREATE) {
+			action = context.getString(R.string.shared_string_added);
+		} else if (osmPoint.getAction() == OsmPoint.Action.MODIFY) {
+			action = context.getString(R.string.shared_string_edited);
+		} else if (osmPoint.getAction() == OsmPoint.Action.DELETE) {
+			action = context.getString(R.string.shared_string_deleted);
+		} else if (osmPoint.getAction() == OsmPoint.Action.REOPEN) {
+			action = context.getString(R.string.shared_string_edited);
+		}
+
+		String category = getCategory(osmPoint, context);
+
+		String description = "";
+		if (!Algorithms.isEmpty(action)) {
+			description += action + " • ";
+		}
+		if (!Algorithms.isEmpty(category)) {
+			description += category;
+		}
+		if (needPrefix) {
+			String prefix = getPrefix(osmPoint);
+			description += " • " + prefix;
+		}
+
+		return description;
 	}
 
 	@Override

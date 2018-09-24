@@ -40,6 +40,7 @@ import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
 import net.osmand.data.QuadPoint;
 import net.osmand.data.RotatedTileBox;
+import net.osmand.data.TransportRoute;
 import net.osmand.plus.LockableScrollView;
 import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.OsmandApplication;
@@ -62,6 +63,7 @@ import net.osmand.plus.views.controls.HorizontalSwipeConfirm;
 import net.osmand.plus.views.controls.SingleTapConfirm;
 import net.osmand.util.Algorithms;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
@@ -77,6 +79,8 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 	public static final int ZOOM_IN_STANDARD = 17;
 
 	public static final int CURRENT_Y_UNDEFINED = Integer.MAX_VALUE;
+	
+	private static final int MAX_TRANSPORT_ROUTES_BADGES = 6;
 
 	private View view;
 	private InterceptorLinearLayout mainView;
@@ -120,7 +124,6 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 
 	private OsmandMapTileView map;
 	private LatLon mapCenter;
-	private int mapZoom;
 	private int origMarkerX;
 	private int origMarkerY;
 	private boolean customMapCenter;
@@ -197,10 +200,6 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 			mapCenter = menu.getMapCenter();
 			origMarkerX = box.getCenterPixelX();
 			origMarkerY = box.getCenterPixelY();
-		}
-		mapZoom = menu.getMapZoom();
-		if (mapZoom == 0) {
-			mapZoom = map.getZoom();
 		}
 
 		// Left title button
@@ -645,7 +644,7 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 	}
 
 	private TransportStopRouteAdapter createTransportStopRouteAdapter(List<TransportStopRoute> routes) {
-		final TransportStopRouteAdapter adapter = new TransportStopRouteAdapter(getMyApplication(), routes, nightMode);
+		final TransportStopRouteAdapter adapter = new TransportStopRouteAdapter(getMyApplication(), filterTransportRoutes(routes), nightMode);
 		adapter.setListener(new TransportStopRouteAdapter.OnClickListener() {
 			@Override
 			public void onClick(int position) {
@@ -664,6 +663,28 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 		return adapter;
 	}
 
+	private List<TransportStopRoute> filterTransportRoutes(List<TransportStopRoute> routes) {
+		List<TransportStopRoute> filteredRoutes = new ArrayList<>();
+		for (TransportStopRoute route : routes) {
+			if (!containsRef(filteredRoutes, route.route)) {
+				filteredRoutes.add(route);
+			}
+			if (filteredRoutes.size() >= MAX_TRANSPORT_ROUTES_BADGES) {
+				break;
+			}
+		}
+		return filteredRoutes;
+	}
+
+	private boolean containsRef(List<TransportStopRoute> routes, TransportRoute transportRoute) {
+		for (TransportStopRoute route : routes) {
+			if (route.route.getRef().equals(transportRoute.getRef())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private float getToolbarAlpha(int y) {
 		float a = 0;
 		if (menu != null && !menu.isLandscapeLayout()) {
@@ -1221,13 +1242,8 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 		super.onDestroyView();
 		if (!menu.isActive()) {
 			if (mapCenter != null) {
-				if (mapZoom == 0) {
-					mapZoom = map.getZoom();
-				}
-				//map.setLatLon(mapCenter.getLatitude(), mapCenter.getLongitude());
-				//map.setIntZoom(mapZoom);
 				AnimateDraggingMapThread thread = map.getAnimatedDraggingThread();
-				thread.startMoving(mapCenter.getLatitude(), mapCenter.getLongitude(), mapZoom, true);
+				thread.startMoving(mapCenter.getLatitude(), mapCenter.getLongitude(), map.getZoom(), true);
 			}
 		}
 		menu.setMapCenter(null);

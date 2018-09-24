@@ -1,5 +1,6 @@
 package net.osmand.plus.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -7,6 +8,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
@@ -74,6 +76,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static net.osmand.plus.helpers.ImportHelper.GPX_SUFFIX;
+
 public class MapActivityActions implements DialogProvider {
 	private static final Log LOG = PlatformUtil.getLog(MapActivityActions.class);
 	public static final String KEY_LONGITUDE = "longitude";
@@ -81,6 +85,8 @@ public class MapActivityActions implements DialogProvider {
 	public static final String KEY_NAME = "name";
 
 	public static final String KEY_ZOOM = "zoom";
+	
+	public static final int REQUEST_LOCATION_FOR_DIRECTIONS_NAVIGATION_PERMISSION = 203;
 
 	// Constants for determining the order of items in the additional actions context menu
 	public static final int DIRECTIONS_FROM_ITEM_ORDER = 1000;
@@ -88,6 +94,7 @@ public class MapActivityActions implements DialogProvider {
 	public static final int CHANGE_POSITION_ITEM_ORDER = 3000;
 	public static final int EDIT_GPX_WAYPOINT_ITEM_ORDER = 9000;
 	public static final int ADD_GPX_WAYPOINT_ITEM_ORDER = 9000;
+	public static final int MEASURE_DISTANCE_ITEM_ORDER = 13000;
 
 	private static final int DIALOG_ADD_FAVORITE = 100;
 	private static final int DIALOG_REPLACE_FAVORITE = 101;
@@ -226,8 +233,8 @@ public class MapActivityActions implements DialogProvider {
 				fileDir.mkdirs();
 				File toSave = fileDir;
 				if (name.length() > 0) {
-					if (!name.endsWith(".gpx")) {
-						name += ".gpx";
+					if (!name.endsWith(GPX_SUFFIX)) {
+						name += GPX_SUFFIX;
 					}
 					toSave = new File(fileDir, name);
 				}
@@ -263,7 +270,8 @@ public class MapActivityActions implements DialogProvider {
 		protected String doInBackground(File... params) {
 			if (params.length > 0) {
 				File file = params[0];
-				GPXFile gpx = app.getRoutingHelper().generateGPXFileWithRoute();
+				String fileName = file.getName();
+				GPXFile gpx = app.getRoutingHelper().generateGPXFileWithRoute(fileName.substring(0,fileName.length()-GPX_SUFFIX.length()));
 				GPXUtilities.writeGpxFile(file, gpx, app);
 				return app.getString(R.string.route_successfully_saved_at, file.getName());
 			}
@@ -324,6 +332,12 @@ public class MapActivityActions implements DialogProvider {
 					.setListener(listener).createItem());
 		}
 
+		adapter.addItem(itemBuilder
+				.setTitleId(R.string.measurement_tool, mapActivity)
+				.setIcon(R.drawable.ic_action_ruler)
+				.setOrder(MEASURE_DISTANCE_ITEM_ORDER)
+				.createItem());
+
 		adapter.sortItemsByOrder();
 
 		final ArrayAdapter<ContextMenuItem> listAdapter =
@@ -341,21 +355,34 @@ public class MapActivityActions implements DialogProvider {
 				} else if (standardId == R.string.context_menu_item_search) {
 					mapActivity.showQuickSearch(latitude, longitude);
 				} else if (standardId == R.string.context_menu_item_directions_from) {
-					mapActivity.getContextMenu().hide();
-					if (getMyApplication().getTargetPointsHelper().getPointToNavigate() == null) {
-						setFirstMapMarkerAsTarget();
-					}
-					if (!mapActivity.getRoutingHelper().isFollowingMode() && !mapActivity.getRoutingHelper().isRoutePlanningMode()) {
-						enterRoutePlanningMode(new LatLon(latitude, longitude),
-								mapActivity.getContextMenu().getPointDescription());
+					if (OsmAndLocationProvider.isLocationPermissionAvailable(mapActivity)) {
+						enterDirectionsFromPoint(latitude, longitude);
+					} else if (!ActivityCompat.shouldShowRequestPermissionRationale(mapActivity, Manifest.permission.ACCESS_FINE_LOCATION)) {
+						mapActivity.getMyApplication().showToastMessage(R.string.ask_for_location_permission);
 					} else {
-						getMyApplication().getTargetPointsHelper().setStartPoint(new LatLon(latitude, longitude),
-								true, mapActivity.getContextMenu().getPointDescription());
+						ActivityCompat.requestPermissions(mapActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_FOR_DIRECTIONS_NAVIGATION_PERMISSION);
 					}
+				} else if (standardId == R.string.measurement_tool) {
+					mapActivity.getContextMenu().close();
+					MeasurementToolFragment.showInstance(mapActivity.getSupportFragmentManager(), new LatLon(latitude, longitude));
 				}
 			}
 		});
 		actionsBottomSheetDialogFragment.show(mapActivity.getSupportFragmentManager(), AdditionalActionsBottomSheetDialogFragment.TAG);
+	}
+
+	public void enterDirectionsFromPoint(final double latitude, final double longitude) {
+		mapActivity.getContextMenu().hide();
+		if (getMyApplication().getTargetPointsHelper().getPointToNavigate() == null) {
+			setFirstMapMarkerAsTarget();
+		}
+		if (!mapActivity.getRoutingHelper().isFollowingMode() && !mapActivity.getRoutingHelper().isRoutePlanningMode()) {
+			enterRoutePlanningMode(new LatLon(latitude, longitude),
+					mapActivity.getContextMenu().getPointDescription());
+		} else {
+			getMyApplication().getTargetPointsHelper().setStartPoint(new LatLon(latitude, longitude),
+					true, mapActivity.getContextMenu().getPointDescription());
+		}
 	}
 
 	public void setGPXRouteParams(GPXFile result) {

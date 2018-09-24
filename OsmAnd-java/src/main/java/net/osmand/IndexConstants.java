@@ -34,7 +34,6 @@ public class IndexConstants {
 	public static final String GEN_LOG_EXT = ".gen.log"; //$NON-NLS-1$
 	
 	public static final String VOICE_INDEX_EXT_ZIP = ".voice.zip"; //$NON-NLS-1$
-	public static final String TTSVOICE_INDEX_EXT_ZIP = ".ttsvoice.zip";
 	public static final String TTSVOICE_INDEX_EXT_JS = "tts.js";
 	public static final String ANYVOICE_INDEX_EXT_ZIP = "voice.zip"; //$NON-NLS-1$ //to cactch both voices, .voice.zip and .ttsvoice.zip
 
@@ -68,4 +67,5 @@ public class IndexConstants {
 	public static final String VOICE_INDEX_DIR = "voice/"; //$NON-NLS-1$
 	public static final String RENDERERS_DIR = "rendering/"; //$NON-NLS-1$
 	public static final String ROUTING_XML_FILE= "routing.xml";
+	public static final String SETTINGS_DIR = "settings/"; //$NON-NLS-1$
 }

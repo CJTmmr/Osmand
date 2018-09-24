@@ -233,8 +233,14 @@ public class DownloadActivityType {
 	}
 
 	public String getBaseUrl(OsmandApplication ctx, String fileName) {
-		return "http://" + IndexConstants.INDEX_DOWNLOAD_DOMAIN + "/download?event=2&"
+		String url = "http://" + IndexConstants.INDEX_DOWNLOAD_DOMAIN + "/download?event=2&"
 				+ Version.getVersionAsURLParam(ctx) + "&file=" + encode(fileName);
+		if(this == LIVE_UPDATES_FILE && fileName.length() > 16) {
+			// DATE_AND_EXT_STR_LEN = "_18_06_02.obf.gz".length()
+			String region = fileName.substring(0, fileName.length() - 16).toLowerCase();
+			url += "&region=" + encode(region);
+		}
+		return url;
 	}
 
 
@@ -295,8 +301,6 @@ public class DownloadActivityType {
 		if (this == VOICE_FILE) {
 			String fileName = indexItem.fileName;
 			if (fileName.endsWith(IndexConstants.VOICE_INDEX_EXT_ZIP)) {
-				return FileNameTranslationHelper.getVoiceName(ctx, getBasename(indexItem));
-			} else if (fileName.endsWith(IndexConstants.TTSVOICE_INDEX_EXT_ZIP)) {
 				return FileNameTranslationHelper.getVoiceName(ctx, getBasename(indexItem));
 			} else if (fileName.endsWith(IndexConstants.TTSVOICE_INDEX_EXT_JS)) {
 				return FileNameTranslationHelper.getVoiceName(ctx, getBasename(indexItem));

@@ -597,7 +597,7 @@
     <string name="avoid_unpaved">Instransi sas istradas no asfaltadas</string>
     <string name="avoid_ferries">Istransi sos traghetos</string>
     <string name="avoid_in_routing_title">Istransi…</string>
-    <string name="avoid_in_routing_descr">Istransi sas istradas a pagamentu, isterradas, traghetos.</string>
+    <string name="avoid_in_routing_descr">Istransi pro es. sas istradas a pagamentu, isterradas, traghetos.</string>
     <string name="map_widget_fluorescent">Camineras fluorescentes</string>
     <string name="map_widget_show_ruler">Righellu</string>
     <string name="map_widget_view_direction">Diretzione de sa visuale</string>
@@ -3130,5 +3130,13 @@ Pro praghere iscrie su còdighe intreu</string>
     <string name="search_no_results_feedback">Perunu risultadu de chirca?
 \nDaghe·nos s\'opinione tua</string>
     <string name="commiting_way">Imbiende sa bia…</string>
-    <string name="test_voice_desrc">Toca unu butone e ascurta su cummandu vocale chi li currispondet, pro identificare cummandos chi mancant o chi sunt isballiados.</string>
-</resources>
+    <string name="test_voice_desrc">Toca unu butone e ascurta s\'annùntziu vocale chi li currispondet, pro identificare sos annùntzios chi mancant o chi sunt isballiados.</string>
+<string name="release_3_2_pre">• Errore de istudada a s\'allughidura cun mapas cun caràteres non latinos curretu
+\n
+\n • Lestresa de sa renderizatzione in sos dispositivos Android 8.0 megiorada
+\n
+\n • Suportu a sa modìfica de ogetos poligonales (non amenidades)
+\n</string>
+    <string name="ask_for_location_permission">Pro praghere permite a OsmAnd de atzèdere a sa positzione pro sighire.</string>
+    <string name="rendering_value_black_name">Nieddu</string>
+    </resources>

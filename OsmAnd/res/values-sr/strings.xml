@@ -20,7 +20,7 @@
 	
 	<string name="local_index_tile_data_expire">Истиче(минута): %1$s</string>
     <string name="local_index_tile_data_maxzoom">Максимално увеличање: %1$s</string>
-    <string name="edit_tilesource_elliptic_tile">Еклиптични приказ земљине кугле</string>
+    <string name="edit_tilesource_elliptic_tile">Елиптични приказ земљине кугле</string>
     <string name="edit_tilesource_maxzoom">Максимално увеличање</string>
     <string name="edit_tilesource_minzoom">Минимално увеличање</string>
     <string name="edit_tilesource_url_to_load">URL</string>
@@ -174,7 +174,7 @@
 	<string name="rotate_map_none_opt">Без ротације (север је увек горе)</string>
 	<string name="rotate_map_to_bearing">Оријентација карте</string>
 	
-	<string name="avoid_in_routing_descr">Избегавај наплатне рампе, неасфалтиране путеве, трајекте.</string>
+	<string name="avoid_in_routing_descr">Избегавај на прм. наплатне рампе, неасфалтиране путеве, трајекте.</string>
 	<string name="map_widget_show_ruler">Лењир</string>
 	
 	<string name="shared_string_import">Увези</string>
@@ -1107,7 +1107,7 @@
     <string name="route_calculation">Прорачун путање</string>
     <string name="gpx_no_tracks_title">Још увек немате ниједан GPX фајл</string>
     <string name="gpx_no_tracks_title_folder">Такође, можете додати GPX фајлове у фасциклу</string>
-    <string name="gpx_add_track">И још…</string>
+    <string name="gpx_add_track">Додај још…</string>
     <string name="gpx_appearance">Приказ</string>
     
     
@@ -1397,7 +1397,7 @@
     <string name="restart_search">Препокрени претрагу</string>
     <string name="increase_search_radius">Повећај област претраге</string>
     <string name="nothing_found">Нема ничег пронађеног</string>
-    <string name="nothing_found_descr">Преправите упит претраге или увећајте област претраге.</string>
+    <string name="nothing_found_descr">Преправите упит претраге или повећајте област претраге.</string>
     <string name="quick_action_showhide_osmbugs_title">Приказ/скривање белешки ОСМ-а</string>
     <string name="quick_action_osmbugs_show">Прикажи белешке ОСМ-а</string>
     <string name="quick_action_osmbugs_hide">Сакриј белешке ОСМ-а</string>
@@ -2993,4 +2993,15 @@
 \n</string>
     <string name="commiting_way">Предајем пут…</string>
     <string name="test_voice_desrc">Кликните дугме и слушајте одговарајуће гласовно навођење да би препознали недостајајућа или погрешна навођења.</string>
-</resources>
+<string name="release_3_2_pre">• Исправљено рушење апликације при стартовању које се дешавало са не-латиничним картама 
+\n 
+\n • Убрзано исцртавање на Андроид 8.0 уређајима 
+\n 
+\n • Подршка за измену полигонских објеката 
+\n 
+\n • Мерење растојања: додај Измери дугме Акцијама у помоћном менију
+\n
+\n</string>
+    <string name="ask_for_location_permission">Молим дајте ОсмАнду дозволу приступа локацији ради наставка.</string>
+    <string name="rendering_value_black_name">Црна</string>
+    </resources>

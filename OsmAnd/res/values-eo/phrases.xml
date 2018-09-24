@@ -245,7 +245,7 @@
 
 	<string name="poi_atv">Ĉiuterenveturilo-vendejo</string>
 	<string name="poi_cosmetics">Kosmetikaĵ-vendejo</string>
-	<string name="poi_sewing">Pasamentejo</string>
+	<string name="poi_sewing">Kudrilar-vendejo</string>
 	<string name="poi_watches">Horloĝ-vendejo</string>
 	<string name="poi_swimming_pool_shop">Naĝej-akcesoriaĵoj vendejo</string>
 	<string name="poi_games">Lud-vendejo</string>
@@ -1572,7 +1572,7 @@
 	<string name="poi_diet_pescetarian_yes">Sen-vianda-kun-fiŝa</string>
 
 	<string name="poi_drive_in_yes">Jes</string>
-	<string name="poi_public_bath">Banejo publika</string>
+	<string name="poi_public_bath">Banejo (distro)</string>
 
 	<string name="poi_male_yes">Viroj</string>
 	<string name="poi_male_no">Viroj malpermesataj</string>
@@ -3858,7 +3858,6 @@
 	<string name="poi_checkpoint_type_stamp">stampilo</string>
 	<string name="poi_checkpoint_type_code">kodo</string>
 	<string name="poi_checkpoint_type_notebook">memorkajero</string>
-	<string name="poi_checkpoint_type_quize">demandaro</string>
 	<string name="poi_checkpoint_type_electronic">elektronika ilo</string>
 	<string name="poi_course">Ekskurso</string>
 
@@ -3881,5 +3880,11 @@
 	<string name="poi_hazard_flood">Danĝero: superakvego</string>
 	<string name="poi_hazard_minefield">Danĝero: minkampo</string>
 
+
+<string name="poi_car_pooling">Haltejo aŭtomobila</string>
+	<string name="poi_ruins">Ruino</string>
+
+
+<string name="poi_license_classes">Tipoj de ŝofor-permesiloj</string>
 
 </resources>

@@ -237,7 +237,6 @@ task validateTranslate {
 task collectVoiceAssets(type: Sync) {
 	from "../../resources/voice"
 	into "assets/voice"
-	include "**/*.p"
 	include "**/*.js"
 }
 
@@ -285,6 +284,12 @@ task copyStyleIcons(type: Copy) {
 	include "**/*.png"
 }
 
+task copyWidgetIcons(type: Exec) {
+	if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
+		commandLine 'sh', file("./copy_widget_icons.sh").getAbsolutePath()
+	}
+}
+
 task collectExternalResources {
 	dependsOn collectVoiceAssets,
 		collectFonts,
@@ -292,16 +297,35 @@ task collectExternalResources {
 		collectHelpContentsStyle,
 		copyStyleIcons,
 		updateNoTranslate,
-		validateTranslate
+		validateTranslate,
+		copyWidgetIcons
 }
 
 // Legacy core build
 import org.apache.tools.ant.taskdefs.condition.Os
 
 task buildOsmAndCore(type: Exec) {
+	Gradle gradle = getGradle()
+	String tskReqStr = gradle.getStartParameter().getTaskRequests().toString().toLowerCase()
+	String flavour = "";
+	if(!tskReqStr.contains("fat")) {
+		if(tskReqStr.contains("arm64")) {
+			flavour = flavour.length() == 0 ? "ARM64_ONLY" : ""
+		}
+		if(tskReqStr.contains("armv7")) {
+			flavour = flavour.length() == 0 ? "ARMV7_ONLY" : ""
+		}
+		if(tskReqStr.contains("x86")) {
+			flavour = flavour.length() == 0 ? "X86_ONLY" : ""
+		}
+	}
+	
 	description "Build Legacy OsmAndCore"
 
 	if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
+		if(flavour.length()  > 0) {
+			environment "$flavour", "1"
+		}
 		commandLine "bash", file("./old-ndk-build.sh").getAbsolutePath()
 	} else {
 		commandLine "cmd", "/c", "echo", "Not supported"
@@ -374,7 +398,7 @@ dependencies {
 	qtcoredebugImplementation "net.osmand:OsmAndCore_android:0.1-SNAPSHOT@aar"
 	qtcoreImplementation "net.osmand:OsmAndCore_androidNativeRelease:0.1-SNAPSHOT@aar"
 	qtcoreImplementation "net.osmand:OsmAndCore_android:0.1-SNAPSHOT@aar"
-	implementation ("com.getkeepsafe.taptargetview:taptargetview:1.6.1"){
+	implementation ("com.getkeepsafe.taptargetview:taptargetview:1.12.0"){
 		exclude group: 'com.android.support'
 	}
 	implementation 'com.github.PhilJay:MPAndroidChart:v3.0.1'

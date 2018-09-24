@@ -6,7 +6,6 @@ import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.support.annotation.StringRes
-import android.support.v4.app.DialogFragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.AppCompatImageView
@@ -30,7 +29,7 @@ import net.osmand.telegram.utils.AndroidUtils
 import studio.carbonylgroup.textfieldboxes.ExtendedEditText
 
 
-class LoginDialogFragment : DialogFragment() {
+class LoginDialogFragment : BaseDialogFragment() {
 
 	companion object {
 
@@ -88,7 +87,7 @@ class LoginDialogFragment : DialogFragment() {
 		fun dismiss(fragmentManager: FragmentManager) {
 			val loginDialogFragment = getFragment(fragmentManager)
 			loginDialogFragment?.dismissedManually = true
-			loginDialogFragment?.dismiss()
+			loginDialogFragment?.dismissAllowingStateLoss()
 		}
 
 		private fun getFragment(fragmentManager: FragmentManager): LoginDialogFragment? {
@@ -118,10 +117,7 @@ class LoginDialogFragment : DialogFragment() {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		setStyle(DialogFragment.STYLE_NO_FRAME, R.style.AppTheme_NoActionbar_Translucent)
-		val activity = requireActivity()
-		val window = activity.window
-		window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+		requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 	}
 
 	override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -218,7 +214,7 @@ class LoginDialogFragment : DialogFragment() {
 		var focusRequested = false
 		for (t in LoginDialogType.values()) {
 			val layout: View? = view?.findViewById(t.viewId)
-			val contains = t == loginDialogActiveType && !showProgress
+			val contains = t == loginDialogActiveType
 			when {
 				contains -> {
 					if (layout != null) {
@@ -331,16 +327,23 @@ class LoginDialogFragment : DialogFragment() {
 		val cancelButton: AppCompatImageView? = view?.findViewById(R.id.back_button)
 		cancelButton?.visibility = if (showWelcomeDialog) View.INVISIBLE else View.VISIBLE
 		cancelButton?.setOnClickListener {
-			if (loginDialogActiveType == LoginDialogType.ENTER_PHONE_NUMBER) {
-				showWelcomeDialog = true
-				val focusedView = dialog.currentFocus
-				if (focusedView != null) {
-					AndroidUtils.hideSoftKeyboard(activity!!, focusedView)
+			when (loginDialogActiveType) {
+				LoginDialogType.ENTER_PHONE_NUMBER -> {
+					showWelcomeDialog = true
+					val focusedView = dialog.currentFocus
+					if (focusedView != null) {
+						AndroidUtils.hideSoftKeyboard(activity!!, focusedView)
+					}
+					buildDialog(view)
 				}
-				buildDialog(view)
-			} else {
-				showProgress()
-				getMainActivity()?.loginTelegram()
+				LoginDialogType.GET_TELEGRAM -> {
+					this.loginDialogActiveType = LoginDialogType.ENTER_PHONE_NUMBER
+					buildDialog(view)
+				}
+				else -> {
+					showProgress()
+					getMainActivity()?.loginTelegram()
+				}
 			}
 		}
 	}

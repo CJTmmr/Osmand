@@ -49,8 +49,8 @@ class MyLocationTabFragment : Fragment(), TelegramListener {
 	private val settings get() = app.settings
 
 	private lateinit var appBarLayout: AppBarLayout
-	private lateinit var userImage: ImageView
 	private lateinit var imageContainer: FrameLayout
+	private lateinit var currentUserIcon: ImageView
 	private lateinit var textContainer: LinearLayout
 	private lateinit var titleContainer: LinearLayout
 	private lateinit var optionsBtn: ImageView
@@ -120,9 +120,7 @@ class MyLocationTabFragment : Fragment(), TelegramListener {
 			})
 		}
 
-		userImage = mainView.findViewById<ImageView>(R.id.my_location_user_image).apply {
-			setImageResource(R.drawable.img_my_location_user)
-		}
+		currentUserIcon = mainView.findViewById(R.id.user_icon)
 
 		optionsBtn = mainView.findViewById<ImageView>(R.id.options)
 		with(activity as MainActivity) {
@@ -178,18 +176,13 @@ class MyLocationTabFragment : Fragment(), TelegramListener {
 			})
 		}
 
-		stopSharingSwitcher = mainView.findViewById<Switch>(R.id.stop_all_sharing_switcher).apply {
-			isChecked = sharingMode
-			setOnCheckedChangeListener { _, isChecked ->
-				if (!isChecked) {
-					sharingMode = isChecked
-					settings.stopSharingLocationToChats()
-					shareLocationHelper.stopSharingLocation()
-					telegramHelper.stopSendingLiveLocationMessages()
-					updateContent()
-				}
+		mainView.findViewById<View>(R.id.stop_all_sharing_row).setOnClickListener {
+			fragmentManager?.also { fm ->
+				DisableSharingBottomSheet.showInstance(fm, this, adapter.chats.size)
 			}
 		}
+
+		stopSharingSwitcher = mainView.findViewById(R.id.stop_all_sharing_switcher)
 
 		startSharingBtn = mainView.findViewById<View>(R.id.start_sharing_btn).apply {
 			visibility = if (sharingMode) View.VISIBLE else View.GONE
@@ -205,6 +198,7 @@ class MyLocationTabFragment : Fragment(), TelegramListener {
 
 	override fun onResume() {
 		super.onResume()
+		updateCurrentUserPhoto()
 		telegramHelper.getActiveLiveLocationMessages(null)
 		updateContent()
 		updateEnable = true
@@ -223,10 +217,17 @@ class MyLocationTabFragment : Fragment(), TelegramListener {
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
-		if (requestCode == SetTimeDialogFragment.LOCATION_SHARED_REQUEST_CODE) {
-			sharingMode = settings.hasAnyChatToShareLocation()
-			clearSelection()
-			updateContent()
+		when (requestCode) {
+			SetTimeDialogFragment.LOCATION_SHARED_REQUEST_CODE -> {
+				sharingMode = settings.hasAnyChatToShareLocation()
+				clearSelection()
+				updateContent()
+			}
+			DisableSharingBottomSheet.SHARING_DISABLED_REQUEST_CODE -> {
+				sharingMode = false
+				app.stopSharingLocation()
+				updateContent()
+			}
 		}
 	}
 
@@ -260,6 +261,9 @@ class MyLocationTabFragment : Fragment(), TelegramListener {
 	}
 
 	override fun onTelegramUserChanged(user: TdApi.User) {
+		if (user.id == telegramHelper.getCurrentUser()?.id) {
+			updateCurrentUserPhoto()
+		}
 		updateContent()
 	}
 
@@ -282,6 +286,16 @@ class MyLocationTabFragment : Fragment(), TelegramListener {
 			sharingMode = true
 			updateContent()
 		}
+	}
+
+	private fun updateCurrentUserPhoto() {
+		TelegramUiHelper.setupPhoto(
+			app,
+			currentUserIcon,
+			telegramHelper.getUserPhotoPath(telegramHelper.getCurrentUser()),
+			R.drawable.img_user_placeholder,
+			false
+		)
 	}
 
 	private fun startHandler() {
@@ -577,22 +591,24 @@ class MyLocationTabFragment : Fragment(), TelegramListener {
 				}
 
 				holder.stopSharingDescr?.apply {
-					visibility = View.VISIBLE
-					text = "${getText(R.string.stop_at)}:"
+					visibility = getStopSharingVisibility(expiresIn)
+					text = "${getText(R.string.expire_in)}:"
 				}
 
 				holder.stopSharingFirstPart?.apply {
-					visibility = View.VISIBLE
+					visibility = getStopSharingVisibility(expiresIn)
 					text = OsmandFormatter.getFormattedTime(expiresIn)
 				}
 
 				holder.stopSharingSecondPart?.apply {
-					visibility = View.VISIBLE
+					visibility = getStopSharingVisibility(expiresIn)
 					text = "(${getString(R.string.in_time,
 						OsmandFormatter.getFormattedDuration(context!!, expiresIn, true))})"
 				}
 			}
 		}
+
+		private fun getStopSharingVisibility(expiresIn: Long) = if (expiresIn > 0) View.VISIBLE else View.INVISIBLE
 
 		private fun removeItem(chat: TdApi.Chat) {
 			chats.remove(chat)

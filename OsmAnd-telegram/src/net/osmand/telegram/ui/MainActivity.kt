@@ -1,7 +1,9 @@
 package net.osmand.telegram.ui
 
 import android.app.Dialog
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.BottomNavigationView
 import android.support.v4.app.DialogFragment
@@ -24,15 +26,19 @@ import net.osmand.telegram.ui.LoginDialogFragment.LoginDialogType
 import net.osmand.telegram.ui.MyLocationTabFragment.ActionButtonsListener
 import net.osmand.telegram.ui.views.LockableViewPager
 import net.osmand.telegram.utils.AndroidUtils
+import net.osmand.telegram.utils.GRAYSCALE_PHOTOS_DIR
+import net.osmand.telegram.utils.GRAYSCALE_PHOTOS_EXT
 import org.drinkless.td.libcore.telegram.TdApi
 import java.lang.ref.WeakReference
+
+const val OPEN_MY_LOCATION_TAB_KEY = "open_my_location_tab"
 
 private const val PERMISSION_REQUEST_LOCATION = 1
 
 private const val MY_LOCATION_TAB_POS = 0
 private const val LIVE_NOW_TAB_POS = 1
 
-class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListener {
+class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListener, TelegramIncomingMessagesListener {
 
 	private val log = PlatformUtil.getLog(TelegramHelper::class.java)
 
@@ -58,6 +64,12 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 
+		if (Build.VERSION.SDK_INT >= 23) {
+			AndroidUtils.enterToTransparentFullScreen(this)
+		} else if (Build.VERSION.SDK_INT >= 19) {
+			AndroidUtils.enterToTranslucentFullScreen(this)
+		}
+		
 		paused = false
 
 		val viewPager = findViewById<LockableViewPager>(R.id.view_pager).apply {
@@ -143,15 +155,14 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 		if (telegramHelper.listener != this) {
 			telegramHelper.listener = this
 		}
+		telegramHelper.addIncomingMessagesListener(this)
 
 		app.locationProvider.checkIfLastKnownLocationIsValid()
 
 		if (AndroidUtils.isLocationPermissionAvailable(this)) {
 			app.locationProvider.resumeAllUpdates()
-		} else {
-			AndroidUtils.requestLocationPermission(this)
 		}
-		if (settings.hasAnyChatToShowOnMap() && osmandAidlHelper.isOsmandNotInstalled()) {
+		if (settings.hasAnyChatToShowOnMap() && !app.isOsmAndInstalled()) {
 			showOsmandMissingDialog()
 		}
 	}
@@ -159,6 +170,7 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 	override fun onPause() {
 		super.onPause()
 		telegramHelper.listener = null
+		telegramHelper.removeIncomingMessagesListener(this)
 
 		app.locationProvider.pauseAllUpdates()
 
@@ -179,12 +191,32 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 		}
 	}
 
+	override fun onNewIntent(intent: Intent) {
+		super.onNewIntent(intent)
+		if (intent.getBooleanExtra(OPEN_MY_LOCATION_TAB_KEY, false)) {
+			AndroidUtils.dismissAllDialogs(supportFragmentManager)
+			bottomNav.selectedItemId = R.id.action_my_location
+		}
+	}
+
 	override fun onTelegramStatusChanged(prevTelegramAuthorizationState: TelegramAuthorizationState,
 										 newTelegramAuthorizationState: TelegramAuthorizationState) {
 		runOnUi {
 			val fm = supportFragmentManager
 			when (newTelegramAuthorizationState) {
-				TelegramAuthorizationState.READY -> LoginDialogFragment.dismiss(fm)
+				TelegramAuthorizationState.LOGGING_OUT -> LoginDialogFragment.showWelcomeDialog(fm)
+				TelegramAuthorizationState.CLOSED -> {
+					telegramHelper.init()
+					telegramHelper.requestAuthorizationState()
+				}
+				TelegramAuthorizationState.READY -> {
+					LoginDialogFragment.dismiss(fm)
+					if (AndroidUtils.isLocationPermissionAvailable(this)) {
+						app.locationProvider.resumeAllUpdates()
+					} else {
+						AndroidUtils.requestLocationPermission(this)
+					}
+				} 
 				else -> Unit
 			}
 
@@ -202,21 +234,29 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 	}
 
 	override fun onTelegramChatsChanged() {
+		telegramHelper.getMessagesByChatIds(settings.locHistoryTime).forEach {
+			addGrayPhoto(it.key)
+		}
 		runOnUi {
 			listeners.forEach { it.get()?.onTelegramChatsChanged() }
 		}
 	}
 
 	override fun onTelegramChatChanged(chat: TdApi.Chat) {
+		addGrayPhoto(chat.id)
 		runOnUi {
 			listeners.forEach { it.get()?.onTelegramChatChanged(chat) }
 		}
 	}
 
 	override fun onTelegramUserChanged(user: TdApi.User) {
+		val photoPath = telegramHelper.getUserPhotoPath(user)
+		if (photoPath != null) {
+			addGrayPhoto(user.id, photoPath)
+		}
 		val message = telegramHelper.getUserMessage(user)
 		if (message != null) {
-			app.showLocationHelper.addLocationToMap(message)
+			app.showLocationHelper.addOrUpdateLocationOnMap(message)
 		}
 		runOnUi {
 			listeners.forEach { it.get()?.onTelegramUserChanged(user) }
@@ -238,6 +278,17 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 		}
 	}
 
+	override fun onReceiveChatLocationMessages(chatId: Long, vararg messages: TdApi.Message) {
+		addGrayPhoto(chatId)
+		if (!app.showLocationHelper.showingLocation && settings.hasAnyChatToShowOnMap()) {
+			app.showLocationHelper.startShowingLocation()
+		}
+	}
+
+	override fun onDeleteChatLocationMessages(chatId: Long, messages: List<TdApi.Message>) {}
+
+	override fun updateLocationMessages() {}
+
 	override fun switchButtonsVisibility(visible: Boolean) {
 		val buttonsVisibility = if (visible) View.VISIBLE else View.GONE
 		if (buttonsBar.visibility != buttonsVisibility) {
@@ -251,6 +302,18 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 		settings.removeNonexistingChats(presentChatTitles)
 	}
 
+	fun stopShowingChatsOnMap(forceStop: Boolean) {
+		settings.getShowOnMapChats().forEach { app.showLocationHelper.hideChatMessages(it) }
+		app.showLocationHelper.stopShowingLocation(forceStop)
+	}
+
+	private fun closeApp() {
+		app.stopSharingLocation()
+		stopShowingChatsOnMap(true)
+		finish()
+		android.os.Process.killProcess(android.os.Process.myPid())
+	}
+
 	fun loginTelegram() {
 		if (telegramHelper.getTelegramAuthorizationState() != TelegramAuthorizationState.CLOSED) {
 			telegramHelper.logout()
@@ -258,9 +321,15 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 		// FIXME: update UI
 	}
 	
-	private fun logoutTelegram(silent: Boolean = false) {
+	fun logoutTelegram(silent: Boolean = false) {
 		if (telegramHelper.getTelegramAuthorizationState() == TelegramHelper.TelegramAuthorizationState.READY) {
-			telegramHelper.logout()
+			if (app.isInternetConnectionAvailable) {
+				app.messagesDbHelper.clearMessages()
+				settings.clear()
+				telegramHelper.logout()
+			} else {
+				Toast.makeText(this, R.string.logout_no_internet_msg, Toast.LENGTH_SHORT).show()
+			}
 		} else if (!silent) {
 			Toast.makeText(this, R.string.not_logged_in, Toast.LENGTH_SHORT).show()
 		}
@@ -275,18 +344,17 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 		imageView.setOnClickListener { showOptionsPopupMenu(imageView) }
 	}
 
-	fun showOptionsPopupMenu(anchor: View) {
+	private fun showOptionsPopupMenu(anchor: View) {
 		val menuList = ArrayList<String>()
 		val settings = getString(R.string.shared_string_settings)
-		val logout = getString(R.string.shared_string_logout)
 		val login = getString(R.string.shared_string_login)
+		val exit = getString(R.string.shared_string_exit)
 
 		menuList.add(settings)
-		@Suppress("NON_EXHAUSTIVE_WHEN")
-		when (telegramHelper.getTelegramAuthorizationState()) {
-			TelegramHelper.TelegramAuthorizationState.READY -> menuList.add(logout)
-			TelegramHelper.TelegramAuthorizationState.CLOSED -> menuList.add(login)
+		if (telegramHelper.getTelegramAuthorizationState() == TelegramAuthorizationState.CLOSED) {
+			menuList.add(login)
 		}
+		menuList.add(exit)
 
 		ListPopupWindow(this@MainActivity).apply {
 			isModal = true
@@ -299,12 +367,29 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 					menuList.indexOf(settings) -> {
 						supportFragmentManager?.also { SettingsDialogFragment.showInstance(it) }
 					}
-					menuList.indexOf(logout) -> logoutTelegram()
 					menuList.indexOf(login) -> loginTelegram()
+					menuList.indexOf(exit) -> closeApp()
 				}
 				dismiss()
 			}
 			show()
+		}
+	}
+
+	private fun addGrayPhoto(chatId: Long) {
+		val chat = app.telegramHelper.getChat(chatId)
+		val chatIconPath = chat?.photo?.small?.local?.path
+		if (chat != null && chatIconPath != null) {
+			addGrayPhoto(app.telegramHelper.getUserIdFromChatType(chat.type), chatIconPath)
+		}
+	}
+
+	private fun addGrayPhoto(userId: Int, originalPhotoPath: String) {
+		if (userId != 0 && !app.telegramHelper.hasGrayscaleUserPhoto(userId)) {
+			app.uiUtils.convertAndSaveGrayPhoto(
+				originalPhotoPath,
+				"${app.filesDir.absolutePath}/$GRAYSCALE_PHOTOS_DIR$userId$GRAYSCALE_PHOTOS_EXT"
+			)
 		}
 	}
 	
@@ -347,7 +432,7 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 					settings.stopSharingLocationToChats()
 					app.shareLocationHelper.stopSharingLocation()
 				}
-				if (settings.hasAnyChatToShowOnMap() && osmandAidlHelper.isOsmandNotInstalled()) {
+				if (settings.hasAnyChatToShowOnMap() && !app.isOsmAndInstalled()) {
 					showOsmandMissingDialog()
 				}
 			}

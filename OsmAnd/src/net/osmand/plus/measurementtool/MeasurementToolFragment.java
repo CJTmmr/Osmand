@@ -35,6 +35,7 @@ import android.widget.Toast;
 import net.osmand.AndroidUtils;
 import net.osmand.CallbackWithObject;
 import net.osmand.IndexConstants;
+import net.osmand.data.LatLon;
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.GPXUtilities;
 import net.osmand.plus.GPXUtilities.GPXFile;
@@ -44,6 +45,7 @@ import net.osmand.plus.GPXUtilities.TrkSegment;
 import net.osmand.plus.GPXUtilities.WptPt;
 import net.osmand.plus.GpxSelectionHelper.SelectedGpxFile;
 import net.osmand.plus.OsmAndFormatter;
+import net.osmand.plus.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.activities.TrackActivity;
@@ -63,7 +65,6 @@ import net.osmand.plus.measurementtool.command.ClearPointsCommand;
 import net.osmand.plus.measurementtool.command.MovePointCommand;
 import net.osmand.plus.measurementtool.command.RemovePointCommand;
 import net.osmand.plus.measurementtool.command.ReorderPointCommand;
-import net.osmand.plus.views.OsmandMapTileView;
 import net.osmand.plus.views.mapwidgets.MapInfoWidgetsFactory;
 import net.osmand.plus.views.mapwidgets.MapInfoWidgetsFactory.TopToolbarController;
 
@@ -75,8 +76,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import static net.osmand.plus.OsmandSettings.LANDSCAPE_MIDDLE_RIGHT_CONSTANT;
-import static net.osmand.plus.OsmandSettings.MIDDLE_TOP_CONSTANT;
 import static net.osmand.plus.helpers.ImportHelper.GPX_SUFFIX;
 
 public class MeasurementToolFragment extends BaseOsmAndFragment {
@@ -107,10 +106,12 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 	private Boolean saved;
 	private boolean portrait;
 	private boolean nightMode;
-	private int previousMapPosition;
+	private int cachedMapPosition;
 	private boolean gpxPointsAdded;
 
 	private MeasurementEditingContext editingCtx = new MeasurementEditingContext();
+
+	private LatLon initialPoint;
 
 	private enum SaveType {
 		ROUTE_POINT,
@@ -119,6 +120,10 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 
 	private void setEditingCtx(MeasurementEditingContext editingCtx) {
 		this.editingCtx = editingCtx;
+	}
+
+	private void setInitialPoint(LatLon initialPoint) {
+		this.initialPoint = initialPoint;
 	}
 
 	@Nullable
@@ -464,6 +469,15 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 	public void onResume() {
 		super.onResume();
 		getMapActivity().getMapLayers().getMapControlsLayer().showMapControlsIfHidden();
+		cachedMapPosition = getMapActivity().getMapView().getMapPosition();
+		setDefaultMapPosition();
+		addInitialPoint();
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		setMapPosition(cachedMapPosition);
 	}
 
 	@Override
@@ -639,7 +653,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 
 			@Override
 			public void onCloseMenu() {
-				setPreviousMapPosition();
+				setDefaultMapPosition();
 			}
 
 			@Override
@@ -713,12 +727,9 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 					if (pointsListOpened) {
 						hidePointsList();
 					}
-					OsmandMapTileView tileView = mapActivity.getMapView();
 					if (portrait) {
-						previousMapPosition = tileView.getMapPosition();
-						tileView.setMapPosition(MIDDLE_TOP_CONSTANT);
+						setMapPosition(OsmandSettings.MIDDLE_TOP_CONSTANT);
 					}
-					mapActivity.refreshMap();
 					measurementLayer.moveMapToPoint(position);
 					measurementLayer.selectPoint(position);
 				}
@@ -975,6 +986,17 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 				R.id.measure_mode_controls);
 	}
 
+	private void addInitialPoint() {
+		if (initialPoint != null) {
+			MeasurementToolLayer layer = getMeasurementLayer();
+			if (layer != null) {
+				editingCtx.getCommandManager().execute(new AddPointCommand(layer, initialPoint));
+				doAddOrMovePointCommonStuff();
+				initialPoint = null;
+			}
+		}
+	}
+
 	private void addPoint() {
 		MeasurementToolLayer measurementLayer = getMeasurementLayer();
 		if (measurementLayer != null) {
@@ -1011,14 +1033,9 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 			} else {
 				showPointsListFragment();
 			}
-			OsmandMapTileView tileView = mapActivity.getMapView();
-			previousMapPosition = tileView.getMapPosition();
-			if (portrait) {
-				tileView.setMapPosition(MIDDLE_TOP_CONSTANT);
-			} else {
-				tileView.setMapPosition(LANDSCAPE_MIDDLE_RIGHT_CONSTANT);
-			}
-			mapActivity.refreshMap();
+			setMapPosition(portrait
+					? OsmandSettings.MIDDLE_TOP_CONSTANT
+					: OsmandSettings.LANDSCAPE_MIDDLE_RIGHT_CONSTANT);
 		}
 	}
 
@@ -1030,7 +1047,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 		} else {
 			hidePointsListFragment();
 		}
-		setPreviousMapPosition();
+		setDefaultMapPosition();
 	}
 
 	private void hidePointsListIfNoPoints() {
@@ -1077,10 +1094,14 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 		}
 	}
 
-	private void setPreviousMapPosition() {
+	private void setDefaultMapPosition() {
+		setMapPosition(OsmandSettings.CENTER_CONSTANT);
+	}
+
+	private void setMapPosition(int position) {
 		MapActivity mapActivity = getMapActivity();
 		if (mapActivity != null) {
-			mapActivity.getMapView().setMapPosition(previousMapPosition);
+			mapActivity.getMapView().setMapPosition(position);
 			mapActivity.refreshMap();
 		}
 	}
@@ -1212,6 +1233,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 				TrkSegment after = editingCtx.getAfterTrkSegmentLine();
 				if (gpx == null) {
 					toSave = new File(dir, fileName);
+					String trackName = fileName.substring(0,fileName.length()-GPX_SUFFIX.length());
 					GPXFile gpx = new GPXFile();
 					if (measurementLayer != null) {
 						if (saveType == SaveType.LINE) {
@@ -1223,6 +1245,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 								segment.points.addAll(points);
 							}
 							Track track = new Track();
+							track.name = trackName;
 							track.segments.add(segment);
 							gpx.tracks.add(track);
 						} else if (saveType == SaveType.ROUTE_POINT) {
@@ -1231,10 +1254,12 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 								segment.points.addAll(before.points);
 								segment.points.addAll(after.points);
 								Track track = new Track();
+								track.name = trackName;
 								track.segments.add(segment);
 								gpx.tracks.add(track);
 							}
 							Route rt = new Route();
+							rt.name = trackName;
 							gpx.routes.add(rt);
 							rt.points.addAll(points);
 						}
@@ -1502,23 +1527,24 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 		}
 	}
 
+	public static boolean showInstance(FragmentManager fragmentManager, LatLon initialPoint) {
+		MeasurementToolFragment fragment = new MeasurementToolFragment();
+		fragment.setInitialPoint(initialPoint);
+		return showFragment(fragment, fragmentManager);
+	}
+
 	public static boolean showInstance(FragmentManager fragmentManager, MeasurementEditingContext editingCtx) {
-		try {
-			MeasurementToolFragment fragment = new MeasurementToolFragment();
-			fragment.setEditingCtx(editingCtx);
-			fragment.setRetainInstance(true);
-			fragmentManager.beginTransaction()
-					.add(R.id.bottomFragmentContainer, fragment, MeasurementToolFragment.TAG)
-					.commitAllowingStateLoss();
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+		MeasurementToolFragment fragment = new MeasurementToolFragment();
+		fragment.setEditingCtx(editingCtx);
+		return showFragment(fragment, fragmentManager);
 	}
 
 	public static boolean showInstance(FragmentManager fragmentManager) {
+		return showFragment(new MeasurementToolFragment(), fragmentManager);
+	}
+
+	private static boolean showFragment(MeasurementToolFragment fragment, FragmentManager fragmentManager) {
 		try {
-			MeasurementToolFragment fragment = new MeasurementToolFragment();
 			fragment.setRetainInstance(true);
 			fragmentManager.beginTransaction()
 					.add(R.id.bottomFragmentContainer, fragment, MeasurementToolFragment.TAG)

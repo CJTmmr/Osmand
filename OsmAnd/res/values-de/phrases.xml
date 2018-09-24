@@ -27,7 +27,7 @@
 	<string name="poi_ambulance_station">Rettungswache</string>
 	<string name="poi_anime">Anime-Shop</string>
 	<string name="poi_antiques">Antiquitätenhändler</string>
-	<string name="poi_archaeological_site">Aarchäologischer Fundort</string>
+	<string name="poi_archaeological_site">Archäologischer Fundort</string>
 	<string name="poi_archery">Bogenschießen</string>
 	<string name="poi_architect">Architekturbüro</string>
 	<string name="poi_art">Kunsthandlung</string>
@@ -1164,7 +1164,7 @@
 
 	<string name="poi_cypress">Zypresse</string>
 	<string name="poi_bench_yes">ja</string>
-	<string name="poi_bench_no">Ohne Sitzbank</string>
+	<string name="poi_bench_no">ohne Sitzbank</string>
 	<string name="poi_bin_yes">Mit Abfalleimer</string>
 	<string name="poi_bin_no">Ohne Abfalleimer</string>
 
@@ -1400,7 +1400,7 @@
 	<string name="poi_fireplace_no">Keine Feuerstelle</string>
 
 	<string name="poi_covered_yes">ja</string>
-	<string name="poi_covered_no">offen</string>
+	<string name="poi_covered_no">nicht überdacht</string>
 
 	<string name="poi_smoking_no">Nicht erlaubt</string>
 	<string name="poi_smoking_outside">nur Außerhalb</string>
@@ -3651,7 +3651,7 @@
 	<string name="poi_map_size_city">Kartengröße: Stadt</string>
 	<string name="poi_map_size_region">Kartengröße: Region</string>
 
-	<string name="poi_letter_box">Briefkasten</string>
+	<string name="poi_letter_box">Hausbriefkasten</string>
 	<string name="poi_post_street">Straße</string>
 	<string name="poi_post_housenumber">Hausnummer</string>
 	<string name="poi_post_flats">Flach</string>
@@ -3817,12 +3817,12 @@
 	<string name="poi_service_vehicle_tyres_yes">Reifen</string>
 
 <string name="poi_service_vehicle_muffler_yes">Schalldämpfer</string>
-	<string name="poi_climbing_adventure">Kletterabenteuer</string>
+	<string name="poi_climbing_adventure">Kletterpark</string>
 
 <string name="poi_aerialway_zip_line">Seilrutsche</string>
 
 	<string name="poi_via_ferrata">Klettersteig</string>
-	<string name="poi_cable_number">Kabelnummer</string>
+	<string name="poi_cable_number">Kabel Anzahl</string>
 	<string name="poi_via_ferrata_scale">Schwierigkeitsgrad</string>
 
 <string name="poi_glacier_type">Gletschertyp</string>
@@ -3852,7 +3852,6 @@
 	<string name="poi_checkpoint_type_code">Code</string>
 	<string name="poi_checkpoint_type_notebook">Notizbuch</string>
 	<string name="poi_checkpoint_type_needler">Nadel</string>
-	<string name="poi_checkpoint_type_quize">"Quize "</string>
 	<string name="poi_checkpoint_type_electronic">Elektronisch</string>
 	<string name="poi_course">Kurs</string>
 
@@ -3860,19 +3859,25 @@
 
 	<string name="poi_end_date">Enddatum</string>
 
-<string name="poi_appliance">Appliance-Store</string>
+<string name="poi_appliance">Haushaltsgeräte-Geschäft</string>
 
 	<string name="poi_outcrop">Aufschluss</string>
 
 <string name="poi_payment_contactless_yes">Kontaktlos</string>
 	<string name="poi_payment_contactless_no">Kontaktlos nicht akzeptiert</string>
 
-<string name="poi_hazard_nuclear">nukleare Gefahr</string>
+<string name="poi_hazard_nuclear">Nukleare Gefahr</string>
 	<string name="poi_hazard_erosion">Erosionsgefahr</string>
 	<string name="poi_hazard_avalanche">Lawinengefahr</string>
 	<string name="poi_hazard_slippery_road">Rutschgefahr</string>
 	<string name="poi_hazard_flood">Überschwemmungsgefahr</string>
 	<string name="poi_hazard_minefield">Minenfeld</string>
 
+
+<string name="poi_car_pooling">Fahrgemeinschaftsplatz</string>
+	<string name="poi_ruins">Ruinen</string>
+
+
+<string name="poi_license_classes">Lizenzklassen</string>
 
 </resources>

@@ -97,9 +97,7 @@ public class RoutingHelper {
 	public RoutingHelper(OsmandApplication context){
 		this.app = context;
 		settings = context.getSettings();
-		boolean useJS = settings.USE_JS_VOICE_GUIDANCE.get();
-		voiceRouter = useJS ? new JSVoiceRouter(this, settings)
-				: new VoiceRouter(this, settings);
+		voiceRouter = new VoiceRouter(this, settings);
 		provider = new RouteProvider();
 		setAppMode(settings.APPLICATION_MODE.get());
 	}
@@ -1084,8 +1082,8 @@ public class RoutingHelper {
 		return route;
 	}
 
-	public GPXFile generateGPXFileWithRoute(){
-		return provider.createOsmandRouterGPX(route, app);
+	public GPXFile generateGPXFileWithRoute(String name){
+		return provider.createOsmandRouterGPX(route, app, name);
 	}
 
 

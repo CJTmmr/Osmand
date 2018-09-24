@@ -2,20 +2,25 @@ package net.osmand.telegram.utils
 
 import android.Manifest
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.support.annotation.AttrRes
 import android.support.annotation.ColorInt
 import android.support.v4.app.ActivityCompat
+import android.support.v4.app.DialogFragment
+import android.support.v4.app.FragmentManager
 import android.support.v4.content.FileProvider
 import android.util.TypedValue
 import android.util.TypedValue.COMPLEX_UNIT_DIP
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import net.osmand.telegram.R
 import java.io.File
@@ -47,6 +52,15 @@ object AndroidUtils {
 					inputMethodManager.hideSoftInputFromWindow(windowToken, 0)
 				}
 			}
+		}
+	}
+
+	fun dismissAllDialogs(fm: FragmentManager) {
+		for (fragment in fm.fragments) {
+			if (fragment is DialogFragment) {
+				fragment.dismissAllowingStateLoss()
+			}
+			dismissAllDialogs(fragment.childFragmentManager)
 		}
 	}
 
@@ -85,6 +99,22 @@ object AndroidUtils {
 		}
 	}
 
+	fun enterToTransparentFullScreen(activity: Activity) {
+		if (Build.VERSION.SDK_INT >= 23) {
+			val window = activity.window
+			window.statusBarColor = Color.TRANSPARENT
+			window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
+					View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+					View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+		}
+	}
+
+	fun enterToTranslucentFullScreen(activity: Activity) {
+		if (Build.VERSION.SDK_INT >= 19) {
+			activity.window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+		}
+	}
+
 	fun getPopupMenuWidth(ctx: Context, titles: Collection<String>): Int {
 		val txtSize = ctx.resources.getDimensionPixelSize(R.dimen.list_item_title_text_size)
 		val paint = Paint().apply { textSize = txtSize.toFloat() }
@@ -95,6 +125,10 @@ object AndroidUtils {
 			return maxOf(minWidth, maxItemWidth)
 		}
 		return 0
+	}
+
+	fun getPopupMenuHeight(ctx: Context): Int {
+		return ctx.resources.getDimensionPixelSize(R.dimen.list_popup_window_height)
 	}
 
 	@ColorInt
@@ -113,7 +147,24 @@ object AndroidUtils {
 		}
 	}
 
+	fun resourceToUri(ctx: Context, resID: Int): Uri {
+		return Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
+					"://${ctx.resources.getResourcePackageName(resID)}" +
+					"/${ctx.resources.getResourceTypeName(resID)}" +
+					"/${ctx.resources.getResourceEntryName(resID)}"
+		)
+	}
+
+	fun getAppVersionCode(ctx: Context, appPackage: String) = try {
+		ctx.packageManager.getPackageInfo(appPackage, 0).versionCode
+	} catch (e: PackageManager.NameNotFoundException) {
+		-1
+	}
+
 	fun isAppInstalled(ctx: Context, appPackage: String): Boolean {
+		if (appPackage.isEmpty()) {
+			return false
+		}
 		try {
 			ctx.packageManager.getPackageInfo(appPackage, 0)
 		} catch (e: PackageManager.NameNotFoundException) {

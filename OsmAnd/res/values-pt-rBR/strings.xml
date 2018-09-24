@@ -354,7 +354,7 @@
     <string name="app_mode_truck">Caminhão</string>
     <string name="auto_zoom_far">Visão intermediária</string>
 	<string name="local_index_tile_data_minzoom">Zoom mínimo: %1$s</string>
-    <string name="edit_tilesource_successfully">A fonte da quadrícula %1$s foi salva com sucesso</string>
+    <string name="edit_tilesource_successfully">A fonte da quadrícula %1$s foi salva</string>
     <string name="speak_traffic_warnings">Moderadores de tráfego</string>
     <string name="context_menu_item_directions_from">Rota a partir daqui</string>
     <string name="app_mode_default">Explorar</string>
@@ -2186,7 +2186,7 @@ Pôr do Sol: %2$s</string>
     <string name="store_tracks_in_monthly_directories_descrp">Armazenar trilhas gravadas em subpastas por mês (ex.: 2018-01).</string>
     <string name="shared_string_reset">Redefinir</string>
     <string name="shared_string_reload">Recarregar</string>
-    <string name="mapillary_menu_descr_tile_cache">Recarregar ladrilhos para visualizar dados atualizados.</string>
+    <string name="mapillary_menu_descr_tile_cache">Recarregar para ver dados atualizados.</string>
     <string name="wrong_user_name">Nome de usuário errado</string>
     <string name="shared_string_to">Para</string>
     <string name="mapillary_menu_date_from">De</string>
@@ -2936,4 +2936,12 @@ Pôr do Sol: %2$s</string>
 \nOsmAnd é um software de código aberto desenvolvido ativamente. Todos podem contribuir para o app, reportando bugs, melhorando as traduções ou programando novas funcionalidades. Além disso, o projeto conta com as contribuições financeiras para financiar o desenvolvimento e testes de novas funcionalidades.</string>
     <string name="point_deleted">Ponto %1$s foi excluído</string>
     <string name="shared_string_world">Mundo</string>
+    <string name="thank_you_for_feedback">Obrigado por comentar</string>
+    <string name="poi_cannot_be_found">Nó ou caminho não pode ser encontrado.</string>
+    <string name="search_no_results_feedback">Nenhum resultado de pesquisa?
+\nMande-nos seu comentário</string>
+    <string name="commiting_way">Enviando caminho…</string>
+    <string name="increase_search_radius_to">Aumentar o raio de pesquisa para %1$s</string>
+    <string name="send_search_query">Enviar consulta de pesquisa?</string>
+    <string name="ask_for_location_permission">Por favor, dê permissão ao OsmAnd para ver a sua localização para continuar.</string>
     </resources>

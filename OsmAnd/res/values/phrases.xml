@@ -1009,6 +1009,7 @@
 	<string name="poi_laundry">Laundry</string>
 	<string name="poi_car_rental">Car rental</string>
 	<string name="poi_car_sharing">Car sharing</string>
+	<string name="poi_car_pooling">Car pooling spot</string>
 	<string name="poi_boat_sharing">Boat sharing</string>
 	<string name="poi_dock">Dock</string>
 	<string name="poi_cutline">Cutline</string>
@@ -3826,7 +3827,6 @@
 	<string name="poi_checkpoint_type_code">Code</string>
 	<string name="poi_checkpoint_type_notebook">Notebook</string>
 	<string name="poi_checkpoint_type_needler">Needler</string>
-	<string name="poi_checkpoint_type_quize">Quize</string>
 	<string name="poi_checkpoint_type_electronic">Electronic</string>
 	<string name="poi_course">Course</string>
 
@@ -3848,5 +3848,8 @@
 	<string name="poi_hazard_flood">Flood hazard</string>
 	<string name="poi_hazard_minefield">Minefield</string>
 
+	<string name="poi_ruins">Ruins</string>
+
+	<string name="poi_license_classes">License classes</string>
 
 </resources>

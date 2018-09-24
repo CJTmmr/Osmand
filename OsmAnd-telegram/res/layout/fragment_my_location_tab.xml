@@ -24,13 +24,25 @@
 				android:scaleType="center"
 				android:src="@drawable/img_my_location_roadbg"/>
 
-			<ImageView
-				android:id="@+id/my_location_user_image"
+			<FrameLayout
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_gravity="center_horizontal"
-				android:paddingTop="@dimen/content_padding_standard"
-				tools:src="@drawable/img_my_location_user"/>
+				android:layout_marginTop="@dimen/content_padding_standard">
+
+				<ImageView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:src="@drawable/img_my_location_user"/>
+
+				<ImageView
+					android:id="@+id/user_icon"
+					android:layout_width="@dimen/my_location_user_icon_size"
+					android:layout_height="@dimen/my_location_user_icon_size"
+					android:layout_gravity="center"
+					tools:src="@drawable/img_user_picture"/>
+
+			</FrameLayout>
 
 		</FrameLayout>
 
@@ -186,6 +198,7 @@
 				android:id="@+id/stop_all_sharing_row"
 				android:layout_width="match_parent"
 				android:layout_height="@dimen/action_bar_height"
+				android:background="?attr/selectableItemBackground"
 				android:gravity="center_vertical"
 				android:paddingLeft="@dimen/content_padding_standard"
 				android:paddingRight="@dimen/content_padding_standard">
@@ -207,7 +220,10 @@
 				<Switch
 					android:id="@+id/stop_all_sharing_switcher"
 					android:layout_width="wrap_content"
-					android:layout_height="wrap_content" />
+					android:layout_height="wrap_content"
+					android:background="@null"
+					android:clickable="false"
+					android:focusable="false"/>
 
 			</LinearLayout>
 
@@ -234,9 +250,9 @@
 			android:layout_height="wrap_content"
 			android:layout_gravity="bottom|center_horizontal"
 			android:background="@drawable/extended_fab_bg"
-			android:drawableLeft="@drawable/ic_group"
+			android:drawableLeft="@drawable/ic_action_share_location"
 			android:drawablePadding="@dimen/content_padding_half"
-			android:drawableStart="@drawable/ic_group"
+			android:drawableStart="@drawable/ic_action_share_location"
 			android:gravity="center"
 			android:paddingLeft="32dp"
 			android:paddingRight="32dp"

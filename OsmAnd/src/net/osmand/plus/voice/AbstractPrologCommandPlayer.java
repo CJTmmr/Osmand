@@ -60,7 +60,7 @@ public abstract class AbstractPrologCommandPlayer implements CommandPlayer, Stat
 	protected static final String DELAY_CONST = "delay_";
 	private static final String WEAR_ALERT = "WEAR_ALERT";
 	/** Must be sorted array! */
-	private final int[] sortedVoiceVersions;
+	private int[] sortedVoiceVersions;
 	private static AudioFocusHelper mAudioFocusHelper;
 	protected String language = "";
 	protected int streamType;
@@ -75,21 +75,27 @@ public abstract class AbstractPrologCommandPlayer implements CommandPlayer, Stat
 		this.sortedVoiceVersions = sortedVoiceVersions;
 		this.applicationMode = applicationMode;
 		long time = System.currentTimeMillis();
-		try {
-			this.ctx = ctx;
-			prologSystem = new Prolog(getLibraries());
-		} catch (InvalidLibraryException e) {
-			log.error("Initializing error", e); //$NON-NLS-1$
-			throw new RuntimeException(e);
-		}
-		if (log.isInfoEnabled()) {
-			log.info("Initializing prolog system : " + (System.currentTimeMillis() - time)); //$NON-NLS-1$
-		}
+		this.ctx = ctx;
+
 		this.streamType = ctx.getSettings().AUDIO_STREAM_GUIDANCE.getModeValue(applicationMode);
-		init(voiceProvider, ctx.getSettings(), configFile);
-		final Term langVal = solveSimplePredicate("language");
-		if (langVal instanceof Struct) {
-			language = ((Struct) langVal).getName();
+		initVoiceDir(voiceProvider);
+		if (voiceDir != null && (MediaCommandPlayerImpl.isMyData(voiceDir) || TTSCommandPlayerImpl.isMyData(voiceDir))) {
+			if (log.isInfoEnabled()) {
+				log.info("Initializing prolog system : " + (System.currentTimeMillis() - time)); //$NON-NLS-1$
+			}
+			try {
+				prologSystem = new Prolog(getLibraries());
+			} catch (InvalidLibraryException e) {
+				log.error("Initializing error", e); //$NON-NLS-1$
+				throw new RuntimeException(e);
+			}
+			init(voiceProvider, ctx.getSettings(), configFile);
+			final Term langVal = solveSimplePredicate("language");
+			if (langVal instanceof Struct) {
+				language = ((Struct) langVal).getName();
+			}
+		} else {
+			language = voiceProvider.replace("-tts", "").replace("-formal", "");
 		}
 	}
 
@@ -140,16 +146,6 @@ public abstract class AbstractPrologCommandPlayer implements CommandPlayer, Stat
 	
 	private void init(String voiceProvider, OsmandSettings settings, String configFile) throws CommandPlayerException {
 		prologSystem.clearTheory();
-		voiceDir = null;
-		if (voiceProvider != null) {
-			File parent = ctx.getAppPath(IndexConstants.VOICE_INDEX_DIR);
-			voiceDir = new File(parent, voiceProvider);
-			if (!voiceDir.exists()) {
-				voiceDir = null;
-				throw new CommandPlayerException(
-						ctx.getString(R.string.voice_data_unavailable));
-			}
-		}
 
 		// see comments below why it is impossible to read from zip (don't know
 		// how to play file from zip)
@@ -198,6 +194,18 @@ public abstract class AbstractPrologCommandPlayer implements CommandPlayer, Stat
 				log.info("Initializing voice subsystem  " + voiceProvider + " : " + (System.currentTimeMillis() - time)); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 
+		}
+	}
+
+	private void initVoiceDir(String voiceProvider) throws CommandPlayerException {
+		if (voiceProvider != null) {
+			File parent = ctx.getAppPath(IndexConstants.VOICE_INDEX_DIR);
+			voiceDir = new File(parent, voiceProvider);
+			if (!voiceDir.exists()) {
+				voiceDir = null;
+				throw new CommandPlayerException(
+						ctx.getString(R.string.voice_data_unavailable));
+			}
 		}
 	}
 

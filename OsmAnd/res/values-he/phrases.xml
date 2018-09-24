@@ -341,7 +341,7 @@
 	<string name="poi_motorcycle_services">שירותים</string>
 	<string name="poi_motorcycle_type">סוג האופנוע</string>
 	<string name="poi_animal_shelter_type">בעלי חיים מתקבלים</string>
-	<string name="poi_animal_shelter_purpose">מטרה</string>
+	<string name="poi_animal_shelter_purpose">תכלית</string>
 	<string name="poi_boat_rental_type">סירות להשכרה</string>
 
 <string name="poi_emergency_infrastructure">תשתית חירום</string>
@@ -2050,4 +2050,72 @@
 	<string name="poi_wetland_marsh">בית עשב</string>
 	<string name="poi_wetland_swamp">ביצה</string>
 	<string name="poi_wetland_saltern">מפעל מלח</string>
+	<string name="poi_wetland_mangrove">מנגרובים</string>
+	<string name="poi_wetland_fen">אדמת ביצה</string>
+	<string name="poi_wetland_mud">בוץ</string>
+
+	<string name="poi_beach_sand">חול</string>
+	<string name="poi_beach_shingle">רעף</string>
+	<string name="poi_beach_rocky">סלעי</string>
+
+	<string name="poi_chimney">ארובה</string>
+	<string name="poi_palm">דקל</string>
+	<string name="poi_cypress">ברוש</string>
+	<string name="poi_flagpole">תורן דגל</string>
+
+	<string name="poi_bench_yes">יש</string>
+	<string name="poi_bench_no">ללא ספסל</string>
+	<string name="poi_bin_yes">עם סל</string>
+	<string name="poi_bin_no">ללא סל</string>
+
+	<string name="poi_shelter_type_public_transport">תחבורה ציבורית</string>
+	<string name="poi_shelter_type_picnic_shelter">פיקניק</string>
+	<string name="poi_shelter_type_weather_shelter">מזג אוויר</string>
+	<string name="poi_shelter_type_lean_to">סככה פתוחה</string>
+	<string name="poi_shelter_type_basic_hut">בקתה בסיסית</string>
+	<string name="poi_shelter_type_building">בניין</string>
+	<string name="poi_leaf_type_broadleaved">רחב עלים</string>
+	<string name="poi_leaf_type_needleleaved">צר עלים</string>
+	<string name="poi_leaf_type_mixed">מעורב</string>
+	<string name="poi_leaf_type_leafless">ללא עלים</string>
+	<string name="poi_species">זן</string>
+	<string name="poi_genus">סוג</string>
+	<string name="poi_taxon">טקסון</string>
+
+	<string name="poi_trees_olive">זית</string>
+	<string name="poi_trees_apple">תפוח</string>
+	<string name="poi_trees_oil">שמן דקלים</string>
+	<string name="poi_trees_orange">תפוז</string>
+	<string name="poi_trees_almond">שקד</string>
+	<string name="poi_trees_banana">בננה</string>
+	<string name="poi_trees_hazel">לוז</string>
+	<string name="poi_trees_coconut">קוקוס</string>
+	<string name="poi_trees_persimmon">אפרסמון</string>
+	<string name="poi_trees_cherry">דובדבן</string>
+	<string name="poi_trees_walnut">אגוז מלך</string>
+	<string name="poi_trees_plum">שזיף</string>
+	<string name="poi_trees_peach">אפרסק</string>
+	<string name="poi_trees_tea">תה</string>
+	<string name="poi_trees_coca">קוקה</string>
+	<string name="poi_trees_kiwi">קיוי</string>
+	<string name="poi_trees_nectorine">נקטרינה</string>
+	<string name="poi_trees_mango">מנגו</string>
+	<string name="poi_trees_rubber">גומי</string>
+	<string name="poi_trees_date">תמר</string>
+	<string name="poi_trees_coffea">קפה</string>
+	<string name="poi_trees_pomegranate">רימון</string>
+
+	<string name="poi_enforcement_traffic_signals">אכיפה: רמזור</string>
+	<string name="poi_enforcement_maxspeed">אכיפה: מהירות מרבית</string>
+	<string name="poi_enforcement_maxheight">אכיפה: גובה מרבי</string>
+	<string name="poi_wiki_lang_lmo">ויקי לומברדי</string>
+	<string name="poi_population">אוכלוסיה</string>
+	<string name="poi_parking_underground">תת־קרקעי</string>
+	<string name="poi_parking_multi_storey">רב קומות</string>
+
+	<string name="poi_bicycle_parking_stands">מעמדים</string>
+	<string name="poi_bicycle_parking_building">בניין מיוחד</string>
+	<string name="poi_bicycle_parking_shed">צריף</string>
+	<string name="poi_bicycle_parking_informal">לא מוכרז</string>
+
 	</resources>

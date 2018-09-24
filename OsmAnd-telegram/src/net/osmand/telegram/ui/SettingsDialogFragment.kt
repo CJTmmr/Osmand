@@ -1,9 +1,7 @@
 package net.osmand.telegram.ui
 
+import android.content.Intent
 import android.os.Bundle
-import android.support.annotation.DrawableRes
-import android.support.annotation.StringRes
-import android.support.v4.app.DialogFragment
 import android.support.v4.app.FragmentManager
 import android.support.v7.widget.ListPopupWindow
 import android.support.v7.widget.Toolbar
@@ -11,29 +9,19 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
-import net.osmand.telegram.*
-import net.osmand.telegram.helpers.OsmandAidlHelper
-import net.osmand.telegram.helpers.TelegramHelper
+import android.widget.ArrayAdapter
+import android.widget.ImageView
+import android.widget.RadioButton
+import android.widget.TextView
+import net.osmand.telegram.R
+import net.osmand.telegram.TelegramSettings
+import net.osmand.telegram.TelegramSettings.DurationPref
 import net.osmand.telegram.helpers.TelegramUiHelper
 import net.osmand.telegram.utils.AndroidUtils
-import net.osmand.telegram.utils.OsmandFormatter
 
-class SettingsDialogFragment : DialogFragment() {
-
-	private val app: TelegramApplication
-		get() = activity?.application as TelegramApplication
+class SettingsDialogFragment : BaseDialogFragment() {
 
 	private val uiUtils get() = app.uiUtils
-	private val telegramHelper get() = app.telegramHelper
-	private val settings get() = app.settings
-
-	private val gpsAndLocPrefs = listOf(SendMyLocPref(), StaleLocPref(), LocHistoryPref())
-
-	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
-		setStyle(android.support.v4.app.DialogFragment.STYLE_NO_FRAME, R.style.AppTheme_NoActionbar)
-	}
 
 	override fun onCreateView(
 		inflater: LayoutInflater,
@@ -42,13 +30,16 @@ class SettingsDialogFragment : DialogFragment() {
 	): View {
 		val mainView = inflater.inflate(R.layout.fragement_settings_dialog, parent)
 
+		val appBarLayout = mainView.findViewById<View>(R.id.app_bar_layout)
+		AndroidUtils.addStatusBarPadding19v(context!!, appBarLayout)
+
 		mainView.findViewById<Toolbar>(R.id.toolbar).apply {
 			navigationIcon = uiUtils.getThemedIcon(R.drawable.ic_arrow_back)
 			setNavigationOnClickListener { dismiss() }
 		}
 
 		var container = mainView.findViewById<ViewGroup>(R.id.gps_and_loc_container)
-		for (pref in gpsAndLocPrefs) {
+		for (pref in settings.gpsAndLocPrefs) {
 			inflater.inflate(R.layout.item_with_desc_and_right_value, container, false).apply {
 				findViewById<ImageView>(R.id.icon).setImageDrawable(uiUtils.getThemedIcon(pref.iconId))
 				findViewById<TextView>(R.id.title).setText(pref.titleId)
@@ -63,9 +54,12 @@ class SettingsDialogFragment : DialogFragment() {
 		}
 
 		container = mainView.findViewById(R.id.osmand_connect_container)
-		for (appConn in AppConnect.values()) {
+		for (appConn in TelegramSettings.AppConnect.values()) {
 			val pack = appConn.appPackage
 			val installed = AndroidUtils.isAppInstalled(context!!, pack)
+			if (!installed && appConn.showOnlyInstalled) {
+				continue
+			}
 			inflater.inflate(R.layout.item_with_rb_and_btn, container, false).apply {
 				findViewById<ImageView>(R.id.icon).setImageDrawable(uiUtils.getIcon(appConn.iconId))
 				findViewById<TextView>(R.id.title).text = appConn.title
@@ -76,9 +70,10 @@ class SettingsDialogFragment : DialogFragment() {
 						isChecked = pack == settings.appToConnectPackage
 					}
 					setOnClickListener {
-						settings.appToConnectPackage = appConn.appPackage
-						app.osmandAidlHelper.reconnectOsmand()
-						updateSelectedAppConn()
+						if (settings.appToConnectPackage != appConn.appPackage) {
+							settings.updateAppToConnect(appConn.appPackage)
+							updateSelectedAppConn()
+						}
 					}
 				} else {
 					findViewById<RadioButton>(R.id.radio_button).visibility = View.GONE
@@ -114,8 +109,10 @@ class SettingsDialogFragment : DialogFragment() {
 		}
 
 		mainView.findViewById<View>(R.id.logout_btn).setOnClickListener {
-			logoutTelegram()
-			dismiss()
+			fragmentManager?.also { fm ->
+				LogoutBottomSheet.showInstance(fm, this)
+			}
+
 		}
 
 		mainView.findViewById<ImageView>(R.id.help_icon)
@@ -127,6 +124,16 @@ class SettingsDialogFragment : DialogFragment() {
 		return mainView
 	}
 
+	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+		super.onActivityResult(requestCode, resultCode, data)
+		when (requestCode) {
+			LogoutBottomSheet.LOGOUT_REQUEST_CODE -> {
+				logoutTelegram()
+				dismiss()
+			}
+		}
+	}
+	
 	private fun showPopupMenu(pref: DurationPref, valueView: TextView) {
 		val menuList = pref.getMenuItems()
 		val ctx = valueView.context
@@ -134,6 +141,7 @@ class SettingsDialogFragment : DialogFragment() {
 			isModal = true
 			anchorView = valueView
 			setContentWidth(AndroidUtils.getPopupMenuWidth(ctx, menuList))
+			height = AndroidUtils.getPopupMenuHeight(ctx)
 			setDropDownGravity(Gravity.END or Gravity.TOP)
 			setAdapter(ArrayAdapter(ctx, R.layout.popup_list_text_item, menuList))
 			setOnItemClickListener { _, _, position, _ ->
@@ -156,107 +164,9 @@ class SettingsDialogFragment : DialogFragment() {
 		}
 	}
 
-	private fun logoutTelegram(silent: Boolean = false) {
-		if (telegramHelper.getTelegramAuthorizationState() == TelegramHelper.TelegramAuthorizationState.READY) {
-			telegramHelper.logout()
-		} else if (!silent) {
-			Toast.makeText(context, R.string.not_logged_in, Toast.LENGTH_SHORT).show()
-		}
-	}
-
-	private inner class SendMyLocPref : DurationPref(
-		R.drawable.ic_action_share_location,
-		R.string.send_my_location,
-		R.string.send_my_location_desc,
-		SEND_MY_LOC_VALUES_SEC
-	) {
-
-		override fun getCurrentValue() =
-			OsmandFormatter.getFormattedDuration(app, settings.sendMyLocInterval)
-
-		override fun setCurrentValue(index: Int) {
-			settings.sendMyLocInterval = values[index]
-			app.updateSendLocationInterval()
-		}
-	}
-
-	private inner class StaleLocPref : DurationPref(
-		R.drawable.ic_action_time_span,
-		R.string.stale_location,
-		R.string.stale_location_desc,
-		STALE_LOC_VALUES_SEC
-	) {
-
-		override fun getCurrentValue() =
-			OsmandFormatter.getFormattedDuration(app, settings.staleLocTime)
-
-		override fun setCurrentValue(index: Int) {
-			settings.staleLocTime = values[index]
-		}
-	}
-
-	private inner class LocHistoryPref : DurationPref(
-		R.drawable.ic_action_location_history,
-		R.string.location_history,
-		R.string.location_history_desc,
-		LOC_HISTORY_VALUES_SEC
-	) {
-
-		override fun getCurrentValue() =
-			OsmandFormatter.getFormattedDuration(app, settings.locHistoryTime)
-
-		override fun setCurrentValue(index: Int) {
-			val value = values[index]
-			settings.locHistoryTime = value
-			telegramHelper.messageActiveTimeSec = value
-		}
-	}
-
-	private abstract inner class DurationPref(
-		@DrawableRes val iconId: Int,
-		@StringRes val titleId: Int,
-		@StringRes val descriptionId: Int,
-		val values: List<Long>
-	) {
-
-		abstract fun getCurrentValue(): String
-
-		abstract fun setCurrentValue(index: Int)
-
-		fun getMenuItems() = values.map { OsmandFormatter.getFormattedDuration(app, it) }
-	}
-
-	enum class AppConnect(
-		@DrawableRes val iconId: Int,
-		@DrawableRes val whiteIconId: Int,
-		val title: String,
-		val appPackage: String
-	) {
-		OSMAND_PLUS(
-			R.drawable.ic_logo_osmand_plus,
-			R.drawable.ic_action_osmand_plus,
-			"OsmAnd+",
-			OsmandAidlHelper.OSMAND_PLUS_PACKAGE_NAME
-		),
-		OSMAND_FREE(
-			R.drawable.ic_logo_osmand_free,
-			R.drawable.ic_action_osmand_free,
-			"OsmAnd",
-			OsmandAidlHelper.OSMAND_FREE_PACKAGE_NAME
-		);
-
-		companion object {
-
-			@DrawableRes
-			fun getWhiteIconId(appPackage: String): Int {
-				for (item in values()) {
-					if (item.appPackage == appPackage) {
-						return item.whiteIconId
-					}
-				}
-				return 0
-			}
-		}
+	private fun logoutTelegram() {
+		val act = activity ?: return
+		(act as MainActivity).logoutTelegram()
 	}
 
 	companion object {

@@ -194,7 +194,7 @@ S\'ocuparà una memòria de {1} MB
     
     <string name="show_lanes">Carrils</string>
     <string name="avoid_ferries">Evita els ferris</string>
-    <string name="avoid_in_routing_descr">Evita les carreteres de peatge, les no pavimentades i els ferris.</string>
+    <string name="avoid_in_routing_descr">Evita p. ex. vies de peatge, no pavimentades, ferris.</string>
     <string name="osmand_parking_warning_text">S\'ha afegit una notificació a la vostra agenda perquè traieu el vostre cotxe. Hi seguirà fins que l\'elimineu manualment.</string>
     <string name="route_kl">Mantingueu-vos a l\'esquerra i continueu</string>
     <string name="route_kr">Mantingueu-vos a la dreta i continueu</string>
@@ -1606,7 +1606,7 @@ Memòria proporcional %4$s MB (límit de l\'Android %5$s MB, Dalvik %6$s MB).</s
     
     <string name="local_osm_changes_upload_all_confirm">"Esteu a punt de pujar %1$d modificacio(ns)  a OSM. N\'esteu segur?"</string>
     <string name="confirmation_to_clear_history">Voleu esborrar l\'historial?</string>
-    <string name="delay_to_start_navigation_descr">Indiqueu el temps d\'espera sense canvis per tancar la pantalla de planificació de la ruta.</string>
+    <string name="delay_to_start_navigation_descr">Indiqueu el temps màxim d\'espera en la pantalla de planificació de la ruta.</string>
     <string name="delay_to_start_navigation">Inici de navegació gir a gir després de…</string>
     <string name="shared_string_go">Vés</string>
     <string name="osmand_parking_overdue">obsolet</string>
@@ -1824,7 +1824,7 @@ Per retornar a l\'estil habitual dels mapes d\'OsmAnd, només cal desactivar aqu
     <string name="osmand_running_in_background">Executa en procés de fons</string>
     <string name="favorite_category_add_new">Afegeix nova categoria</string>
     <string name="favorite_category_select">Selecciona categoria</string>
-    <string name="default_speed_system_descr">Defineix les unitats de velocitat.</string>
+    <string name="default_speed_system_descr">Definiu la unitat de velocitat.</string>
     <string name="default_speed_system">Unitats de velocitat</string>
     <string name="nm">nmi</string>
     <string name="si_nm">Milles marines</string>
@@ -2042,7 +2042,7 @@ Per retornar a l\'estil habitual dels mapes d\'OsmAnd, només cal desactivar aqu
     <string name="download_files_error_not_enough_space">No hi ha prou espai! 
 Cal una memòria de {3} MB temporals i {1} MB permanents. 
 L\'espai disponible és només de {2} MB.</string>
-    <string name="download_files_question_space_with_temp">Voleu baixar {0} fitxer(s)? L\'ús de memòria serà de {3} MB temporalment i {1} MB permanentment. (Disposeu de {2} MB)</string>
+    <string name="download_files_question_space_with_temp">Voleu baixar {0} fitxer(s)? L\'ocupació temporal de memòria serà de {3} MB i la permanent {1} MB. (Disposeu de {2} MB)</string>
     <string name="shared_string_move_up">Puja ↑</string>
     <string name="shared_string_move_down">Baixa ↓</string>
     <string name="avoid_road">Evita la via</string>
@@ -2396,7 +2396,7 @@ Abasta l\'àrea: %1$s x %2$s</string>
     <string name="routing_attr_driving_style_safety_name">Amb preferència per pistes</string>
     <string name="relief_smoothness_factor_descr">Predilecció del terreny: pla o aturonat.</string>
     <string name="routing_attr_relief_smoothness_factor_name">Indiqueu la variació d\'alçat</string>
-    <string name="full_version_thanks">Us agraïm la compra de la versió de pagament d\'OsmAnd.</string>
+    <string name="full_version_thanks">Us agraïm la compra de la versió de pagament de l\'OsmAnd.</string>
     <string name="do_not_send_anonymous_app_usage">No enviïs anònimament les estadístiques d\'ús de l\'aplicació</string>
     <string name="do_not_send_anonymous_app_usage_desc">OsmAnd recull informació respecte com utilitzeu l\'aplicació. No s\'envia mai la vostra localització, tampoc les entrades que feu ni els detalls de les zones que consulteu, cerqueu o baixeu.</string>
     <string name="do_not_show_startup_messages">No mostris missatges inicials</string>
@@ -3010,4 +3010,14 @@ Abasta l\'àrea: %1$s x %2$s</string>
     <string name="search_no_results_feedback">Cap resultat en la cerca?
 \nComenteu-nos-ho</string>
     <string name="test_voice_desrc">Premeu un botó i escolteu la corresponent descripció de veu per identificar les descripcions pendents o errònies.</string>
-</resources>
+<string name="release_3_2_pre">"• S\'ha corregit el bloqueig d\'entrada si alfabets no llatins als mapes 
+\n 
+\n • Millora dels problemes de velocitat de renderització a dispositius Android 8.0 
+\n 
+\n • Suport a l\'edició d\'objectes poligonals (fora de serveis) 
+\n 
+\n • Mesura de distàncies: s\'ha afegit el botó Mesura dins Accions en el menú contextual  
+\n "</string>
+    <string name="ask_for_location_permission">Per continuar cal que doneu a OsmAnd accés a la ubicació.</string>
+    <string name="rendering_value_black_name">Negre</string>
+    </resources>

@@ -1,7 +1,9 @@
 package net.osmand.aidl;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -28,9 +30,11 @@ import net.osmand.aidl.maplayer.AMapLayer;
 import net.osmand.aidl.maplayer.point.AMapPoint;
 import net.osmand.aidl.mapmarker.AMapMarker;
 import net.osmand.aidl.mapwidget.AMapWidget;
+import net.osmand.aidl.search.SearchResult;
 import net.osmand.data.FavouritePoint;
 import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
+import net.osmand.plus.AppInitializer;
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.ContextMenuAdapter;
 import net.osmand.plus.ContextMenuItem;
@@ -44,11 +48,11 @@ import net.osmand.plus.MapMarkersHelper;
 import net.osmand.plus.MapMarkersHelper.MapMarker;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
-import net.osmand.plus.TargetPointsHelper;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.audionotes.AudioVideoNotesPlugin;
 import net.osmand.plus.dialogs.ConfigureMapMenu;
 import net.osmand.plus.helpers.ColorDialogs;
+import net.osmand.plus.helpers.ExternalApiHelper;
 import net.osmand.plus.monitoring.OsmandMonitoringPlugin;
 import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.views.AidlMapLayer;
@@ -73,6 +77,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -101,6 +106,9 @@ public class OsmandAidlApi {
 	private static final String AIDL_DATA = "aidl_data";
 	private static final String AIDL_URI = "aidl_uri";
 	private static final String AIDL_FORCE = "aidl_force";
+	private static final String AIDL_SEARCH_QUERY = "aidl_search_query";
+	private static final String AIDL_SEARCH_LAT = "aidl_search_lat";
+	private static final String AIDL_SEARCH_LON = "aidl_search_lon";
 
 	private static final String AIDL_OBJECT_ID = "aidl_object_id";
 
@@ -117,6 +125,12 @@ public class OsmandAidlApi {
 
 	private static final String AIDL_NAVIGATE = "aidl_navigate";
 	private static final String AIDL_NAVIGATE_GPX = "aidl_navigate_gpx";
+	private static final String AIDL_NAVIGATE_SEARCH = "aidl_navigate_search";
+	private static final String AIDL_PAUSE_NAVIGATION = "pause_navigation";
+	private static final String AIDL_RESUME_NAVIGATION = "resume_navigation";
+	private static final String AIDL_STOP_NAVIGATION = "stop_navigation";
+	private static final String AIDL_MUTE_NAVIGATION = "mute_navigation";
+	private static final String AIDL_UNMUTE_NAVIGATION = "unmute_navigation";
 
 	private static final ApplicationMode DEFAULT_PROFILE = ApplicationMode.CAR;
 
@@ -135,14 +149,16 @@ public class OsmandAidlApi {
 	private Map<String, TextInfoWidget> widgetControls = new ConcurrentHashMap<>();
 	private Map<String, AMapLayer> layers = new ConcurrentHashMap<>();
 	private Map<String, OsmandMapLayer> mapLayers = new ConcurrentHashMap<>();
-	private Map<String, BroadcastReceiver> receivers = new TreeMap<String, BroadcastReceiver>();
+	private Map<String, BroadcastReceiver> receivers = new TreeMap<>();
 
+	private boolean mapActivityActive = false;
 
 	public OsmandAidlApi(OsmandApplication app) {
 		this.app = app;
 	}
 
-	public void onCreateMapActivity(final MapActivity mapActivity) {
+	public void onCreateMapActivity(MapActivity mapActivity) {
+		mapActivityActive = true;
 		registerRefreshMapReceiver(mapActivity);
 		registerSetMapLocationReceiver(mapActivity);
 		registerAddMapWidgetReceiver(mapActivity);
@@ -155,9 +171,17 @@ public class OsmandAidlApi {
 		registerStopRecordingReceiver(mapActivity);
 		registerNavigateReceiver(mapActivity);
 		registerNavigateGpxReceiver(mapActivity);
+		registerNavigateSearchReceiver(mapActivity);
+		registerPauseNavigationReceiver(mapActivity);
+		registerResumeNavigationReceiver(mapActivity);
+		registerStopNavigationReceiver(mapActivity);
+		registerMuteNavigationReceiver(mapActivity);
+		registerUnmuteNavigationReceiver(mapActivity);
+		initOsmandTelegram();
 	}
 
-	public void onDestroyMapActivity(final MapActivity mapActivity) {
+	public void onDestroyMapActivity(MapActivity mapActivity) {
+		mapActivityActive = false;
 		for (BroadcastReceiver b : receivers.values()) {
 			if(b == null) {
 				continue;
@@ -168,43 +192,64 @@ public class OsmandAidlApi {
 				LOG.error(e.getMessage(), e);
 			}
 		}
-		receivers = new TreeMap<String, BroadcastReceiver>();
+		receivers = new TreeMap<>();
 	}
 
-	private void registerRefreshMapReceiver(final MapActivity mapActivity) {
+	public boolean isUpdateAllowed() {
+		return mapActivityActive;
+	}
+
+	private void initOsmandTelegram() {
+		String[] packages = new String[]{"net.osmand.telegram", "net.osmand.telegram.debug"};
+		Intent intent = new Intent("net.osmand.telegram.InitApp");
+		for (String pack : packages) {
+			intent.setComponent(new ComponentName(pack, "net.osmand.telegram.InitAppBroadcastReceiver"));
+			app.sendBroadcast(intent);
+		}
+	}
+
+	private void registerRefreshMapReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
 		BroadcastReceiver refreshMapReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				mapActivity.refreshMap();
+				MapActivity mapActivity = mapActivityRef.get();
+				if (mapActivity != null) {
+					mapActivity.refreshMap();
+				}
 			}
 		};
 		registerReceiver(refreshMapReceiver, mapActivity, AIDL_REFRESH_MAP);
 	}
 
-	private void registerSetMapLocationReceiver(final MapActivity mapActivity) {
+	private void registerSetMapLocationReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
 		BroadcastReceiver setMapLocationReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				double lat = intent.getDoubleExtra(AIDL_LATITUDE, Double.NaN);
-				double lon = intent.getDoubleExtra(AIDL_LONGITUDE, Double.NaN);
-				int zoom = intent.getIntExtra(AIDL_ZOOM, 0);
-				boolean animated = intent.getBooleanExtra(AIDL_ANIMATED, false);
-				if (!Double.isNaN(lat) && !Double.isNaN(lon)) {
-					OsmandMapTileView mapView = mapActivity.getMapView();
-					if (zoom == 0) {
-						zoom = mapView.getZoom();
-					} else {
-						zoom = zoom > mapView.getMaxZoom() ? mapView.getMaxZoom() : zoom;
-						zoom = zoom < mapView.getMinZoom() ? mapView.getMinZoom() : zoom;
+				MapActivity mapActivity = mapActivityRef.get();
+				if (mapActivity != null) {
+					double lat = intent.getDoubleExtra(AIDL_LATITUDE, Double.NaN);
+					double lon = intent.getDoubleExtra(AIDL_LONGITUDE, Double.NaN);
+					int zoom = intent.getIntExtra(AIDL_ZOOM, 0);
+					boolean animated = intent.getBooleanExtra(AIDL_ANIMATED, false);
+					if (!Double.isNaN(lat) && !Double.isNaN(lon)) {
+						OsmandMapTileView mapView = mapActivity.getMapView();
+						if (zoom == 0) {
+							zoom = mapView.getZoom();
+						} else {
+							zoom = zoom > mapView.getMaxZoom() ? mapView.getMaxZoom() : zoom;
+							zoom = zoom < mapView.getMinZoom() ? mapView.getMinZoom() : zoom;
+						}
+						if (animated) {
+							mapView.getAnimatedDraggingThread().startMoving(lat, lon, zoom, true);
+						} else {
+							mapView.setLatLon(lat, lon);
+							mapView.setIntZoom(zoom);
+						}
 					}
-					if (animated) {
-						mapView.getAnimatedDraggingThread().startMoving(lat, lon, zoom, true);
-					} else {
-						mapView.setLatLon(lat, lon);
-						mapView.setIntZoom(zoom);
-					}
+					mapActivity.refreshMap();
 				}
-				mapActivity.refreshMap();
 			}
 		};
 		registerReceiver(setMapLocationReceiver, mapActivity, AIDL_SET_MAP_LOCATION);
@@ -218,12 +263,14 @@ public class OsmandAidlApi {
 		}
 	}
 
-	private void registerAddMapWidgetReceiver(final MapActivity mapActivity) {
+	private void registerAddMapWidgetReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
 		BroadcastReceiver addMapWidgetReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
 				String widgetId = intent.getStringExtra(AIDL_OBJECT_ID);
-				if (widgetId != null) {
+				if (mapActivity != null && widgetId != null) {
 					AMapWidget widget = widgets.get(widgetId);
 					if (widget != null) {
 						MapInfoLayer layer = mapActivity.getMapLayers().getMapInfoLayer();
@@ -252,12 +299,14 @@ public class OsmandAidlApi {
 		ma.registerReceiver(rec, new IntentFilter(filter));
 	}
 
-	private void registerRemoveMapWidgetReceiver(final MapActivity mapActivity) {
+	private void registerRemoveMapWidgetReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
 		BroadcastReceiver removeMapWidgetReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
 				String widgetId = intent.getStringExtra(AIDL_OBJECT_ID);
-				if (widgetId != null) {
+				if (mapActivity != null && widgetId != null) {
 					MapInfoLayer layer = mapActivity.getMapLayers().getMapInfoLayer();
 					TextInfoWidget widgetControl = widgetControls.get(widgetId);
 					if (layer != null && widgetControl != null) {
@@ -288,12 +337,14 @@ public class OsmandAidlApi {
 		}
 	}
 
-	private void registerAddMapLayerReceiver(final MapActivity mapActivity) {
+	private void registerAddMapLayerReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
 		BroadcastReceiver addMapLayerReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
 				String layerId = intent.getStringExtra(AIDL_OBJECT_ID);
-				if (layerId != null) {
+				if (mapActivity != null && layerId != null) {
 					AMapLayer layer = layers.get(layerId);
 					if (layer != null) {
 						OsmandMapLayer mapLayer = mapLayers.get(layerId);
@@ -310,12 +361,14 @@ public class OsmandAidlApi {
 		registerReceiver(addMapLayerReceiver, mapActivity, AIDL_ADD_MAP_LAYER);
 	}
 
-	private void registerRemoveMapLayerReceiver(final MapActivity mapActivity) {
+	private void registerRemoveMapLayerReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
 		BroadcastReceiver removeMapLayerReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
 				String layerId = intent.getStringExtra(AIDL_OBJECT_ID);
-				if (layerId != null) {
+				if (mapActivity != null && layerId != null) {
 					OsmandMapLayer mapLayer = mapLayers.remove(layerId);
 					if (mapLayer != null) {
 						mapActivity.getMapView().removeLayer(mapLayer);
@@ -327,12 +380,14 @@ public class OsmandAidlApi {
 		registerReceiver(removeMapLayerReceiver, mapActivity, AIDL_REMOVE_MAP_LAYER);
 	}
 
-	private void registerTakePhotoNoteReceiver(final MapActivity mapActivity) {
+	private void registerTakePhotoNoteReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
 		BroadcastReceiver takePhotoNoteReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
 				final AudioVideoNotesPlugin plugin = OsmandPlugin.getEnabledPlugin(AudioVideoNotesPlugin.class);
-				if (plugin != null) {
+				if (mapActivity != null && plugin != null) {
 					double lat = intent.getDoubleExtra(AIDL_LATITUDE, Double.NaN);
 					double lon = intent.getDoubleExtra(AIDL_LONGITUDE, Double.NaN);
 					plugin.takePhoto(lat, lon, mapActivity, false, true);
@@ -342,12 +397,14 @@ public class OsmandAidlApi {
 		registerReceiver(takePhotoNoteReceiver, mapActivity, AIDL_TAKE_PHOTO_NOTE);
 	}
 
-	private void registerStartVideoRecordingReceiver(final MapActivity mapActivity) {
+	private void registerStartVideoRecordingReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
 		BroadcastReceiver startVideoRecordingReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
 				final AudioVideoNotesPlugin plugin = OsmandPlugin.getEnabledPlugin(AudioVideoNotesPlugin.class);
-				if (plugin != null) {
+				if (mapActivity != null && plugin != null) {
 					double lat = intent.getDoubleExtra(AIDL_LATITUDE, Double.NaN);
 					double lon = intent.getDoubleExtra(AIDL_LONGITUDE, Double.NaN);
 					plugin.recordVideo(lat, lon, mapActivity, true);
@@ -357,12 +414,14 @@ public class OsmandAidlApi {
 		registerReceiver(startVideoRecordingReceiver, mapActivity, AIDL_START_VIDEO_RECORDING);
 	}
 
-	private void registerStartAudioRecordingReceiver(final MapActivity mapActivity) {
+	private void registerStartAudioRecordingReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
 		BroadcastReceiver startAudioRecordingReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
 				final AudioVideoNotesPlugin plugin = OsmandPlugin.getEnabledPlugin(AudioVideoNotesPlugin.class);
-				if (plugin != null) {
+				if (mapActivity != null && plugin != null) {
 					double lat = intent.getDoubleExtra(AIDL_LATITUDE, Double.NaN);
 					double lon = intent.getDoubleExtra(AIDL_LONGITUDE, Double.NaN);
 					plugin.recordAudio(lat, lon, mapActivity);
@@ -372,12 +431,14 @@ public class OsmandAidlApi {
 		registerReceiver(startAudioRecordingReceiver, mapActivity, AIDL_START_AUDIO_RECORDING);
 	}
 
-	private void registerStopRecordingReceiver(final MapActivity mapActivity) {
+	private void registerStopRecordingReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
 		BroadcastReceiver stopRecordingReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
 				final AudioVideoNotesPlugin plugin = OsmandPlugin.getEnabledPlugin(AudioVideoNotesPlugin.class);
-				if (plugin != null) {
+				if (mapActivity != null && plugin != null) {
 					plugin.stopRecording(mapActivity, false);
 				}
 			}
@@ -385,7 +446,8 @@ public class OsmandAidlApi {
 		registerReceiver(stopRecordingReceiver, mapActivity, AIDL_STOP_RECORDING);
 	}
 
-	private void registerNavigateReceiver(final MapActivity mapActivity) {
+	private void registerNavigateReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
 		BroadcastReceiver navigateReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -398,7 +460,8 @@ public class OsmandAidlApi {
 						break;
 					}
 				}
-				if (validProfile) {
+				MapActivity mapActivity = mapActivityRef.get();
+				if (mapActivity != null && validProfile) {
 					String startName = intent.getStringExtra(AIDL_START_NAME);
 					if (Algorithms.isEmpty(startName)) {
 						startName = "";
@@ -433,13 +496,14 @@ public class OsmandAidlApi {
 
 							@Override
 							public void onDismiss(DialogInterface dialog) {
-								if (!routingHelper.isFollowingMode()) {
-									startNavigation(mapActivity, null, start, startDesc, dest, destDesc, profile);
+								MapActivity mapActivity = mapActivityRef.get();
+								if (mapActivity != null && !routingHelper.isFollowingMode()) {
+									ExternalApiHelper.startNavigation(mapActivity, start, startDesc, dest, destDesc, profile);
 								}
 							}
 						});
 					} else {
-						startNavigation(mapActivity, null, start, startDesc, dest, destDesc, profile);
+						ExternalApiHelper.startNavigation(mapActivity, start, startDesc, dest, destDesc, profile);
 					}
 				}
 			}
@@ -447,51 +511,123 @@ public class OsmandAidlApi {
 		registerReceiver(navigateReceiver, mapActivity, AIDL_NAVIGATE);
 	}
 
-	private void registerNavigateGpxReceiver(final MapActivity mapActivity) {
-		BroadcastReceiver navigateGpxReceiver = new BroadcastReceiver() {
+	private void registerNavigateSearchReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
+		BroadcastReceiver navigateSearchReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				boolean force = intent.getBooleanExtra(AIDL_FORCE, false);
-
-				GPXFile gpx = null;
-				if (intent.getStringExtra(AIDL_DATA) != null) {
-					String gpxStr = intent.getStringExtra(AIDL_DATA);
-					if (!Algorithms.isEmpty(gpxStr)) {
-						gpx = GPXUtilities.loadGPXFile(mapActivity, new ByteArrayInputStream(gpxStr.getBytes()));
+				String profileStr = intent.getStringExtra(AIDL_PROFILE);
+				final ApplicationMode profile = ApplicationMode.valueOfStringKey(profileStr, DEFAULT_PROFILE);
+				boolean validProfile = false;
+				for (ApplicationMode mode : VALID_PROFILES) {
+					if (mode == profile) {
+						validProfile = true;
+						break;
 					}
-				} else if (intent.getParcelableExtra(AIDL_URI) != null) {
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-						Uri gpxUri = intent.getParcelableExtra(AIDL_URI);
+				}
+				MapActivity mapActivity = mapActivityRef.get();
+				final String searchQuery = intent.getStringExtra(AIDL_SEARCH_QUERY);
+				if (mapActivity != null && validProfile && !Algorithms.isEmpty(searchQuery)) {
+					String startName = intent.getStringExtra(AIDL_START_NAME);
+					if (Algorithms.isEmpty(startName)) {
+						startName = "";
+					}
 
-						ParcelFileDescriptor gpxParcelDescriptor = null;
-						try {
-							gpxParcelDescriptor = mapActivity.getContentResolver().openFileDescriptor(gpxUri, "r");
-						} catch (FileNotFoundException e) {
-							e.printStackTrace();
-						}
-						if (gpxParcelDescriptor != null) {
-							FileDescriptor fileDescriptor = gpxParcelDescriptor.getFileDescriptor();
-							gpx = GPXUtilities.loadGPXFile(mapActivity, new FileInputStream(fileDescriptor));
+					final LatLon start;
+					final PointDescription startDesc;
+					double startLat = intent.getDoubleExtra(AIDL_START_LAT, 0);
+					double startLon = intent.getDoubleExtra(AIDL_START_LON, 0);
+					if (startLat != 0 && startLon != 0) {
+						start = new LatLon(startLat, startLon);
+						startDesc = new PointDescription(PointDescription.POINT_TYPE_LOCATION, startName);
+					} else {
+						start = null;
+						startDesc = null;
+					}
+
+					final LatLon searchLocation;
+					double searchLat = intent.getDoubleExtra(AIDL_SEARCH_LAT, 0);
+					double searchLon = intent.getDoubleExtra(AIDL_SEARCH_LON, 0);
+					if (searchLat != 0 && searchLon != 0) {
+						searchLocation = new LatLon(searchLat, searchLon);
+					} else {
+						searchLocation = null;
+					}
+
+					if (searchLocation != null) {
+						final RoutingHelper routingHelper = app.getRoutingHelper();
+						boolean force = intent.getBooleanExtra(AIDL_FORCE, true);
+						if (routingHelper.isFollowingMode() && !force) {
+							AlertDialog dlg = mapActivity.getMapActions().stopNavigationActionConfirm();
+							dlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
+
+								@Override
+								public void onDismiss(DialogInterface dialog) {
+									MapActivity mapActivity = mapActivityRef.get();
+									if (mapActivity != null && !routingHelper.isFollowingMode()) {
+										ExternalApiHelper.searchAndNavigate(mapActivity, searchLocation, start, startDesc, profile, searchQuery, false);
+									}
+								}
+							});
+						} else {
+							ExternalApiHelper.searchAndNavigate(mapActivity, searchLocation, start, startDesc, profile, searchQuery, false);
 						}
 					}
 				}
+			}
+		};
+		registerReceiver(navigateSearchReceiver, mapActivity, AIDL_NAVIGATE_SEARCH);
+	}
 
-				if (gpx != null) {
-					final RoutingHelper routingHelper = app.getRoutingHelper();
-					if (routingHelper.isFollowingMode() && !force) {
-						final GPXFile gpxFile = gpx;
-						AlertDialog dlg = mapActivity.getMapActions().stopNavigationActionConfirm();
-						dlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
+	private void registerNavigateGpxReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
+		BroadcastReceiver navigateGpxReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
+				if (mapActivity != null) {
+					boolean force = intent.getBooleanExtra(AIDL_FORCE, false);
+					GPXFile gpx = null;
+					if (intent.getStringExtra(AIDL_DATA) != null) {
+						String gpxStr = intent.getStringExtra(AIDL_DATA);
+						if (!Algorithms.isEmpty(gpxStr)) {
+							gpx = GPXUtilities.loadGPXFile(mapActivity, new ByteArrayInputStream(gpxStr.getBytes()));
+						}
+					} else if (intent.getParcelableExtra(AIDL_URI) != null) {
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+							Uri gpxUri = intent.getParcelableExtra(AIDL_URI);
 
-							@Override
-							public void onDismiss(DialogInterface dialog) {
-								if (!routingHelper.isFollowingMode()) {
-									startNavigation(mapActivity, gpxFile, null, null, null, null, null);
-								}
+							ParcelFileDescriptor gpxParcelDescriptor = null;
+							try {
+								gpxParcelDescriptor = mapActivity.getContentResolver().openFileDescriptor(gpxUri, "r");
+							} catch (FileNotFoundException e) {
+								e.printStackTrace();
 							}
-						});
-					} else {
-						startNavigation(mapActivity, gpx, null, null, null, null, null);
+							if (gpxParcelDescriptor != null) {
+								FileDescriptor fileDescriptor = gpxParcelDescriptor.getFileDescriptor();
+								gpx = GPXUtilities.loadGPXFile(mapActivity, new FileInputStream(fileDescriptor));
+							}
+						}
+					}
+
+					if (gpx != null) {
+						final RoutingHelper routingHelper = app.getRoutingHelper();
+						if (routingHelper.isFollowingMode() && !force) {
+							final GPXFile gpxFile = gpx;
+							AlertDialog dlg = mapActivity.getMapActions().stopNavigationActionConfirm();
+							dlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
+
+								@Override
+								public void onDismiss(DialogInterface dialog) {
+									MapActivity mapActivity = mapActivityRef.get();
+									if (mapActivity != null && !routingHelper.isFollowingMode()) {
+										ExternalApiHelper.startNavigation(mapActivity, gpxFile);
+									}
+								}
+							});
+						} else {
+							ExternalApiHelper.startNavigation(mapActivity, gpx);
+						}
 					}
 				}
 			}
@@ -499,34 +635,88 @@ public class OsmandAidlApi {
 		registerReceiver(navigateGpxReceiver, mapActivity, AIDL_NAVIGATE_GPX);
 	}
 
-	private void startNavigation(MapActivity mapActivity,
-								 GPXFile gpx,
-								 LatLon from, PointDescription fromDesc,
-								 LatLon to, PointDescription toDesc,
-								 ApplicationMode mode) {
-		OsmandApplication app = mapActivity.getMyApplication();
-		RoutingHelper routingHelper = app.getRoutingHelper();
-		if (gpx == null) {
-			app.getSettings().APPLICATION_MODE.set(mode);
-			final TargetPointsHelper targets = mapActivity.getMyApplication().getTargetPointsHelper();
-			targets.removeAllWayPoints(false, true);
-			targets.navigateToPoint(to, true, -1, toDesc);
-		}
-		mapActivity.getMapActions().enterRoutePlanningModeGivenGpx(gpx, from, fromDesc, true, false);
-		if (!app.getTargetPointsHelper().checkPointToNavigateShort()) {
-			mapActivity.getMapLayers().getMapControlsLayer().getMapRouteInfoMenu().show();
-		} else {
-			if (app.getSettings().APPLICATION_MODE.get() != routingHelper.getAppMode()) {
-				app.getSettings().APPLICATION_MODE.set(routingHelper.getAppMode());
+	private void registerPauseNavigationReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
+		BroadcastReceiver pauseNavigationReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
+				if (mapActivity != null) {
+					RoutingHelper routingHelper = mapActivity.getRoutingHelper();
+					if (routingHelper.isRouteCalculated() && !routingHelper.isRoutePlanningMode()) {
+						routingHelper.setRoutePlanningMode(true);
+						routingHelper.setFollowingMode(false);
+						routingHelper.setPauseNavigation(true);
+					}
+				}
 			}
-			mapActivity.getMapViewTrackingUtilities().backToLocationImpl();
-			app.getSettings().FOLLOW_THE_ROUTE.set(true);
-			routingHelper.setFollowingMode(true);
-			routingHelper.setRoutePlanningMode(false);
-			mapActivity.getMapViewTrackingUtilities().switchToRoutePlanningMode();
-			app.getRoutingHelper().notifyIfRouteIsCalculated();
-			routingHelper.setCurrentLocation(app.getLocationProvider().getLastKnownLocation(), false);
-		}
+		};
+		registerReceiver(pauseNavigationReceiver, mapActivity, AIDL_PAUSE_NAVIGATION);
+	}
+
+	private void registerResumeNavigationReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
+		BroadcastReceiver resumeNavigationReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
+				if (mapActivity != null) {
+					RoutingHelper routingHelper = mapActivity.getRoutingHelper();
+					if (routingHelper.isRouteCalculated() && routingHelper.isRoutePlanningMode()) {
+						routingHelper.setRoutePlanningMode(false);
+						routingHelper.setFollowingMode(true);
+					}
+				}
+			}
+		};
+		registerReceiver(resumeNavigationReceiver, mapActivity, AIDL_RESUME_NAVIGATION);
+	}
+
+	private void registerStopNavigationReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
+		BroadcastReceiver stopNavigationReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
+				if (mapActivity != null) {
+					RoutingHelper routingHelper = mapActivity.getRoutingHelper();
+					if (routingHelper.isPauseNavigation() || routingHelper.isFollowingMode()) {
+						mapActivity.getMapLayers().getMapControlsLayer().stopNavigationWithoutConfirm();
+					}
+				}
+			}
+		};
+		registerReceiver(stopNavigationReceiver, mapActivity, AIDL_STOP_NAVIGATION);
+	}
+
+	private void registerMuteNavigationReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
+		BroadcastReceiver muteNavigationReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
+				if (mapActivity != null) {
+					mapActivity.getMyApplication().getSettings().VOICE_MUTE.set(true);
+					mapActivity.getRoutingHelper().getVoiceRouter().setMute(true);
+				}
+			}
+		};
+		registerReceiver(muteNavigationReceiver, mapActivity, AIDL_MUTE_NAVIGATION);
+	}
+
+	private void registerUnmuteNavigationReceiver(MapActivity mapActivity) {
+		final WeakReference<MapActivity> mapActivityRef = new WeakReference<>(mapActivity);
+		BroadcastReceiver unmuteNavigationReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				MapActivity mapActivity = mapActivityRef.get();
+				if (mapActivity != null) {
+					mapActivity.getMyApplication().getSettings().VOICE_MUTE.set(false);
+					mapActivity.getRoutingHelper().getVoiceRouter().setMute(false);
+				}
+			}
+		};
+		registerReceiver(unmuteNavigationReceiver, mapActivity, AIDL_UNMUTE_NAVIGATION);
 	}
 
 	public void registerMapLayers(MapActivity mapActivity) {
@@ -547,7 +737,7 @@ public class OsmandAidlApi {
 		app.sendBroadcast(intent);
 	}
 
-	private TextInfoWidget createWidgetControl(final MapActivity mapActivity, final String widgetId) {
+	private TextInfoWidget createWidgetControl(MapActivity mapActivity, final String widgetId) {
 		final TextInfoWidget control = new TextInfoWidget(mapActivity) {
 
 			@Override
@@ -898,6 +1088,7 @@ public class OsmandAidlApi {
 		return false;
 	}
 
+	@SuppressLint("StaticFieldLeak")
 	private void finishGpxImport(boolean destinationExists, File destination, String color, boolean show) {
 		int col = ConfigureMapMenu.GpxAppearanceAdapter.parseTrackColor(
 					app.getRendererRegistry().getCurrentSelectedRenderer(), color);
@@ -1039,6 +1230,7 @@ public class OsmandAidlApi {
 		return false;
 	}
 
+	@SuppressLint("StaticFieldLeak")
 	boolean showGpx(String fileName) {
 		if (!Algorithms.isEmpty(fileName)) {
 			File f = app.getAppPath(IndexConstants.GPX_INDEX_DIR + fileName);
@@ -1176,7 +1368,9 @@ public class OsmandAidlApi {
 		return true;
 	}
 
-	boolean navigate(String startName, double startLat, double startLon, String destName, double destLat, double destLon, String profile, boolean force) {
+	boolean navigate(String startName, double startLat, double startLon,
+					 String destName, double destLat, double destLon,
+					 String profile, boolean force) {
 		Intent intent = new Intent();
 		intent.setAction(AIDL_NAVIGATE);
 		intent.putExtra(AIDL_START_NAME, startName);
@@ -1191,6 +1385,58 @@ public class OsmandAidlApi {
 		return true;
 	}
 
+	boolean navigateSearch(String startName, double startLat, double startLon,
+						   String searchQuery, double searchLat, double searchLon,
+						   String profile, boolean force) {
+		Intent intent = new Intent();
+		intent.setAction(AIDL_NAVIGATE_SEARCH);
+		intent.putExtra(AIDL_START_NAME, startName);
+		intent.putExtra(AIDL_START_LAT, startLat);
+		intent.putExtra(AIDL_START_LON, startLon);
+		intent.putExtra(AIDL_SEARCH_QUERY, searchQuery);
+		intent.putExtra(AIDL_SEARCH_LAT, searchLat);
+		intent.putExtra(AIDL_SEARCH_LON, searchLon);
+		intent.putExtra(AIDL_PROFILE, profile);
+		intent.putExtra(AIDL_FORCE, force);
+		app.sendBroadcast(intent);
+		return true;
+	}
+
+	boolean pauseNavigation() {
+		Intent intent = new Intent();
+		intent.setAction(AIDL_PAUSE_NAVIGATION);
+		app.sendBroadcast(intent);
+		return true;
+	}
+
+	boolean resumeNavigation() {
+		Intent intent = new Intent();
+		intent.setAction(AIDL_RESUME_NAVIGATION);
+		app.sendBroadcast(intent);
+		return true;
+	}
+
+	boolean stopNavigation() {
+		Intent intent = new Intent();
+		intent.setAction(AIDL_STOP_NAVIGATION);
+		app.sendBroadcast(intent);
+		return true;
+	}
+
+	boolean muteNavigation() {
+		Intent intent = new Intent();
+		intent.setAction(AIDL_MUTE_NAVIGATION);
+		app.sendBroadcast(intent);
+		return true;
+	}
+
+	boolean unmuteNavigation() {
+		Intent intent = new Intent();
+		intent.setAction(AIDL_UNMUTE_NAVIGATION);
+		app.sendBroadcast(intent);
+		return true;
+	}
+
 	boolean navigateGpx(String data, Uri uri, boolean force) {
 		Intent intent = new Intent();
 		intent.setAction(AIDL_NAVIGATE_GPX);
@@ -1198,6 +1444,28 @@ public class OsmandAidlApi {
 		intent.putExtra(AIDL_URI, uri);
 		intent.putExtra(AIDL_FORCE, force);
 		app.sendBroadcast(intent);
+		return true;
+	}
+
+	boolean search(final String searchQuery, final int searchType, final double latitude, final double longitude,
+				   final int radiusLevel, final int totalLimit, final SearchCompleteCallback callback) {
+		if (Algorithms.isEmpty(searchQuery) || latitude == 0 || longitude == 0 || callback == null) {
+			return false;
+		}
+		if (app.isApplicationInitializing()) {
+			app.getAppInitializer().addListener(new AppInitializer.AppInitializeListener() {
+				@Override
+				public void onProgress(AppInitializer init, AppInitializer.InitEvents event) {
+				}
+
+				@Override
+				public void onFinish(AppInitializer init) {
+					ExternalApiHelper.runSearch(app, searchQuery, searchType, latitude, longitude, radiusLevel, totalLimit, callback);
+				}
+			});
+		} else {
+			ExternalApiHelper.runSearch(app, searchQuery, searchType, latitude, longitude, radiusLevel, totalLimit, callback);
+		}
 		return true;
 	}
 
@@ -1338,5 +1606,9 @@ public class OsmandAidlApi {
 			this.iconName = iconName;
 			this.flags = flags;
 		}
+	}
+
+	public interface SearchCompleteCallback {
+		void onSearchComplete(List<SearchResult> resultSet);
 	}
 }

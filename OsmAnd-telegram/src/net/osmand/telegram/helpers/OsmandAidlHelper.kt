@@ -7,6 +7,7 @@ import android.content.ServiceConnection
 import android.net.Uri
 import android.os.IBinder
 import android.os.RemoteException
+import net.osmand.aidl.IOsmAndAidlCallback
 import net.osmand.aidl.IOsmAndAidlInterface
 import net.osmand.aidl.favorite.AFavorite
 import net.osmand.aidl.favorite.AddFavoriteParams
@@ -34,12 +35,13 @@ import net.osmand.aidl.mapwidget.RemoveMapWidgetParams
 import net.osmand.aidl.mapwidget.UpdateMapWidgetParams
 import net.osmand.aidl.navdrawer.NavDrawerItem
 import net.osmand.aidl.navdrawer.SetNavDrawerItemsParams
-import net.osmand.aidl.navigation.NavigateGpxParams
-import net.osmand.aidl.navigation.NavigateParams
+import net.osmand.aidl.navigation.*
 import net.osmand.aidl.note.StartAudioRecordingParams
 import net.osmand.aidl.note.StartVideoRecordingParams
 import net.osmand.aidl.note.StopRecordingParams
 import net.osmand.aidl.note.TakePhotoNoteParams
+import net.osmand.aidl.search.SearchParams
+import net.osmand.aidl.search.SearchResult
 import net.osmand.telegram.TelegramApplication
 import java.io.File
 import java.util.*
@@ -49,6 +51,9 @@ class OsmandAidlHelper(private val app: TelegramApplication) {
 	companion object {
 		const val OSMAND_FREE_PACKAGE_NAME = "net.osmand"
 		const val OSMAND_PLUS_PACKAGE_NAME = "net.osmand.plus"
+		const val OSMAND_NIGHTLY_PACKAGE_NAME = "net.osmand.dev"
+
+		const val UPDATE_TIME_MS = 5000L
 	}
 
 	private var mIOsmAndAidlInterface: IOsmAndAidlInterface? = null
@@ -56,12 +61,49 @@ class OsmandAidlHelper(private val app: TelegramApplication) {
 	private var initialized: Boolean = false
 	private var bound: Boolean = false
 
-	private var boundPackage = ""
+	private var osmandCallbackId: Long = 0
 
 	var listener: OsmandHelperListener? = null
 
 	interface OsmandHelperListener {
 		fun onOsmandConnectionStateChanged(connected: Boolean)
+	}
+
+	private var mSearchCompleteListener: SearchCompleteListener? = null
+
+	interface SearchCompleteListener {
+		fun onSearchComplete(resultSet: List<SearchResult>)
+	}
+
+	private val mIOsmAndAidlCallback = object : IOsmAndAidlCallback.Stub() {
+
+		@Throws(RemoteException::class)
+		override fun onSearchComplete(resultSet: List<SearchResult>) {
+			if (mSearchCompleteListener != null) {
+				mSearchCompleteListener!!.onSearchComplete(resultSet)
+			}
+		}
+
+		@Throws(RemoteException::class)
+		override fun onUpdate() {
+			if (mUpdatesListener != null) {
+				mUpdatesListener!!.update()
+			}
+		}
+	}
+
+	fun setSearchCompleteListener(mSearchCompleteListener: SearchCompleteListener) {
+		this.mSearchCompleteListener = mSearchCompleteListener
+	}
+
+	private var mUpdatesListener: UpdatesListener? = null
+
+	interface UpdatesListener {
+		fun update()
+	}
+
+	fun setUpdatesListener(mUpdatesListener: UpdatesListener) {
+		this.mUpdatesListener = mUpdatesListener
 	}
 
 	/**
@@ -101,7 +143,7 @@ class OsmandAidlHelper(private val app: TelegramApplication) {
 	fun isOsmandConnected(): Boolean {
 		return mIOsmAndAidlInterface != null
 	}
-
+	
 	/**
 	 * Get list of active GPX files.
 	 *
@@ -128,18 +170,14 @@ class OsmandAidlHelper(private val app: TelegramApplication) {
 	}
 
 	fun reconnectOsmand() {
-		if (boundPackage != app.settings.appToConnectPackage) {
-			cleanupResources()
-			connectOsmand()
-		}
+		cleanupResources()
+		connectOsmand()
 	}
 
 	fun connectOsmand() {
 		if (bindService(app.settings.appToConnectPackage)) {
-			boundPackage = app.settings.appToConnectPackage
 			bound = true
 		} else {
-			boundPackage = ""
 			bound = false
 			initialized = true
 		}
@@ -158,6 +196,7 @@ class OsmandAidlHelper(private val app: TelegramApplication) {
 	fun cleanupResources() {
 		try {
 			if (mIOsmAndAidlInterface != null) {
+				unregisterFromUpdates()
 				mIOsmAndAidlInterface = null
 				app.unbindService(mConnection)
 			}
@@ -870,6 +909,18 @@ class OsmandAidlHelper(private val app: TelegramApplication) {
 		return false
 	}
 
+	fun navigateSearch(startName: String, startLat: Double, startLon: Double, searchQuery: String, profile: String, force: Boolean): Boolean {
+		if (mIOsmAndAidlInterface != null) {
+			try {
+				return mIOsmAndAidlInterface!!.navigateSearch(NavigateSearchParams(startName, startLat, startLon, searchQuery, profile, force))
+			} catch (e: RemoteException) {
+				e.printStackTrace()
+			}
+
+		}
+		return false
+	}
+
 	fun setNavDrawerItems(appPackage: String, names: List<String>, uris: List<String>, iconNames: List<String>, flags: List<Int>): Boolean {
 		if (mIOsmAndAidlInterface != null) {
 			try {
@@ -878,6 +929,130 @@ class OsmandAidlHelper(private val app: TelegramApplication) {
 					items.add(NavDrawerItem(names[i], uris[i], iconNames[i], flags[i]))
 				}
 				return mIOsmAndAidlInterface!!.setNavDrawerItems(SetNavDrawerItemsParams(appPackage, items))
+			} catch (e: RemoteException) {
+				e.printStackTrace()
+			}
+		}
+		return false
+	}
+
+
+	/**
+	 * Put navigation on pause.
+	 */
+	fun pauseNavigation(): Boolean {
+		if (mIOsmAndAidlInterface != null) {
+			try {
+				return mIOsmAndAidlInterface!!.pauseNavigation(PauseNavigationParams())
+			} catch (e: RemoteException) {
+				e.printStackTrace()
+			}
+
+		}
+		return false
+	}
+
+	/**
+	 * Resume navigation if it was paused before.
+	 */
+	fun resumeNavigation(): Boolean {
+		if (mIOsmAndAidlInterface != null) {
+			try {
+				return mIOsmAndAidlInterface!!.resumeNavigation(ResumeNavigationParams())
+			} catch (e: RemoteException) {
+				e.printStackTrace()
+			}
+
+		}
+		return false
+	}
+
+	/**
+	 * Stop navigation. Removes target / intermediate points and route path from the map.
+	 */
+	fun stopNavigation(): Boolean {
+		if (mIOsmAndAidlInterface != null) {
+			try {
+				return mIOsmAndAidlInterface!!.stopNavigation(StopNavigationParams())
+			} catch (e: RemoteException) {
+				e.printStackTrace()
+			}
+
+		}
+		return false
+	}
+
+	/**
+	 * Mute voice guidance. Stays muted until unmute manually or via the api.
+	 */
+	fun muteNavigation(): Boolean {
+		if (mIOsmAndAidlInterface != null) {
+			try {
+				return mIOsmAndAidlInterface!!.muteNavigation(MuteNavigationParams())
+			} catch (e: RemoteException) {
+				e.printStackTrace()
+			}
+
+		}
+		return false
+	}
+
+	/**
+	 * Unmute voice guidance.
+	 */
+	fun unmuteNavigation(): Boolean {
+		if (mIOsmAndAidlInterface != null) {
+			try {
+				return mIOsmAndAidlInterface!!.unmuteNavigation(UnmuteNavigationParams())
+			} catch (e: RemoteException) {
+				e.printStackTrace()
+			}
+
+		}
+		return false
+	}
+
+	/**
+	 * Run search for POI / Address.
+	 *
+	 * @param searchQuery - search query string.
+	 * @param searchType - type of search. Values:
+	 * SearchParams.SEARCH_TYPE_ALL - all kind of search
+	 * SearchParams.SEARCH_TYPE_POI - POIs only
+	 * SearchParams.SEARCH_TYPE_ADDRESS - addresses only
+	 *
+	 * @param latitude - latitude of original search location.
+	 * @param longitude - longitude of original search location.
+	 * @param radiusLevel - value from 1 to 7. Default value = 1.
+	 * @param totalLimit - limit of returned search result rows. Default value = -1 (unlimited).
+	 */
+	fun search(searchQuery: String, searchType: Int, latitude: Double, longitude: Double, radiusLevel: Int, totalLimit: Int): Boolean {
+		if (mIOsmAndAidlInterface != null) {
+			try {
+				return mIOsmAndAidlInterface!!.search(SearchParams(searchQuery, searchType, latitude, longitude, radiusLevel, totalLimit), mIOsmAndAidlCallback)
+			} catch (e: RemoteException) {
+				e.printStackTrace()
+			}
+		}
+		return false
+	}
+
+	fun registerForUpdates(): Boolean {
+		if (mIOsmAndAidlInterface != null) {
+			try {
+				osmandCallbackId = mIOsmAndAidlInterface!!.registerForUpdates(UPDATE_TIME_MS, mIOsmAndAidlCallback)
+				return osmandCallbackId > 0
+			} catch (e: RemoteException) {
+				e.printStackTrace()
+			}
+		}
+		return false
+	}
+	
+	fun unregisterFromUpdates(): Boolean {
+		if (mIOsmAndAidlInterface != null) {
+			try {
+				return mIOsmAndAidlInterface!!.unregisterFromUpdates(osmandCallbackId)
 			} catch (e: RemoteException) {
 				e.printStackTrace()
 			}

@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Handler
 import net.osmand.telegram.helpers.*
 import net.osmand.telegram.helpers.OsmandAidlHelper.OsmandHelperListener
+import net.osmand.telegram.helpers.OsmandAidlHelper.UpdatesListener
 import net.osmand.telegram.notifications.NotificationHelper
 import net.osmand.telegram.utils.AndroidUtils
 import net.osmand.telegram.utils.UiUtils
@@ -44,18 +45,24 @@ class TelegramApplication : Application(), OsmandHelperListener {
 		osmandAidlHelper.listener = object : OsmandAidlHelper.OsmandHelperListener {
 			override fun onOsmandConnectionStateChanged(connected: Boolean) {
 				if (connected) {
-					val basePackage = "net.osmand.telegram"
-					val appPackage = if (BuildConfig.DEBUG) "$basePackage.debug" else basePackage
 					osmandAidlHelper.setNavDrawerItems(
-						appPackage,
+						applicationContext.packageName,
 						listOf(getString(R.string.app_name)),
 						listOf("osmand_telegram://main_activity"),
 						listOf("ic_action_location_sharing_app"),
 						listOf(-1)
 					)
+					if (settings.hasAnyChatToShowOnMap()) {
+						showLocationHelper.startShowingLocation()
+					}
 				}
 			}
 		}
+		osmandAidlHelper.setUpdatesListener(object : UpdatesListener {
+			override fun update() {
+				showLocationHelper.startUpdateMessagesTask()
+			}
+		})
 		shareLocationHelper = ShareLocationHelper(this)
 		showLocationHelper = ShowLocationHelper(this)
 		notificationHelper = NotificationHelper(this)
@@ -65,15 +72,20 @@ class TelegramApplication : Application(), OsmandHelperListener {
 		if (settings.hasAnyChatToShareLocation() && AndroidUtils.isLocationPermissionAvailable(this)) {
 			shareLocationHelper.startSharingLocation()
 		}
-		if (settings.hasAnyChatToShowOnMap()) {
-			showLocationHelper.startShowingLocation()
-		}
 	}
 
 	fun cleanupResources() {
 		osmandAidlHelper.cleanupResources()
 		telegramHelper.close()
 	}
+
+	fun stopSharingLocation() {
+		settings.stopSharingLocationToChats()
+		shareLocationHelper.stopSharingLocation()
+		telegramHelper.stopSendingLiveLocationMessages()
+	}
+
+	fun isOsmAndInstalled() = AndroidUtils.isAppInstalled(this, settings.appToConnectPackage)
 
 	val isWifiConnected: Boolean
 		get() {
