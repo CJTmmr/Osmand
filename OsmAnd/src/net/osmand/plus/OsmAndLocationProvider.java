@@ -531,15 +531,25 @@ public class OsmAndLocationProvider implements SensorEventListener {
 	}
 
 	private float calcScreenOrientationCorrection(float val) {
-		if (currentScreenOrientation == 1) {
-			val -= 90;
-			// CJTmmr: was val+=90; changed to fix 180 degree compass fault in portrait-upright position
-		} else if (currentScreenOrientation == 2) {
-			val += 180;
-			// CJTmmr was val=+180; changed to fix 180 degree compass fault in landscape-reverse position
-		} else if (currentScreenOrientation == 3) {
-			val += 90;
-			// CJTmmr: was val-=90; changed to fix 180 degree compass fault in portrait-reverseposition
+		if (modelIsEKGC200){
+			if (currentScreenOrientation == 1) {
+				val -= 90;
+				// CJTmmr: was val+=90; changed to fix 180 degree compass fault in portrait-upright position
+			} else if (currentScreenOrientation == 2) {
+				val += 180;
+				// CJTmmr was val=+180; changed to fix 180 degree compass fault in landscape-reverse position
+			} else if (currentScreenOrientation == 3) {
+				val += 90;
+				// CJTmmr: was val-=90; changed to fix 180 degree compass fault in portrait-reverseposition
+			}
+		}	else {
+			if (currentScreenOrientation == 1) {
+				val += 90;
+			} else if (currentScreenOrientation == 2) {
+				val += 180;
+			} else if (currentScreenOrientation == 3) {
+				val -= 90;
+			}
 		}
 		return val;
 	}
