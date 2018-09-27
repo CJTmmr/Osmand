@@ -50,20 +50,33 @@ public class SearchHistoryHelper {
 	}
 
 	public void addNewItemToHistory(PoiUIFilter filter) {
-		PointDescription pd = new PointDescription(PointDescription.POINT_TYPE_CUSTOM_POI_FILTER, filter.getFilterId());
+		String filterId = filter.getFilterId();
+		PointDescription pd = new PointDescription(PointDescription.POINT_TYPE_CUSTOM_POI_FILTER, filterId);
 		addNewItemToHistory(new HistoryEntry(0, 0, pd));
+		context.getPoiFilters().markHistory(filterId, true);
 	}
 
-	public List<HistoryEntry> getHistoryEntries() {
+	public List<HistoryEntry> getHistoryEntries(boolean onlyPoints) {
 		if (loadedEntries == null) {
 			checkLoadedEntries();
 		}
-		return new ArrayList<>(loadedEntries);
+		List<HistoryEntry> res = new ArrayList<>();
+		for (HistoryEntry entry : loadedEntries) {
+			PointDescription pd = entry.getName();
+			if (!onlyPoints || (!pd.isPoiType() && !pd.isCustomPoiFilter())) {
+				res.add(entry);
+			}
+		}
+		return res;
 	}
 
 	public void remove(HistoryEntry model) {
 		HistoryItemDBHelper helper = checkLoadedEntries();
 		if (helper.remove(model)) {
+			PointDescription pd = model.getName();
+			if (pd.isCustomPoiFilter()) {
+				context.getPoiFilters().markHistory(pd.getName(), false);
+			}
 			loadedEntries.remove(model);
 			mp.remove(model.getName());
 		}
@@ -72,6 +85,7 @@ public class SearchHistoryHelper {
 	public void removeAll() {
 		HistoryItemDBHelper helper = checkLoadedEntries();
 		if (helper.removeAll()) {
+			context.getPoiFilters().clearHistory();
 			loadedEntries.clear();
 			mp.clear();
 		}

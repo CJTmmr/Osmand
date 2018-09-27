@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class PoiFiltersHelper {
+
 	private final OsmandApplication application;
 
 	private NominatimPoiFilter nominatimPOIFilter;
@@ -49,14 +50,17 @@ public class PoiFiltersHelper {
 	private static final String UDF_ACCOMMODATION = "accommodation";
 	private static final String UDF_RESTAURANTS = "restaurants";
 	private static final String UDF_PARKING = "parking";
-	
-	private static final String[] DEL = new String[] {
-		UDF_CAR_AID, UDF_FOR_TOURISTS, UDF_FOOD_SHOP, UDF_FUEL, UDF_SIGHTSEEING, UDF_EMERGENCY,
-		UDF_PUBLIC_TRANSPORT, UDF_ACCOMMODATION, UDF_RESTAURANTS, UDF_PARKING
+
+	private static final String[] DEL = new String[]{
+			UDF_CAR_AID, UDF_FOR_TOURISTS, UDF_FOOD_SHOP, UDF_FUEL, UDF_SIGHTSEEING, UDF_EMERGENCY,
+			UDF_PUBLIC_TRANSPORT, UDF_ACCOMMODATION, UDF_RESTAURANTS, UDF_PARKING
 	};
 
 	public PoiFiltersHelper(OsmandApplication application) {
 		this.application = application;
+		PoiFilterDbHelper helper = openDbHelperNoPois();
+		helper.doDeletion();
+		helper.close();
 	}
 
 	public NominatimPoiFilter getNominatimPOIFilter() {
@@ -90,7 +94,7 @@ public class PoiFiltersHelper {
 	public PoiUIFilter getCustomPOIFilter() {
 		if (customPOIFilter == null) {
 			PoiUIFilter filter = new PoiUIFilter(application.getString(R.string.poi_filter_custom_filter),
-					PoiUIFilter.CUSTOM_FILTER_ID, new LinkedHashMap<PoiCategory, LinkedHashSet<String>>(), application); //$NON-NLS-1$
+					PoiUIFilter.CUSTOM_FILTER_ID, new LinkedHashMap<PoiCategory, LinkedHashSet<String>>(), application);
 			filter.setStandardFilter(true);
 			customPOIFilter = filter;
 		}
@@ -102,7 +106,7 @@ public class PoiFiltersHelper {
 			PoiType place = application.getPoiTypes().getPoiTypeByKey("wiki_place");
 			if (place != null && !Algorithms.isEmpty(application.getLanguage())) {
 				PoiUIFilter filter = new PoiUIFilter(place, application, " " +
-						application.getLangTranslation(application.getLanguage())); //$NON-NLS-1$
+						application.getLangTranslation(application.getLanguage()));
 				filter.setSavedFilterByName("wiki:lang:" + application.getLanguage());
 				filter.setStandardFilter(true);
 				localWikiPoiFilter = filter;
@@ -113,11 +117,23 @@ public class PoiFiltersHelper {
 
 	public PoiUIFilter getShowAllPOIFilter() {
 		if (showAllPOIFilter == null) {
-			PoiUIFilter filter = new PoiUIFilter(null, application, ""); //$NON-NLS-1$
+			PoiUIFilter filter = new PoiUIFilter(null, application, "");
 			filter.setStandardFilter(true);
 			showAllPOIFilter = filter;
 		}
 		return showAllPOIFilter;
+	}
+
+	public void markHistory(String filterId, boolean history) {
+		PoiFilterDbHelper helper = openDbHelperNoPois();
+		helper.markHistory(filterId, history);
+		helper.close();
+	}
+
+	public void clearHistory() {
+		PoiFilterDbHelper helper = openDbHelperNoPois();
+		helper.clearHistory();
+		helper.close();
 	}
 
 
@@ -131,10 +147,14 @@ public class PoiFiltersHelper {
 	}
 
 	public PoiUIFilter getFilterById(String filterId) {
+		return getFilterById(filterId, false);
+	}
+
+	public PoiUIFilter getFilterById(String filterId, boolean includeDeleted) {
 		if (filterId == null) {
 			return null;
 		}
-		for (PoiUIFilter f : getTopDefinedPoiFilters()) {
+		for (PoiUIFilter f : getTopDefinedPoiFilters(includeDeleted)) {
 			if (f.getFilterId().equals(filterId)) {
 				return f;
 			}
@@ -149,7 +169,7 @@ public class PoiFiltersHelper {
 			AbstractPoiType tp = application.getPoiTypes().getAnyPoiTypeByKey(typeId);
 			if (tp != null) {
 				PoiUIFilter lf = new PoiUIFilter(tp, application, "");
-				ArrayList<PoiUIFilter> copy = new ArrayList<PoiUIFilter>(cacheTopStandardFilters);
+				ArrayList<PoiUIFilter> copy = new ArrayList<>(cacheTopStandardFilters);
 				copy.add(lf);
 				Collections.sort(copy);
 				cacheTopStandardFilters = copy;
@@ -158,7 +178,7 @@ public class PoiFiltersHelper {
 			AbstractPoiType lt = application.getPoiTypes().getAnyPoiAdditionalTypeByKey(typeId);
 			if (lt != null) {
 				PoiUIFilter lf = new PoiUIFilter(lt, application, "");
-				ArrayList<PoiUIFilter> copy = new ArrayList<PoiUIFilter>(cacheTopStandardFilters);
+				ArrayList<PoiUIFilter> copy = new ArrayList<>(cacheTopStandardFilters);
 				copy.add(lf);
 				Collections.sort(copy);
 				cacheTopStandardFilters = copy;
@@ -175,11 +195,11 @@ public class PoiFiltersHelper {
 		getTopDefinedPoiFilters();
 	}
 
-	public List<PoiUIFilter> getUserDefinedPoiFilters() {
-		ArrayList<PoiUIFilter> userDefinedFilters = new ArrayList<PoiUIFilter>();
+	public List<PoiUIFilter> getUserDefinedPoiFilters(boolean includeDeleted) {
+		ArrayList<PoiUIFilter> userDefinedFilters = new ArrayList<>();
 		PoiFilterDbHelper helper = openDbHelper();
 		if (helper != null) {
-			List<PoiUIFilter> userDefined = helper.getFilters(helper.getReadableDatabase());
+			List<PoiUIFilter> userDefined = helper.getFilters(helper.getReadableDatabase(), includeDeleted);
 			userDefinedFilters.addAll(userDefined);
 			helper.close();
 		}
@@ -199,10 +219,14 @@ public class PoiFiltersHelper {
 	}
 
 	public List<PoiUIFilter> getTopDefinedPoiFilters() {
+		return getTopDefinedPoiFilters(false);
+	}
+
+	public List<PoiUIFilter> getTopDefinedPoiFilters(boolean includeDeleted) {
 		if (cacheTopStandardFilters == null) {
-			List<PoiUIFilter> top = new ArrayList<PoiUIFilter>();
+			List<PoiUIFilter> top = new ArrayList<>();
 			// user defined
-			top.addAll(getUserDefinedPoiFilters());
+			top.addAll(getUserDefinedPoiFilters(true));
 			if (getLocalWikiPOIFilter() != null) {
 				top.add(getLocalWikiPOIFilter());
 			}
@@ -215,10 +239,18 @@ public class PoiFiltersHelper {
 			Collections.sort(top);
 			cacheTopStandardFilters = top;
 		}
-		List<PoiUIFilter> result = new ArrayList<PoiUIFilter>();
-		result.addAll(cacheTopStandardFilters);
+		List<PoiUIFilter> result = new ArrayList<>();
+		for (PoiUIFilter filter : cacheTopStandardFilters) {
+			if (includeDeleted || !filter.isDeleted()) {
+				result.add(filter);
+			}
+		}
 		result.add(getShowAllPOIFilter());
 		return result;
+	}
+
+	private PoiFilterDbHelper openDbHelperNoPois() {
+		return new PoiFilterDbHelper(null, application);
 	}
 
 	private PoiFilterDbHelper openDbHelper() {
@@ -238,29 +270,24 @@ public class PoiFiltersHelper {
 		if (helper == null) {
 			return false;
 		}
-		boolean res = helper.deleteFilter(helper.getWritableDatabase(), filter);
-		if (res) {
-			ArrayList<PoiUIFilter> copy = new ArrayList<>(cacheTopStandardFilters);
-			copy.remove(filter);
-			cacheTopStandardFilters = copy;
-		}
+		boolean res = helper.deleteFilter(helper.getWritableDatabase(), filter, false);
 		helper.close();
 		return res;
 	}
 
-	public boolean createPoiFilter(PoiUIFilter filter) {
+	public boolean createPoiFilter(PoiUIFilter filter, boolean forHistory) {
 		PoiFilterDbHelper helper = openDbHelper();
 		if (helper == null) {
 			return false;
 		}
-		boolean res = helper.deleteFilter(helper.getWritableDatabase(), filter);
+		helper.deleteFilter(helper.getWritableDatabase(), filter, true);
 		Iterator<PoiUIFilter> it = cacheTopStandardFilters.iterator();
 		while (it.hasNext()) {
 			if (it.next().getFilterId().equals(filter.getFilterId())) {
 				it.remove();
 			}
 		}
-		res = helper.addFilter(filter, helper.getWritableDatabase(), false);
+		boolean res = helper.addFilter(filter, helper.getWritableDatabase(), false, forHistory);
 		if (res) {
 			ArrayList<PoiUIFilter> copy = new ArrayList<>(cacheTopStandardFilters);
 			copy.add(filter);
@@ -352,7 +379,7 @@ public class PoiFiltersHelper {
 		}
 	}
 
-	public void saveSelectedPoiFilters() {
+	private void saveSelectedPoiFilters() {
 		Set<String> filters = new HashSet<>();
 		for (PoiUIFilter f : selectedPoiFilters) {
 			filters.add(f.filterId);
@@ -362,22 +389,38 @@ public class PoiFiltersHelper {
 
 	public class PoiFilterDbHelper {
 
-		public static final String DATABASE_NAME = "poi_filters"; //$NON-NLS-1$
-		private static final int DATABASE_VERSION = 5;
-		private static final String FILTER_NAME = "poi_filters"; //$NON-NLS-1$
-		private static final String FILTER_COL_NAME = "name"; //$NON-NLS-1$
-		private static final String FILTER_COL_ID = "id"; //$NON-NLS-1$
-		private static final String FILTER_COL_FILTERBYNAME = "filterbyname"; //$NON-NLS-1$
-		private static final String FILTER_TABLE_CREATE = "CREATE TABLE " + FILTER_NAME + " (" + //$NON-NLS-1$ //$NON-NLS-2$
-				FILTER_COL_NAME + ", " + FILTER_COL_ID + ", " + FILTER_COL_FILTERBYNAME + ");"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		private static final int TRUE_INT = 1;
+		private static final int FALSE_INT = 0;
 
+		public static final String DATABASE_NAME = "poi_filters";
+		private static final int DATABASE_VERSION = 6;
 
-		private static final String CATEGORIES_NAME = "categories"; //$NON-NLS-1$
-		private static final String CATEGORIES_FILTER_ID = "filter_id"; //$NON-NLS-1$
-		private static final String CATEGORIES_COL_CATEGORY = "category"; //$NON-NLS-1$
-		private static final String CATEGORIES_COL_SUBCATEGORY = "subcategory"; //$NON-NLS-1$
-		private static final String CATEGORIES_TABLE_CREATE = "CREATE TABLE " + CATEGORIES_NAME + " (" + //$NON-NLS-1$ //$NON-NLS-2$
-				CATEGORIES_FILTER_ID + ", " + CATEGORIES_COL_CATEGORY + ", " + CATEGORIES_COL_SUBCATEGORY + ");"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+		private static final String FILTER_NAME = "poi_filters";
+		private static final String FILTER_COL_NAME = "name";
+		private static final String FILTER_COL_ID = "id";
+		private static final String FILTER_COL_FILTERBYNAME = "filterbyname";
+		private static final String FILTER_COL_HISTORY = "history";
+		private static final String FILTER_COL_DELETED = "deleted";
+
+		private static final String FILTER_TABLE_CREATE = "CREATE TABLE " +
+				FILTER_NAME + " (" +
+				FILTER_COL_NAME + ", " +
+				FILTER_COL_ID + ", " +
+				FILTER_COL_FILTERBYNAME + ", " +
+				FILTER_COL_HISTORY + ", " +
+				FILTER_COL_DELETED + ");";
+
+		private static final String CATEGORIES_NAME = "categories";
+		private static final String CATEGORIES_FILTER_ID = "filter_id";
+		private static final String CATEGORIES_COL_CATEGORY = "category";
+		private static final String CATEGORIES_COL_SUBCATEGORY = "subcategory";
+
+		private static final String CATEGORIES_TABLE_CREATE = "CREATE TABLE " +
+				CATEGORIES_NAME + " (" +
+				CATEGORIES_FILTER_ID + ", " +
+				CATEGORIES_COL_CATEGORY + ", " +
+				CATEGORIES_COL_SUBCATEGORY + ");";
+
 		private OsmandApplication context;
 		private SQLiteConnection conn;
 		private MapPoiTypes mapPoiTypes;
@@ -430,22 +473,64 @@ public class PoiFiltersHelper {
 			if (newVersion <= 5) {
 				deleteOldFilters(conn);
 			}
+			if (oldVersion < 6) {
+				conn.execSQL("ALTER TABLE " + FILTER_NAME + " ADD " + FILTER_COL_HISTORY + " int DEFAULT " + FALSE_INT);
+				conn.execSQL("ALTER TABLE " + FILTER_NAME + " ADD " + FILTER_COL_DELETED + " int DEFAULT " + FALSE_INT);
+			}
 			conn.setVersion(newVersion);
 		}
 
 		private void deleteOldFilters(SQLiteConnection conn) {
-			for (String toDel : DEL) {
-				deleteFilter(conn, "user_" + toDel);
+			if (conn != null) {
+				for (String toDel : DEL) {
+					deleteFilter(conn, "user_" + toDel);
+				}
 			}
 		}
 
-		protected boolean addFilter(PoiUIFilter p, SQLiteConnection db, boolean addOnlyCategories) {
+		void doDeletion() {
+			SQLiteConnection conn = getWritableDatabase();
+			if (conn != null) {
+				String query = "SELECT " + FILTER_COL_ID + ", " + FILTER_COL_HISTORY + ", " + FILTER_COL_DELETED + " FROM " + FILTER_NAME;
+				SQLiteCursor cursor = conn.rawQuery(query, null);
+				if (cursor != null) {
+					if (cursor.moveToFirst()) {
+						do {
+							if (cursor.getInt(1) == FALSE_INT && cursor.getInt(2) == TRUE_INT) {
+								deleteFilter(conn, cursor.getString(0));
+							}
+						} while (cursor.moveToNext());
+					}
+					cursor.close();
+				}
+			}
+		}
+
+		void markHistory(String filterId, boolean history) {
+			SQLiteConnection conn = getWritableDatabase();
+			if (conn != null) {
+				conn.execSQL("UPDATE " + FILTER_NAME + " SET " + FILTER_COL_HISTORY + " = ? WHERE " + FILTER_COL_ID + " = ?",
+						new Object[]{history ? TRUE_INT : FALSE_INT, filterId});
+			}
+		}
+
+		void clearHistory() {
+			SQLiteConnection conn = getWritableDatabase();
+			if (conn != null) {
+				conn.execSQL("UPDATE " + FILTER_NAME + " SET " + FILTER_COL_HISTORY + " = ?", new Object[]{FALSE_INT});
+			}
+		}
+
+		protected boolean addFilter(PoiUIFilter p, SQLiteConnection db, boolean addOnlyCategories, boolean forHistory) {
 			if (db != null) {
 				if (!addOnlyCategories) {
-					db.execSQL("INSERT INTO " + FILTER_NAME + " VALUES (?, ?, ?)", new Object[]{p.getName(), p.getFilterId(), p.getFilterByName()}); //$NON-NLS-1$ //$NON-NLS-2$
+					p.setDeleted(forHistory);
+					int value = forHistory ? TRUE_INT : FALSE_INT;
+					db.execSQL("INSERT INTO " + FILTER_NAME + " VALUES (?, ?, ?, ?, ?)",
+							new Object[]{p.getName(), p.getFilterId(), p.getFilterByName(), value, value});
 				}
 				Map<PoiCategory, LinkedHashSet<String>> types = p.getAcceptedTypes();
-				SQLiteStatement insertCategories = db.compileStatement("INSERT INTO " + CATEGORIES_NAME + " VALUES (?, ?, ?)"); //$NON-NLS-1$ //$NON-NLS-2$
+				SQLiteStatement insertCategories = db.compileStatement("INSERT INTO " + CATEGORIES_NAME + " VALUES (?, ?, ?)");
 				for (PoiCategory a : types.keySet()) {
 					if (types.get(a) == null) {
 						insertCategories.bindString(1, p.getFilterId());
@@ -467,12 +552,12 @@ public class PoiFiltersHelper {
 			return false;
 		}
 
-		protected List<PoiUIFilter> getFilters(SQLiteConnection conn) {
-			ArrayList<PoiUIFilter> list = new ArrayList<PoiUIFilter>();
+		protected List<PoiUIFilter> getFilters(SQLiteConnection conn, boolean includeDeleted) {
+			ArrayList<PoiUIFilter> list = new ArrayList<>();
 			if (conn != null) {
-				SQLiteCursor query = conn.rawQuery("SELECT " + CATEGORIES_FILTER_ID + ", " + CATEGORIES_COL_CATEGORY + "," + CATEGORIES_COL_SUBCATEGORY + " FROM " +  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+				SQLiteCursor query = conn.rawQuery("SELECT " + CATEGORIES_FILTER_ID + ", " + CATEGORIES_COL_CATEGORY + "," + CATEGORIES_COL_SUBCATEGORY + " FROM " +
 						CATEGORIES_NAME, null);
-				Map<String, Map<PoiCategory, LinkedHashSet<String>>> map = new LinkedHashMap<String, Map<PoiCategory, LinkedHashSet<String>>>();
+				Map<String, Map<PoiCategory, LinkedHashSet<String>>> map = new LinkedHashMap<>();
 				if (query != null && query.moveToFirst()) {
 					do {
 						String filterId = query.getString(0);
@@ -492,24 +577,30 @@ public class PoiFiltersHelper {
 						}
 					} while (query.moveToNext());
 				}
-				if(query != null) {
+				if (query != null) {
 					query.close();
 				}
 
-				query = conn.rawQuery("SELECT " + FILTER_COL_ID + ", " + FILTER_COL_NAME + "," + FILTER_COL_FILTERBYNAME + " FROM " +  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-						FILTER_NAME, null);
+				query = conn.rawQuery("SELECT " +
+						FILTER_COL_ID + ", " +
+						FILTER_COL_NAME + ", " +
+						FILTER_COL_FILTERBYNAME + ", " +
+						FILTER_COL_DELETED +
+						" FROM " + FILTER_NAME, null);
 				if (query != null && query.moveToFirst()) {
 					do {
 						String filterId = query.getString(0);
-						if (map.containsKey(filterId)) {
+						boolean deleted = query.getInt(3) == TRUE_INT;
+						if (map.containsKey(filterId) && (includeDeleted || !deleted)) {
 							PoiUIFilter filter = new PoiUIFilter(query.getString(1), filterId,
 									map.get(filterId), application);
 							filter.setSavedFilterByName(query.getString(2));
+							filter.setDeleted(deleted);
 							list.add(filter);
 						}
 					} while (query.moveToNext());
 				}
-				if(query != null) {
+				if (query != null) {
 					query.close();
 				}
 			}
@@ -518,9 +609,9 @@ public class PoiFiltersHelper {
 
 		protected boolean editFilter(SQLiteConnection conn, PoiUIFilter filter) {
 			if (conn != null) {
-				conn.execSQL("DELETE FROM " + CATEGORIES_NAME + " WHERE " + CATEGORIES_FILTER_ID + " = ?",  //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				conn.execSQL("DELETE FROM " + CATEGORIES_NAME + " WHERE " + CATEGORIES_FILTER_ID + " = ?",
 						new Object[]{filter.getFilterId()});
-				addFilter(filter, conn, true);
+				addFilter(filter, conn, true, false);
 				updateName(conn, filter);
 				return true;
 			}
@@ -528,27 +619,26 @@ public class PoiFiltersHelper {
 		}
 
 		private void updateName(SQLiteConnection db, PoiUIFilter filter) {
-			db.execSQL("UPDATE " + FILTER_NAME + " SET " + FILTER_COL_FILTERBYNAME + " = ?, " + FILTER_COL_NAME + " = ? " + " WHERE " //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-					+ FILTER_COL_ID + "= ?", new Object[]{filter.getFilterByName(), filter.getName(), filter.getFilterId()}); //$NON-NLS-1$
+			db.execSQL("UPDATE " + FILTER_NAME + " SET " + FILTER_COL_FILTERBYNAME + " = ?, " + FILTER_COL_NAME + " = ? " + " WHERE "
+					+ FILTER_COL_ID + "= ?", new Object[]{filter.getFilterByName(), filter.getName(), filter.getFilterId()});
 		}
 
-		protected boolean deleteFilter(SQLiteConnection db, PoiUIFilter p) {
-			String key = p.getFilterId();
-			return deleteFilter(db, key);
-		}
-
-		private boolean deleteFilter(SQLiteConnection db, String key) {
+		protected boolean deleteFilter(SQLiteConnection db, PoiUIFilter p, boolean force) {
 			if (db != null) {
-				db.execSQL("DELETE FROM " + FILTER_NAME + " WHERE " + FILTER_COL_ID + " = ?", new Object[]{key}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				db.execSQL(
-						"DELETE FROM " + CATEGORIES_NAME + " WHERE " + CATEGORIES_FILTER_ID + " = ?", new Object[]{key}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+				if (force) {
+					deleteFilter(db, p.getFilterId());
+				} else {
+					db.execSQL("UPDATE " + FILTER_NAME + " SET " + FILTER_COL_DELETED + " = ? WHERE " + FILTER_COL_ID + " = ?",
+							new Object[]{TRUE_INT, p.getFilterId()});
+				}
 				return true;
 			}
 			return false;
 		}
 
-
+		private void deleteFilter(@NonNull SQLiteConnection db, String key) {
+			db.execSQL("DELETE FROM " + FILTER_NAME + " WHERE " + FILTER_COL_ID + " = ?", new Object[]{key});
+			db.execSQL("DELETE FROM " + CATEGORIES_NAME + " WHERE " + CATEGORIES_FILTER_ID + " = ?", new Object[]{key});
+		}
 	}
-
-
 }
