@@ -297,8 +297,9 @@ task collectExternalResources {
 		collectHelpContentsStyle,
 		copyStyleIcons,
 		updateNoTranslate,
-		validateTranslate,
-		copyWidgetIcons
+		validateTranslate
+	// CJT - no copyW - to build in Windows... manualy copy done.
+	//		copyWidgetIcons
 }
 
 // Legacy core build
