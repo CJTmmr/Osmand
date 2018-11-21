@@ -10,11 +10,27 @@
 	- For wording and consistency, please note https://osmand.net/help-online?id=technical-articles#Creating_a_Consistent_User_Experience
 	Thx - Hardy
 -->
+    <string name="osm_live_subscriptions">Subscriptions</string>
+    <string name="powered_by_osmand">Powered by OsmAnd</string>
+    <string name="osm_live_plan_pricing">Plan &amp; Pricing</string>
+    <string name="osm_live_payment_monthly_title">Pay monthly</string>
+    <string name="osm_live_payment_3_months_title">Pay once in 3 months</string>
+    <string name="osm_live_payment_annual_title">Pay once a year</string>
+    <string name="osm_live_payment_month_cost_descr">%1$s / month</string>
+    <string name="osm_live_payment_month_cost_descr_ex">%1$.2f %2$s / month</string>
+    <string name="osm_live_payment_discount_descr">Save %1$s!</string>
+	<string name="osm_live_payment_current_subscription">Your current subscription</string>
+    <string name="osm_live_payment_renews_monthly">Renews monthly</string>
+    <string name="osm_live_payment_renews_quarterly">Renews quarterly</string>
+    <string name="osm_live_payment_renews_annually">Renews annually</string>
+    <string name="default_price_currency_format">%1$.2f %2$s</string>
+    <string name="osm_live_payment_header">Select the payment period convenient for you:</string>
+    <string name="osm_live_payment_contribute_descr">Part of income goes to OpenStreetMap contributors.</string>
     <string name="markers_remove_dialog_msg">Delete Map marker \'%s\'?</string>
     <string name="edit_map_marker">Edit map marker</string>
     <string name="third_party_application">Third-party application</string>
     <string name="search_street">Search street</string>
-    <string name="start_search_from_city">Start search from city</string>
+    <string name="start_search_from_city">Select the city first</string>
     <string name="shared_string_restore">Restore</string>
     <string name="keep_passed_markers_descr">Markers added as a group of Favorites or GPX waypoints marked "Passed" will remain on the map. If the group is not active, the markers will disappear from the map.</string>
     <string name="keep_passed_markers">Keep passed markers on the map</string>

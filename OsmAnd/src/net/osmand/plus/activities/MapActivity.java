@@ -65,6 +65,7 @@ import net.osmand.plus.MapMarkersHelper;
 import net.osmand.plus.MapMarkersHelper.MapMarker;
 import net.osmand.plus.MapMarkersHelper.MapMarkerChangedListener;
 import net.osmand.plus.OnDismissDialogFragmentListener;
+import net.osmand.plus.OsmAndAppCustomization.OsmAndAppCustomizationListener;
 import net.osmand.plus.OsmAndConstants;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
@@ -149,7 +150,7 @@ import java.util.regex.Pattern;
 
 public class MapActivity extends OsmandActionBarActivity implements DownloadEvents,
 		OnRequestPermissionsResultCallback, IRouteInformationListener,
-		MapMarkerChangedListener, OnDismissDialogFragmentListener, OnDrawMapListener {
+		MapMarkerChangedListener, OnDismissDialogFragmentListener, OnDrawMapListener, OsmAndAppCustomizationListener {
 	public static final String INTENT_KEY_PARENT_MAP_ACTIVITY = "intent_parent_map_activity_key";
 
 	private static final int SHOW_POSITION_MSG_ID = OsmAndConstants.UI_HANDLER_MAP_VIEW + 1;
@@ -207,6 +208,8 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	private boolean mIsDestroyed = false;
 	private boolean pendingPause = false;
 	private Timer splashScreenTimer;
+	private boolean activityRestartNeeded = false;
+	private boolean stopped = true;
 
 	private ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 
@@ -466,7 +469,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 				if (!settings.FORCE_PRIVATE_ACCESS_ROUTING_ASKED.getModeValue(getRoutingHelper().getAppMode())) {
 					final OsmandSettings.CommonPreference<Boolean> allowPrivate
 							= settings.getCustomRoutingBooleanProperty(GeneralRouter.ALLOW_PRIVATE, false);
-					final List<ApplicationMode> modes = ApplicationMode.values(settings);
+					final List<ApplicationMode> modes = ApplicationMode.values(app);
 					for (ApplicationMode mode : modes) {
 						if (!allowPrivate.getModeValue(mode)) {
 							settings.FORCE_PRIVATE_ACCESS_ROUTING_ASKED.setModeValue(mode, true);
@@ -633,6 +636,13 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	@Override
 	protected void onResume() {
 		super.onResume();
+
+		if (activityRestartNeeded) {
+			activityRestartNeeded = false;
+			recreate();
+			return;
+		}
+
 		long tm = System.currentTimeMillis();
 
 		if (app.getMapMarkersHelper().getPlanRouteContext().isFragmentVisible()) {
@@ -770,7 +780,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			}
 		}
 
-		getMyApplication().getAppCustomization().resumeActivity(MapActivity.class, this);
 		if (System.currentTimeMillis() - tm > 50) {
 			System.err.println("OnCreate for MapActivity took " + (System.currentTimeMillis() - tm) + " ms");
 		}
@@ -859,21 +868,26 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 				getWindow().setStatusBarColor(ContextCompat.getColor(this, colorId));
 				return;
 			}
+			int color = TopToolbarController.NO_COLOR;
 			boolean mapControlsVisible = findViewById(R.id.MapHudButtonsOverlay).getVisibility() == View.VISIBLE;
 			boolean night = app.getDaynightHelper().isNightModeForMapControls();
-			boolean quickSearchTopBar = getTopToolbarController(TopToolbarControllerType.QUICK_SEARCH) != null;
-			boolean contextMenuTopBar = getTopToolbarController(TopToolbarControllerType.CONTEXT_MENU) != null;
-			boolean poiFilterTopBar = getTopToolbarController(TopToolbarControllerType.POI_FILTER) != null;
-			boolean mapTopBar = findViewById(R.id.map_top_bar).getVisibility() == View.VISIBLE;
-			boolean markerTopBar = findViewById(R.id.map_markers_top_bar).getVisibility() == View.VISIBLE;
-			if (((quickSearchTopBar || poiFilterTopBar || mapTopBar) && mapControlsVisible) || contextMenuTopBar) {
-				colorId = night ? R.color.status_bar_route_dark : R.color.status_bar_route_light;
-			} else if (markerTopBar && mapControlsVisible) {
-				colorId = R.color.status_bar_dark;
-			} else {
-				colorId = night ? R.color.status_bar_transparent_dark : R.color.status_bar_transparent_light;
+			TopToolbarController toolbarController = getMapLayers().getMapInfoLayer().getTopToolbarController();
+			if (toolbarController != null && mapControlsVisible) {
+				color = toolbarController.getStatusBarColor(this, night);
 			}
-			getWindow().setStatusBarColor(ContextCompat.getColor(this, colorId));
+			if (color == TopToolbarController.NO_COLOR) {
+				boolean mapTopBar = findViewById(R.id.map_top_bar).getVisibility() == View.VISIBLE;
+				boolean markerTopBar = findViewById(R.id.map_markers_top_bar).getVisibility() == View.VISIBLE;
+				if (mapTopBar && mapControlsVisible) {
+					colorId = night ? R.color.status_bar_route_dark : R.color.status_bar_route_light;
+				} else if (markerTopBar && mapControlsVisible) {
+					colorId = R.color.status_bar_dark;
+				} else {
+					colorId = night ? R.color.status_bar_transparent_dark : R.color.status_bar_transparent_light;
+				}
+				color = ContextCompat.getColor(this, colorId);
+			}
+			getWindow().setStatusBarColor(color);
 		}
 	}
 
@@ -1208,6 +1222,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	@Override
 	protected void onStart() {
 		super.onStart();
+		stopped = false;
 		wakeLockHelper.onStart(this);
 		getMyApplication().getNotificationHelper().showNotifications();
 	}
@@ -1227,6 +1242,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		if(pendingPause) {
 			onPauseActivity();
 		}
+		stopped = true;
 		super.onStop();
 	}
 
@@ -1301,7 +1317,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 		settings.setLastKnownMapZoom(mapView.getZoom());
 		settings.MAP_ACTIVITY_ENABLED.set(false);
-		getMyApplication().getAppCustomization().pauseActivity(MapActivity.class);
 		app.getResourceManager().interruptRendering();
 		OsmandPlugin.onMapActivityPause(this);
 	}
@@ -1943,6 +1958,15 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	public void removeActivityResultListener(ActivityResultListener listener) {
 		activityResultListeners.remove(listener);
+	}
+
+	@Override
+	public void onOsmAndSettingsCustomized() {
+		if (stopped) {
+			activityRestartNeeded = true;
+		} else {
+			recreate();
+		}
 	}
 
 	public enum ShowQuickSearchMode {

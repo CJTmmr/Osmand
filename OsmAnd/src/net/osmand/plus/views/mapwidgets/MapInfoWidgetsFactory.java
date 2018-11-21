@@ -1,5 +1,6 @@
 package net.osmand.plus.views.mapwidgets;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
@@ -217,6 +218,9 @@ public class MapInfoWidgetsFactory {
 	}
 
 	public static class TopToolbarController {
+
+		public static final int NO_COLOR = -1;
+
 		private TopToolbarControllerType type;
 
 		@ColorRes
@@ -270,6 +274,7 @@ public class MapInfoWidgetsFactory {
 
 		boolean refreshBtnVisible = false;
 		boolean saveViewVisible = false;
+		boolean textBtnVisible = false;
 		protected boolean topBarSwitchVisible = false;
 		protected boolean topBarSwitchChecked = false;
 
@@ -289,6 +294,10 @@ public class MapInfoWidgetsFactory {
 		int descrTextClrLight = -1;
 		@ColorInt
 		int descrTextClrDark = -1;
+		@ColorInt
+		int textBtnTitleClrLight = -1;
+		@ColorInt
+		int textBtnTitleClrDark = -1;
 
 		boolean singleLineTitle = true;
 
@@ -296,6 +305,7 @@ public class MapInfoWidgetsFactory {
 
 		String title = "";
 		String description = null;
+		String textBtnTitle = null;
 
 		int saveViewTextId = -1;
 
@@ -304,6 +314,7 @@ public class MapInfoWidgetsFactory {
 		OnClickListener onCloseButtonClickListener;
 		OnClickListener onRefreshButtonClickListener;
 		OnClickListener onSaveViewClickListener;
+		OnClickListener onTextBtnClickListener;
 		OnCheckedChangeListener onSwitchCheckedChangeListener;
 
 		Runnable onCloseToolbarListener;
@@ -316,6 +327,11 @@ public class MapInfoWidgetsFactory {
 
 		public TopToolbarControllerType getType() {
 			return type;
+		}
+
+		@ColorInt
+		public int getStatusBarColor(Context context, boolean night) {
+			return ContextCompat.getColor(context, night ? R.color.status_bar_route_dark : R.color.status_bar_route_light);
 		}
 
 		public void setTitle(String title) {
@@ -403,6 +419,14 @@ public class MapInfoWidgetsFactory {
 			this.saveViewTextId = id;
 		}
 
+		public void setTextBtnVisible(boolean visible) {
+			this.textBtnVisible = visible;
+		}
+
+		public void setTextBtnTitle(String title) {
+			this.textBtnTitle = title;
+		}
+
 		public void setTopBarSwitchVisible(boolean visible) {
 			this.topBarSwitchVisible = visible;
 		}
@@ -431,6 +455,11 @@ public class MapInfoWidgetsFactory {
 			this.descrTextClrDark = descrTextClrDark;
 		}
 
+		public void setTextBtnTitleClrs(int textBtnTitleClrLight, int textBtnTitleClrDark) {
+			this.textBtnTitleClrLight = textBtnTitleClrLight;
+			this.textBtnTitleClrDark = textBtnTitleClrDark;
+		}
+
 		public void setOnBackButtonClickListener(OnClickListener onBackButtonClickListener) {
 			this.onBackButtonClickListener = onBackButtonClickListener;
 		}
@@ -445,6 +474,10 @@ public class MapInfoWidgetsFactory {
 
 		public void setOnSaveViewClickListener(OnClickListener onSaveViewClickListener) {
 			this.onSaveViewClickListener = onSaveViewClickListener;
+		}
+
+		public void setOnTextBtnClickListener(OnClickListener onTextBtnClickListener) {
+			this.onTextBtnClickListener = onTextBtnClickListener;
 		}
 
 		public void setOnSwitchCheckedChangeListener(OnCheckedChangeListener onSwitchCheckedChangeListener) {
@@ -510,6 +543,7 @@ public class MapInfoWidgetsFactory {
 		private ImageButton refreshButton;
 		private ImageButton closeButton;
 		private TextView saveView;
+		private TextView textBtn;
 		private SwitchCompat topBarSwitch;
 		private View shadowView;
 		private boolean nightMode;
@@ -526,6 +560,7 @@ public class MapInfoWidgetsFactory {
 			closeButton = (ImageButton) map.findViewById(R.id.widget_top_bar_close_button);
 			titleView = (TextView) map.findViewById(R.id.widget_top_bar_title);
 			saveView = (TextView) map.findViewById(R.id.widget_top_bar_save);
+			textBtn = (TextView) map.findViewById(R.id.widget_top_bar_text_btn);
 			descrView = (TextView) map.findViewById(R.id.widget_top_bar_description);
 			topBarSwitch = (SwitchCompat) map.findViewById(R.id.widget_top_bar_switch);
 			shadowView = map.findViewById(R.id.widget_top_bar_shadow);
@@ -644,6 +679,7 @@ public class MapInfoWidgetsFactory {
 			closeButton.setOnClickListener(controller.onCloseButtonClickListener);
 			refreshButton.setOnClickListener(controller.onRefreshButtonClickListener);
 			saveView.setOnClickListener(controller.onSaveViewClickListener);
+			textBtn.setOnClickListener(controller.onTextBtnClickListener);
 			topBarSwitch.setOnCheckedChangeListener(controller.onSwitchCheckedChangeListener);
 		}
 
@@ -681,6 +717,7 @@ public class MapInfoWidgetsFactory {
 			int titleTextClrId = nightMode ? controller.titleTextClrDarkId : controller.titleTextClrLightId;
 			int descrTextClr = nightMode ? controller.descrTextClrDark : controller.descrTextClrLight;
 			int descrTextClrId = nightMode ? controller.descrTextClrDarkId : controller.descrTextClrLightId;
+			int textBtnTitleClr = nightMode ? controller.textBtnTitleClrDark : controller.textBtnTitleClrLight;
 
 			if (bg != null) {
 				topBarLayout.setBackgroundDrawable(bg);
@@ -711,6 +748,9 @@ public class MapInfoWidgetsFactory {
 			titleView.setTextColor(titleColor);
 			descrView.setTextColor(descrColor);
 			saveView.setTextColor(titleColor);
+			if (textBtnTitleClr != -1) {
+				textBtn.setTextColor(textBtnTitleClr);
+			}
 
 			titleView.setSingleLine(controller.singleLineTitle);
 
@@ -738,6 +778,15 @@ public class MapInfoWidgetsFactory {
 				}
 			} else if (saveView.getVisibility() == View.VISIBLE) {
 				saveView.setVisibility(View.GONE);
+			}
+			if (controller.textBtnVisible) {
+				textBtn.setText(controller.textBtnTitle);
+				textBtn.setContentDescription(controller.textBtnTitle);
+				if (textBtn.getVisibility() == View.GONE) {
+					textBtn.setVisibility(View.VISIBLE);
+				}
+			} else if (textBtn.getVisibility() == View.VISIBLE) {
+				textBtn.setVisibility(View.GONE);
 			}
 		}
 

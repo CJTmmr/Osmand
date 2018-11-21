@@ -65,6 +65,8 @@ class TelegramHelper private constructor() {
 
 	var messageActiveTimeSec: Long = 0
 
+	var lastTelegramUpdateTime: Int = 0
+
 	private val users = ConcurrentHashMap<Int, TdApi.User>()
 	private val basicGroups = ConcurrentHashMap<Int, TdApi.BasicGroup>()
 	private val supergroups = ConcurrentHashMap<Int, TdApi.Supergroup>()
@@ -89,6 +91,7 @@ class TelegramHelper private constructor() {
 
 	private var client: Client? = null
 	private var currentUser: TdApi.User? = null
+	private var osmandBot: TdApi.User? = null
 
 	private var haveFullChatList: Boolean = false
 	private var needRefreshActiveLiveLocationMessages: Boolean = true
@@ -143,6 +146,8 @@ class TelegramHelper private constructor() {
 	fun getChat(id: Long) = chats[id]
 
 	fun getUser(id: Int) = users[id]
+
+	fun getOsmandBot() = osmandBot
 
 	fun getCurrentUser() = currentUser
 
@@ -480,6 +485,44 @@ class TelegramHelper private constructor() {
 		}
 	}
 
+	fun sendViaBotLocationMessage(userId: Int, shareInfo: TelegramSettings.ShareChatInfo, location: TdApi.Location, query: String) {
+		log.debug("sendViaBotLocationMessage - ${shareInfo.chatId}")
+		client?.send(TdApi.GetInlineQueryResults(userId, shareInfo.chatId, location, query, "")) { obj ->
+			when (obj.constructor) {
+				TdApi.Error.CONSTRUCTOR -> {
+					val error = obj as TdApi.Error
+					if (error.code != IGNORED_ERROR_CODE) {
+						listener?.onTelegramError(error.code, error.message)
+					} else {
+						shareInfo.shouldSendViaBotMessage = true
+					}
+				}
+				TdApi.InlineQueryResults.CONSTRUCTOR -> {
+					sendViaBotMessageFromQueryResults(shareInfo, obj as TdApi.InlineQueryResults, query)
+				}
+			}
+		}
+	}
+
+	private fun sendViaBotMessageFromQueryResults(
+		shareInfo: TelegramSettings.ShareChatInfo,
+		inlineQueryResults: TdApi.InlineQueryResults,
+		query: String
+	) {
+		val queryResults = inlineQueryResults.results.asList()
+		if (queryResults.isNotEmpty()) {
+			val resultArticle = queryResults.firstOrNull {
+				(it is TdApi.InlineQueryResultArticle && it.id.startsWith("t") && it.title == query)
+			}
+			if (resultArticle != null && resultArticle is TdApi.InlineQueryResultArticle) {
+				client?.send(TdApi.SendInlineQueryResultMessage(shareInfo.chatId, 0, true,
+						true, inlineQueryResults.inlineQueryId, resultArticle.id)) { obj ->
+					handleLiveLocationMessageUpdate(obj, shareInfo)
+				}
+			}
+		}
+	}
+
 	private fun requestSupergroupFullInfo(id: Int) {
 		client?.send(TdApi.GetSupergroupFullInfo(id)) { obj ->
 			when (obj.constructor) {
@@ -531,6 +574,7 @@ class TelegramHelper private constructor() {
 	}
 
 	private fun addNewMessage(message: TdApi.Message) {
+		lastTelegramUpdateTime = Math.max(message.date, message.editDate)
 		if (message.isAppropriate()) {
 			val fromBot = isOsmAndBot(message.senderUserId)
 			val viaBot = isOsmAndBot(message.viaBotUserId)
@@ -939,8 +983,11 @@ class TelegramHelper private constructor() {
 				s.startsWith(UPDATED_PREFIX) -> {
 					if (res.lastUpdated == 0) {
 						val updatedStr = s.removePrefix(UPDATED_PREFIX)
-						val updatedS = updatedStr.substring(0, updatedStr.indexOf("("))
-						res.lastUpdated = (parseTime(updatedS.trim()) / 1000).toInt()
+						val endIndex = updatedStr.indexOf("(")
+						val updatedS = updatedStr.substring(0, if (endIndex != -1) endIndex else updatedStr.length)
+						val parsedTime = (parseTime(updatedS.trim()) / 1000).toInt()
+						val currentTime = (System.currentTimeMillis() / 1000) - 1
+						res.lastUpdated = if (parsedTime < currentTime) parsedTime else currentTime.toInt()
 					}
 				}
 			}
@@ -1036,7 +1083,11 @@ class TelegramHelper private constructor() {
 
 				TdApi.UpdateUser.CONSTRUCTOR -> {
 					val updateUser = obj as TdApi.UpdateUser
-					users[updateUser.user.id] = updateUser.user
+					val user = updateUser.user
+					users[updateUser.user.id] = user
+					if (isOsmAndBot(user.id)) {
+						osmandBot = user
+					}
 				}
 				TdApi.UpdateUserStatus.CONSTRUCTOR -> {
 					val updateUserStatus = obj as TdApi.UpdateUserStatus
@@ -1187,6 +1238,7 @@ class TelegramHelper private constructor() {
 					} else {
 						synchronized(message) {
 							message.editDate = updateMessageEdited.editDate
+							lastTelegramUpdateTime = Math.max(message.date, message.editDate)
 						}
 						incomingMessagesListeners.forEach {
 							it.onReceiveChatLocationMessages(message.chatId, message)
@@ -1202,6 +1254,7 @@ class TelegramHelper private constructor() {
 						}
 					} else {
 						synchronized(message) {
+							lastTelegramUpdateTime = Math.max(message.date, message.editDate)
 							val newContent = updateMessageContent.newContent
 							message.content = if (newContent is TdApi.MessageText) {
 								parseOsmAndBotLocation(newContent.text.text)

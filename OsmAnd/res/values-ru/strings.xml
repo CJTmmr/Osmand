@@ -2895,13 +2895,13 @@
     <string name="in_app_purchase_desc_ex">После покупки этот план станет доступен для вас навсегда.</string>
     <string name="wikivoyage_travel_guide">Путеводитель</string>
     <string name="wikivoyage_travel_guide_descr">Просматривайте путеводители Викигида по самым интересным местам на планете внутри OsmAnd без подключения к интернету.</string>
-    <string name="travel_card_update_descr">Мы подготовили обновления и исправления в данных Викигида, обновите файл, чтобы увидеть их.</string>
+    <string name="travel_card_update_descr">Доступны новые данные Викигида, обновите файл, чтобы увидеть их.</string>
 	<string name="travel_card_download_descr">Скачайте путеводители Викигида для просмотра статей о местах по всему миру без подключения к Интернету.</string>
 	<string name="update_is_available">Доступно обновление</string>
 	<string name="download_file">Скачать файл</string>
     <string name="start_editing_card_image_text">Свободный всемирный путеводитель, который может редактировать каждый.</string>
     <string name="welcome_to_open_beta_description">Проверьте бесплатно все функции во время открытого бета-тестирования. Впоследствии Путеводитель будет доступен подписчикам OsmAnd Unlimited и владельцам OsmAnd +</string>
-    <string name="start_editing_card_description">Вы можете редактировать любую статью Викигида, и мы надеемся, что вы это сделаете. Нам нужны ваши знания, ваш опыт, ваш талант и ваше внимание</string>
+    <string name="start_editing_card_description">Вы можете отредактировать любую статью Викигида, этот проект написан такими же волонтерами как и вы. Нам нужны ваши знания, ваш опыт, ваш талант и ваше внимание</string>
     <string name="start_editing">Начать редактирование</string>
     <string name="get_unlimited_access">Получить неограниченный доступ</string>
     <string name="welcome_to_open_beta">Добро пожаловать на открытое бета-тестирование</string>
@@ -2980,13 +2980,19 @@
 \n</string>
     <string name="increase_search_radius_to">Увеличить радиус поиска до %1$s</string>
     <string name="commiting_way">Фиксируется путь…</string>
-    <string name="release_3_2_pre">• Исправлено аварийное завершение приложения при запуске с нелатинскими картами 
+    <string name="release_3_2_pre">• Исправлено падение приложения при запуске, которое происходило на некоторых устройствах
+\n
+\n• Новый функционал маркеров: отображение пройденных маркеров
+\n
+\n• История поиска теперь показывает категории, которые вы искали ранее
+\n
+\n• Исправлено падение приложения при запуске с нелатинскими картами 
 \n 
 \n• Повышена скорость рендеринга на устройствах с Android 8.0 
 \n 
-\n• Поддержка редактирования объектов полигонов (не amenity) 
-\n
-\n• Измерить расстояние: добавлена кнопка «Измерить» в пункт «Действия» контекстного меню
+\n• Поддержка редактирования полигональных объектов (не amenity) 
+\n 
+\n• Измерить расстояние: добавлена кнопка «Измерить» в пункт «Действия» контекстного меню 
 \n</string>
     <string name="ask_for_location_permission">Пожалуйста, для продолжения дайте OsmAnd разрешение на определение местоположения.</string>
     <string name="rendering_value_black_name">Чёрный</string>
@@ -2999,4 +3005,18 @@
     <string name="markers_remove_dialog_msg">Удалить маркер \'%s\'\?</string>
     <string name="edit_map_marker">Редактировать маркер</string>
     <string name="third_party_application">Стороннее приложение</string>
+    <string name="osm_live_plan_pricing">План и цены</string>
+    <string name="osm_live_payment_monthly_title">Платить ежемесячно</string>
+    <string name="osm_live_payment_3_months_title">Платить раз в 3 месяца</string>
+    <string name="osm_live_payment_annual_title">Платить раз в год</string>
+    <string name="osm_live_payment_month_cost_descr">%1$s / месяц</string>
+    <string name="osm_live_payment_month_cost_descr_ex">%1$.2f %2$s / месяц</string>
+    <string name="osm_live_payment_discount_descr">Экономия %1$s!</string>
+	<string name="osm_live_payment_current_subscription">Ваша текущая подписка</string>
+    <string name="osm_live_payment_renews_monthly">Продлевается ежемесячно</string>
+    <string name="osm_live_payment_renews_quarterly">Продлевается ежеквартально</string>
+    <string name="osm_live_payment_renews_annually">"Продлевается  ежегодно"</string>
+    <string name="default_price_currency_format">%1$.2f %2$s</string>
+    <string name="osm_live_payment_header">Выберите удобный для вас период оплаты:</string>
+    <string name="osm_live_payment_contribute_descr">Часть доходов поступает участникам OpenStreetMap.</string>
     </resources>

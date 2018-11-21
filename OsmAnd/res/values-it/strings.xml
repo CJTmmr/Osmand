@@ -48,7 +48,7 @@
     <string name="open_street_map_login_descr">Necessario per inviare contributi a openstreetmap.org</string>
     <string name="user_password">Password in OSM</string>
     
-    <string name="osmand_service">"Modalità  background"</string>
+    <string name="osmand_service">In secondo piano</string>
     <string name="osmand_service_descr">OsmAnd, a schermo spento, è eseguito in background</string>
 
 
@@ -207,13 +207,13 @@ La memoria utilizzata è  {1} MB.
 
     <string name="unit_of_length_descr">Cambia le unità di misura di lunghezza</string>
     <string name="unit_of_length">Unità di misura di lunghezza</string>
-    <string name="si_mi_feet">Miglia/piede</string>
+    <string name="si_mi_feet">Miglia/piedi</string>
     <string name="si_mi_yard">Miglia/iarde</string>
     <string name="si_km_m">Chilometri/metri</string>
-    <string name="yard">iarda</string>
-    <string name="foot">piedi</string>
+    <string name="yard">yd</string>
+    <string name="foot">ft</string>
     <string name="mile_per_hour">mph</string>
-    <string name="mile">miglia</string>
+    <string name="mile">mi</string>
     <string name="send_location_way_choose_title">Condividi la posizione usando</string>
     <string name="send_location_sms_pattern">Posizione: %1$s\n%2$s</string>
     <string name="send_location_email_pattern">Per vedere la posizione segui il collegamento web %1$s o il collegamento %2$s</string>
@@ -599,8 +599,8 @@ La memoria utilizzata è  {1} MB.
     <string name="osb_comment_dialog_author">Nome autore</string>
 
 
-    <string name="osb_comment_dialog_success">Il commento è stato aggiunto correttamente</string>
-    <string name="osb_comment_dialog_error">Si è verificata un\'eccezione: il commento non è stato aggiunto</string>
+    <string name="osb_comment_dialog_success">Commento aggiunto</string>
+    <string name="osb_comment_dialog_error">Impossibile aggiungere il commento</string>
 
 
 
@@ -1517,7 +1517,7 @@ Memoria in proporzione %4$s MB (limite di Android %5$s MB, Dalvik %6$s MB).</str
     <string name="speak_favorites">Preferiti nelle vicinanze</string>
     <string name="speak_poi">PDI nelle vicinanze</string>
     <string name="index_tours">Itinerari</string>
-    <string name="shared_string_all">Tutto</string>
+    <string name="shared_string_all">Tutti</string>
     <string name="record_plugin_description">Questo componente aggiuntivo attiva la funzionalità di registrare e salvare le tue tracce, o manualmente attraverso il pulsante dedicato nello schermo della mappa, oppure automaticamente tenendo traccia di tutti i tuoi spostamenti in un file GPX.
 \n
 \n
@@ -1695,7 +1695,7 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
     <string name="shared_string_previous">Precedente</string>
     <string name="shared_string_next">Successivo</string>
     <string name="shared_string_enable">Abilita</string>
-    <string name="shared_string_disable">Disabilita</string>
+    <string name="shared_string_disable">Disattiva</string>
     <string name="shared_string_enabled">Abilitato</string>
     <string name="shared_string_disabled">Disabilitato</string>
     <string name="shared_string_selected">Selezionato</string>
@@ -1845,7 +1845,7 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
     <string name="local_recordings_delete_all_confirm">Stai per cancellare %1$d nota/e. Sei sicuro?</string>
     <string name="download_wikipedia_maps">Wikipedia</string>
     <string name="lang_es_ar">Spagnolo (Argentina)</string>
-    <string name="lang_nb">Norvegese (Bokmål)</string>
+    <string name="lang_nb">Norvegese bokmål</string>
     <string name="lang_vo">Volapuk</string>
     <string name="lang_th">Thailandese</string>
     <string name="lang_te">Telugu</string>
@@ -1890,7 +1890,7 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
     <string name="rendering_value_translucent_blue_name">Blu traslucido</string>
     <string name="rendering_value_purple_name">Viola</string>
     <string name="rendering_value_translucent_purple_name">Viola traslucido</string>
-    <string name="restart_is_required">Per applicare le modifiche è necessario un riavvio manuale dell\'app.</string>
+    <string name="restart_is_required">Riavvia manualmente l\'applicazione per applicare tutte le modifiche.</string>
     <string name="rendering_value_default13_name">Predefinito (13)</string>
     <string name="rendering_value_defaultTranslucentCyan_name">Predefinito (ciano traslucido)</string>
     <string name="rendering_value_red_name">Rosso</string>
@@ -1952,7 +1952,7 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
     <string name="simulate_your_location_stop_descr">Arresta la simulazione della posizione.</string>
     <string name="simulate_your_location_descr">Simula la posizione utilizzando un GPX registrato o una percorso calcolato.</string>
     <string name="downloads_left_template">%1$s download rimanenti</string>
-    <string name="favourites_edit_dialog_title">Informazioni preferite</string>
+    <string name="favourites_edit_dialog_title">Informazioni sui preferiti</string>
     <string name="favourites_context_menu_add">Aggiungi preferito</string>
     <string name="roads">Strade</string>
     <string name="shared_string_trip_recording">Registrazione viaggio</string>
@@ -1960,15 +1960,15 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
     <string name="osmand_running_in_background">Esecuzione in background</string>
     <string name="default_speed_system_descr">Specifica l\'unità di misura della velocità.</string>
     <string name="default_speed_system">Unità di misura della velocità</string>
-    <string name="nm">NM</string>
+    <string name="nm">nmi</string>
     <string name="si_nm">Miglia nautiche</string>
     <string name="si_kmh">Chilometri all\'ora</string>
-    <string name="si_mph">Miglia per ora</string>
+    <string name="si_mph">Miglia all\'ora</string>
     <string name="si_m_s">Metri al secondo</string>
     <string name="si_min_km">Minuti al chilometro</string>
-    <string name="si_min_m">Minuti per miglia</string>
+    <string name="si_min_m">Minuti al miglio</string>
     <string name="si_nm_h">Miglia nautiche per ora (nodi)</string>
-    <string name="nm_h">nm/h</string>
+    <string name="nm_h">kn</string>
     <string name="min_mile">min/m</string>
     <string name="min_km">min/km</string>
     <string name="m_s">m/s</string>
@@ -1992,7 +1992,7 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
     <string name="world_maps">Mappe mondiali</string>
 
     <string name="downloads">Download</string>
-    <string name="favorite_category_dublicate_message">Il nome della categoria specificata esiste già. Specifica un nome diverso.</string>
+    <string name="favorite_category_dublicate_message">Per favore scegli un nome che non esiste già per la categoria.</string>
     <string name="favorite_category_name">Nome della categoria</string>
     <string name="favorite_category_add_new_title">Aggiungi una nuova categoria</string>
     <string name="confirm_download_roadmaps">Sei sicuro di volere scaricare mappe solo stradali anche se disponi già di mappe standard complete?</string>
@@ -2012,7 +2012,7 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
 
     <string name="shared_string_qr_code">codice QR</string>
     <string name="map_downloaded">Mappa scaricata</string>
-    <string name="map_downloaded_descr">La mappa %1$s è stata scaricata, ora puoi iniziare a utilizzarla.</string>
+    <string name="map_downloaded_descr">La mappa %1$s è pronta all\'uso.</string>
     <string name="go_to_map">Mostra la mappa</string>
     <string name="show_on_start_description">\'Spegni\' lancia direttamente la schermata della mappa.</string>
     <string name="enter_country_name">Inserisci il nome della nazione</string>
@@ -2057,7 +2057,7 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
     <string name="context_menu_item_edit_waypoint">Modifica i waypoint del GPX</string>
     <string name="shared_string_location">Posizione</string>
     <string name="poi_context_menu_modify_osm_change">Modifica i cambiamenti di OSM</string>
-    <string name="access_from_map_description">Il pulsante del menù apre il pannello di controllo, non il menù.</string>
+    <string name="access_from_map_description">Il pulsante del menù apre il pannello di controllo, non il menù</string>
     <string name="access_from_map">Accedi dalla mappa</string>
     <string name="copied_to_clipboard">Copiato negli appunti</string>
     <string name="osm_save_offline">Salva offline</string>
@@ -2073,10 +2073,10 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
 	<string name="osn_comment_dialog_title">Aggiungi un commento</string>
 	<string name="osn_reopen_dialog_title">Riapri la nota</string>
 	<string name="osn_close_dialog_title">Chiudi la nota</string>
-	<string name="osn_add_dialog_success">Nota creata con successo</string>
-	<string name="osn_add_dialog_error">C\'è stato un errore: la nota non è stata creata</string>
-	<string name="osn_close_dialog_success">La nota è stata chiusa con successo</string>
-	<string name="osn_close_dialog_error">È stato generato un errore: la nota non è stata chiusa</string>
+	<string name="osn_add_dialog_success">Nota creata</string>
+	<string name="osn_add_dialog_error">Impossibile creare la nota</string>
+	<string name="osn_close_dialog_success">La nota è stata chiusa</string>
+	<string name="osn_close_dialog_error">Impossibile chiudere la nota</string>
 	<string name="shared_string_commit">Invia</string>
 
     <string name="rendering_attr_currentTrackColor_description">Colore del GPX</string>
@@ -2128,7 +2128,7 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
     
 <string name="rec_split_desc">Sovrascrivi le note quando lo spazio utilizzato supera la dimensione della memoria.</string>
     <string name="rec_split_clip_length">Lunghezza della nota</string>
-    <string name="rec_split_clip_length_desc">Limite massimo durata delle clip registrate.</string>
+    <string name="rec_split_clip_length_desc">Limite massimo della durata delle clip registrate.</string>
     <string name="rec_split_storage_size">Dimensione della memoria</string>
     <string name="rec_split_storage_size_desc">Quantità di spazio che può essere occupata dal totale delle clip.</string>
     <string name="update_time">Ora di aggiornamento</string>
@@ -2146,7 +2146,7 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
     <string name="select_month_and_country">Scegli il mese e lo stato</string>
 <string name="item_removed">Oggetto rimosso</string>
     <string name="n_items_removed">oggetti cancellati</string>
-    <string name="shared_string_undo_all">ANNULLA TUTTO</string>
+    <string name="shared_string_undo_all">Annulla tutto</string>
     <string name="switch_start_finish">Inverti punti di partenza e destinazione</string>
     <string name="rendering_attr_hideIcons_name">Icone dei PDI</string>
     <string name="number_of_edits">Numero di modifiche</string>
@@ -2154,7 +2154,7 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
     <string name="shared_string_select">Seleziona</string>
     <string name="reports_for">Rapporto per</string>
 <string name="shared_string_remove">Rimuovi</string>
-    <string name="clear_updates_proposition_message">Puoi eliminare gli aggiornamenti scaricati e tornare alla mappa originale</string>
+    <string name="clear_updates_proposition_message">Elimina gli aggiornamenti scaricati e torna alla mappa originale</string>
     <string name="road_blocked">Strada bloccata</string>
     <string name="add_time_span">Aggiungi durata</string>
     <string name="data_is_not_available">Dati non disponibili</string>
@@ -2176,7 +2176,7 @@ Attivando questa vista lo stile della mappa diventerà \'Inverno e sci\', mostra
     <string name="active_markers">Marcatori attivi</string>
     <string name="map_markers">Marcatori</string>
     <string name="map_marker">Marcatore</string>
-    <string name="add_points_to_map_markers_q">Vuoi aggiungere tutti i punti ai marcatori?</string>
+    <string name="add_points_to_map_markers_q">Vuoi aggiungere tutti i punti come marcatori\?</string>
     <string name="shared_string_add_to_map_markers">Aggiungi ai marcatori</string>
     <string name="consider_turning_polygons_off">È consigliato disabilitare il disegno dei poligoni.</string>
     
@@ -2200,25 +2200,23 @@ Sono disponibili solo {2} MB.</string>
     <string name="osm_editors_ranking">Classifica contributori OSM</string>
     <string name="osm_live_subscription">Sottoscrizione OsmAnd Live</string>
     <string name="osm_live_subscribe_btn">Sottoscrivi</string>
-    <string name="osm_live_email_desc">Necessario per fornirti informazioni sui contributi.</string>
+    <string name="osm_live_email_desc">È necessario per fornirti informazioni sui contributi.</string>
     <string name="osm_live_user_public_name">Nome pubblico</string>
     <string name="osm_live_hide_user_name">Non mostrare il mio nome nei rapporti</string>
     <string name="osm_live_support_region">Sostieni la regione</string>
     <string name="osm_live_month_cost">Costo mensile</string>
-    <string name="osm_live_month_cost_desc">Pagamento mensile.</string>
+    <string name="osm_live_month_cost_desc">Pagamento mensile</string>
     <string name="osm_live_active">Attivo</string>
     <string name="osm_live_not_active">Non attivo</string>
     <string name="osm_live_enter_email">Per favore inserisci un indirizzo email valido</string>
-    <string name="osm_live_enter_user_name">Per favore inserisci il nome pubblico</string>
+    <string name="osm_live_enter_user_name">Per favore inserisci il nome con cui vuoi apparire in pubblico</string>
     <string name="osm_live_thanks">Ti ringraziamo per il tuo contributo a OsmAnd!
 \nPer attivare tutte le nuove funzioni OsmAnd deve essere riavviato.</string>
     <string name="osm_live_region_desc">Parte della tua donazione sarà inviata agli utenti OSM che sottopongono modifiche alla mappa in quella regione.</string>
     <string name="osm_live_subscription_settings">Impostazioni della sottoscrizione</string>
     <string name="osm_live_ask_for_purchase">Per favore acquista prima la sottoscrizione a OsmAnd Live</string>
 
-    <string name="osm_live_header">La sottoscrizione abilita gli aggiornamenti orari per tutte le mappe del mondo.
-Parte degli incassi ritornano alla comunità OSM ed è corrisposto per ogni contributo OSM.
-Se ami OsmAnd e OSM e vuoi sostenerli, questo è un modo perfetto per farlo.</string>
+    <string name="osm_live_header">La sottoscrizione abilita gli aggiornamenti orari per tutte le mappe del mondo. Parte degli incassi ritornano alla comunità OSM e sono corrisposti per ogni contributo a OSM. Se ti piacciono OsmAnd e OSM e vuoi sostenerli, questo è il miglior modo per farlo.</string>
     
     <string name="upload_anonymously">Carica anonimamente</string>
     <string name="show_transparency_seekbar">Mostra la barra di regolazione della trasparenza</string>
@@ -2229,7 +2227,7 @@ Se ami OsmAnd e OSM e vuoi sostenerli, questo è un modo perfetto per farlo.</st
     <string name="finish_navigation">Termina la navigazione</string>
     <string name="avoid_road">Evita strada</string>
     <string name="storage_directory_shared">Memoria condivisa</string>
-    <string name="storage_directory_readonly_desc">La cartella di memorizzazione selezionata è in sola lettura. La cartella di memorizzazione è stata temporaneamente spostata nella memoria interna. Per favore scegli una cartella di destinazione valida.</string>
+    <string name="storage_directory_readonly_desc">Dato che la cartella di memorizzazione selezionata è in sola lettura, la cartella di memorizzazione è stata temporaneamente spostata nella memoria interna. Per favore scegli una cartella di destinazione valida.</string>
     <string name="report">Rapporto</string>
     <string name="storage_permission_restart_is_required">L\'applicazione è ora in grado di scrivere sulla memoria esterna, ma deve essere riavviata per farlo.</string>
     <string name="full_report">Rapporto completo</string>
@@ -2319,10 +2317,10 @@ Se ami OsmAnd e OSM e vuoi sostenerli, questo è un modo perfetto per farlo.</st
     <string name="shared_string_change">Cambia</string>
     <string name="get_started">Inizia</string>
     <string name="skip_map_downloading">Salta download delle mappe</string>
-    <string name="first_usage_greeting">Ottieni indicazioni e scopri nuovi luoghi offline</string>
+    <string name="first_usage_greeting">Ottieni indicazioni e scopri nuovi luoghi senza una connessione a Internet</string>
     <string name="search_another_country">Scegli un\'altra regione</string>
     <string name="skip_map_downloading_desc">Non hai mappe offline installate. Si può scegliere una mappa dalla lista o scaricarle in seguito andando su \'Menù - %1$s\'.</string>
-    <string name="osm_live_payment_desc">Il costo di sottoscrizione verrà addebitato ogni mese. Puoi scegliere di annullare la sottoscrizione su Google Play in ogni momento.</string>
+    <string name="osm_live_payment_desc">Il costo della sottoscrizione verrà addebitato ogni mese. Puoi scegliere di annullare la sottoscrizione su Google Play in ogni momento.</string>
     <string name="donation_to_osm">Donazione per la comunità di OpenStreetMap</string>
     <string name="donation_to_osm_desc">Parte della tua donazione verrà inviata agli utenti che fanno modifiche su OpenStreetMap. Il costo della sottoscrizione rimane inalterato.</string>
     <string name="osm_live_subscription_desc">La sottoscrizione attiva aggiornamenti orari, quotidiani e settimanali e la possibilità di scaricare senza limiti tutte le mappe del mondo.</string>
@@ -2360,18 +2358,18 @@ Se ami OsmAnd e OSM e vuoi sostenerli, questo è un modo perfetto per farlo.</st
     <string name="save_filter">Salva filtro</string>
     <string name="delete_filter">Elimina filtro</string>
     <string name="new_filter">Nuovo filtro</string>
-    <string name="new_filter_desc">Inserisci il nome del nuovo filtro, verrà aggiunto nella tua scheda delle Categorie.</string>
+    <string name="new_filter_desc">Inserisci il nome del nuovo filtro, verrà aggiunto nella tua scheda delle \'Categorie\'.</string>
     <string name="christmas_poi">POI di Natale</string>
     <string name="christmas_desc">Anticipando le vacanze di Natale e Capodanno, è possibile scegliere di visualizzare i PDI associati al Natale: l\'alberi di Natale, i mercati, ecc.</string>
     <string name="christmas_desc_q">Mostrare PDI Natale?</string>
     <string name="rendering_value_light_brown_name">Marrone chiaro</string>
     <string name="rendering_value_dark_brown_name">Marrone scuro</string>
     <string name="rendering_attr_surfaceIntegrity_name">Integrità della superficie stradale</string>
-    <string name="save_track_min_speed_descr">Filtro: imposta la velocità minima per la registrazione di un punto.</string>
+    <string name="save_track_min_speed_descr">Filtro: nessuna registrazione di punti al di sotto di questa velocità.</string>
     <string name="save_track_min_distance">Soglia minima dello spostamento per la registrazione</string>
     <string name="save_track_min_distance_descr">Filtro: imposta la distanza minima dal precedente punto a cui avverrà la registrazione di un nuovo punto.</string>
     <string name="save_track_precision">Precisione minima per la registrazione</string>
-    <string name="save_track_precision_descr">Filtro: imposta la minima precisione per la registrazione di un punto.</string>
+    <string name="save_track_precision_descr">Filtro: nessuna registrazione se tale precisione non è raggiunta.</string>
     <string name="rendering_attr_contourColorScheme_name">Colorazione delle linee isoipse</string>
     <string name="search_hint">Digitare città, indirizzo, PDI nome</string>
     <string name="shared_string_continue">Continua</string>
@@ -2576,7 +2574,7 @@ Rappresenta l\'area: %1$s x %2$s</string>
     <string name="quick_action_replace_destination">Sostituisci la destinazione</string>
     <string name="quick_action_add_first_intermediate">Aggiungi il primo intermedio</string>
     <string name="quick_action_add_destination_desc">Toccando il pulsante azione il centro dello schermo diviene la destinazione del percorso, la destinazione impostata in precedenza diverrà l\'ultimo punto intermedio.</string>
-    <string name="quick_action_replace_destination_desc">Toccando il pulsante azione sostituirai la destinazione con la posizione al centro dello schermo.</string>
+    <string name="quick_action_replace_destination_desc">Toccando il pulsante azione sostituirai la destinazione con la posizione al centro dello schermo (se presenti).</string>
     <string name="quick_action_add_first_intermediate_desc">Toccando il pulsante azione renderai il centro dello schermo il primo punto intermedio.</string>
     <string name="no_overlay">Nessun stato sovrapposto</string>
     <string name="no_underlay">Nessun strato di sfondo</string>
@@ -3125,7 +3123,7 @@ Rappresenta l\'area: %1$s x %2$s</string>
     <string name="ask_for_location_permission">Per favore concedi il permesso a OsmAnd di accedere alla geolocalizzazione per continuare.</string>
     <string name="thank_you_for_feedback">Grazie per il feedback</string>
     <string name="search_street">Ricerca strada</string>
-    <string name="start_search_from_city">Inizia la ricerca dalla città</string>
+    <string name="start_search_from_city">Inizia dalla scelta della città</string>
     <string name="shared_string_restore">Ripristina</string>
     <string name="keep_passed_markers">Tenere i marcatori superati sulla mappa</string>
     <string name="more_transport_on_stop_hint">C\'è più trasporto su questa fermata.</string>
@@ -3134,4 +3132,18 @@ Rappresenta l\'area: %1$s x %2$s</string>
     <string name="markers_remove_dialog_msg">Eliminare il marcatore \'%s\'\?</string>
     <string name="edit_map_marker">Modifica marcatore</string>
     <string name="third_party_application">Applicazione di terze parti</string>
+    <string name="osm_live_plan_pricing">Piani &amp; Tariffe</string>
+    <string name="osm_live_payment_monthly_title">Paga mensilmente</string>
+    <string name="osm_live_payment_3_months_title">Paga ogni 3 mesi</string>
+    <string name="osm_live_payment_annual_title">Paga annualmente</string>
+    <string name="osm_live_payment_month_cost_descr">%1$s / mese</string>
+    <string name="osm_live_payment_month_cost_descr_ex">%1$.2f %2$s / mese</string>
+    <string name="osm_live_payment_discount_descr">Risparmia %1$s!</string>
+	<string name="osm_live_payment_current_subscription">La tua attuale sottoscrizione</string>
+    <string name="osm_live_payment_renews_monthly">Rinnova mensilmente</string>
+    <string name="osm_live_payment_renews_quarterly">Rinnovo trimestrale</string>
+    <string name="osm_live_payment_renews_annually">Rinnovo annuale</string>
+    <string name="default_price_currency_format">%1$.2f %2$s</string>
+    <string name="osm_live_payment_header">Scegli la frequenza di pagamento che preferisci:</string>
+    <string name="osm_live_payment_contribute_descr">Parte del ricavato va ai contributori OpenStreetMap.</string>
     </resources>
