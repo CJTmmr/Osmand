@@ -342,6 +342,13 @@ public class QuickSearchDialogFragment extends DialogFragment implements OsmAndC
 									filter = app.getPoiFilters().getNominatimPOIFilter();
 									filter.setFilterByName(searchPhrase.getUnknownSearchPhrase());
 									filter.clearCurrentResults();
+								} else if (searchPhrase.hasUnknownSearchWordPoiType()) {
+									AbstractPoiType pt = searchPhrase.getUnknownSearchWordPoiType();
+									filter = new PoiUIFilter(pt, app, "");
+									String customName = searchPhrase.getPoiNameFilter();
+									if (!Algorithms.isEmpty(customName)) {
+										filter.setFilterByName(customName);
+									}
 								} else {
 									filter = app.getPoiFilters().getSearchByNamePOIFilter();
 									if (!Algorithms.isEmpty(searchPhrase.getUnknownSearchWord())) {
@@ -2366,15 +2373,15 @@ public class QuickSearchDialogFragment extends DialogFragment implements OsmAndC
 					.setPositiveButton(R.string.shared_string_yes, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
-							if (getParentFragment() instanceof QuickSearchDialogFragment) {
-								QuickSearchDialogFragment parentFragment = (QuickSearchDialogFragment) getParentFragment();
-								SearchHistoryHelper helper = SearchHistoryHelper.getInstance(parentFragment.getMyApplication());
+							Fragment parentFragment = getParentFragment();
+							if (parentFragment instanceof QuickSearchDialogFragment) {
+								QuickSearchDialogFragment searchDialogFragment = (QuickSearchDialogFragment) parentFragment;
+								SearchHistoryHelper helper = SearchHistoryHelper.getInstance(searchDialogFragment.getMyApplication());
 								for (QuickSearchListItem searchListItem : selectedItems) {
-									HistoryEntry historyEntry = (HistoryEntry) searchListItem.getSearchResult().object;
-									helper.remove(historyEntry);
+									helper.remove(searchListItem.getSearchResult().object);
 								}
-								parentFragment.reloadHistory();
-								parentFragment.enableSelectionMode(false, -1);
+								searchDialogFragment.reloadHistory();
+								searchDialogFragment.enableSelectionMode(false, -1);
 							}
 						}
 					})

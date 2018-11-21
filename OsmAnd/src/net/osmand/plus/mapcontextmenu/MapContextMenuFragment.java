@@ -688,6 +688,19 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 		return filteredRoutes;
 	}
 
+	private List<TransportStopRoute> filterNearbyTransportRoutes(List<TransportStopRoute> routes, List<TransportStopRoute> filterFromRoutes) {
+		if (filterFromRoutes == null) {
+			return routes;
+		}
+		List<TransportStopRoute> filteredRoutes = new ArrayList<>();
+		for (TransportStopRoute route : routes) {
+			if (!containsRef(filterFromRoutes, route.route)) {
+				filteredRoutes.add(route);
+			}
+		}
+		return filteredRoutes;
+	}
+
 	private boolean containsRef(List<TransportStopRoute> routes, TransportRoute transportRoute) {
 		for (TransportStopRoute route : routes) {
 			if (route.route.getRef().equals(transportRoute.getRef())) {
@@ -907,7 +920,7 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 			getMapActivity().changeZoom(2, System.currentTimeMillis());
 		} else {
 			if (!map.hasCustomMapRatio()) {
-				setCustomMapRatio();
+				//setCustomMapRatio();
 			}
 			getMapActivity().changeZoom(1, System.currentTimeMillis());
 		}
@@ -915,7 +928,7 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 
 	public void doZoomOut() {
 		if (!map.hasCustomMapRatio()) {
-			setCustomMapRatio();
+			//setCustomMapRatio();
 		}
 		getMapActivity().changeZoom(-1, System.currentTimeMillis());
 	}
@@ -1252,12 +1265,6 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-		if (!menu.isActive()) {
-			if (mapCenter != null) {
-				AnimateDraggingMapThread thread = map.getAnimatedDraggingThread();
-				thread.startMoving(mapCenter.getLatitude(), mapCenter.getLongitude(), map.getZoom(), true);
-			}
-		}
 		menu.setMapCenter(null);
 		menu.setMapZoom(0);
 	}
@@ -1297,7 +1304,7 @@ public class MapContextMenuFragment extends BaseOsmAndFragment implements Downlo
 				updateLocalRoutesBadges(localFilteredTransportStopRoutes, localColumnsPerRow);
 			}
 			if (nearbyTransportStopRoutes != null) {
-				updateNearbyRoutesBadges(maxLocalRows, filterTransportRoutes(nearbyTransportStopRoutes));
+				updateNearbyRoutesBadges(maxLocalRows, filterNearbyTransportRoutes(nearbyTransportStopRoutes, localTransportStopRoutes));
 			}
 			transportBadgesCreated = true;
 		}

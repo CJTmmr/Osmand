@@ -473,7 +473,7 @@
 	
 	<string name="rendering_value_pink_name">rosa</string>
 	
-	<string name="rendering_value_brown_name">marrom</string>
+	<string name="rendering_value_brown_name">Marrom</string>
 	
 	
 	
@@ -1006,7 +1006,7 @@ Pôr do Sol: %2$s</string>
 	<string name="confirm_interrupt_download">Você quer cancelar a transferência do arquivo?</string>
 	<string name="basemap_was_selected_to_download">O Mapa Base é necessário para o funcionamento adequado do aplicativo e foi selecionado para baixar.</string>
 	<string name="local_indexes_cat_tile">Quadrículas de mapa online e em cache</string>
-	<string name="local_indexes_cat_map">Mapa padrão (vectorial)</string>
+	<string name="local_indexes_cat_map">Mapa padrão (vetorial)</string>
 	<string name="map_online_plugin_is_not_installed">Ative o plugin \'Mapas on-line\' para selecionar diferentes fontes de mapa</string>
 	<string name="map_online_data">Mapas e quadrículas on-line</string>
 	<string name="map_online_data_descr">Usar mapas on-line (baixar e armazenar quadrículas)</string>
@@ -2235,7 +2235,7 @@ Pôr do Sol: %2$s</string>
     <string name="routing_attr_avoid_ice_roads_fords_name">Evitar estradas de gelo, vaus</string>
     <string name="routing_attr_avoid_ice_roads_fords_description">Evitar estradas de gelo e vaus.</string>
     <string name="map_orientation_change_in_accordance_with_speed">Limite para orientação do mapa</string>
-    <string name="quick_action_show_navigation_finish_dialog">Mostrar diálogo \'Navegação finalizada\'</string>
+    <string name="quick_action_show_navigation_finish_dialog">Mostrar \'Navegação finalizada\'</string>
     <string name="mapillary_menu_title_tile_cache">Cache de quadrícula</string>
     <string name="map_widget_ruler_control">Régua de raio</string>
     <string name="show_from_zoom_level">Exibir a partir do nível de zoom</string>
@@ -2944,4 +2944,11 @@ Pôr do Sol: %2$s</string>
     <string name="increase_search_radius_to">Aumentar o raio de pesquisa para %1$s</string>
     <string name="send_search_query">Enviar consulta de pesquisa?</string>
     <string name="ask_for_location_permission">Por favor, dê permissão ao OsmAnd para ver a sua localização para continuar.</string>
+    <string name="markers_remove_dialog_msg">Apagar marcador de mapa \'%s\'\?</string>
+    <string name="edit_map_marker">Editar marcador de mapa</string>
+    <string name="third_party_application">Aplicativo de terceiros</string>
+    <string name="search_street">Pesquisar rua</string>
+    <string name="start_search_from_city">Iniciar pesquisa a partir da cidade</string>
+    <string name="shared_string_restore">Restaurar</string>
+    <string name="rendering_value_black_name">Preto</string>
     </resources>

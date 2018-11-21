@@ -276,7 +276,7 @@
 	<string name="poi_lift_gate">Bariero (levebla)</string>
 	<string name="poi_toll_booth">Vojpagejo</string>
 	<string name="poi_border_control">Landlima kontrolejo</string>
-	<string name="poi_traffic_calming_bump">Stratĝibo kurta</string>
+	<string name="poi_traffic_calming_bump">Stratĝibo mallonga</string>
 	<string name="poi_traffic_calming_hump">Stratĝibo longa</string>
 	<string name="poi_fuel_lpg">Naftogaso likva (LPG)</string>
 	<string name="poi_traffic_calming_cushion">Stratĝibo kusena</string>
@@ -840,9 +840,9 @@
 	<string name="poi_piste_downhill">Skivojo alpa (malsuprenira)</string>
 	<string name="poi_piste_nordic">Skivojo nordia (skikurada)</string>
 	<string name="poi_piste_skitour">Skivojo ski-ekskursuma</string>
-	<string name="poi_piste_hike">Skivojo skikurada</string>
-	<string name="poi_piste_sleigh">Skivojo glitveturila</string>
-	<string name="poi_piste_sled">Skivojo glitveturila (tirata de hundoj)</string>
+	<string name="poi_piste_hike">Skivojo marŝada</string>
+	<string name="poi_piste_sleigh">Skivojo glitveturila (tirata de hundoj)</string>
+	<string name="poi_piste_sled">Skivojo glitveturila</string>
 	<string name="poi_piste_snow_park">Skivojo neĝ-parka</string>
 	<string name="poi_piste_playground">Skivojo infanludeja</string>
 	<string name="poi_piste_ice_skate">Skivojo glitkurada</string>
@@ -3886,5 +3886,10 @@
 
 
 <string name="poi_license_classes">Tipoj de ŝofor-permesiloj</string>
+
+<string name="poi_hill">Monteto</string>
+
+<string name="poi_atm">Bankaŭtomato</string>
+	<string name="poi_shoe_repair">Ŝu-riparejo</string>
 
 </resources>

@@ -309,9 +309,10 @@ public class SearchUICore {
 
 	public void init() {
 		apis.add(new SearchCoreFactory.SearchLocationAndUrlAPI());
-		apis.add(new SearchCoreFactory.SearchAmenityTypesAPI(poiTypes));
-		apis.add(new SearchCoreFactory.SearchAmenityByTypeAPI(poiTypes));
-		apis.add(new SearchCoreFactory.SearchAmenityByNameAPI());
+		SearchAmenityTypesAPI searchAmenityTypesAPI = new SearchAmenityTypesAPI(poiTypes);
+		apis.add(searchAmenityTypesAPI);
+		apis.add(new SearchCoreFactory.SearchAmenityByTypeAPI(poiTypes, searchAmenityTypesAPI));
+		apis.add(new SearchCoreFactory.SearchAmenityByNameAPI(searchAmenityTypesAPI));
 		SearchBuildingAndIntersectionsByStreetAPI streetsApi =
 				new SearchCoreFactory.SearchBuildingAndIntersectionsByStreetAPI();
 		apis.add(streetsApi);
@@ -513,7 +514,8 @@ public class SearchUICore {
 
 	public boolean isSearchMoreAvailable(SearchPhrase phrase) {
 		for (SearchCoreAPI api : apis) {
-			if (api.getSearchPriority(phrase) >= 0 && api.isSearchMoreAvailable(phrase)) {
+			if (api.isSearchAvailable(phrase) && api.getSearchPriority(phrase) >= 0
+					&& api.isSearchMoreAvailable(phrase)) {
 				return true;
 			}
 		}
@@ -523,9 +525,11 @@ public class SearchUICore {
 	public int getMinimalSearchRadius(SearchPhrase phrase) {
 		int radius = Integer.MAX_VALUE;
 		for (SearchCoreAPI api : apis) {
-			int apiMinimalRadius = api.getMinimalSearchRadius(phrase);
-			if (apiMinimalRadius > 0 && apiMinimalRadius < radius) {
-				radius = apiMinimalRadius;
+			if (api.isSearchAvailable(phrase) && api.getSearchPriority(phrase) != -1) {
+				int apiMinimalRadius = api.getMinimalSearchRadius(phrase);
+				if (apiMinimalRadius > 0 && apiMinimalRadius < radius) {
+					radius = apiMinimalRadius;
+				}
 			}
 		}
 		return radius;
@@ -534,9 +538,11 @@ public class SearchUICore {
 	public int getNextSearchRadius(SearchPhrase phrase) {
 		int radius = Integer.MAX_VALUE;
 		for (SearchCoreAPI api : apis) {
-			int apiNextSearchRadius = api.getNextSearchRadius(phrase);
-			if (apiNextSearchRadius > 0 && apiNextSearchRadius < radius) {
-				radius = apiNextSearchRadius;
+			if (api.isSearchAvailable(phrase) && api.getSearchPriority(phrase) != -1) {
+				int apiNextSearchRadius = api.getNextSearchRadius(phrase);
+				if (apiNextSearchRadius > 0 && apiNextSearchRadius < radius) {
+					radius = apiNextSearchRadius;
+				}
 			}
 		}
 		return radius;

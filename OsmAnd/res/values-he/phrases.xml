@@ -2118,4 +2118,149 @@
 	<string name="poi_bicycle_parking_shed">צריף</string>
 	<string name="poi_bicycle_parking_informal">לא מוכרז</string>
 
-	</resources>
+	<string name="poi_ruins">חורבות</string>
+
+	<string name="poi_opening_hours">שעות הפתיחה</string>
+	<string name="poi_collection_times">מועדי איסוף</string>
+	<string name="poi_description">תיאור</string>
+	<string name="poi_phone">טלפון</string>
+	<string name="poi_website">אתר</string>
+	<string name="poi_email">דוא״ל</string>
+	<string name="poi_fax">פקס</string>
+	<string name="facebook">פייסבוק</string>
+	<string name="twitter">טוויטר</string>
+	<string name="poi_skype">סקייפ</string>
+	<string name="poi_youtube">יוטיוב</string>
+	<string name="poi_instagram">אינסטגרם</string>
+	<string name="vk">VKontakte</string>
+	<string name="poi_google_plus">Google+‎</string>
+	<string name="poi_mobile">נייד</string>
+	<string name="poi_service_times">זמני שירות</string>
+	<string name="poi_maxheight">גובה מרבי</string>
+	<string name="poi_maxweight">משקל מרבי</string>
+	<string name="poi_height">גובה</string>
+	<string name="poi_ele">גובה מעל פני הים</string>
+	<string name="poi_abandoned">נטוש</string>
+	<string name="poi_abandoned_poi">חפץ נטוש</string>
+	<string name="poi_operator">מפעיל</string>
+	<string name="poi_brand">מותג</string>
+	<string name="poi_fee_yes">כן</string>
+	<string name="poi_fee_no">לא</string>
+	<string name="poi_drinking_water_yes">כן</string>
+	<string name="poi_drinking_water_no">לא</string>
+	<string name="poi_supervised_yes">בפיקוח</string>
+	<string name="poi_supervised_no">ללא פיקוח</string>
+	<string name="poi_seasonal_yes">כן</string>
+	<string name="poi_seasonal_no">לא</string>
+	<string name="poi_seasonal_dry_season">העונה היבשה</string>
+	<string name="poi_seasonal_wet_season">העונה הרטובה</string>
+	<string name="poi_seasonal_spring">אביב</string>
+	<string name="poi_seasonal_summer">קיץ</string>
+	<string name="poi_seasonal_autumn">סתיו</string>
+	<string name="poi_seasonal_winter">חורף</string>
+	<string name="poi_crossing_traffic_signals">עם רמזורים</string>
+	<string name="poi_crossing_unmarked">ללא סימון</string>
+	<string name="poi_start_date">מועד התחלה</string>
+	<string name="poi_wheelchair_accessibility">נגישות לנכים</string>
+	<string name="poi_wheelchair_yes">כן</string>
+	<string name="poi_wheelchair_no">לא</string>
+	<string name="poi_wheelchair_limited">מוגבלת</string>
+	<string name="poi_wholesale">סיטונאות</string>
+
+	<string name="poi_access_private">גישה פרטית</string>
+	<string name="poi_access_no">אין גישה</string>
+	<string name="poi_access_destination">גישה ליעד</string>
+	<string name="poi_access_permissive">גישה מתירנית</string>
+	<string name="poi_access_customers">גישה ללקוחות</string>
+	<string name="poi_access_delivery">גישה למשלוחים</string>
+	<string name="poi_access_agricultural">גישה חקלאית</string>
+
+	<string name="poi_content_silage">תוכן: תחמיץ</string>
+	<string name="poi_content_water">תוכן: מים</string>
+	<string name="poi_content_oil">תוכן: שמן</string>
+	<string name="poi_content_fuel">תוכן: דלק</string>
+	<string name="poi_content_wine">תוכן: יין</string>
+	<string name="poi_content_sewage">תוכן: ביוב</string>
+	<string name="poi_content_gas">תוכן: גז</string>
+	<string name="poi_content_biomass">תוכן: ביומסה</string>
+	<string name="poi_content_wastewater">תוכן: שפכים</string>
+	<string name="poi_content_crop">תוכן: יבול</string>
+	<string name="poi_content_fodder">תוכן: מספוא</string>
+	<string name="poi_content_beer">תוכן: בירה</string>
+	<string name="poi_content_salt">תוכן: מלח</string>
+	<string name="poi_content_grain">תוכן: דגן</string>
+
+	<string name="poi_nudism_yes">מותר</string>
+	<string name="poi_nudism_no">אסור</string>
+	<string name="poi_nudism_obligatory">חובה</string>
+	<string name="poi_nudism_customary">נהוג</string>
+	<string name="poi_nudism_permissive">מתירני</string>
+
+	<string name="poi_trade_building_supplies">חומרי בניין</string>
+	<string name="poi_trade_plumbing">ציוד אינסטלציה</string>
+	<string name="poi_trade_wood">ציוד עץ</string>
+	<string name="poi_trade_agricultural_supplies">אספקה חקלאית</string>
+	<string name="poi_trade_tile">ציוד ריצוף</string>
+
+	<string name="poi_smoking_separated">בחדר נפרד</string>
+	<string name="poi_smoking_isolated">בחדר מבודד</string>
+	<string name="poi_smoking_dedicated">מוקדש למעשנים</string>
+
+	<string name="poi_toll_yes">אגרה</string>
+	<string name="poi_toll_no">ללא אגרה</string>
+	<string name="poi_toll_hgv_yes">אגרה למשאיות</string>
+	<string name="poi_tactile_paving_yes">כן</string>
+	<string name="poi_traffic_signals_sound_yes">כן</string>
+	<string name="poi_traffic_signals_sound_no">לא</string>
+	<string name="poi_traffic_signals_sound_walk">רק כאשר מותר לחצות</string>
+
+	<string name="poi_rescue_station">תחנת הצלה</string>
+
+	<string name="poi_services">אזור שירות</string>
+	<string name="poi_mini_roundabout">כיכר מזערית</string>
+	<string name="poi_internet_access_type_wlan">רשת אלחוטית</string>
+	<string name="poi_internet_access_type_terminal">מסוף</string>
+	<string name="poi_internet_access_type_wired">חיבור קווי</string>
+	<string name="poi_internet_access_type_public">סוג הגישה לאינטרנט: ציבורית</string>
+	<string name="poi_internet_access_type_service">סוג הגישה לאינטרנט: שירות</string>
+	<string name="poi_internet_access_type_no">אין גישה לאינטרנט</string>
+	<string name="poi_internet_access_type_yes">יש גישה לאינטרנט</string>
+
+	<string name="poi_maxwidth">רוחב מרבי</string>
+	<string name="poi_iata">קוד IATA</string>
+	<string name="poi_icao">קוד ICAO</string>
+	<string name="poi_faa">קוד FAA</string>
+	
+	<string name="poi_artwork_type_sculpture">סוג יצירת האומנות: מוצג תלת ממדי</string>
+	<string name="poi_artwork_type_statue">סוג יצירת האומנות: פיסול</string>
+	<string name="poi_artwork_type_mural">סוג יצירת האומנות: ציור קיר</string>
+	<string name="poi_artwork_type_architecture">סוג יצירת האומנות: אדריכלות</string>
+	<string name="poi_artwork_type_painting">סוג יצירת האומנות: ציור</string>
+	<string name="poi_artwork_type_stone">סוג יצירת האומנות: אבן</string>
+	<string name="poi_artwork_type_bust">סוג יצירת האומנות: פסל ראש וכתפיים (פרוטומה/בוסטה)</string>
+	<string name="poi_artwork_type_installation">סוג יצירת האומנות: מיצב</string>
+	<string name="poi_artwork_type_mosaic">סוג יצירת האומנות: פסיפס</string>
+	<string name="poi_artwork_type_relief">סוג יצירת האומנות: תבליט</string>
+	<string name="poi_artwork_type_graffiti">סוג יצירת האומנות: גרפיטי</string>
+	<string name="poi_artwork_type_fountain">סוג יצירת האומנות: מזרקה</string>
+
+	<string name="poi_width">רוחב</string>
+
+	<string name="poi_architect_name">אדריכל/ית</string>
+
+	<string name="poi_architecture_modern">אדריכלות: מודרנית</string>
+	<string name="poi_architecture_stalinist_neoclassicism">אדריכלות: נאוקלסיציזם סטליניסטי</string>
+	<string name="poi_aerodrome_type_international">בינלאומי</string>
+	<string name="poi_aerodrome_type_regional">אזורי</string>
+	<string name="poi_aerodrome_type_public">ציבורי</string>
+	<string name="poi_aerodrome_type_military">צבאי</string>
+	<string name="poi_aerodrome_type_military_public">צבאי/ציבורי</string>
+	<string name="poi_aerodrome_type_private">פרטי</string>
+
+	<string name="poi_ventilation_shaft">פיר אוורור</string>
+
+	<string name="poi_license_classes">סוגי רישיונות נהיגה</string>
+
+	<string name="poi_hill">גבעה</string>
+
+</resources>

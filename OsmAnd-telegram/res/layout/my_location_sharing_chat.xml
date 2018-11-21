@@ -21,8 +21,8 @@
 
 			<ImageView
 				android:id="@+id/icon"
-				android:layout_width="@dimen/list_item_icon_size"
-				android:layout_height="@dimen/list_item_icon_size"
+				android:layout_width="@dimen/list_item_icon_size_big"
+				android:layout_height="@dimen/list_item_icon_size_big"
 				android:layout_marginLeft="@dimen/list_item_icon_margin_left"
 				android:layout_marginRight="@dimen/list_item_icon_margin_left"
 				tools:src="@drawable/img_user_picture" />
@@ -147,7 +147,7 @@
 						android:textColor="?android:attr/textColorSecondary"
 						android:textSize="@dimen/hint_text_size"
 						app:typeface="@string/font_roboto_regular"
-						tools:text="@string/expire_in" />
+						tools:text="@string/expire_at" />
 
 					<net.osmand.telegram.ui.views.TextViewEx
 						android:id="@+id/ending_in_first_part"

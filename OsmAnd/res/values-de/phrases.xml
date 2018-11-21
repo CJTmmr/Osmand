@@ -541,7 +541,7 @@
 	<string name="poi_townhall">Rathaus</string>
 	<string name="poi_toys">Spielwarenhandlung</string>
 	<string name="poi_trade">Baustoffhandlung</string>
-	<string name="poi_traffic_calming_bump">Bodenwelle</string>
+	<string name="poi_traffic_calming_bump">Bodenschwelle</string>
 	<string name="poi_traffic_calming_chicane">Schikane</string>
 	<string name="poi_traffic_calming_choker">Fahrbahnverengung</string>
 	<string name="poi_traffic_calming_cushion">Bodenwelle</string>
@@ -956,7 +956,7 @@
 	<string name="poi_shower">Dusche</string>
 	<string name="poi_email">E-Mail</string>
 	<string name="poi_fax">Fax</string>
-	<string name="facebook">Facebook</string>
+	<string name="facebook">"Facebook "</string>
 	<string name="poi_mobile">Handy</string>
 	<string name="poi_fee_no">nein</string>
 	<string name="poi_drinking_water_yes">ja</string>
@@ -1203,7 +1203,7 @@
 	<string name="poi_fuel_100ll">Avgas 100 LL</string>
 	<string name="poi_fuel_autogas">Autogas</string>
 	<string name="poi_fuel_jeta1">Flugzeug A-1 Kraftstoff</string>
-	<string name="poi_fuel_adblue">AdBlue (Harnstoff)</string>
+	<string name="poi_fuel_adblue">AdBlue</string>
 
 	<string name="poi_fuel_wood">Kraftstoff: Holz</string>
 	<string name="poi_street_lamp">Straßenlaterne</string>
@@ -3442,7 +3442,7 @@
 	<string name="poi_direction_forward">Richtung: vorwärts</string>
 	<string name="poi_direction_backward">Richtung: rückwärts</string>
 	<string name="poi_direction_clockwise">Richtung: im Uhrzeigersinn</string>
-	<string name="poi_direction_anticlockwise">Richtung: Gegen Uhrzeigersinn</string>
+	<string name="poi_direction_anticlockwise">Richtung: gegen Uhrzeigersinn</string>
 	<string name="poi_direction_up">Richtung: aufwärts</string>
 	<string name="poi_direction_down">Richtung: abwärts</string>
 	<string name="poi_direction_all">Richtung: alle</string>
@@ -3869,7 +3869,7 @@
 <string name="poi_hazard_nuclear">Nukleare Gefahr</string>
 	<string name="poi_hazard_erosion">Erosionsgefahr</string>
 	<string name="poi_hazard_avalanche">Lawinengefahr</string>
-	<string name="poi_hazard_slippery_road">Rutschgefahr</string>
+	<string name="poi_hazard_slippery_road">Rutschige Straße</string>
 	<string name="poi_hazard_flood">Überschwemmungsgefahr</string>
 	<string name="poi_hazard_minefield">Minenfeld</string>
 
@@ -3879,5 +3879,10 @@
 
 
 <string name="poi_license_classes">Lizenzklassen</string>
+
+<string name="poi_hill">Hügel</string>
+
+<string name="poi_atm">Geldautomat</string>
+	<string name="poi_shoe_repair">Schuhreparatur</string>
 
 </resources>

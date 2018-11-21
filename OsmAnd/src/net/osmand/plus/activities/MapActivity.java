@@ -96,6 +96,7 @@ import net.osmand.plus.helpers.ImportHelper.ImportGpxBottomSheetDialogFragment;
 import net.osmand.plus.helpers.WakeLockHelper;
 import net.osmand.plus.mapcontextmenu.AdditionalActionsBottomSheetDialogFragment;
 import net.osmand.plus.mapcontextmenu.MapContextMenu;
+import net.osmand.plus.mapcontextmenu.MenuController.MenuState;
 import net.osmand.plus.mapcontextmenu.builders.cards.dialogs.ContextMenuCardDialogFragment;
 import net.osmand.plus.mapcontextmenu.other.DestinationReachedMenu;
 import net.osmand.plus.mapcontextmenu.other.MapRouteInfoMenu;
@@ -373,7 +374,8 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 					if (tn != null) {
 						((TextView) findViewById(R.id.ProgressMessage)).setText(tn);
 					}
-					if (event == InitEvents.NATIVE_INITIALIZED) {
+					boolean openGlInitialized = event == InitEvents.NATIVE_OPEN_GLINITIALIZED && NativeCoreContext.isInit();
+					if ((openGlInitialized || event == InitEvents.NATIVE_INITIALIZED) && !openGlSetup) {
 						setupOpenGLView(false);
 						openGlSetup = true;
 					}
@@ -385,6 +387,9 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 						}
 						app.getTargetPointsHelper().lookupAddessAll();
 						app.getMapMarkersHelper().lookupAddressAll();
+					}
+					if (event == InitEvents.FAVORITES_INITIALIZED) {
+						refreshMap();
 					}
 				}
 
@@ -585,7 +590,11 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			return;
 		}
 		if (mapContextMenu.isVisible() && mapContextMenu.isClosable()) {
-			mapContextMenu.close();
+			if (mapContextMenu.getCurrentMenuState() != MenuState.HEADER_ONLY) {
+				mapContextMenu.openMenuHeaderOnly();
+			} else {
+				mapContextMenu.close();
+			}
 			return;
 		}
 		if (getMapLayers().getContextMenuLayer().isInAddGpxPointMode()) {
@@ -799,13 +808,8 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			getSupportFragmentManager().beginTransaction()
 					.add(R.id.fragmentContainer, new FirstUsageWelcomeFragment(),
 							FirstUsageWelcomeFragment.TAG).commitAllowingStateLoss();
-		} else if (!isFirstScreenShowing()) {
-			if (XMasDialogFragment.shouldShowXmasDialog(app)) {
-				SecondSplashScreenFragment.SHOW = false;
-				new XMasDialogFragment().show(getSupportFragmentManager(), XMasDialogFragment.TAG);
-			} else if (OsmLiveCancelledDialog.shouldShowDialog(app)) {
-				OsmLiveCancelledDialog.showInstance(getSupportFragmentManager());
-			}
+		} else if (!isFirstScreenShowing() && OsmLiveCancelledDialog.shouldShowDialog(app)) {
+			OsmLiveCancelledDialog.showInstance(getSupportFragmentManager());
 		}
 		FirstUsageWelcomeFragment.SHOW = false;
 
@@ -859,9 +863,10 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			boolean night = app.getDaynightHelper().isNightModeForMapControls();
 			boolean quickSearchTopBar = getTopToolbarController(TopToolbarControllerType.QUICK_SEARCH) != null;
 			boolean contextMenuTopBar = getTopToolbarController(TopToolbarControllerType.CONTEXT_MENU) != null;
+			boolean poiFilterTopBar = getTopToolbarController(TopToolbarControllerType.POI_FILTER) != null;
 			boolean mapTopBar = findViewById(R.id.map_top_bar).getVisibility() == View.VISIBLE;
 			boolean markerTopBar = findViewById(R.id.map_markers_top_bar).getVisibility() == View.VISIBLE;
-			if (((quickSearchTopBar || mapTopBar) && mapControlsVisible) || contextMenuTopBar) {
+			if (((quickSearchTopBar || poiFilterTopBar || mapTopBar) && mapControlsVisible) || contextMenuTopBar) {
 				colorId = night ? R.color.status_bar_route_dark : R.color.status_bar_route_light;
 			} else if (markerTopBar && mapControlsVisible) {
 				colorId = R.color.status_bar_dark;
@@ -885,6 +890,12 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	public boolean isInAppPurchaseAllowed() {
 		return true;
+	}
+
+	public void showXMasDialog() {
+		SecondSplashScreenFragment.SHOW = false;
+		dismissSecondSplashScreen();
+		new XMasDialogFragment().show(getSupportFragmentManager(), XMasDialogFragment.TAG);
 	}
 
 	private void dismissSecondSplashScreen() {
@@ -1367,19 +1378,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 				msg.what = LONG_KEYPRESS_MSG_ID;
 				uiHandler.sendMessageDelayed(msg, LONG_KEYPRESS_DELAY);
 			}
-			return true;
-		} else if (keyCode == KeyEvent.KEYCODE_SEARCH && event.getRepeatCount() == 0) {
-			Intent newIntent = new Intent(MapActivity.this, getMyApplication().getAppCustomization()
-					.getSearchActivity());
-			// causes wrong position caching: newIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-			LatLon loc = getMapLocation();
-			newIntent.putExtra(SearchActivity.SEARCH_LAT, loc.getLatitude());
-			newIntent.putExtra(SearchActivity.SEARCH_LON, loc.getLongitude());
-			if (mapViewTrackingUtilities.isMapLinkedToLocation()) {
-				newIntent.putExtra(SearchActivity.SEARCH_NEARBY, true);
-			}
-			startActivity(newIntent);
-			newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);

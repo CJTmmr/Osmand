@@ -54,7 +54,7 @@
 	<string name="poi_ice_cream">Heladería</string>
 	<string name="poi_supermarket">Supermercado</string>
 	<string name="poi_tea">Casa de té</string>
-	<string name="poi_dairy">Alimentos frescos</string>
+	<string name="poi_dairy">Alimentos lácteos</string>
 	<string name="poi_vending_machine">Máquina expendedora</string>
 	<string name="poi_wine">Vinoteca</string>
 	<string name="poi_books">Librería (libros)</string>
@@ -152,9 +152,9 @@
 	<string name="poi_lift_gate">Barrera levadiza</string>
 	<string name="poi_toll_booth">Cabina de peaje</string>
 	<string name="poi_border_control">Control fronterizo</string>
-	<string name="poi_traffic_calming_bump">Reductor de velocidad (lomada, pequeño);Lomo de burro;Lomo de toro;Badén;Banda de frenado;Rompemuelle;Policía acostado</string>
-	<string name="poi_traffic_calming_hump">Resalte (grande);Badén</string>
-	<string name="poi_traffic_calming_cushion">Cojín</string>
+	<string name="poi_traffic_calming_bump">Reductor de velocidad (lomada, pequeño);Lomo de burro;Banda de frenado;Rompemuelle;Policía acostado</string>
+	<string name="poi_traffic_calming_hump">Resalte (grande);Lomada (grande);Reductor de velocidad (lomada, grande)</string>
+	<string name="poi_traffic_calming_cushion">Cojín berlinés</string>
 	<string name="poi_traffic_calming_chicane">Chicana</string>
 	<string name="poi_traffic_calming_rumble_strip">Banda sonora</string>
 	<string name="poi_traffic_calming_table">Peatonal elevada;Plataforma elevada</string>
@@ -3691,5 +3691,10 @@
 	<string name="poi_ruins">Ruinas</string>
 
 	<string name="poi_license_classes">Clases de licencia</string>
+
+<string name="poi_hill">Colina</string>
+
+<string name="poi_atm">Cajero automático</string>
+	<string name="poi_shoe_repair">Reparación de calzado;Zapatero</string>
 
 </resources>

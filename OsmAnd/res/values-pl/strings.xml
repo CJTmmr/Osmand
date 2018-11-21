@@ -165,9 +165,9 @@
     <string name="si_mi_yard">Mile/jardy</string>
     <string name="si_km_m">Kilometry/metry</string>
     <string name="yard">yd</string>
-    <string name="foot">stopa</string>
-    <string name="mile_per_hour">mil/godzinę</string>
-    <string name="mile">mila</string>
+    <string name="foot">stopy</string>
+    <string name="mile_per_hour">mph</string>
+    <string name="mile">mi</string>
     <string name="send_location_way_choose_title">Udostępnij położenie używając</string>
     <string name="send_location_sms_pattern">Położenie: %1$s
 %2$s</string>
@@ -250,7 +250,7 @@
     <string name="general_settings">Główne</string>
     <string name="index_settings_descr">Pobiera i zarządza plikami map przechowywanymi na urządzeniu.</string>
     <string name="index_settings">Zarządzaj mapami</string>
-    <string name="osmand_service">Tryb działania w tle</string>
+    <string name="osmand_service">Tryb tła</string>
     <string name="osmand_service_descr">Działanie aplikacji w tle, gdy ekran jest wygaszony.</string>
     <string name="fast_route_mode">Najszybsza trasa</string>
     <string name="fast_route_mode_descr">Wyznacza najszybszą trasę zamiast ekonomicznej.</string>
@@ -490,7 +490,7 @@
     <string name="additional_settings">Dodatkowe ustawienia</string>
     <string name="settings_preset_descr">Ustala domyślny profil widoku mapy i ustawień nawigacji.</string>
     <string name="settings_preset">Domyślny profil</string>
-    <string name="shared_string_settings">Ustawienia</string>
+    <string name="shared_string_settings">Opcje</string>
     <string name="save_current_track_descr">Zapisuje bieżący ślad jako plik GPX.</string>
     <string name="save_current_track">Zapisz aktualny ślad</string>
     <string name="save_track_interval_descr">Wybierz interwał rejestrowania dla zapisu ścieżki podczas nawigacji.</string>
@@ -920,7 +920,7 @@
     <string name="map_widget_vector_attributes">Atrybuty renderowania</string>
     <string name="show_lanes">Pasy ruchu</string>
 
-    <string name="gps_not_available">Włącz w ustawieniach odbiornik GPS</string>
+    <string name="gps_not_available">Proszę włączyć GPS w opcjach</string>
     <string name="map_widget_monitoring_services">Usługi rejestrowania</string>
     <string name="no_route">Brak trasy</string>
     <string name="delete_target_point">Usuń cel</string>
@@ -1979,7 +1979,7 @@ Długość %2$s</string>
     <string name="default_speed_system_descr">Zdefiniuj jednostkę prędkości.</string>
     <string name="default_speed_system">Jednostki prędkości</string>
     <string name="si_nm">Mile morskie</string>
-    <string name="nm">Mm</string>
+    <string name="nm">nmi</string>
     <string name="si_kmh">Kilometry na godzinę</string>
     <string name="si_mph">Mile na godzinę</string>
     <string name="si_m_s">Metry na sekundę</string>
@@ -2131,7 +2131,7 @@ Długość %2$s</string>
     <string name="select_voice_provider_descr">Proszę wybrać lub pobrać komunikaty głosowe właściwe dla danego języka.</string>
     <string name="impassable_road_desc">Wskazuje drogi, których należy unikać podczas nawigowania.</string>
     <string name="shared_string_sound">Dźwięk</string>
-    <string name="no_location_permission">Program nie ma uprawnień dostępu do danych o położeniu.</string>
+    <string name="no_location_permission">Aplikacja nie ma uprawnień dostępu do danych o położeniu.</string>
     <string name="no_camera_permission">Program nie ma uprawnień dostępu do aparatu.</string>
     <string name="no_microphone_permission">Program nie ma uprawnień dostępu do mikrofonu.</string>
     <string name="available_maps">Dostępne mapy</string>
@@ -2790,7 +2790,7 @@ Reprezentuje obszar: %1$s x %2$s</string>
     <string name="my_location">Aktualne położenie</string>
     <string name="shared_string_finish">Koniec trasy</string>
     <string name="plan_route">Planowanie trasy</string>
-    <string name="shared_string_sort">Uporządkuj</string>
+    <string name="shared_string_sort">Sortuj</string>
     <string name="marker_save_as_track_descr">Znaczniki zostaną wyeksportowane do poniższego pliku GPX:</string>
     <string name="marker_save_as_track">Zapisz jako plik GPX</string>
     <string name="move_to_history">Przenieś do historii</string>
@@ -3108,14 +3108,14 @@ Reprezentuje obszar: %1$s x %2$s</string>
 \n• Inne poprawki błędów
 \n</string>
     <string name="increase_search_radius_to">Zwiększ promień wyszukiwania do %1$s</string>
-    <string name="send_search_query_description">Wyślemy twoje zapytanie: <b>\"%1$s\"</b>, oraz twoje położenie.<br/><br/> Nie zbieramy informacji osobistych, potrzebujemy tylko danych wyszukiwania do poprawienia algorytmu wyszukiwania.<br/></string>
+    <string name="send_search_query_description">Zostaną wysłane informacje o zapytaniu: <b>„%1$s”</b> i położeniu.<br/><br/> Informacje osobiste nie są gromadzone. Potrzebne są tylko dane wyszukiwania do poprawienia algorytmu wyszukiwania.<br/></string>
     <string name="search_no_results_description">Brak wyników?
 \nPowiedz nam o tym.</string>
     <string name="send_search_query">Wysłać zapytanie?</string>
     <string name="shared_string_world">Świat</string>
     <string name="point_deleted">Usunięto punkt %1$s</string>
-    <string name="thank_you_for_feedback">Dziękuję za opinie</string>
-    <string name="poi_cannot_be_found">Nie można znaleźć węzła lub drogi.</string>
+    <string name="thank_you_for_feedback">Dziękujemy za opinie</string>
+    <string name="poi_cannot_be_found">Nie można odnaleźć węzła lub drogi.</string>
     <string name="search_no_results_feedback">Brak wyników wyszukiwania?
 \nPodziel się z nami swoją opinią</string>
     <string name="commiting_way">Zatwierdzanie drogi…</string>
@@ -3170,14 +3170,29 @@ Reprezentuje obszar: %1$s x %2$s</string>
 \nOsmAnd jest aktywnie rozwijanym oprogramowaniem typu open source. Każdy może wnieść swój wkład do aplikacji poprzez zgłaszanie błędów, ulepszanie tłumaczeń lub kodowanie nowych funkcji. Dodatkowo projekt opiera się na wkładzie finansowym na finansowanie kodowania i testowania nowych funkcjonalności.
 \n</string>
     <string name="test_voice_desrc">Naciśnij przycisk i słuchaj odpowiedniego komunikatu głosowego, aby zidentyfikować brakujące lub błędne monity.</string>
-<string name="ask_for_location_permission">Zezwól na lokalizację OsmAnd aby kontynuować.</string>
-    <string name="release_3_2_pre">• Naprawiono awarię podczas uruchamiania, która miała miejsce w przypadku map innych niż łacińskie
+<string name="ask_for_location_permission">Proszę przyznać uprawnienia udostępniania położenia, aby kontynuować.</string>
+    <string name="release_3_2_pre">• Naprawiono awarię podczas uruchamiania, która wystąpiła na niektórych urządzeniach 
 \n 
-\n• Poprawiono renderowanie na urządzeniach z Androidem 8.0
+\n• Nowa funkcja Markery: wyświetlaj znaczniki, które już przeszły 
 \n 
-\n• Obsługa edycji obiektów wielobokowych (nieoryginalnych)
-\n
-\n• Mierz odległość: dodaj przycisk Mierz do akcji w menu kontekstowym
+\n• Historia wyszukiwania pokazuje teraz kategorie, które wcześniej wyszukiwałeś 
+\n 
+\n• Naprawiono awarię podczas uruchamiania, która miała miejsce w przypadku map innych niż łacińskie 
+\n 
+\n• Naprawiono problemy z renderowaniem na urządzeniach z Androidem 8.0 
+\n 
+\n• Obsługa edycji obiektów wielokątnych (nieoryginalnych) 
+\n 
+\n• Pomiar odległości: dodaj przycisk pomiaru do akcji w menu kontekstowym
 \n</string>
     <string name="rendering_value_black_name">Czarny</string>
+    <string name="shared_string_restore">Przywróć</string>
+    <string name="keep_passed_markers">Zachowanie miniętych znaczników na mapie</string>
+    <string name="more_transport_on_stop_hint">Na tym przystanku zatrzymuje się więcej środków transportu.</string>
+    <string name="markers_remove_dialog_msg">Usuń znacznik mapy \'%s\'\?</string>
+    <string name="edit_map_marker">Edytuj znacznik mapy</string>
+    <string name="third_party_application">Aplikacja innej firmy</string>
+    <string name="search_street">Wyszukaj ulicę</string>
+    <string name="start_search_from_city">Rozpocznij wyszukiwanie z miasta</string>
+    <string name="keep_passed_markers_descr">Znaczniki dodane jako grupa ulubionych lub punkty trasy GPX oznaczone jako przekazane pozostaną na mapie. Jeśli grupa nie jest aktywna, znaczniki znikną z mapy.</string>
     </resources>

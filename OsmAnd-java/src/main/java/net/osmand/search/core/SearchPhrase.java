@@ -5,10 +5,11 @@ import net.osmand.CollatorStringMatcher;
 import net.osmand.CollatorStringMatcher.StringMatcherMode;
 import net.osmand.StringMatcher;
 import net.osmand.binary.BinaryMapIndexReader;
-import net.osmand.binary.CommonWords;
 import net.osmand.binary.BinaryMapIndexReader.SearchRequest;
+import net.osmand.binary.CommonWords;
 import net.osmand.data.LatLon;
 import net.osmand.data.QuadRect;
+import net.osmand.osm.AbstractPoiType;
 import net.osmand.util.Algorithms;
 import net.osmand.util.MapUtils;
 
@@ -32,8 +33,10 @@ public class SearchPhrase {
 	private List<String> unknownWords = new ArrayList<>();
 	private List<NameStringMatcher> unknownWordsMatcher = new ArrayList<>();
 	private String unknownSearchWordTrim;
+	private String rawUnknownSearchPhrase = "";
 	private String unknownSearchPhrase = "";
-	
+	private AbstractPoiType unknownSearchWordPoiType;
+
 	private NameStringMatcher sm;
 	private SearchSettings settings;
 	private List<BinaryMapIndexReader> indexes;
@@ -143,6 +146,7 @@ public class SearchPhrase {
 				break;
 			}
 		}
+		sp.rawUnknownSearchPhrase = text;
 		sp.unknownSearchPhrase = restText;
 		sp.unknownWords.clear();
 		sp.unknownWordsMatcher.clear();
@@ -211,7 +215,11 @@ public class SearchPhrase {
 	public String getUnknownSearchWord() {
 		return unknownSearchWordTrim;
 	}
-	
+
+	public String getRawUnknownSearchPhrase() {
+		return rawUnknownSearchPhrase;
+	}
+
 	public String getUnknownSearchPhrase() {
 		return unknownSearchPhrase;
 	}
@@ -223,8 +231,42 @@ public class SearchPhrase {
 	public int getUnknownSearchWordLength() {
 		return unknownSearchWordTrim.length() ;
 	}
-	
-	
+
+	public AbstractPoiType getUnknownSearchWordPoiType() {
+		return unknownSearchWordPoiType;
+	}
+
+	public void setUnknownSearchWordPoiType(AbstractPoiType unknownSearchWordPoiType) {
+		this.unknownSearchWordPoiType = unknownSearchWordPoiType;
+	}
+
+	public boolean hasUnknownSearchWordPoiType() {
+		return unknownSearchWordPoiType != null;
+	}
+
+	public String getPoiNameFilter() {
+		return getPoiNameFilter(unknownSearchWordPoiType);
+	}
+
+	public String getPoiNameFilter(AbstractPoiType pt) {
+		String nameFilter = null;
+		if (pt != null) {
+			NameStringMatcher nm = getNameStringMatcher(getUnknownSearchWord(), true);
+			String unknownSearchPhrase = getUnknownSearchPhrase();
+			String enTranslation = pt.getEnTranslation();
+			String translation = pt.getTranslation();
+			String synonyms = pt.getSynonyms();
+			if (unknownSearchPhrase.length() > enTranslation.length() && nm.matches(enTranslation)) {
+				nameFilter = unknownSearchPhrase.substring(enTranslation.length()).trim();
+			} else if (unknownSearchPhrase.length() > translation.length() && nm.matches(translation)) {
+				nameFilter = unknownSearchPhrase.substring(translation.length()).trim();
+			} else if (unknownSearchPhrase.length() > synonyms.length() && nm.matches(synonyms)) {
+				nameFilter = unknownSearchPhrase.substring(synonyms.length()).trim();
+			}
+		}
+		return nameFilter;
+	}
+
 	public QuadRect getRadiusBBoxToSearch(int radius) {
 		int radiusInMeters = getRadiusSearch(radius);
 		QuadRect cache1kmRect = get1km31Rect();
@@ -643,7 +685,7 @@ public class SearchPhrase {
 			for(int i = 0; i < unknownWords.size(); i++) {
 				if(unknownWordsMatcher.size() == i) {
 					unknownWordsMatcher.add(new NameStringMatcher(unknownWords.get(i), 
-							i < unknownWords.size() - 1 ? StringMatcherMode.CHECK_EQUALS_FROM_SPACE :
+							i < unknownWords.size() - 1 || isLastUnknownSearchWordComplete() ? StringMatcherMode.CHECK_EQUALS_FROM_SPACE :
 								StringMatcherMode.CHECK_STARTS_FROM_SPACE));
 				}
 				NameStringMatcher ms = unknownWordsMatcher.get(i);

@@ -31,10 +31,9 @@ import java.util.Set;
 
 public class FavouritesDbHelper {
 
-	public interface FavoritesUpdatedListener {
-		void updateFavourites();
+	public interface FavoritesListener {
+		void onFavoritesLoaded();
 	}
-
 
 	private static final org.apache.commons.logging.Log log = PlatformUtil.getLog(FavouritesDbHelper.class);
 
@@ -50,6 +49,8 @@ public class FavouritesDbHelper {
 	protected static final String HIDDEN = "HIDDEN";
 	private static final String DELIMETER = "__";
 
+	private Set<FavoritesListener> listeners = new HashSet<>();
+	private boolean favoritesLoaded;
 
 	public FavouritesDbHelper(OsmandApplication context) {
 		this.context = context;
@@ -90,13 +91,28 @@ public class FavouritesDbHelper {
 		if (changed || !getExternalFile().exists()) {
 			saveCurrentPointsIntoFile();
 		}
-		favouritesUpdated();
-
+		favoritesLoaded = true;
+		context.runInUIThread(new Runnable() {
+			@Override
+			public void run() {
+				for (FavoritesListener listener : listeners) {
+					listener.onFavoritesLoaded();
+				}
+			}
+		});
 	}
 
-	private void favouritesUpdated() {
+	public boolean isFavoritesLoaded() {
+		return favoritesLoaded;
 	}
 
+	public void addListener(FavoritesListener listener) {
+		listeners.add(listener);
+	}
+
+	public void removeListener(FavoritesListener listener) {
+		listeners.remove(listener);
+	}
 
 	private boolean merge(Map<String, FavouritePoint> source, Map<String, FavouritePoint> destination) {
 		boolean changed = false;
@@ -693,15 +709,16 @@ public class FavouritesDbHelper {
 
 	private SQLiteConnection openConnection(boolean readonly) {
 		conn = context.getSQLiteAPI().getOrCreateDatabase(FAVOURITE_DB_NAME, readonly);
-		if (conn.getVersion() == 0 || DATABASE_VERSION != conn.getVersion()) {
+		if (conn.getVersion() < DATABASE_VERSION) {
 			if (readonly) {
 				conn.close();
 				conn = context.getSQLiteAPI().getOrCreateDatabase(FAVOURITE_DB_NAME, false);
 			}
-			if (conn.getVersion() == 0) {
+			int version = conn.getVersion();
+			if (version == 0) {
 				onCreate(conn);
 			} else {
-				onUpgrade(conn, conn.getVersion(), DATABASE_VERSION);
+				onUpgrade(conn, version, DATABASE_VERSION);
 			}
 			conn.setVersion(DATABASE_VERSION);
 		}

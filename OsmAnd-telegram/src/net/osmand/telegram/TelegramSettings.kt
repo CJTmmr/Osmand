@@ -1,14 +1,27 @@
 package net.osmand.telegram
 
 import android.content.Context
+import android.location.LocationManager
+import android.support.annotation.ColorRes
 import android.support.annotation.DrawableRes
 import android.support.annotation.StringRes
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
+import net.osmand.data.LatLon
 import net.osmand.telegram.helpers.OsmandAidlHelper
 import net.osmand.telegram.helpers.TelegramHelper
 import net.osmand.telegram.utils.AndroidUtils
 import net.osmand.telegram.utils.OsmandFormatter
 import net.osmand.telegram.utils.OsmandFormatter.MetricsConstants
 import net.osmand.telegram.utils.OsmandFormatter.SpeedConstants
+import org.drinkless.td.libcore.telegram.TdApi
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
+
+val ADDITIONAL_ACTIVE_TIME_VALUES_SEC = listOf(15 * 60L, 30 * 60L, 60 * 60L, 180 * 60L)
 
 private val SEND_MY_LOC_VALUES_SEC =
 	listOf(1L, 2L, 3L, 5L, 10L, 15L, 30L, 60L, 90L, 2 * 60L, 3 * 60L, 5 * 60L)
@@ -36,6 +49,8 @@ private const val SETTINGS_NAME = "osmand_telegram_settings"
 private const val SHARE_LOCATION_CHATS_KEY = "share_location_chats"
 private const val HIDDEN_ON_MAP_CHATS_KEY = "hidden_on_map_chats"
 
+private const val SHARING_MODE_KEY = "current_sharing_mode"
+
 private const val METRICS_CONSTANTS_KEY = "metrics_constants"
 private const val SPEED_CONSTANTS_KEY = "speed_constants"
 
@@ -51,13 +66,21 @@ private const val TITLES_REPLACED_WITH_IDS = "changed_to_chat_id"
 
 private const val LIVE_NOW_SORT_TYPE_KEY = "live_now_sort_type"
 
+private const val SHARE_CHATS_INFO_KEY = "share_chats_info"
+
+private const val BATTERY_OPTIMISATION_ASKED = "battery_optimisation_asked"
+
+private const val SHARING_INITIALIZATION_TIME = 60 * 2L // 2 minutes
+
 class TelegramSettings(private val app: TelegramApplication) {
 
-	private var chatLivePeriods = mutableMapOf<Long, Long>()
-	private var chatShareLocStartSec = mutableMapOf<Long, Long>()
-
-	private var shareLocationChats: Set<Long> = emptySet()
+	private var shareChatsInfo = ConcurrentHashMap<Long, ShareChatInfo>()
 	private var hiddenOnMapChats: Set<Long> = emptySet()
+
+	var sharingStatusChanges = ConcurrentLinkedQueue<SharingStatus>()
+
+	var shareDevicesIds = mutableMapOf<String, String>()
+	var currentSharingMode = ""
 
 	var metricsConstants = MetricsConstants.KILOMETERS_AND_METERS
 	var speedConstants = SpeedConstants.KILOMETERS_PER_HOUR
@@ -73,88 +96,75 @@ class TelegramSettings(private val app: TelegramApplication) {
 
 	val gpsAndLocPrefs = listOf(SendMyLocPref(), StaleLocPref(), LocHistoryPref())
 
+	var batteryOptimisationAsked = false
+
 	init {
 		updatePrefs()
 		read()
 	}
 
-	fun hasAnyChatToShareLocation() = shareLocationChats.isNotEmpty()
+	fun hasAnyChatToShareLocation() = shareChatsInfo.isNotEmpty()
 
-	fun isSharingLocationToChat(chatId: Long) = shareLocationChats.contains(chatId)
+	fun isSharingLocationToChat(chatId: Long) = shareChatsInfo.containsKey(chatId)
 
 	fun hasAnyChatToShowOnMap() = !hiddenOnMapChats.containsAll(getLiveNowChats())
 
 	fun isShowingChatOnMap(chatId: Long) = !hiddenOnMapChats.contains(chatId)
 
 	fun removeNonexistingChats(presentChatIds: List<Long>) {
-		val shareLocationChats = shareLocationChats.toMutableList()
-		shareLocationChats.intersect(presentChatIds)
-		this.shareLocationChats = shareLocationChats.toHashSet()
-
 		val hiddenChats = hiddenOnMapChats.toMutableList()
 		hiddenChats.intersect(presentChatIds)
 		hiddenOnMapChats = hiddenChats.toHashSet()
 
-		chatLivePeriods = chatLivePeriods.filter { (key, _) ->
-			presentChatIds.contains(key)
-		}.toMutableMap()
-
-		chatShareLocStartSec = chatShareLocStartSec.filter { (key, _) ->
-			presentChatIds.contains(key)
-		}.toMutableMap()
+		shareChatsInfo = ConcurrentHashMap(shareChatsInfo.filter { (key, _) -> presentChatIds.contains(key) })
 	}
 
 	fun shareLocationToChat(
 		chatId: Long,
 		share: Boolean,
-		livePeriod: Long = DEFAULT_VISIBLE_TIME_SECONDS
+		livePeriod: Long = DEFAULT_VISIBLE_TIME_SECONDS,
+		addActiveTime: Long = ADDITIONAL_ACTIVE_TIME_VALUES_SEC[0]
 	) {
-		val shareLocationChats = shareLocationChats.toMutableList()
 		if (share) {
 			val lp: Long = when {
 				livePeriod < TelegramHelper.MIN_LOCATION_MESSAGE_LIVE_PERIOD_SEC -> TelegramHelper.MIN_LOCATION_MESSAGE_LIVE_PERIOD_SEC.toLong()
-				livePeriod > TelegramHelper.MAX_LOCATION_MESSAGE_LIVE_PERIOD_SEC -> TelegramHelper.MAX_LOCATION_MESSAGE_LIVE_PERIOD_SEC.toLong()
 				else -> livePeriod
 			}
-			chatLivePeriods[chatId] = lp
-			chatShareLocStartSec[chatId] = (System.currentTimeMillis() / 1000)
-			shareLocationChats.add(chatId)
+			var shareChatInfo = shareChatsInfo[chatId]
+			if (shareChatInfo == null) {
+				shareChatInfo = ShareChatInfo()
+			}
+			val currentTime = System.currentTimeMillis() / 1000
+			shareChatInfo.chatId = chatId
+			shareChatInfo.start = currentTime
+			if (shareChatInfo.livePeriod == -1L) {
+				shareChatInfo.livePeriod = lp
+			}
+			shareChatInfo.userSetLivePeriod = lp
+			shareChatInfo.userSetLivePeriodStart = currentTime
+			shareChatInfo.currentMessageLimit = currentTime + Math.min(lp, TelegramHelper.MAX_LOCATION_MESSAGE_LIVE_PERIOD_SEC.toLong())
+			shareChatInfo.additionalActiveTime = addActiveTime
+			shareChatsInfo[chatId] = shareChatInfo
 		} else {
-			shareLocationChats.remove(chatId)
-			chatLivePeriods.remove(chatId)
-			chatShareLocStartSec.remove(chatId)
-		}
-		this.shareLocationChats = shareLocationChats.toHashSet()
-	}
-
-	fun getChatLivePeriod(chatId: Long) = chatLivePeriods[chatId]
-
-	fun getChatLivePeriods(): Map<Long, Long> {
-		return chatLivePeriods.filter {
-			getChatLiveMessageExpireTime(it.key) > 0
+			shareChatsInfo.remove(chatId)
 		}
 	}
 
-	fun getChatShareLocStartSec(chatId: Long) = chatShareLocStartSec[chatId]
-
-	fun getChatLiveMessageExpireTime(chatId: Long): Long {
-		val startTime = getChatShareLocStartSec(chatId)
-		val livePeriod = getChatLivePeriod(chatId)
-		return if (startTime != null && livePeriod != null) {
-			livePeriod - ((System.currentTimeMillis() / 1000) - startTime)
-		} else {
-			0
+	fun updateShareDevicesIds(list: List<DeviceBot>) {
+		shareDevicesIds.clear()
+		list.forEach {
+			shareDevicesIds[it.externalId] = it.deviceName
 		}
 	}
 
-	fun updateChatShareLocStartSec(chatId: Long, startTime: Long) {
-		chatShareLocStartSec[chatId] = startTime
-	}
+	fun getChatLivePeriod(chatId: Long) = shareChatsInfo[chatId]?.livePeriod
+
+	fun getChatsShareInfo() = shareChatsInfo
+
+	fun getLastSuccessfulSendTime() = shareChatsInfo.values.maxBy { it.lastSuccessfulSendTimeMs }?.lastSuccessfulSendTimeMs ?: -1
 
 	fun stopSharingLocationToChats() {
-		this.shareLocationChats = emptySet()
-		this.chatLivePeriods.clear()
-		this.chatShareLocStartSec.clear()
+		shareChatsInfo.clear()
 	}
 
 	fun showChatOnMap(chatId: Long, show: Boolean) {
@@ -167,7 +177,7 @@ class TelegramSettings(private val app: TelegramApplication) {
 		hiddenOnMapChats = hiddenChats.toHashSet()
 	}
 
-	fun getShareLocationChats() = ArrayList(shareLocationChats)
+	fun getShareLocationChats() = shareChatsInfo.keys
 
 	fun getShowOnMapChats() = getLiveNowChats().minus(hiddenOnMapChats)
 
@@ -184,16 +194,121 @@ class TelegramSettings(private val app: TelegramApplication) {
 		app.osmandAidlHelper.reconnectOsmand()
 	}
 
+	fun updateShareInfo(message: TdApi.Message) {
+		val shareChatInfo = shareChatsInfo[message.chatId]
+		val content = message.content
+		if (shareChatInfo != null && content is TdApi.MessageLocation) {
+			shareChatInfo.currentMessageId = message.id
+			shareChatInfo.lastSuccessfulLocation = LatLon(content.location.latitude, content.location.longitude)
+			shareChatInfo.lastSuccessfulSendTimeMs = Math.max(message.editDate, message.date) * 1000L
+		}
+	}
+
+	fun updateSharingStatusHistory() {
+		val newSharingStatus = getNewSharingStatusHistoryItem()
+
+		if (sharingStatusChanges.isNotEmpty()) {
+			val lastSharingStatus = sharingStatusChanges.last()
+			if (lastSharingStatus.statusType != newSharingStatus.statusType) {
+				sharingStatusChanges.add(newSharingStatus)
+			} else {
+				lastSharingStatus.apply {
+					statusChangeTime = newSharingStatus.statusChangeTime
+					locationTime = newSharingStatus.locationTime
+					chatsTitles = newSharingStatus.chatsTitles
+
+					if (statusType == SharingStatusType.INITIALIZING
+						&& newSharingStatus.statusType == SharingStatusType.INITIALIZING
+						&& !lastSharingStatus.description.contains(newSharingStatus.description)) {
+						lastSharingStatus.description = "${lastSharingStatus.description}, ${newSharingStatus.description}"
+					}
+				}
+			}
+		} else {
+			sharingStatusChanges.add(newSharingStatus)
+		}
+	}
+
+	private fun getNewSharingStatusHistoryItem(): SharingStatus {
+		return SharingStatus().apply {
+			statusChangeTime = System.currentTimeMillis()
+			val lm = app.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+			val gpsEnabled = try {
+				lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+			} catch (ex: Exception) {
+				false
+			}
+
+			var initializing = false
+			var sendChatsErrors = false
+
+			shareChatsInfo.forEach { (_, shareInfo) ->
+				if (shareInfo.lastSuccessfulSendTimeMs == -1L && ((statusChangeTime / 1000 - shareInfo.start) < SHARING_INITIALIZATION_TIME)) {
+					initializing = true
+				}
+				if (shareInfo.hasSharingError) {
+					sendChatsErrors = true
+					locationTime = shareInfo.lastSuccessfulSendTimeMs
+					val title = app.telegramHelper.getChat(shareInfo.chatId)?.title
+					if (title != null) {
+						chatsTitles.add(title)
+					}
+				}
+			}
+
+			if (sendChatsErrors) {
+				title = app.getString(R.string.not_possible_to_send_to_telegram_chats)
+				description = app.getString(R.string.last_updated_location)
+				statusType = SharingStatusType.NOT_POSSIBLE_TO_SENT_TO_CHATS
+			} else if (!initializing) {
+				when {
+					!gpsEnabled -> {
+						locationTime = app.shareLocationHelper.lastLocationMessageSentTime
+						title = app.getString(R.string.no_gps_connection)
+						description = app.getString(R.string.last_updated_location)
+						statusType = SharingStatusType.NO_GPS
+					}
+					!app.isInternetConnectionAvailable -> {
+						locationTime = getLastSuccessfulSendTime()
+						title = app.getString(R.string.no_internet_connection)
+						description = app.getString(R.string.last_updated_location)
+						statusType = SharingStatusType.NO_INTERNET
+					}
+					else -> {
+						locationTime = getLastSuccessfulSendTime()
+						title = app.getString(R.string.successfully_sent_and_updated)
+						description = app.getString(R.string.last_updated_location)
+						statusType = SharingStatusType.SUCCESSFULLY_SENT
+					}
+				}
+			} else {
+				if (gpsEnabled && app.isInternetConnectionAvailable) {
+					title = app.getString(R.string.sending_location_messages)
+					description = app.getString(R.string.waiting_for_response_from_telegram)
+					statusType = SharingStatusType.SENDING
+				} else {
+					title = app.getString(R.string.initializing)
+					statusType = SharingStatusType.INITIALIZING
+					if (!gpsEnabled) {
+						description = app.getString(R.string.searching_for_gps)
+					} else if (!app.isInternetConnectionAvailable) {
+						description = app.getString(R.string.connecting_to_the_internet)
+					}
+				}
+			}
+		}
+	}
+
+	fun onDeleteLiveMessages(chatId: Long, messages: List<Long>) {
+		val currentMessageId = shareChatsInfo[chatId]?.currentMessageId
+		if (messages.contains(currentMessageId)) {
+			shareChatsInfo[chatId]?.currentMessageId = -1
+		}
+	}
+	
 	fun save() {
 		val prefs = app.getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE)
 		val edit = prefs.edit()
-
-		val shareLocationChatsSet = mutableSetOf<String>()
-		val shareLocationChats = ArrayList(shareLocationChats)
-		for (chatId in shareLocationChats) {
-			shareLocationChatsSet.add(chatId.toString())
-		}
-		edit.putStringSet(SHARE_LOCATION_CHATS_KEY, shareLocationChatsSet)
 
 		val hiddenChatsSet = mutableSetOf<String>()
 		val hiddenChats = ArrayList(hiddenOnMapChats)
@@ -201,6 +316,8 @@ class TelegramSettings(private val app: TelegramApplication) {
 			hiddenChatsSet.add(chatId.toString())
 		}
 		edit.putStringSet(HIDDEN_ON_MAP_CHATS_KEY, hiddenChatsSet)
+
+		edit.putString(SHARING_MODE_KEY, currentSharingMode)
 
 		edit.putString(METRICS_CONSTANTS_KEY, metricsConstants.name)
 		edit.putString(SPEED_CONSTANTS_KEY, speedConstants.name)
@@ -213,18 +330,31 @@ class TelegramSettings(private val app: TelegramApplication) {
 
 		edit.putString(LIVE_NOW_SORT_TYPE_KEY, liveNowSortType.name)
 
+		edit.putBoolean(BATTERY_OPTIMISATION_ASKED, batteryOptimisationAsked)
+
+		try {
+			val jArray = JSONArray()
+			shareChatsInfo.forEach { (chatId, chatInfo) ->
+				val obj = JSONObject()
+				obj.put(ShareChatInfo.CHAT_ID_KEY, chatId)
+				obj.put(ShareChatInfo.START_KEY, chatInfo.start)
+				obj.put(ShareChatInfo.LIVE_PERIOD_KEY, chatInfo.livePeriod)
+				obj.put(ShareChatInfo.LIMIT_KEY, chatInfo.currentMessageLimit)
+				obj.put(ShareChatInfo.CURRENT_MESSAGE_ID_KEY, chatInfo.currentMessageId)
+				obj.put(ShareChatInfo.USER_SET_LIVE_PERIOD_KEY, chatInfo.userSetLivePeriod)
+				obj.put(ShareChatInfo.USER_SET_LIVE_PERIOD_START_KEY, chatInfo.userSetLivePeriodStart)
+				jArray.put(obj)
+			}
+			edit.putString(SHARE_CHATS_INFO_KEY, jArray.toString())
+		} catch (e: JSONException) {
+			e.printStackTrace()
+		}
+
 		edit.apply()
 	}
 
 	fun read() {
 		val prefs = app.getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE)
-
-		val shareLocationChats = mutableSetOf<Long>()
-		val shareLocationChatsSet = prefs.getStringSet(SHARE_LOCATION_CHATS_KEY, mutableSetOf())
-		for (chatId in shareLocationChatsSet) {
-			shareLocationChats.add(chatId.toLong())
-		}
-		this.shareLocationChats = shareLocationChats
 
 		val hiddenChats = mutableSetOf<Long>()
 		val hiddenChatsSet = prefs.getStringSet(HIDDEN_ON_MAP_CHATS_KEY, mutableSetOf())
@@ -240,6 +370,12 @@ class TelegramSettings(private val app: TelegramApplication) {
 			prefs.getString(SPEED_CONSTANTS_KEY, SpeedConstants.KILOMETERS_PER_HOUR.name)
 		)
 
+		try {
+			parseShareChatsInfo(JSONArray(prefs.getString(SHARE_CHATS_INFO_KEY, "")))
+		} catch (e: JSONException) {
+			e.printStackTrace()
+		}
+
 		val sendMyLocDef = SEND_MY_LOC_VALUES_SEC[SEND_MY_LOC_DEFAULT_INDEX]
 		sendMyLocInterval = prefs.getLong(SEND_MY_LOC_INTERVAL_KEY, sendMyLocDef)
 		val staleLocDef = STALE_LOC_VALUES_SEC[STALE_LOC_DEFAULT_INDEX]
@@ -247,11 +383,31 @@ class TelegramSettings(private val app: TelegramApplication) {
 		val locHistoryDef = LOC_HISTORY_VALUES_SEC[LOC_HISTORY_DEFAULT_INDEX]
 		locHistoryTime = prefs.getLong(LOC_HISTORY_TIME_KEY, locHistoryDef)
 
+		currentSharingMode = prefs.getString(SHARING_MODE_KEY, "")
+
 		appToConnectPackage = prefs.getString(APP_TO_CONNECT_PACKAGE_KEY, "")
 
 		liveNowSortType = LiveNowSortType.valueOf(
 			prefs.getString(LIVE_NOW_SORT_TYPE_KEY, LiveNowSortType.SORT_BY_GROUP.name)
 		)
+
+		batteryOptimisationAsked = prefs.getBoolean(BATTERY_OPTIMISATION_ASKED,false)
+	}
+
+	private fun parseShareChatsInfo(json: JSONArray) {
+		for (i in 0 until json.length()) {
+			val obj = json.getJSONObject(i)
+			val shareInfo = ShareChatInfo().apply {
+				chatId = obj.optLong(ShareChatInfo.CHAT_ID_KEY)
+				start = obj.optLong(ShareChatInfo.START_KEY)
+				livePeriod = obj.optLong(ShareChatInfo.LIVE_PERIOD_KEY)
+				currentMessageLimit = obj.optLong(ShareChatInfo.LIMIT_KEY)
+				currentMessageId = obj.optLong(ShareChatInfo.CURRENT_MESSAGE_ID_KEY)
+				userSetLivePeriod = obj.optLong(ShareChatInfo.USER_SET_LIVE_PERIOD_KEY)
+				userSetLivePeriodStart = obj.optLong(ShareChatInfo.USER_SET_LIVE_PERIOD_START_KEY)
+			}
+			shareChatsInfo[shareInfo.chatId] = shareInfo
+		}
 	}
 
 	private fun getLiveNowChats() = app.telegramHelper.getMessagesByChatIds(locHistoryTime).keys
@@ -399,5 +555,119 @@ class TelegramSettings(private val app: TelegramApplication) {
 		);
 
 		fun isSortByGroup() = this == SORT_BY_GROUP
+	}
+
+	enum class SharingStatusType(
+		@DrawableRes val iconId: Int,
+		@ColorRes val iconColorRes: Int,
+		val canResendLocation: Boolean
+	) {
+		NO_INTERNET(
+			R.drawable.ic_action_wifi_off,
+			R.color.sharing_status_icon_error,
+			true
+		),
+		SUCCESSFULLY_SENT(
+			R.drawable.ic_action_share_location,
+			R.color.sharing_status_icon_success,
+			false
+		),
+		SENDING(
+			R.drawable.ic_action_share_location,
+			R.color.sharing_status_icon_success,
+			false
+		),
+		NOT_POSSIBLE_TO_SENT_TO_CHATS(
+			R.drawable.ic_action_message_send_error,
+			R.color.sharing_status_icon_error,
+			true
+		),
+		NO_GPS(
+			R.drawable.ic_action_location_off,
+			R.color.sharing_status_icon_error,
+			false
+		),
+		INITIALIZING(
+			R.drawable.ic_action_connect,
+			R.color.sharing_status_icon_error,
+			false
+		);
+	}
+
+	class DeviceBot {
+		var id: Long = -1
+		var userId: Long = -1
+		var chatId: Long = -1
+		var deviceName: String = ""
+		var externalId: String = ""
+		var data: String = ""
+	}
+
+	class SharingStatus {
+
+		var title: String = ""
+		var description: String = ""
+		var locationTime: Long = -1
+		var statusChangeTime: Long = -1
+		var chatsTitles: MutableList<String> = mutableListOf()
+
+		lateinit var statusType: SharingStatusType
+
+		fun getTitle(app: TelegramApplication): CharSequence {
+			return if (statusType != SharingStatusType.NOT_POSSIBLE_TO_SENT_TO_CHATS || chatsTitles.isEmpty()) {
+				title
+			} else {
+				val spannableString = SpannableStringBuilder(title)
+				val iterator = chatsTitles.iterator()
+				while (iterator.hasNext()) {
+					val chatTitle = iterator.next()
+					val start = spannableString.length
+					val newSpannable = if (iterator.hasNext()) " @$chatTitle," else " @$chatTitle."
+					spannableString.append(newSpannable)
+					spannableString.setSpan(ForegroundColorSpan(app.uiUtils.getActiveColor()), start, spannableString.length - 1, 0)
+				}
+				spannableString
+			}
+		}
+	}
+
+	class ShareChatInfo {
+
+		var chatId = -1L
+		var start = -1L
+		var livePeriod = -1L
+		var currentMessageLimit = -1L
+		var currentMessageId = -1L
+		var userSetLivePeriod = -1L
+		var userSetLivePeriodStart = -1L
+		var lastSuccessfulLocation: LatLon? = null
+		var lastSuccessfulSendTimeMs = -1L
+		var shouldDeletePreviousMessage = false
+		var additionalActiveTime = ADDITIONAL_ACTIVE_TIME_VALUES_SEC[0]
+		var hasSharingError = false
+
+		fun getNextAdditionalActiveTime(): Long {
+			var index = ADDITIONAL_ACTIVE_TIME_VALUES_SEC.indexOf(additionalActiveTime)
+			return if (ADDITIONAL_ACTIVE_TIME_VALUES_SEC.lastIndex > index) {
+				ADDITIONAL_ACTIVE_TIME_VALUES_SEC[++index]
+			} else {
+				ADDITIONAL_ACTIVE_TIME_VALUES_SEC[index]
+			}
+		}
+
+		fun getChatLiveMessageExpireTime(): Long {
+			return userSetLivePeriod - ((System.currentTimeMillis() / 1000) - start)
+		}
+
+		companion object {
+
+			internal const val CHAT_ID_KEY = "chatId"
+			internal const val START_KEY = "start"
+			internal const val LIVE_PERIOD_KEY = "livePeriod"
+			internal const val LIMIT_KEY = "limit"
+			internal const val CURRENT_MESSAGE_ID_KEY = "currentMessageId"
+			internal const val USER_SET_LIVE_PERIOD_KEY = "userSetLivePeriod"
+			internal const val USER_SET_LIVE_PERIOD_START_KEY = "userSetLivePeriodStart"
+		}
 	}
 }

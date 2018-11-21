@@ -25,9 +25,7 @@ import net.osmand.telegram.helpers.TelegramHelper.*
 import net.osmand.telegram.ui.LoginDialogFragment.LoginDialogType
 import net.osmand.telegram.ui.MyLocationTabFragment.ActionButtonsListener
 import net.osmand.telegram.ui.views.LockableViewPager
-import net.osmand.telegram.utils.AndroidUtils
-import net.osmand.telegram.utils.GRAYSCALE_PHOTOS_DIR
-import net.osmand.telegram.utils.GRAYSCALE_PHOTOS_EXT
+import net.osmand.telegram.utils.*
 import org.drinkless.td.libcore.telegram.TdApi
 import java.lang.ref.WeakReference
 
@@ -216,7 +214,14 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 					} else {
 						AndroidUtils.requestLocationPermission(this)
 					}
-				} 
+					val user = telegramHelper.getCurrentUser()
+					if (user != null) {
+						OsmandApiUtils.updateSharingDevices(app, user.id)
+						if (settings.currentSharingMode.isEmpty()) {
+							settings.currentSharingMode = user.id.toString()
+						}
+					}
+				}
 				else -> Unit
 			}
 
@@ -267,14 +272,6 @@ class MainActivity : AppCompatActivity(), TelegramListener, ActionButtonsListene
 		runOnUi {
 			Toast.makeText(this@MainActivity, "$code - $message", Toast.LENGTH_LONG).show()
 			listeners.forEach { it.get()?.onTelegramError(code, message) }
-		}
-	}
-
-	override fun onSendLiveLocationError(code: Int, message: String) {
-		log.error("Send live location error: $code - $message")
-		app.isInternetConnectionAvailable(true)
-		runOnUi {
-			listeners.forEach { it.get()?.onSendLiveLocationError(code, message) }
 		}
 	}
 
