@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <string name="rendering_attr_hideHouseNumbers_name">Números de casa</string>
@@ -270,7 +270,7 @@ Lon %2$s</string>
     <string name="select_destination_and_intermediate_points">Elige los destinos</string>
     <string name="layer_amenity_label">Nombres de PDI superpuestos</string>
     <string name="loading_smth">Cargando %1$s…</string>
-    <string name="map_widget_plain_time">Tiempo actual</string>
+    <string name="map_widget_plain_time">Hora actual</string>
     <string name="shared_string_waypoint">Punto de referencia</string>
     <string name="selected_gpx_info_show">"
 \n
@@ -2604,7 +2604,7 @@ Lon %2$s</string>
     <string name="mapillary_menu_edit_text_hint">Escribir nombre de usuario</string>
     <string name="mapillary_menu_descr_username">Ver sólo imágenes añadidas por</string>
     <string name="mapillary_menu_title_username">Nombre de usuario</string>
-    <string name="mapillary_menu_filter_description">Filtrar imágenes por usuario o por fecha. Sólo activado en los primeros zooms.</string>
+    <string name="mapillary_menu_filter_description">Filtrar imágenes por usuario, fecha o tipo. Sólo activado en los primeros zooms.</string>
     <string name="shared_string_reload">Recargar</string>
     <string name="mapillary_menu_descr_tile_cache">Recarga las teselas para ver la información actualizada.</string>
     <string name="mapillary_menu_title_tile_cache">Caché de teselas</string>
@@ -2738,7 +2738,7 @@ Lon %2$s</string>
     <string name="shared_string_back">Atrás</string>
     <string name="shared_string_view">Ver</string>
 	<string name="waypoints_added_to_map_markers">Puntos de referencia añadidos en «Marcadores del mapa»</string>
-	<string name="import_gpx_file_description">pueden importarse como Favoritos o como un archivo GPX.</string>
+	<string name="import_gpx_file_description">puede importarse como Favoritos o como un archivo GPX.</string>
     <string name="import_as_gpx">Importar como archivo GPX</string>
     <string name="import_as_favorites">Importar como Favoritos</string>
     <string name="import_file">Importar archivo</string>
@@ -3031,7 +3031,7 @@ Lon %2$s</string>
     <string name="third_party_application">Aplicación de terceros</string>
     <string name="osm_live_plan_pricing">Plan y Precios</string>
     <string name="osm_live_payment_monthly_title">Pago mensual</string>
-    <string name="osm_live_payment_3_months_title">Pago cada 3 meses</string>
+    <string name="osm_live_payment_3_months_title">Pago trimestral</string>
     <string name="osm_live_payment_annual_title">Pago anual</string>
     <string name="osm_live_payment_month_cost_descr">%1$s / mes</string>
     <string name="osm_live_payment_month_cost_descr_ex">%1$.2f %2$s / mes</string>
@@ -3041,7 +3041,9 @@ Lon %2$s</string>
     <string name="osm_live_payment_renews_quarterly">Renovar trimestralmente</string>
     <string name="osm_live_payment_renews_annually">Renovar anualmente</string>
     <string name="default_price_currency_format">%1$.2f %2$s</string>
-    <string name="osm_live_payment_header">Marca el período de pago más conveniente:</string>
+    <string name="osm_live_payment_header">Elige la frecuencia de pago:</string>
     <string name="osm_live_payment_contribute_descr">Parte de los ingresos se destina a los colaboradores de OpenStreetMap.</string>
     <string name="powered_by_osmand">Desarrollado por OsmAnd</string>
+    <string name="osm_live_subscriptions">Suscripciones</string>
+    <string name="mapillary_menu_title_pano">Sólo mostrar imágenes en 360°</string>
     </resources>
