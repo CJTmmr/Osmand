@@ -6,14 +6,19 @@ import android.os.AsyncTask
 import android.text.TextUtils
 import net.osmand.aidl.map.ALatLon
 import net.osmand.aidl.maplayer.point.AMapPoint
+import net.osmand.aidl.mapmarker.AMapMarker
 import net.osmand.telegram.R
 import net.osmand.telegram.TelegramApplication
-import net.osmand.telegram.helpers.TelegramHelper.MessageOsmAndBotLocation
-import net.osmand.telegram.helpers.TelegramHelper.MessageUserTextLocation
+import net.osmand.telegram.helpers.OsmandAidlHelper.ContextMenuButtonsListener
 import net.osmand.telegram.helpers.TelegramUiHelper.ListItem
 import net.osmand.telegram.utils.AndroidUtils
+import net.osmand.telegram.utils.OsmandFormatter
+import net.osmand.telegram.utils.OsmandLocationUtils
+import net.osmand.telegram.utils.OsmandLocationUtils.MessageOsmAndBotLocation
+import net.osmand.telegram.utils.OsmandLocationUtils.MessageUserLocation
 import org.drinkless.td.libcore.telegram.TdApi
 import java.io.File
+import java.util.*
 import java.util.concurrent.Executors
 
 class ShowLocationHelper(private val app: TelegramApplication) {
@@ -22,20 +27,62 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		const val MAP_LAYER_ID = "telegram_layer"
 		
 		const val MIN_OSMAND_CALLBACK_VERSION_CODE = 320
+
+		const val MAP_CONTEXT_MENU_BUTTON_ID = 1
+		const val MAP_CONTEXT_MENU_BUTTONS_PARAMS_ID = "DIRECTION"
+		const val DIRECTION_ICON_ID = "ic_action_start_navigation"
 	}
 
 	private val telegramHelper = app.telegramHelper
 	private val osmandAidlHelper = app.osmandAidlHelper
 	private val executor = Executors.newSingleThreadExecutor()
 
+	private val points = mutableMapOf<String, TdApi.Message>()
+	private val markers = mutableMapOf<String, AMapMarker>()
+
 	var showingLocation: Boolean = false
 		private set
 
 	private var forcedStop: Boolean = false
 
+	init {
+		app.osmandAidlHelper.setContextMenuButtonsListener(object : ContextMenuButtonsListener {
+
+			override fun onContextMenuButtonClicked(buttonId: Int, pointId: String, layerId: String) {
+				updateDirectionMarker(pointId)
+			}
+
+		})
+	}
+
 	fun setupMapLayer() {
-		execOsmandApi {
+		osmandAidlHelper.execOsmandApi {
 			osmandAidlHelper.addMapLayer(MAP_LAYER_ID, "Telegram", 5.5f, null)
+		}
+	}
+
+	private fun updateDirectionMarker(pointId: String) {
+		val message = points[pointId]
+		if (message != null) {
+			val aLatLon = getALatLonFromMessage(message.content)
+			val name = getNameFromMessage(message)
+			if (aLatLon != null) {
+				val marker = AMapMarker(ALatLon(aLatLon.latitude, aLatLon.longitude), name)
+				val markerPrev = markers[pointId]
+				var markerUpdated: Boolean
+				if (markerPrev != null) {
+					markerUpdated = app.osmandAidlHelper.updateMapMarker(markerPrev, marker)
+					if (!markerUpdated) {
+						app.osmandAidlHelper.removeMapMarker(markerPrev.latLon.latitude, markerPrev.latLon.longitude, name)
+						markerUpdated = app.osmandAidlHelper.addMapMarker(marker)
+					}
+				} else {
+					markerUpdated = app.osmandAidlHelper.addMapMarker(marker)
+				}
+				if (markerUpdated) {
+					markers[pointId] = marker
+				}
+			}
 		}
 	}
 
@@ -43,7 +90,7 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		if (item.latLon == null) {
 			return
 		}
-		execOsmandApi {
+		osmandAidlHelper.execOsmandApi {
 			osmandAidlHelper.showMapPoint(
 				MAP_LAYER_ID,
 				item.getMapPointId(),
@@ -52,17 +99,17 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 				item.chatTitle,
 				Color.WHITE,
 				ALatLon(item.latLon!!.latitude, item.latLon!!.longitude),
-				null,
-				generatePointParams(if (stale) item.grayscalePhotoPath else item.photoPath, stale)
+				generatePointDetails(item.bearing?.toFloat(), item.altitude?.toFloat(), item.precision?.toFloat()),
+				generatePointParams(if (stale) item.grayscalePhotoPath else item.photoPath, stale, item.speed?.toFloat())
 			)
 		}
 	}
 	
 	fun updateLocationsOnMap() {
-		execOsmandApi {
+		osmandAidlHelper.execOsmandApi {
 			val messages = telegramHelper.getMessages()
 			for (message in messages) {
-				val date = telegramHelper.getLastUpdatedTime(message)
+				val date = OsmandLocationUtils.getLastUpdatedTime(message)
 				val messageShowingTime = System.currentTimeMillis() / 1000 - date
 				if (messageShowingTime > app.settings.locHistoryTime) {
 					removeMapPoint(message.chatId, message)
@@ -74,65 +121,93 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 	}
 
 	fun addOrUpdateLocationOnMap(message: TdApi.Message, update: Boolean = false) {
-		execOsmandApi {
+		osmandAidlHelper.execOsmandApi {
 			val chatId = message.chatId
-			val chatTitle = telegramHelper.getChat(message.chatId)?.title
+			val chat = telegramHelper.getChat(message.chatId)
+			val chatTitle = chat?.title
+			val isGroup = chat != null && telegramHelper.isGroup(chat)
 			val content = message.content
-			val date = telegramHelper.getLastUpdatedTime(message)
+			val date = OsmandLocationUtils.getLastUpdatedTime(message)
 			val stale = System.currentTimeMillis() / 1000 - date > app.settings.staleLocTime
-			if (chatTitle != null && (content is TdApi.MessageLocation || (content is MessageUserTextLocation && content.isValid()))) {
-				var userName = ""
-				var photoPath: String? = null
-				val user = telegramHelper.getUser(message.senderUserId)
-				if (user != null) {
-					userName = "${user.firstName} ${user.lastName}".trim()
-					if (userName.isEmpty()) {
-						userName = user.username
+			val aLatLon = getALatLonFromMessage(content)
+			val details = if (content is OsmandLocationUtils.MessageLocation) generatePointDetails(content.bearing.toFloat(), content.altitude.toFloat(), content.hdop.toFloat()) else null
+			val name = getNameFromMessage(message)
+			val senderId = OsmandLocationUtils.getSenderMessageId(message)
+			val pointId = if (content is MessageOsmAndBotLocation) "${chatId}_${content.deviceName}" else "${chatId}_$senderId"
+
+			if (aLatLon != null && chatTitle != null) {
+				if ((content is TdApi.MessageLocation || (content is MessageUserLocation && content.isValid()))) {
+					var photoPath: String? = null
+					val user = telegramHelper.getUser(senderId)
+					if (user != null) {
+						photoPath = if (stale) {
+							telegramHelper.getUserGreyPhotoPath(user)
+						} else {
+							telegramHelper.getUserPhotoPath(user)
+						}
 					}
-					if (userName.isEmpty()) {
-						userName = user.phoneNumber
-					}
-					photoPath = if (stale) {
-						telegramHelper.getUserGreyPhotoPath(user)
-					} else {
-						telegramHelper.getUserPhotoPath(user)
-					}
-				}
-				if (userName.isEmpty()) {
-					userName = message.senderUserId.toString()
-				}
-				setupMapLayer()
-				val params = generatePointParams(photoPath, stale)
-				val aLatLon = when (content) {
-					is TdApi.MessageLocation -> ALatLon(content.location.latitude, content.location.longitude)
-					is MessageUserTextLocation -> ALatLon(content.lat, content.lon)
-					else -> null
-				}
-				if (aLatLon != null) {
+					setupMapLayer()
+					val params = generatePointParams(photoPath, stale, if (content is MessageUserLocation) content.speed.toFloat() else null)
+
+					val typeName = if (isGroup) chatTitle else OsmandFormatter.getListItemLiveTimeDescr(app, date, app.getString(R.string.last_response) + ": ")
 					if (update) {
-						osmandAidlHelper.updateMapPoint(MAP_LAYER_ID, "${chatId}_${message.senderUserId}", userName, userName,
-							chatTitle, Color.WHITE, aLatLon, null, params)
+						osmandAidlHelper.updateMapPoint(MAP_LAYER_ID, pointId, name, name, typeName, Color.WHITE, aLatLon, details, params)
 					} else {
-						osmandAidlHelper.addMapPoint(MAP_LAYER_ID, "${chatId}_${message.senderUserId}", userName, userName,
-							chatTitle, Color.WHITE, aLatLon, null, params)
+						osmandAidlHelper.addMapPoint(MAP_LAYER_ID, pointId, name, name, typeName, Color.WHITE, aLatLon, details, params)
 					}
+					points[pointId] = message
+				} else if (content is MessageOsmAndBotLocation && content.isValid()) {
+					setupMapLayer()
+					val params = generatePointParams(null, stale, content.speed.toFloat())
+					if (update) {
+						osmandAidlHelper.updateMapPoint(MAP_LAYER_ID, pointId, name, name, chatTitle, Color.WHITE, aLatLon, details, params)
+					} else {
+						osmandAidlHelper.addMapPoint(MAP_LAYER_ID, pointId, name, name, chatTitle, Color.WHITE, aLatLon, details, params)
+					}
+					points[pointId] = message
 				}
-			} else if (chatTitle != null && content is MessageOsmAndBotLocation && content.isValid()) {
-				val name = content.name
-				setupMapLayer()
-				if (update) {
-					osmandAidlHelper.updateMapPoint(MAP_LAYER_ID, "${chatId}_$name", name, name,
-						chatTitle, Color.WHITE, ALatLon(content.lat, content.lon), null, generatePointParams(null, stale))
-				} else {
-					osmandAidlHelper.addMapPoint(MAP_LAYER_ID, "${chatId}_$name", name, name,
-						chatTitle, Color.WHITE, ALatLon(content.lat, content.lon), null, generatePointParams(null, stale))
+				if (markers.containsKey(pointId)) {
+					updateDirectionMarker(pointId)
 				}
 			}
 		}
 	}
 
+	private fun getALatLonFromMessage(content: TdApi.MessageContent): ALatLon? {
+		return when (content) {
+			is TdApi.MessageLocation -> ALatLon(content.location.latitude, content.location.longitude)
+			is OsmandLocationUtils.MessageLocation -> ALatLon(content.lat, content.lon)
+			else -> null
+		}
+	}
+
+	private fun getNameFromMessage(message: TdApi.Message): String {
+		var name = ""
+		val content = message.content
+		val senderId = OsmandLocationUtils.getSenderMessageId(message)
+		if ((content is TdApi.MessageLocation || (content is MessageUserLocation && content.isValid()))) {
+			val user = telegramHelper.getUser(senderId)
+			if (user != null) {
+				name = "${user.firstName} ${user.lastName}".trim()
+				if (name.isEmpty()) {
+					name = user.username
+				}
+				if (name.isEmpty()) {
+					name = user.phoneNumber
+				}
+			}
+			if (name.isEmpty()) {
+				name = senderId.toString()
+			}
+		} else if (content is MessageOsmAndBotLocation && content.isValid()) {
+			name = content.deviceName
+		}
+
+		return name
+	}
+
 	fun showChatMessages(chatId: Long) {
-		execOsmandApi {
+		osmandAidlHelper.execOsmandApi {
 			val messages = telegramHelper.getChatMessages(chatId)
 			for (message in messages) {
 				addOrUpdateLocationOnMap(message)
@@ -145,9 +220,9 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 	}
 
 	fun hideMessages(messages: List<TdApi.Message>) {
-		execOsmandApi {
+		osmandAidlHelper.execOsmandApi {
 			for (message in messages) {
-				val user = telegramHelper.getUser(message.senderUserId)
+				val user = telegramHelper.getUser(OsmandLocationUtils.getSenderMessageId(message))
 				if (user != null) {
 					removeMapPoint(message.chatId, message)
 				}
@@ -155,14 +230,23 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		}
 	}
 
+	fun addDirectionContextMenuButton() {
+		osmandAidlHelper.addContextMenuButtons(app.packageName, MAP_CONTEXT_MENU_BUTTONS_PARAMS_ID, app.getString(R.string.direction), "", DIRECTION_ICON_ID, "", true, true, MAP_CONTEXT_MENU_BUTTON_ID)
+	}
+
+	fun removeDirectionContextMenuButton() {
+		osmandAidlHelper.removeContextMenuButtons(MAP_CONTEXT_MENU_BUTTONS_PARAMS_ID)
+	}
+
 	fun startShowingLocation() {
 		if (!showingLocation && !forcedStop) {
-			showingLocation = if (isUseOsmandCallback()) {
+			showingLocation = if (isUseOsmandCallback() && !app.settings.monitoringEnabled) {
 				osmandAidlHelper.registerForUpdates()
 			} else {
 				app.startUserLocationService()
 				true
 			}
+			addDirectionContextMenuButton()
 		}
 	}
 
@@ -170,10 +254,36 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		forcedStop = force
 		if (showingLocation) {
 			showingLocation = false
-			if (isUseOsmandCallback()) {
+			if (isUseOsmandCallback() && app.osmandAidlHelper.updatesCallbackRegistered()) {
 				osmandAidlHelper.unregisterFromUpdates()
-			} else {
+			} else if (!app.settings.monitoringEnabled) {
 				app.stopUserLocationService()
+			}
+			removeDirectionContextMenuButton()
+		}
+	}
+
+	fun changeUpdatesType() {
+		if (!forcedStop) {
+			if (app.settings.monitoringEnabled) {
+				if (app.osmandAidlHelper.updatesCallbackRegistered()) {
+					osmandAidlHelper.unregisterFromUpdates()
+				}
+				app.startUserLocationService()
+				showingLocation = true
+			} else {
+				showingLocation = if (isUseOsmandCallback()) {
+					app.stopUserLocationService()
+					osmandAidlHelper.registerForUpdates()
+				} else {
+					if (app.settings.hasAnyChatToShowOnMap()) {
+						app.startUserLocationService()
+						true
+					} else {
+						app.stopUserLocationService()
+						false
+					}
+				}
 			}
 		}
 	}
@@ -227,17 +337,37 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		}
 	}
 
-	private fun generatePointParams(photoPath: String?, stale: Boolean): Map<String, String> {
+	private fun generatePointDetails(bearing: Float?, altitude: Float?, precision: Float?): List<String> {
+		val details = mutableListOf<String>()
+		if (bearing != null && bearing != 0.0f) {
+			details.add(String.format(Locale.US, "${OsmandLocationUtils.BEARING_PREFIX}%.1f \n", bearing))
+		}
+		if (altitude != null && altitude != 0.0f) {
+			details.add(String.format(Locale.US, "${OsmandLocationUtils.ALTITUDE_PREFIX}%.1f m\n", altitude))
+		}
+		if (precision != null && precision != 0.0f) {
+			details.add(String.format(Locale.US, "${OsmandLocationUtils.HDOP_PREFIX}%d m\n", precision.toInt()))
+		}
+
+		return details
+	}
+
+	private fun generatePointParams(photoPath: String?, stale: Boolean, speed: Float?): Map<String, String> {
 		val photoUri = generatePhotoUri(photoPath, stale)
 		app.grantUriPermission(
 			app.settings.appToConnectPackage,
 			photoUri,
 			Intent.FLAG_GRANT_READ_URI_PERMISSION
 		)
-		return mapOf(
+		val params = mutableMapOf(
 			AMapPoint.POINT_IMAGE_URI_PARAM to photoUri.toString(),
 			AMapPoint.POINT_STALE_LOC_PARAM to stale.toString()
 		)
+		if (speed != 0.0f) {
+			params[AMapPoint.POINT_SPEED_PARAM] = speed.toString()
+		}
+
+		return params
 	}
 
 	private fun generatePhotoUri(photoPath: String?, stale: Boolean) =
@@ -250,19 +380,10 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 
 	private fun removeMapPoint(chatId: Long, message: TdApi.Message) {
 		val content = message.content
-		if (content is TdApi.MessageLocation || content is MessageUserTextLocation) {
-			osmandAidlHelper.removeMapPoint(MAP_LAYER_ID, "${chatId}_${message.senderUserId}")
+		if (content is TdApi.MessageLocation || content is MessageUserLocation) {
+			osmandAidlHelper.removeMapPoint(MAP_LAYER_ID, "${chatId}_${OsmandLocationUtils.getSenderMessageId(message)}")
 		} else if (content is MessageOsmAndBotLocation) {
-			osmandAidlHelper.removeMapPoint(MAP_LAYER_ID, "${chatId}_${content.name}")
-		}
-	}
-
-	private fun execOsmandApi(action: (() -> Unit)) {
-		if (!osmandAidlHelper.isOsmandConnected() && osmandAidlHelper.isOsmandBound()) {
-			osmandAidlHelper.connectOsmand()
-		}
-		if (osmandAidlHelper.isOsmandConnected()) {
-			action.invoke()
+			osmandAidlHelper.removeMapPoint(MAP_LAYER_ID, "${chatId}_${content.deviceName}")
 		}
 	}
 }

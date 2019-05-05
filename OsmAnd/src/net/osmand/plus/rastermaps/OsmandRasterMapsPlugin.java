@@ -46,14 +46,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static net.osmand.plus.OsmAndCustomizationConstants.POINT_DOWNLOAD_MAP;
+import static net.osmand.plus.OsmAndCustomizationConstants.MAP_CONTEXT_MENU_DOWNLOAD_MAP;
 import static net.osmand.plus.OsmAndCustomizationConstants.OVERLAY_MAP;
 import static net.osmand.plus.OsmAndCustomizationConstants.UNDERLAY_MAP;
-import static net.osmand.plus.OsmAndCustomizationConstants.POINT_UPDATE_MAP;
+import static net.osmand.plus.OsmAndCustomizationConstants.MAP_CONTEXT_MENU_UPDATE_MAP;
 
 public class OsmandRasterMapsPlugin extends OsmandPlugin {
 	public static final String ID = "osmand.rastermaps";
-
 	// Constants for determining the order of items in the additional actions context menu
 	private static final int UPDATE_MAP_ITEM_ORDER = 12300;
 	private static final int DOWNLOAD_MAP_ITEM_ORDER = 12600;
@@ -144,6 +143,13 @@ public class OsmandRasterMapsPlugin extends OsmandPlugin {
 		} else {
 			mapView.removeLayer(underlayLayer);
 			underlayLayer.setMap(null);
+		}
+		if(settings.LAYER_TRANSPARENCY_SEEKBAR_MODE.get() == LayerTransparencySeekbarMode.UNDERLAY &&
+				underlayLayer.getMap() != null) {
+			layers.getMapControlsLayer().showTransparencyBar(settings.MAP_TRANSPARENCY, true);
+		} else if(settings.LAYER_TRANSPARENCY_SEEKBAR_MODE.get() == LayerTransparencySeekbarMode.OVERLAY &&
+				overlayLayer.getMap() != null) {
+			layers.getMapControlsLayer().showTransparencyBar(settings.MAP_OVERLAY_TRANSPARENCY, true);
 		}
 		layers.updateMapSource(mapView, settingsToWarnAboutMap);
 	}
@@ -380,13 +386,13 @@ public class OsmandRasterMapsPlugin extends OsmandPlugin {
 			};
 			adapter.addItem(new ContextMenuItem.ItemBuilder()
 					.setTitleId(R.string.context_menu_item_update_map, mapActivity)
-					.setId(POINT_UPDATE_MAP)
+					.setId(MAP_CONTEXT_MENU_UPDATE_MAP)
 					.setIcon(R.drawable.ic_action_refresh_dark)
 					.setOrder(UPDATE_MAP_ITEM_ORDER)
 					.setListener(listener).createItem());
 			adapter.addItem(new ContextMenuItem.ItemBuilder()
 					.setTitleId(R.string.shared_string_download_map, mapActivity)
-					.setId(POINT_DOWNLOAD_MAP)
+					.setId(MAP_CONTEXT_MENU_DOWNLOAD_MAP)
 					.setIcon(R.drawable.ic_action_import)
 					.setOrder(DOWNLOAD_MAP_ITEM_ORDER)
 					.setListener(listener).createItem());
@@ -569,45 +575,38 @@ public class OsmandRasterMapsPlugin extends OsmandPlugin {
 		CommonPreference<String> mapTypePreference;
 		CommonPreference<String> exMapTypePreference;
 		OsmandSettings.CommonPreference<Integer> mapTransparencyPreference;
-		ITileSource map;
+
+		//boolean isMapSelected;
+		MapTileLayer layer;
 		if (type == RasterMapType.OVERLAY) {
-			mapTransparencyPreference = settings.MAP_OVERLAY_TRANSPARENCY;
 			mapTypePreference = settings.MAP_OVERLAY;
 			exMapTypePreference = settings.MAP_OVERLAY_PREVIOUS;
-			map = overlayLayer.getMap();
+			layer = overlayLayer;
 		} else {
 			// Underlay expected
-			mapTransparencyPreference = settings.MAP_TRANSPARENCY;
 			mapTypePreference = settings.MAP_UNDERLAY;
 			exMapTypePreference = settings.MAP_UNDERLAY_PREVIOUS;
-			map = underlayLayer.getMap();
+			layer = underlayLayer;
 		}
-
-		boolean isChecked = map == null;
-		boolean showSeekbar = isChecked && RasterMapMenu.isSeekbarVisible(app, type);
-		boolean hideSeekbar = !isChecked && RasterMapMenu.isSeekbarVisible(app, type);
 		MapActivityLayers mapLayers = mapActivity.getMapLayers();
-		CommonPreference<LayerTransparencySeekbarMode> seekbarModePref = settings.LAYER_TRANSPARENCY_SEEKBAR_MODE;
-		if (showSeekbar) {
-			mapLayers.getMapControlsLayer().showTransparencyBar(mapTransparencyPreference);
-			mapLayers.getMapControlsLayer().setTransparencyBarEnabled(true);
-			if (seekbarModePref.get() == LayerTransparencySeekbarMode.UNDEFINED) {
-				final OsmandSettings.LayerTransparencySeekbarMode currentMapTypeSeekbarMode =
-						type == OsmandRasterMapsPlugin.RasterMapType.OVERLAY ? OsmandSettings.LayerTransparencySeekbarMode.OVERLAY : OsmandSettings.LayerTransparencySeekbarMode.UNDERLAY;
-				seekbarModePref.set(currentMapTypeSeekbarMode);
-			}
-		} else if (hideSeekbar) {
-			mapLayers.getMapControlsLayer().hideTransparencyBar(mapTransparencyPreference);
-			mapLayers.getMapControlsLayer().setTransparencyBarEnabled(false);
-		}
-
+		ITileSource map = layer.getMap();
+		final OsmandSettings.LayerTransparencySeekbarMode currentMapTypeSeekbarMode = type ==
+			OsmandRasterMapsPlugin.RasterMapType.OVERLAY
+			? OsmandSettings.LayerTransparencySeekbarMode.OVERLAY
+			: OsmandSettings.LayerTransparencySeekbarMode.UNDERLAY;
 		if (map != null) {
 			mapTypePreference.set(null);
 			if (callback != null) {
 				callback.onMapSelected(false);
 			}
 			updateMapLayers(mapView, null, mapLayers);
+			// hide seekbar
+			if(currentMapTypeSeekbarMode == settings.LAYER_TRANSPARENCY_SEEKBAR_MODE.get()) {
+				settings.LAYER_TRANSPARENCY_SEEKBAR_MODE.set(LayerTransparencySeekbarMode.UNDEFINED);
+				mapLayers.getMapControlsLayer().hideTransparencyBar();
+			}
 		} else {
+			settings.LAYER_TRANSPARENCY_SEEKBAR_MODE.set(currentMapTypeSeekbarMode);
 			selectMapOverlayLayer(mapView, mapTypePreference, exMapTypePreference, false, mapActivity, callback);
 		}
 	}

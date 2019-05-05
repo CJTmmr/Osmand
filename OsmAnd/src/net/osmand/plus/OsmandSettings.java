@@ -840,12 +840,29 @@ public class OsmandSettings {
 	// this value string is synchronized with settings_pref.xml preference name
 	public final CommonPreference<Boolean> USE_INTERNET_TO_DOWNLOAD_TILES = new BooleanPreference("use_internet_to_download_tiles", true).makeGlobal().cache();
 
-	public final OsmandPreference<String> AVAILABLE_APP_MODES = new StringPreference("available_application_modes", "car,bicycle,pedestrian,").makeGlobal().cache();
+	public final OsmandPreference<String> AVAILABLE_APP_MODES = new StringPreference("available_application_modes", "car,bicycle,pedestrian,public_transport,").makeGlobal().cache();
 
 	public final OsmandPreference<String> LAST_FAV_CATEGORY_ENTERED = new StringPreference("last_fav_category", "").makeGlobal();
 
 
 	public final OsmandPreference<ApplicationMode> DEFAULT_APPLICATION_MODE = new CommonPreference<ApplicationMode>("default_application_mode_string", ApplicationMode.DEFAULT) {
+		{
+			makeGlobal();
+		}
+
+		@Override
+		protected ApplicationMode getValue(Object prefs, ApplicationMode defaultValue) {
+			String key = settingsAPI.getString(prefs, getId(), defaultValue.getStringKey());
+			return ApplicationMode.valueOfStringKey(key, defaultValue);
+		}
+
+		@Override
+		protected boolean setValue(Object prefs, ApplicationMode val) {
+			return settingsAPI.edit(prefs).putString(getId(), val.getStringKey()).commit();
+		}
+	};
+
+	public final OsmandPreference<ApplicationMode> LAST_ROUTE_APPLICATION_MODE = new CommonPreference<ApplicationMode>("last_route_application_mode_backup_string", ApplicationMode.DEFAULT) {
 		{
 			makeGlobal();
 		}
@@ -912,6 +929,17 @@ public class OsmandSettings {
 
 		;
 	}.makeGlobal();
+
+	//public final OsmandPreference<Integer> COORDINATES_FORMAT = new IntPreference("coordinates_format", PointDescription.FORMAT_DEGREES).makeGlobal();
+
+	public final OsmandPreference<AngularConstants> ANGULAR_UNITS = new EnumIntPreference<AngularConstants>(
+		"angular_measurement", AngularConstants.DEGREES, AngularConstants.values()) {
+		@Override
+		protected AngularConstants getValue(Object prefs, AngularConstants defaultValue) {
+			return super.getValue(prefs, defaultValue);
+		}
+	}.makeGlobal();
+
 
 
 	public final OsmandPreference<SpeedConstants> SPEED_SYSTEM = new EnumIntPreference<SpeedConstants>(
@@ -1329,16 +1357,6 @@ public class OsmandSettings {
 		KEEP_INFORMING.setModeDefaultValue(ApplicationMode.CAR, 0);
 		KEEP_INFORMING.setModeDefaultValue(ApplicationMode.BICYCLE, 0);
 		KEEP_INFORMING.setModeDefaultValue(ApplicationMode.PEDESTRIAN, 0);
-	}
-
-	// screen power save
-	public final CommonPreference<Integer> WAKE_ON_VOICE_INT = new IntPreference("wake_on_voice_int", 0).makeProfile();
-
-	{
-		// 0 means never
-		WAKE_ON_VOICE_INT.setModeDefaultValue(ApplicationMode.CAR, 0);
-		WAKE_ON_VOICE_INT.setModeDefaultValue(ApplicationMode.BICYCLE, 0);
-		WAKE_ON_VOICE_INT.setModeDefaultValue(ApplicationMode.PEDESTRIAN, 0);
 	}
 
 	// this value string is synchronized with settings_pref.xml preference name
@@ -1894,6 +1912,16 @@ public class OsmandSettings {
 	public final static String START_POINT_DESCRIPTION_BACKUP = "start_point_description_backup"; //$NON-NLS-1$
 	public final static String INTERMEDIATE_POINTS_BACKUP = "intermediate_points_backup"; //$NON-NLS-1$
 	public final static String INTERMEDIATE_POINTS_DESCRIPTION_BACKUP = "intermediate_points_description_backup"; //$NON-NLS-1$
+	public final static String MY_LOC_POINT_LAT = "my_loc_point_lat";
+	public final static String MY_LOC_POINT_LON = "my_loc_point_lon";
+	public final static String MY_LOC_POINT_DESCRIPTION = "my_loc_point_description";
+
+	public final static String HOME_POINT_LAT = "home_point_lat";
+	public final static String HOME_POINT_LON = "home_point_lon";
+	public final static String HOME_POINT_DESCRIPTION = "home_point_description";
+	public final static String WORK_POINT_LAT = "work_point_lat";
+	public final static String WORK_POINT_LON = "work_point_lon";
+	public final static String WORK_POINT_DESCRIPTION = "work_point_description";
 
 	private static final String IMPASSABLE_ROAD_POINTS = "impassable_road_points";
 	private static final String IMPASSABLE_ROADS_DESCRIPTIONS = "impassable_roads_descriptions";
@@ -1962,7 +1990,6 @@ public class OsmandSettings {
 		return new LatLon(lat, lon);
 	}
 
-
 	public LatLon getPointToStart() {
 		float lat = settingsAPI.getFloat(globalPreferences, START_POINT_LAT, 0);
 		float lon = settingsAPI.getFloat(globalPreferences, START_POINT_LON, 0);
@@ -1973,15 +2000,104 @@ public class OsmandSettings {
 	}
 
 	public PointDescription getStartPointDescription() {
-		return
-				PointDescription.deserializeFromString(settingsAPI.getString(globalPreferences, START_POINT_DESCRIPTION, ""), getPointToStart());
+		return PointDescription.deserializeFromString(
+				settingsAPI.getString(globalPreferences, START_POINT_DESCRIPTION, ""), getPointToStart());
 	}
 
 	public PointDescription getPointNavigateDescription() {
-		return
-				PointDescription.deserializeFromString(settingsAPI.getString(globalPreferences, POINT_NAVIGATE_DESCRIPTION, ""), getPointToNavigate());
+		return PointDescription.deserializeFromString(
+				settingsAPI.getString(globalPreferences, POINT_NAVIGATE_DESCRIPTION, ""), getPointToNavigate());
 	}
 
+	public LatLon getPointToNavigateBackup() {
+		float lat = settingsAPI.getFloat(globalPreferences, POINT_NAVIGATE_LAT_BACKUP, 0);
+		float lon = settingsAPI.getFloat(globalPreferences, POINT_NAVIGATE_LON_BACKUP, 0);
+		if (lat == 0 && lon == 0) {
+			return null;
+		}
+		return new LatLon(lat, lon);
+	}
+
+	public LatLon getPointToStartBackup() {
+		float lat = settingsAPI.getFloat(globalPreferences, START_POINT_LAT_BACKUP, 0);
+		float lon = settingsAPI.getFloat(globalPreferences, START_POINT_LON_BACKUP, 0);
+		if (lat == 0 && lon == 0) {
+			return null;
+		}
+		return new LatLon(lat, lon);
+	}
+
+	public PointDescription getStartPointDescriptionBackup() {
+		return PointDescription.deserializeFromString(
+				settingsAPI.getString(globalPreferences, START_POINT_DESCRIPTION_BACKUP, ""), getPointToStart());
+	}
+
+	public PointDescription getPointNavigateDescriptionBackup() {
+		return PointDescription.deserializeFromString(
+				settingsAPI.getString(globalPreferences, POINT_NAVIGATE_DESCRIPTION_BACKUP, ""), getPointToNavigate());
+	}
+
+	public LatLon getHomePoint() {
+		float lat = settingsAPI.getFloat(globalPreferences, HOME_POINT_LAT, 0);
+		float lon = settingsAPI.getFloat(globalPreferences, HOME_POINT_LON, 0);
+		if (lat == 0 && lon == 0) {
+			return null;
+		}
+		return new LatLon(lat, lon);
+	}
+
+	public PointDescription getHomePointDescription() {
+		return PointDescription.deserializeFromString(
+				settingsAPI.getString(globalPreferences, HOME_POINT_DESCRIPTION, ""), getHomePoint());
+	}
+
+	public LatLon getWorkPoint() {
+		float lat = settingsAPI.getFloat(globalPreferences, WORK_POINT_LAT, 0);
+		float lon = settingsAPI.getFloat(globalPreferences, WORK_POINT_LON, 0);
+		if (lat == 0 && lon == 0) {
+			return null;
+		}
+		return new LatLon(lat, lon);
+	}
+
+	public PointDescription getWorkPointDescription() {
+		return PointDescription.deserializeFromString(
+				settingsAPI.getString(globalPreferences, WORK_POINT_DESCRIPTION, ""), getWorkPoint());
+	}
+
+	public void setHomePoint(double latitude, double longitude, PointDescription p) {
+		settingsAPI.edit(globalPreferences).putFloat(HOME_POINT_LAT, (float) latitude).putFloat(HOME_POINT_LON, (float) longitude).commit();
+		settingsAPI.edit(globalPreferences).putString(HOME_POINT_DESCRIPTION, PointDescription.serializeToString(p)).commit();
+	}
+
+	public void setWorkPoint(double latitude, double longitude, PointDescription p) {
+		settingsAPI.edit(globalPreferences).putFloat(WORK_POINT_LAT, (float) latitude).putFloat(WORK_POINT_LON, (float) longitude).commit();
+		settingsAPI.edit(globalPreferences).putString(WORK_POINT_DESCRIPTION, PointDescription.serializeToString(p)).commit();
+	}
+
+	public LatLon getMyLocationToStart() {
+		float lat = settingsAPI.getFloat(globalPreferences, MY_LOC_POINT_LAT, 0);
+		float lon = settingsAPI.getFloat(globalPreferences, MY_LOC_POINT_LON, 0);
+		if (lat == 0 && lon == 0) {
+			return null;
+		}
+		return new LatLon(lat, lon);
+	}
+
+	public PointDescription getMyLocationToStartDescription() {
+		return PointDescription.deserializeFromString(
+				settingsAPI.getString(globalPreferences, MY_LOC_POINT_DESCRIPTION, ""), getMyLocationToStart());
+	}
+
+	public void setMyLocationToStart(double latitude, double longitude, PointDescription p) {
+		settingsAPI.edit(globalPreferences).putFloat(MY_LOC_POINT_LAT, (float) latitude).putFloat(MY_LOC_POINT_LON, (float) longitude).commit();
+		settingsAPI.edit(globalPreferences).putString(MY_LOC_POINT_DESCRIPTION, PointDescription.serializeToString(p)).commit();
+	}
+
+	public void clearMyLocationToStart() {
+		settingsAPI.edit(globalPreferences).remove(MY_LOC_POINT_LAT).remove(MY_LOC_POINT_LON).
+				remove(MY_LOC_POINT_DESCRIPTION).commit();
+	}
 
 	public int isRouteToPointNavigateAndClear() {
 		int vl = settingsAPI.getInt(globalPreferences, POINT_NAVIGATE_ROUTE, 0);
@@ -2503,7 +2619,9 @@ public class OsmandSettings {
 	}
 
 	public final OsmandPreference<Boolean> USE_OSM_LIVE_FOR_ROUTING = new BooleanPreference("enable_osmc_routing", true).makeGlobal();
-	
+
+	public final OsmandPreference<Boolean> USE_OSM_LIVE_FOR_PUBLIC_TRANSPORT = new BooleanPreference("enable_osmc_public_transport", true).makeGlobal();
+
 	public final OsmandPreference<Boolean> VOICE_MUTE = new BooleanPreference("voice_mute", false).makeGlobal();
 
 	// for background service
@@ -2789,6 +2907,27 @@ public class OsmandSettings {
 
 		public String toTTSString() {
 			return ttsString;
+		}
+
+	}
+
+	public enum AngularConstants {
+		DEGREES(R.string.shared_string_degrees, "°"),
+		MILLIRADS(R.string.shared_string_milliradians, "mil");
+
+		private final int key;
+		private final String unit;
+		
+		AngularConstants(int key, String unit) {
+			this.key = key;
+			this.unit = unit;
+		}
+
+		public String toHumanString(Context ctx) {
+			return ctx.getString(key);
+		}
+		public String getUnitSymbol() {
+			return unit;
 		}
 
 	}

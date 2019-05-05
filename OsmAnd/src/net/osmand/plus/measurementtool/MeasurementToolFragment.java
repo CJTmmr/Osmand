@@ -14,6 +14,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.TextViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,6 +22,7 @@ import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,16 +40,17 @@ import net.osmand.CallbackWithObject;
 import net.osmand.IndexConstants;
 import net.osmand.data.LatLon;
 import net.osmand.plus.ApplicationMode;
-import net.osmand.plus.GPXUtilities;
-import net.osmand.plus.GPXUtilities.GPXFile;
-import net.osmand.plus.GPXUtilities.Route;
-import net.osmand.plus.GPXUtilities.Track;
-import net.osmand.plus.GPXUtilities.TrkSegment;
-import net.osmand.plus.GPXUtilities.WptPt;
+import net.osmand.GPXUtilities;
+import net.osmand.GPXUtilities.GPXFile;
+import net.osmand.GPXUtilities.Route;
+import net.osmand.GPXUtilities.Track;
+import net.osmand.GPXUtilities.TrkSegment;
+import net.osmand.GPXUtilities.WptPt;
 import net.osmand.plus.GpxSelectionHelper.SelectedGpxFile;
 import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.OsmandSettings;
 import net.osmand.plus.R;
+import net.osmand.plus.Version;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.activities.TrackActivity;
 import net.osmand.plus.base.BaseOsmAndFragment;
@@ -359,9 +362,13 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 
 		measurementLayer.setOnMeasureDistanceToCenterListener(new MeasurementToolLayer.OnMeasureDistanceToCenter() {
 			@Override
-			public void onMeasure(float distance) {
+			public void onMeasure(float distance, float bearing) {
 				String distStr = OsmAndFormatter.getFormattedDistance(distance, mapActivity.getMyApplication());
-				distanceToCenterTv.setText(" – " + distStr);
+				String azimuthStr = OsmAndFormatter.getFormattedAzimuth(bearing, getMyApplication());
+				distanceToCenterTv.setText(String.format(" – %1$s • %2$s", distStr, azimuthStr));
+				TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+					distanceToCenterTv, 12, 18, 2, TypedValue.COMPLEX_UNIT_SP
+				);
 			}
 		});
 
@@ -413,7 +420,18 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 			@Override
 			public void onClick(View v) {
 				if (editingCtx.getPointsCount() > 0) {
-					addToGpx(mapActivity);
+					if (newGpxData != null && newGpxData.getActionType() == NewGpxData.ActionType.EDIT_SEGMENT
+						&& editingCtx.isInSnapToRoadMode()) {
+						if (mapActivity != null && measurementLayer != null) {
+							if (editingCtx.getPointsCount() > 0) {
+								openSaveAsNewTrackMenu(mapActivity);
+							} else {
+								Toast.makeText(mapActivity, getString(R.string.none_point_error), Toast.LENGTH_SHORT).show();
+							}
+						}
+					} else {
+						addToGpx(mapActivity);
+					}
 				} else {
 					Toast.makeText(mapActivity, getString(R.string.none_point_error), Toast.LENGTH_SHORT).show();
 				}
@@ -587,6 +605,17 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 				if (mapActivity != null && measurementLayer != null) {
 					if (editingCtx.getPointsCount() > 0) {
 						showAddToTrackDialog(mapActivity);
+					} else {
+						Toast.makeText(mapActivity, getString(R.string.none_point_error), Toast.LENGTH_SHORT).show();
+					}
+				}
+			}
+
+			@Override
+			public void overwriteOldTrackOnClick() {
+				if (mapActivity != null && measurementLayer != null) {
+					if (editingCtx.getPointsCount() > 0) {
+						overwriteGpx(mapActivity);
 					} else {
 						Toast.makeText(mapActivity, getString(R.string.none_point_error), Toast.LENGTH_SHORT).show();
 					}
@@ -1115,6 +1144,14 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 		saveExistingGpx(gpx, showOnMap, actionType, true);
 	}
 
+	private void overwriteGpx(MapActivity mapActivity) {
+		GPXFile gpx = editingCtx.getNewGpxData().getGpxFile();
+		SelectedGpxFile selectedGpxFile = mapActivity.getMyApplication().getSelectedGpxHelper().getSelectedFileByPath(gpx.path);
+		boolean showOnMap = selectedGpxFile != null;
+		ActionType actionType = ActionType.OVERWRITE_SEGMENT;
+		saveExistingGpx(gpx, showOnMap, actionType, true);
+	}
+
 	private void saveAsGpx(final SaveType saveType) {
 		MapActivity mapActivity = getMapActivity();
 		if (mapActivity != null) {
@@ -1209,7 +1246,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 	                     final SaveType saveType,
 	                     final boolean close) {
 
-		new AsyncTask<Void, Void, String>() {
+		new AsyncTask<Void, Void, Exception>() {
 
 			private ProgressDialog progressDialog;
 			private File toSave;
@@ -1226,7 +1263,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 			}
 
 			@Override
-			protected String doInBackground(Void... voids) {
+			protected Exception doInBackground(Void... voids) {
 				MeasurementToolLayer measurementLayer = getMeasurementLayer();
 				MapActivity activity = getMapActivity();
 				List<WptPt> points = editingCtx.getPoints();
@@ -1235,7 +1272,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 				if (gpx == null) {
 					toSave = new File(dir, fileName);
 					String trackName = fileName.substring(0,fileName.length()-GPX_SUFFIX.length());
-					GPXFile gpx = new GPXFile();
+					GPXFile gpx = new GPXFile(Version.getFullVersion(activity.getMyApplication()));
 					if (measurementLayer != null) {
 						if (saveType == SaveType.LINE) {
 							TrkSegment segment = new TrkSegment();
@@ -1266,7 +1303,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 						}
 					}
 					if (activity != null) {
-						String res = GPXUtilities.writeGpxFile(toSave, gpx, activity.getMyApplication());
+						Exception res = GPXUtilities.writeGpxFile(toSave, gpx);
 						gpx.path = toSave.getAbsolutePath();
 						if (showOnMap) {
 							activity.getMyApplication().getSelectedGpxHelper().selectGpxFile(gpx, true, false);
@@ -1296,13 +1333,21 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 									segment.points.addAll(points);
 									gpx.replaceSegment(editingCtx.getNewGpxData().getTrkSegment(), segment);
 									break;
+								case OVERWRITE_SEGMENT:
+									List<WptPt> snappedPoints = new ArrayList<>();
+									snappedPoints.addAll(before.points);
+									snappedPoints.addAll(after.points);
+									TrkSegment segment1 = new TrkSegment();
+									segment1.points.addAll(snappedPoints);
+									gpx.replaceSegment(editingCtx.getNewGpxData().getTrkSegment(), segment1);
+									break;
 							}
 						} else {
 							gpx.addRoutePoints(points);
 						}
 					}
 					if (activity != null) {
-						String res = GPXUtilities.writeGpxFile(toSave, gpx, activity.getMyApplication());
+						Exception res = GPXUtilities.writeGpxFile(toSave, gpx);
 						if (showOnMap) {
 							SelectedGpxFile sf = activity.getMyApplication().getSelectedGpxHelper().selectGpxFile(gpx, true, false);
 							if (sf != null) {
@@ -1318,7 +1363,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 			}
 
 			@Override
-			protected void onPostExecute(String warning) {
+			protected void onPostExecute(Exception warning) {
 				MapActivity activity = getMapActivity();
 				if (progressDialog != null && progressDialog.isShowing()) {
 					progressDialog.dismiss();
@@ -1338,7 +1383,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 							}
 						}
 					} else {
-						Toast.makeText(activity, warning, Toast.LENGTH_LONG).show();
+						Toast.makeText(activity, warning.getMessage(), Toast.LENGTH_LONG).show();
 					}
 				}
 			}

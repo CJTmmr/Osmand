@@ -23,7 +23,9 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.io.File;
 import net.osmand.AndroidUtils;
+import net.osmand.GPXUtilities;
 import net.osmand.PlatformUtil;
 import net.osmand.core.android.MapRendererContext;
 import net.osmand.plus.ContextMenuAdapter;
@@ -154,9 +156,19 @@ public class ConfigureMapMenu {
 		private List<String> getAlreadySelectedGpx() {
 			GpxSelectionHelper selectedGpxHelper = ma.getMyApplication().getSelectedGpxHelper();
 			List<GpxSelectionHelper.SelectedGpxFile> selectedGpxFiles = selectedGpxHelper.getSelectedGPXFiles();
+
 			List<String> files = new ArrayList<>();
 			for (GpxSelectionHelper.SelectedGpxFile file : selectedGpxFiles) {
 				files.add(file.getGpxFile().path);
+			}
+			Map<GPXUtilities.GPXFile, Long> fls = selectedGpxHelper.getSelectedGpxFilesBackUp();
+			for(Map.Entry<GPXUtilities.GPXFile, Long> f : fls.entrySet()) {
+				if(!Algorithms.isEmpty(f.getKey().path)) {
+					File file = new File(f.getKey().path);
+					if(file.exists() && !file.isDirectory()) {
+						files.add(f.getKey().path);
+					}
+				}
 			}
 			return files;
 		}
@@ -236,7 +248,7 @@ public class ConfigureMapMenu {
 				public void onDismiss(DialogInterface dialog) {
 					OsmandApplication app = ma.getMyApplication();
 					boolean selected = app.getSelectedGpxHelper().isShowingAnyGpxFiles();
-					item.setSelected(app.getSelectedGpxHelper().isShowingAnyGpxFiles());
+					item.setSelected(selected);
 					item.setDescription(app.getSelectedGpxHelper().getGpxDescription());
 					item.setColorRes(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
 					adapter.notifyDataSetChanged();
@@ -1399,7 +1411,10 @@ public class ConfigureMapMenu {
 
 		public static int parseTrackColor(RenderingRulesStorage renderer, String colorName) {
 			int defaultColor = -1;
-			RenderingRule gpxRule = renderer.getRenderingAttributeRule("gpx");
+			RenderingRule gpxRule = null;
+			if(renderer!=null) {
+				gpxRule = renderer.getRenderingAttributeRule("gpx");
+			}
 			if (gpxRule != null && gpxRule.getIfElseChildren().size() > 0) {
 				List<RenderingRule> rules = renderer.getRenderingAttributeRule("gpx").getIfElseChildren().get(0).getIfElseChildren();
 				for (RenderingRule r : rules) {

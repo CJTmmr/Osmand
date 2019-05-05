@@ -14,6 +14,7 @@ import com.google.gson.reflect.TypeToken;
 
 import net.osmand.plus.OsmandPlugin;
 import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.OsmandSettings.LayerTransparencySeekbarMode;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.quickaction.QuickAction;
@@ -26,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 public class MapUnderlayAction extends SwitchableAction<Pair<String, String>> {
-
 	public static final int TYPE = 16;
 
 	private final static String KEY_UNDERLAYS = "underlays";
@@ -82,24 +82,31 @@ public class MapUnderlayAction extends SwitchableAction<Pair<String, String>> {
 
 			OsmandSettings settings = activity.getMyApplication().getSettings();
 			List<Pair<String, String>> sources = loadListFromParams();
+			if (sources.size() > 0) {
+				boolean showBottomSheetStyles = Boolean.valueOf(getParams().get(KEY_DIALOG));
+				if (showBottomSheetStyles) {
+					showChooseDialog(activity.getSupportFragmentManager());
+					return;
+				}
 
-			boolean showBottomSheetStyles = Boolean.valueOf(getParams().get(KEY_DIALOG));
-			if (showBottomSheetStyles) {
-				showChooseDialog(activity.getSupportFragmentManager());
-				return;
+				int index = -1;
+				final String currentSource = settings.MAP_UNDERLAY.get() == null ? KEY_NO_UNDERLAY
+					: settings.MAP_UNDERLAY.get();
+
+				for (int idx = 0; idx < sources.size(); idx++) {
+					if (sources.get(idx).first.equals(currentSource)) {
+						index = idx;
+						break;
+					}
+				}
+
+				Pair<String, String> nextSource = sources.get(0);
+
+				if (index >= 0 && index + 1 < sources.size()) {
+					nextSource = sources.get(index + 1);
+				}
+				executeWithParams(activity, nextSource.first);
 			}
-			
-			Pair<String, String> currentSource = new Pair<>(
-					settings.MAP_UNDERLAY.get(),
-					settings.MAP_UNDERLAY.get());
-
-			Pair<String, String> nextSource = sources.get(0);
-			int index = sources.indexOf(currentSource);
-
-			if (index >= 0 && index + 1 < sources.size()) {
-				nextSource = sources.get(index + 1);
-			}
-			executeWithParams(activity, nextSource.first);
 		}
 	}
 
@@ -112,9 +119,15 @@ public class MapUnderlayAction extends SwitchableAction<Pair<String, String>> {
 			if (hasUnderlay) {
 				settings.MAP_UNDERLAY.set(params);
 				settings.MAP_UNDERLAY_PREVIOUS.set(params);
+				if (settings.LAYER_TRANSPARENCY_SEEKBAR_MODE.get() == LayerTransparencySeekbarMode.UNDERLAY) {
+					activity.getMapLayers().getMapControlsLayer().showTransparencyBar(settings.MAP_TRANSPARENCY, true);
+				}
 			} else {
 				settings.MAP_UNDERLAY.set(null);
+				activity.getMapLayers().getMapControlsLayer().hideTransparencyBar();
 				settings.MAP_UNDERLAY_PREVIOUS.set(null);
+
+
 			}
 			final OsmandSettings.CommonPreference<Boolean> hidePolygonsPref =
 					activity.getMyApplication().getSettings().getCustomRenderBooleanProperty("noPolygons");
@@ -196,8 +209,7 @@ public class MapUnderlayAction extends SwitchableAction<Pair<String, String>> {
 
 	@Override
 	public boolean fillParams(View root, MapActivity activity) {
-		super.fillParams(root, activity);
 		getParams().put(KEY_DIALOG, Boolean.toString(((SwitchCompat) root.findViewById(R.id.saveButton)).isChecked()));
-		return true;
+		return super.fillParams(root, activity);
 	}
 }

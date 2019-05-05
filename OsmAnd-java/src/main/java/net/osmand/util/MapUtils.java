@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import net.osmand.Location;
 import net.osmand.data.LatLon;
 import net.osmand.data.MapObject;
 import net.osmand.data.QuadPoint;
@@ -112,6 +113,7 @@ public class MapUtils {
 	}
 
 
+	
 	/**
 	 * Gets distance in meters
 	 */
@@ -553,10 +555,6 @@ public class MapUtils {
 		return sa < 0;
 	}
 
-
-	
-
-
 	public static long deinterleaveY(long coord) {
 		long x = 0;
 		for (byte b = 31; b >= 0; b--) {
@@ -605,6 +603,20 @@ public class MapUtils {
 			return (a * (c1 - c2)) / d;
 		} else {
 			return y1;
+		}
+	}
+
+	public static void insetLatLonRect(QuadRect r, double latitude, double longitude) {
+		if (r.left == 0 && r.right == 0) {
+			r.left = longitude;
+			r.right = longitude;
+			r.top = latitude;
+			r.bottom = latitude;
+		} else {
+			r.left = Math.min(r.left, longitude);
+			r.right = Math.max(r.right, longitude);
+			r.top = Math.max(r.top, latitude);
+			r.bottom = Math.min(r.bottom, latitude);
 		}
 	}
 }

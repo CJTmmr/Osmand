@@ -1,14 +1,15 @@
 package net.osmand.plus.measurementtool;
 
 import net.osmand.data.QuadRect;
-import net.osmand.plus.GPXUtilities;
+import net.osmand.GPXUtilities;
 
 public class NewGpxData {
 
 	public enum ActionType {
 		ADD_SEGMENT,
 		ADD_ROUTE_POINTS,
-		EDIT_SEGMENT
+		EDIT_SEGMENT,
+		OVERWRITE_SEGMENT
 	}
 
 	private GPXUtilities.GPXFile gpxFile;

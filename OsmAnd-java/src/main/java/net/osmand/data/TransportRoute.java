@@ -1,16 +1,16 @@
 package net.osmand.data;
 
+import net.osmand.osm.edit.Node;
+import net.osmand.osm.edit.Way;
+import net.osmand.util.Algorithms;
+import net.osmand.util.MapUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import net.osmand.osm.edit.Node;
-import net.osmand.osm.edit.Way;
-import net.osmand.util.MapUtils;
 
 public class TransportRoute extends MapObject {
 	private List<TransportStop> forwardStops = new ArrayList<TransportStop>();
@@ -21,9 +21,9 @@ public class TransportRoute extends MapObject {
 	private String color;
 	private List<Way> forwardWays;
 	private TransportSchedule schedule;
-	public static final double SAME_STOP = 25;
+	public static final double SAME_STOP = 40;
 	
-	public TransportRoute(){
+	public TransportRoute() {
 	}
 	
 	public TransportSchedule getSchedule() {
@@ -31,7 +31,7 @@ public class TransportRoute extends MapObject {
 	}
 	
 	public TransportSchedule getOrCreateSchedule() {
-		if(schedule == null) {
+		if (schedule == null) {
 			schedule = new TransportSchedule();
 		}
 		return schedule;
@@ -43,6 +43,9 @@ public class TransportRoute extends MapObject {
 	}
 	
 	public List<Way> getForwardWays() {
+		if(forwardWays == null) {
+			return Collections.emptyList();
+		}
 		return forwardWays;
 	}
 	
@@ -50,61 +53,70 @@ public class TransportRoute extends MapObject {
 	public void mergeForwardWays() {
 		boolean changed = true;
 		// combine as many ways as possible
-		while (changed) {
+		while (changed && forwardWays != null) {
 			changed = false;
-			Iterator<Way> it = forwardWays.iterator();
-			while (it.hasNext() && !changed) {
+			for(int k = 0; k < forwardWays.size(); ) {
 				// scan to merge with the next segment
+				Way first = forwardWays.get(k);
 				double d = SAME_STOP;
-				Way w = it.next();
-				Way toCombine = null;
-				boolean reverseOriginal = false;
-				boolean reverseCombine = false;
-				for (int i = 0; i < forwardWays.size(); i++) {
-					Way combine = forwardWays.get(i);
-					if (combine == w) {
-						continue;
-					}
-					double distAttachAfter = MapUtils.getDistance(w.getFirstNode().getLatLon(), combine.getLastNode().getLatLon());
-					double distReverseAttachAfter = MapUtils.getDistance(w.getLastNode().getLatLon(), combine.getLastNode()
-							.getLatLon());
-					double distAttachAfterReverse = MapUtils.getDistance(w.getFirstNode().getLatLon(), combine.getFirstNode().getLatLon());
+				boolean reverseSecond = false;
+				boolean reverseFirst = false;
+				int secondInd = -1;
+				for (int i = k + 1; i < forwardWays.size(); i++) {
+					Way w = forwardWays.get(i);
+					double distAttachAfter = MapUtils.getDistance(first.getLastNode().getLatLon(), w.getFirstNode().getLatLon());
+					double distReverseAttach = MapUtils.getDistance(first.getLastNode().getLatLon(), w.getLastNode().getLatLon());
+					double distAttachAfterReverse = MapUtils.getDistance(first.getFirstNode().getLatLon(), w.getFirstNode().getLatLon());
+					double distReverseAttachReverse = MapUtils.getDistance(first.getFirstNode().getLatLon(), w.getLastNode().getLatLon());
 					if (distAttachAfter < d) {
-						toCombine = combine;
-						reverseOriginal = false;
-						reverseCombine = false;
+						reverseSecond = false;
+						reverseFirst = false;
 						d = distAttachAfter;
-					} else if (distReverseAttachAfter < d) {
-						toCombine = combine;
-						reverseOriginal = true;
-						reverseCombine = false;
-						d = distReverseAttachAfter;
-					} else if (distAttachAfterReverse < d) {
-						toCombine = combine;
-						reverseOriginal = false;
-						reverseCombine = true;
+						secondInd = i; 
+					}
+					if (distReverseAttach < d) {
+						reverseSecond = true;
+						reverseFirst = false;
+						d = distReverseAttach;
+						secondInd = i;
+					}
+					if (distAttachAfterReverse < d) {
+						reverseSecond = false;
+						reverseFirst = true;
 						d = distAttachAfterReverse;
+						secondInd = i;
+					}
+					if (distReverseAttachReverse < d) {
+						reverseSecond = true;
+						reverseFirst = true;
+						d = distReverseAttachReverse;
+						secondInd = i;
+					}
+					if (d == 0) {
+						break;
 					}
 				}
-				if (toCombine != null) {
-					if(reverseCombine) {
-						toCombine.reverseNodes();
+				if (secondInd != -1) {
+					Way second = forwardWays.remove(secondInd);
+					if(reverseFirst) {
+						first.reverseNodes();
 					}
-					if(reverseOriginal) {
-						w.reverseNodes();
+					if(reverseSecond) {
+						second.reverseNodes();
 					}
-					for (int i = 1; i < w.getNodes().size(); i++) {
-						toCombine.addNode(w.getNodes().get(i));
+					for (int i = 1; i < second.getNodes().size(); i++) {
+						first.addNode(second.getNodes().get(i));
 					}
-					it.remove();
 					changed = true;
+				} else {
+					k++;
 				}
 			}
 		}
 		if (forwardStops.size() > 0) {
 			// resort ways to stops order 
 			final Map<Way, int[]> orderWays = new HashMap<Way, int[]>();
-			for (Way w : forwardWays) {
+			for (Way w : getForwardWays()) {
 				int[] pair = new int[] { 0, 0 };
 				Node firstNode = w.getFirstNode();
 				TransportStop st = forwardStops.get(0);
@@ -209,4 +221,49 @@ public class TransportRoute extends MapObject {
 		return d;
 	}
 
+	public String getAdjustedRouteRef(boolean small) {
+		String adjustedRef = getRef();
+		if (adjustedRef != null) {
+			int charPos = adjustedRef.lastIndexOf(':');
+			if (charPos != -1) {
+				adjustedRef = adjustedRef.substring(0, charPos);
+			}
+			int maxRefLength = small ? 5 : 8;
+			if (adjustedRef.length() > maxRefLength) {
+				adjustedRef = adjustedRef.substring(0, maxRefLength - 1) + "…";
+			}
+		}
+		return adjustedRef;
+	}
+
+	public boolean compareRoute(TransportRoute thatObj) {
+		if (this.compareObject(thatObj) &&
+				Algorithms.objectEquals(this.ref, thatObj.ref) &&
+				Algorithms.objectEquals(this.operator, thatObj.operator) &&
+				Algorithms.objectEquals(this.type, thatObj.type) &&
+				Algorithms.objectEquals(this.color, thatObj.color) &&
+				this.getDistance() == thatObj.getDistance() &&
+				((this.schedule == null && thatObj.schedule == null) ||
+						(this.schedule != null && thatObj.schedule != null && this.schedule.compareSchedule(thatObj.schedule))) &&
+				this.forwardStops.size() == thatObj.forwardStops.size() &&
+				((this.forwardWays == null && thatObj.forwardWays == null) ||
+						(this.forwardWays != null && thatObj.forwardWays != null && this.forwardWays.size() == thatObj.forwardWays.size()))) {
+
+			for (int i = 0; i < this.forwardStops.size(); i++) {
+				if (!this.forwardStops.get(i).compareStop(thatObj.forwardStops.get(i))) {
+					return false;
+				}
+			}
+			if (this.forwardWays != null) {
+				for (int i = 0; i < this.forwardWays.size(); i++) {
+					if (!this.forwardWays.get(i).compareWay(thatObj.forwardWays.get(i))) {
+						return false;
+					}
+				}
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

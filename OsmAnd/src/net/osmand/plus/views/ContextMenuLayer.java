@@ -59,6 +59,7 @@ import net.osmand.plus.mapcontextmenu.other.MapMultiSelectionMenu;
 import net.osmand.plus.render.MapRenderRepositories;
 import net.osmand.plus.render.NativeOsmandLibrary;
 import net.osmand.plus.resources.TransportIndexRepository;
+import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
 import net.osmand.plus.views.AddGpxPointBottomSheetHelper.NewGpxPoint;
 import net.osmand.plus.views.corenative.NativeCoreContext;
 import net.osmand.util.Algorithms;
@@ -74,8 +75,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.list.array.TLongArrayList;
 
-import static net.osmand.plus.OsmAndCustomizationConstants.POINT_CHANGE_MARKER_POSITION;
+import static net.osmand.plus.OsmAndCustomizationConstants.MAP_CONTEXT_MENU_CHANGE_MARKER_POSITION;
 import static net.osmand.plus.mapcontextmenu.controllers.TransportStopController.SHOW_STOPS_RADIUS_METERS;
 
 public class ContextMenuLayer extends OsmandMapLayer {
@@ -280,7 +282,7 @@ public class ContextMenuLayer extends OsmandMapLayer {
 		};
 		adapter.addItem(new ContextMenuItem.ItemBuilder()
 				.setTitleId(R.string.change_markers_position, activity)
-				.setId(POINT_CHANGE_MARKER_POSITION)
+				.setId(MAP_CONTEXT_MENU_CHANGE_MARKER_POSITION)
 				.setIcon(R.drawable.ic_show_on_map)
 				.setOrder(MapActivityActions.CHANGE_POSITION_ITEM_ORDER)
 				.setClickable(isObjectMoveable(o))
@@ -813,6 +815,9 @@ public class ContextMenuLayer extends OsmandMapLayer {
 	}
 
 	public boolean disableSingleTap() {
+		if (activity.getMapRouteInfoMenu().isVisible() || MapRouteInfoMenu.chooseRoutesVisible || MapRouteInfoMenu.waypointsVisible) {
+			return true;
+		}
 		boolean res = false;
 		for (OsmandMapLayer lt : view.getLayers()) {
 			if (lt instanceof ContextMenuLayer.IContextMenuProvider) {
@@ -826,7 +831,8 @@ public class ContextMenuLayer extends OsmandMapLayer {
 	}
 
 	public boolean disableLongPressOnMap() {
-		if (mInChangeMarkerPositionMode || mInGpxDetailsMode || mInAddGpxPointMode) {
+		if (mInChangeMarkerPositionMode || mInGpxDetailsMode || mInAddGpxPointMode ||
+				activity.getMapRouteInfoMenu().isVisible() || MapRouteInfoMenu.chooseRoutesVisible || MapRouteInfoMenu.waypointsVisible) {
 			return true;
 		}
 		boolean res = false;
@@ -906,11 +912,19 @@ public class ContextMenuLayer extends OsmandMapLayer {
 		List<TransportIndexRepository> reps =
 				activity.getMyApplication().getResourceManager().searchTransportRepositories(latitude, longitude);
 
+		TLongArrayList addedTransportStops = new TLongArrayList();
 		for (TransportIndexRepository t : reps) {
 			ArrayList<TransportStop> ls = new ArrayList<>();
 			QuadRect ll = MapUtils.calculateLatLonBbox(latitude, longitude, SHOW_STOPS_RADIUS_METERS);
 			t.searchTransportStops(ll.top, ll.left, ll.bottom, ll.right, -1, ls, null);
-			transportStops.addAll(ls);
+			for (TransportStop tstop : ls) {
+				if (!addedTransportStops.contains(tstop.getId())) {
+					addedTransportStops.add(tstop.getId());
+					if (!tstop.isDeleted()) {
+						transportStops.add(tstop);
+					}
+				}
+			}
 		}
 		return transportStops;
 	}

@@ -10,7 +10,7 @@ import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
 import net.osmand.data.QuadRect;
 import net.osmand.data.RotatedTileBox;
-import net.osmand.plus.GPXUtilities.GPXFile;
+import net.osmand.GPXUtilities.GPXFile;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
@@ -52,14 +52,18 @@ public class AddGpxPointBottomSheetHelper implements OnDismissListener {
 				LatLon latLon = contextMenu.getLatLon();
 				if (pointDescription.isWpt()) {
 					WptPtEditor editor = activity.getContextMenu().getWptPtPointEditor();
-					editor.setOnDismissListener(AddGpxPointBottomSheetHelper.this);
-					editor.setNewGpxPointProcessing(true);
-					editor.add(gpx, latLon, titleText);
+					if (editor != null) {
+						editor.setOnDismissListener(AddGpxPointBottomSheetHelper.this);
+						editor.setNewGpxPointProcessing(true);
+						editor.add(gpx, latLon, titleText);
+					}
 				} else if (pointDescription.isRte()) {
 					RtePtEditor editor = activity.getContextMenu().getRtePtPointEditor();
-					editor.setOnDismissListener(AddGpxPointBottomSheetHelper.this);
-					editor.setNewGpxPointProcessing(true);
-					editor.add(gpx, latLon, titleText);
+					if (editor != null) {
+						editor.setOnDismissListener(AddGpxPointBottomSheetHelper.this);
+						editor.setNewGpxPointProcessing(true);
+						editor.add(gpx, latLon, titleText);
+					}
 				}
 			}
 		});

@@ -26,6 +26,7 @@ import net.osmand.AndroidUtils;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.mapcontextmenu.other.MapMultiSelectionMenu.MenuObject;
+import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -173,7 +174,7 @@ public class MapMultiSelectionMenuFragment extends Fragment implements MultiSele
 	@Override
 	public void onResume() {
 		super.onResume();
-		if (MapRouteInfoMenu.isVisible()) {
+		if (menu.getMapActivity().getMapRouteInfoMenu().isVisible()) {
 			dismissMenu();
 			return;
 		}

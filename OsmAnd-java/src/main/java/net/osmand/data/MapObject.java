@@ -4,11 +4,12 @@ package net.osmand.data;
 import net.osmand.Collator;
 import net.osmand.OsmAndCollator;
 import net.osmand.util.Algorithms;
-import net.sf.junidecode.Junidecode;
+import net.osmand.util.TransliterationHelper;
 
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -27,7 +28,6 @@ public abstract class MapObject implements Comparable<MapObject> {
 	public static final byte NON_AMENITY_ID_RIGHT_SHIFT = 7;
 	
 	public static final byte WAY_MODULO_REMAINDER = 1;
-
 
 	protected String name = null;
 	protected String enName = null;
@@ -74,6 +74,15 @@ public abstract class MapObject implements Comparable<MapObject> {
 				names = new HashMap<String, String>();
 			}
 			names.put(lang, name);
+		}
+	}
+
+	public void setNames(Map<String, String> name) {
+		if (name != null) {
+			if (names == null) {
+				names = new HashMap<String, String>();
+			}
+			names.putAll(name);
 		}
 	}
 
@@ -173,7 +182,7 @@ public abstract class MapObject implements Comparable<MapObject> {
 						return nm;
 					}
 					if (transliterate) {
-						return Junidecode.unidecode(getName());
+						return TransliterationHelper.transliterate(getName());
 					}
 				}
 			}
@@ -185,7 +194,7 @@ public abstract class MapObject implements Comparable<MapObject> {
 		if (!Algorithms.isEmpty(enName)) {
 			return this.enName;
 		} else if (!Algorithms.isEmpty(getName()) && transliterate) {
-			return Junidecode.unidecode(getName());
+			return TransliterationHelper.transliterate(getName());
 		}
 		return ""; //$NON-NLS-1$
 	}
@@ -247,6 +256,20 @@ public abstract class MapObject implements Comparable<MapObject> {
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
+	}
+
+	public boolean compareObject(MapObject thatObj) {
+		if (this == thatObj) {
+			return true;
+		} else {
+			if(thatObj == null || this.id == null || thatObj.id == null) {
+				return false;
+			}
+			return this.id.longValue() == thatObj.id.longValue() &&
+					Algorithms.objectEquals(getLocation(), thatObj.getLocation()) &&
+					Algorithms.objectEquals(this.getName(), thatObj.getName()) &&
+					Algorithms.objectEquals(this.getNamesMap(true), thatObj.getNamesMap(true));
+		}
 	}
 
 	public static class MapObjectComparator implements Comparator<MapObject> {

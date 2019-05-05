@@ -38,6 +38,7 @@ import net.osmand.osm.io.NetworkUtils;
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.OsmandSettings.AngularConstants;
 import net.osmand.plus.OsmandSettings.DrivingRegion;
 import net.osmand.plus.OsmandSettings.MetricsConstants;
 import net.osmand.plus.R;
@@ -209,6 +210,13 @@ public class SettingsGeneralActivity extends SettingsBaseActivity implements OnR
 		entries[4] = PointDescription.formatToHumanString(this, PointDescription.OLC_FORMAT);
 		registerListPreference(settings.COORDINATES_FORMAT, screen, entries, cvls);
 
+		AngularConstants[] ac = AngularConstants.values();
+		entries = new String[ac.length];
+		for (int i = 0; i < entries.length; i++) {
+			entries[i] = ac[i].toHumanString(getMyApplication());
+		}
+		registerListPreference(settings.ANGULAR_UNITS, screen, entries, ac);
+
 		// See language list and statistics at: https://hosted.weblate.org/projects/osmand/main/
 		// Hardy maintenance 2016-05-29:
 		//  - Include languages if their translation is >= ~10%    (but any language will be visible if it is the device's system locale)
@@ -226,7 +234,7 @@ public class SettingsGeneralActivity extends SettingsBaseActivity implements OnR
 				"ast",
 				"az",
 				"be",
-				"be_BY",
+				//"be_BY",
 				"bg",
 				"ca",
 				"cs",
@@ -286,7 +294,7 @@ public class SettingsGeneralActivity extends SettingsBaseActivity implements OnR
 				getString(R.string.lang_ast) + incompleteSuffix,
 				getString(R.string.lang_az),
 				getString(R.string.lang_be),
-				getString(R.string.lang_be_by),
+				// getString(R.string.lang_be_by),
 				getString(R.string.lang_bg),
 				getString(R.string.lang_ca),
 				getString(R.string.lang_cs),
@@ -299,17 +307,17 @@ public class SettingsGeneralActivity extends SettingsBaseActivity implements OnR
 				getString(R.string.lang_es),
 				getString(R.string.lang_es_ar),
 				getString(R.string.lang_es_us),
-				getString(R.string.lang_eu) + incompleteSuffix,
+				getString(R.string.lang_eu),
 				getString(R.string.lang_fa),
 				getString(R.string.lang_fi) + incompleteSuffix,
 				getString(R.string.lang_fr),
-				getString(R.string.lang_gl) + incompleteSuffix,
+				getString(R.string.lang_gl),
 				getString(R.string.lang_he) + incompleteSuffix,
 				getString(R.string.lang_hr) + incompleteSuffix,
 				getString(R.string.lang_hsb) + incompleteSuffix,
 				getString(R.string.lang_hu),
 				getString(R.string.lang_hy),
-				getString(R.string.lang_is) + incompleteSuffix,
+				getString(R.string.lang_is),
 				getString(R.string.lang_it),
 				getString(R.string.lang_ja),
 				getString(R.string.lang_ka) + incompleteSuffix,

@@ -44,6 +44,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import net.osmand.AndroidUtils;
+import net.osmand.GPXUtilities;
+import net.osmand.GPXUtilities.GPXFile;
+import net.osmand.GPXUtilities.GPXTrackAnalysis;
+import net.osmand.GPXUtilities.Track;
+import net.osmand.GPXUtilities.WptPt;
 import net.osmand.IndexConstants;
 import net.osmand.data.PointDescription;
 import net.osmand.plus.ContextMenuAdapter;
@@ -51,21 +56,16 @@ import net.osmand.plus.ContextMenuAdapter.ItemClickListener;
 import net.osmand.plus.ContextMenuItem;
 import net.osmand.plus.GPXDatabase;
 import net.osmand.plus.GPXDatabase.GpxDataItem;
-import net.osmand.plus.GPXUtilities;
-import net.osmand.plus.GPXUtilities.GPXFile;
-import net.osmand.plus.GPXUtilities.GPXTrackAnalysis;
-import net.osmand.plus.GPXUtilities.Track;
-import net.osmand.plus.GPXUtilities.WptPt;
 import net.osmand.plus.GpxSelectionHelper;
 import net.osmand.plus.GpxSelectionHelper.GpxDisplayGroup;
 import net.osmand.plus.GpxSelectionHelper.GpxDisplayItem;
 import net.osmand.plus.GpxSelectionHelper.SelectedGpxFile;
-import net.osmand.plus.UiUtilities;
 import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
 import net.osmand.plus.OsmandSettings;
 import net.osmand.plus.R;
+import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.activities.OsmandActionBarActivity;
 import net.osmand.plus.activities.OsmandBaseExpandableListAdapter;
@@ -704,7 +704,7 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 	}
 
 	private void showGpxOnMap(GpxInfo info) {
-		info.setGpx(GPXUtilities.loadGPXFile(app, info.file));
+		info.setGpx(GPXUtilities.loadGPXFile(info.file));
 		boolean e = true;
 		if (info.gpx != null) {
 			WptPt loc = info.gpx.findPointToShow();
@@ -1112,10 +1112,13 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 							selectedItems.remove(child);
 						}
 						updateSelectionMode(actionMode);
+						// Issue 6187: Sync checkbox status between Visible group and rest of list
+						allGpxAdapter.notifyDataSetInvalidated();
 					}
 				});
 				icon.setVisibility(View.GONE);
-				options.setVisibility(View.GONE);
+				//INVISIBLE instead of GONE avoids lines breaking differently in selection mode
+				options.setVisibility(View.INVISIBLE);
 			} else {
 				icon.setVisibility(View.VISIBLE);
 				options.setVisibility(View.VISIBLE);
@@ -1123,7 +1126,7 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 
 			final CompoundButton checkItem = (CompoundButton) v.findViewById(R.id.toggle_item);
 			if (isSelectedGroup(groupPosition)) {
-				v.findViewById(R.id.check_item).setVisibility(View.VISIBLE);
+				v.findViewById(R.id.check_item).setVisibility(selectionMode? View.INVISIBLE : View.VISIBLE);
 				v.findViewById(R.id.options).setVisibility(View.GONE);
 			} else {
 				v.findViewById(R.id.check_item).setVisibility(View.GONE);
@@ -1163,7 +1166,9 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 				LayoutInflater inflater = getActivity().getLayoutInflater();
 				v = inflater.inflate(net.osmand.plus.R.layout.expandable_list_item_category, parent, false);
 			}
-			v.findViewById(R.id.group_divider).setVisibility(groupPosition == 0 ? View.GONE : View.VISIBLE);
+			// Issue 6187: Always show visible group, also in selection mode
+			//v.findViewById(R.id.group_divider).setVisibility(groupPosition == 0 ? View.GONE : View.VISIBLE);
+			v.findViewById(R.id.group_divider).setVisibility(View.VISIBLE);
 
 			StringBuilder t = new StringBuilder();
 			String groupName = group.replaceAll("_", " ").replace(".gpx", "");
@@ -1175,7 +1180,9 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 
 			if (selectionMode) {
 				final CheckBox ch = (CheckBox) v.findViewById(R.id.toggle_item);
-				ch.setVisibility(View.VISIBLE);
+				// Issue 6187: No selection box for Visible group header
+				//ch.setVisibility(View.VISIBLE);
+				ch.setVisibility((selectionMode && !(groupPosition == 0 && isShowingSelection()))? View.VISIBLE : View.GONE);
 				ch.setChecked(selectedGroups.contains(groupPosition));
 
 				ch.setOnClickListener(new View.OnClickListener() {
@@ -1228,7 +1235,9 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 		}
 
 		public boolean isShowingSelection() {
-			return selected.size() > 0 && !selectionMode;
+			// Issue 6187: Account for Visible group always being shown
+			//return selected.size() > 0 && !selectionMode;
+			return selected.size() > 0;
 		}
 
 		@Override
@@ -1316,7 +1325,7 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 			Track generalTrack = null;
 			if (gpxInfo.gpx == null) {
 				if (gpxInfo.file != null) {
-					gpxFile = GPXUtilities.loadGPXFile(getActivity(), gpxInfo.file);
+					gpxFile = GPXUtilities.loadGPXFile(gpxInfo.file);
 				}
 			} else {
 				gpxFile = gpxInfo.gpx;
@@ -1357,10 +1366,6 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 				}
 				if (list.size() > 0) {
 					gpxItem.chartTypes = list.toArray(new GPXDataSetType[list.size()]);
-				}
-				if (gpxItem.group.getGpx() != null) {
-					gpxItem.wasHidden = app.getSelectedGpxHelper().getSelectedFileByPath(gpxInfo.file.getAbsolutePath()) == null;
-					app.getSelectedGpxHelper().setGpxFileToDisplay(gpxItem.group.getGpx());
 				}
 				final OsmandSettings settings = app.getSettings();
 				settings.setMapLocationToShow(gpxItem.locationStart.lat, gpxItem.locationStart.lon,
@@ -1532,7 +1537,7 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 			for (GpxInfo info : params) {
 				if (!isCancelled()) {
 					if (!info.currentlyRecordingTrack) {
-						info.setGpx(GPXUtilities.loadGPXFile(app, info.file));
+						info.setGpx(GPXUtilities.loadGPXFile(info.file));
 					}
 					publishProgress(info);
 				}
@@ -1609,10 +1614,12 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 					processGPXFolder(gpxFile, sub);
 				} else if (gpxFile.isFile() && gpxFile.getName().toLowerCase().endsWith(".gpx")) {
 					GpxDataItem item = processedDataFiles.get(gpxFile);
+					GPXTrackAnalysis itemAnalysis = item != null ? item.getAnalysis() : null;
 					if (item == null
 							|| item.getFileLastModifiedTime() != gpxFile.lastModified()
-							|| item.getAnalysis().wptCategoryNames == null) {
-						GPXFile f = GPXUtilities.loadGPXFile(app, gpxFile);
+							|| itemAnalysis == null
+							|| itemAnalysis.wptCategoryNames == null) {
+						GPXFile f = GPXUtilities.loadGPXFile(gpxFile);
 						GPXTrackAnalysis analysis = f.getAnalysis(gpxFile.lastModified());
 						if (item == null) {
 							item = new GpxDataItem(gpxFile, analysis);

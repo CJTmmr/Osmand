@@ -8,17 +8,18 @@ import android.text.format.DateFormat;
 import net.osmand.PlatformUtil;
 import net.osmand.data.LatLon;
 import net.osmand.plus.GPXDatabase.GpxDataItem;
-import net.osmand.plus.GPXUtilities;
-import net.osmand.plus.GPXUtilities.GPXFile;
-import net.osmand.plus.GPXUtilities.GPXTrackAnalysis;
-import net.osmand.plus.GPXUtilities.Track;
-import net.osmand.plus.GPXUtilities.TrkSegment;
-import net.osmand.plus.GPXUtilities.WptPt;
+import net.osmand.GPXUtilities;
+import net.osmand.GPXUtilities.GPXFile;
+import net.osmand.GPXUtilities.GPXTrackAnalysis;
+import net.osmand.GPXUtilities.Track;
+import net.osmand.GPXUtilities.TrkSegment;
+import net.osmand.GPXUtilities.WptPt;
 import net.osmand.plus.GpxSelectionHelper.SelectedGpxFile;
 import net.osmand.plus.OsmAndLocationProvider;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
 import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.Version;
 import net.osmand.plus.monitoring.OsmandMonitoringPlugin;
 import net.osmand.plus.notifications.OsmandNotification.NotificationType;
 import net.osmand.util.MapUtils;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -75,7 +77,7 @@ public class SavingTrackHelper extends SQLiteOpenHelper {
 		this.ctx = ctx;
 		this.currentTrack = new SelectedGpxFile();
 		this.currentTrack.setShowCurrentTrack(true);
-		GPXFile gx = new GPXFile();
+		GPXFile gx = new GPXFile(Version.getFullVersion(ctx));
 		gx.showCurrentTrack = true;
 		this.currentTrack.setGpxFile(gx);
 		prepareCurrentTrackForRecording();
@@ -218,9 +220,9 @@ public class SavingTrackHelper extends SQLiteOpenHelper {
 						}
 					}
 
-					String warn = GPXUtilities.writeGpxFile(fout, data.get(f), ctx);
+					Exception warn = GPXUtilities.writeGpxFile(fout, data.get(f));
 					if (warn != null) {
-						warnings.add(warn);
+						warnings.add(warn.getMessage());
 						return warnings;
 					}
 
@@ -298,7 +300,7 @@ public class SavingTrackHelper extends SQLiteOpenHelper {
 				if (dataTracks.containsKey(date)) {
 					gpx = dataTracks.get(date);
 				} else {
-					gpx  = new GPXFile();
+					gpx  = new GPXFile(Version.getFullVersion(ctx));
 					dataTracks.put(date, gpx);
 				}
 				ctx.getSelectedGpxHelper().addPoint(pt, gpx);
@@ -351,7 +353,7 @@ public class SavingTrackHelper extends SQLiteOpenHelper {
 						GPXFile gpx = dataTracks.get(date);
 						gpx.tracks.add(track);
 					} else {
-						GPXFile file = new GPXFile();
+						GPXFile file = new GPXFile(Version.getFullVersion(ctx));
 						file.tracks.add(track);
 						dataTracks.put(date, file);
 					}
@@ -361,6 +363,31 @@ public class SavingTrackHelper extends SQLiteOpenHelper {
 			} while (query.moveToNext());
 		}
 		query.close();
+
+		// drop empty tracks
+		List<String> datesToRemove = new ArrayList<>();
+		for (Map.Entry<String, GPXFile> entry : dataTracks.entrySet()) {
+			GPXFile file = entry.getValue();
+			Iterator<Track> it = file.tracks.iterator();
+			while (it.hasNext()) {
+				Track t = it.next();
+				Iterator<TrkSegment> its = t.segments.iterator();
+				while (its.hasNext()) {
+					if (its.next().points.size() == 0) {
+						its.remove();
+					}
+				}
+				if (t.segments.size() == 0) {
+					it.remove();
+				}
+			}
+			if (file.isEmpty()) {
+				datesToRemove.add(entry.getKey());
+			}
+		}
+		for (String date : datesToRemove) {
+			dataTracks.remove(date);
+		}
 	}
 	
 	public void startNewSegment() {

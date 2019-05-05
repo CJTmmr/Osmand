@@ -17,6 +17,7 @@ import android.os.Build
 import android.support.annotation.AttrRes
 import android.support.annotation.ColorInt
 import android.support.annotation.ColorRes
+import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.FragmentManager
@@ -27,6 +28,7 @@ import android.util.TypedValue.COMPLEX_UNIT_DIP
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import net.osmand.telegram.R
 import java.io.File
 
@@ -104,6 +106,27 @@ object AndroidUtils {
 		}
 	}
 
+	fun getNavBarHeight(ctx: Context): Int {
+		if (!hasNavBar(ctx)) {
+			return 0
+		}
+		val landscape = ctx.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+		val isSmartphone = ctx.resources.configuration.smallestScreenWidthDp < 600
+		if (isSmartphone && landscape) {
+			return 0
+		}
+		val name = if (landscape) "navigation_bar_height_landscape" else "navigation_bar_height"
+		val id = ctx.resources.getIdentifier(name, "dimen", "android")
+		return if (id > 0) {
+			ctx.resources.getDimensionPixelSize(id)
+		} else 0
+	}
+
+	fun hasNavBar(ctx: Context): Boolean {
+		val id = ctx.resources.getIdentifier("config_showNavigationBar", "bool", "android")
+		return id > 0 && ctx.resources.getBoolean(id)
+	}
+
 	fun enterToTransparentFullScreen(activity: Activity) {
 		if (Build.VERSION.SDK_INT >= 23) {
 			val window = activity.window
@@ -134,6 +157,12 @@ object AndroidUtils {
 
 	fun getPopupMenuHeight(ctx: Context): Int {
 		return ctx.resources.getDimensionPixelSize(R.dimen.list_popup_window_height)
+	}
+
+	fun setSnackbarTextColor(snackbar: Snackbar, @ColorRes colorId: Int) {
+		val view = snackbar.view
+		val tv = view.findViewById(android.support.design.R.id.snackbar_action) as TextView
+		tv.setTextColor(ContextCompat.getColor(view.context, colorId))
 	}
 
 	fun createPressedColorStateList(

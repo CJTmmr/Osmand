@@ -45,11 +45,11 @@ public class TransportStopRouteAdapter extends ArrayAdapter<Object> {
 			int bgColor = 0;
 			if (object instanceof TransportStopRoute) {
 				TransportStopRoute transportStopRoute = (TransportStopRoute) object;
-				routeRef = getAdjustedRouteRef(transportStopRoute.route.getRef());
+				routeRef = transportStopRoute.route.getAdjustedRouteRef(false);
 				bgColor = transportStopRoute.getColor(app, nightMode);
 			} else if (object instanceof String) {
 				routeRef = (String) object;
-				bgColor = ContextCompat.getColor(app, R.color.route_info_unchecked_mode_icon_color);
+				bgColor = ContextCompat.getColor(app, R.color.description_font_and_bottom_sheet_icons);
 			}
 			TextView transportStopRouteTextView = (TextView) convertView.findViewById(R.id.transport_stop_route_text);
 			transportStopRouteTextView.setText(routeRef);
@@ -68,19 +68,6 @@ public class TransportStopRouteAdapter extends ArrayAdapter<Object> {
 		}
 
 		return convertView;
-	}
-
-	private String getAdjustedRouteRef(String ref) {
-		if (ref != null) {
-			int charPos = ref.lastIndexOf(':');
-			if (charPos != -1) {
-				ref = ref.substring(0, charPos);
-			}
-			if (ref.length() > 4) {
-				ref = ref.substring(0, 4);
-			}
-		}
-		return ref;
 	}
 
 	public interface OnClickListener {

@@ -32,6 +32,7 @@ public class GeneralRouter implements VehicleRouter {
 	public static final String AVOID_UNPAVED = "avoid_unpaved";
 	public static final String PREFER_MOTORWAYS = "prefer_motorway";
 	public static final String ALLOW_PRIVATE = "allow_private";
+	public static final String ALLOW_MOTORWAYS = "allow_motorway";
 
 	private final RouteAttributeContext[] objectAttributes;
 	public final Map<String, String> attributes;
@@ -89,7 +90,8 @@ public class GeneralRouter implements VehicleRouter {
 		CAR,
 		PEDESTRIAN,
 		BICYCLE,
-		BOAT
+		BOAT,
+		PUBLIC_TRANSPORT
 	}
 
 	
@@ -223,7 +225,7 @@ public class GeneralRouter implements VehicleRouter {
 		return impassableRoads.toArray();
 	}
 	
-	private int registerTagValueAttribute(String tag, String value) {
+	public int registerTagValueAttribute(String tag, String value) {
 		String key = tag +"$"+value;
 		if(universalRules.containsKey(key)) {
 			return universalRules.get(key);
@@ -616,6 +618,14 @@ public class GeneralRouter implements VehicleRouter {
 			return ((Number)o).intValue();
 		}
 		
+		public int evaluateInt(BitSet rawTypes, int defValue) {
+			Object o = evaluate(rawTypes);
+			if(!(o instanceof Number)){
+				return defValue;
+			}
+			return ((Number)o).intValue();
+		}
+		
 		public float evaluateFloat(RouteDataObject ro, float defValue) {
 			Object o = evaluate(ro);
 			if(!(o instanceof Number)) {
@@ -627,6 +637,14 @@ public class GeneralRouter implements VehicleRouter {
 		public float evaluateFloat(RouteRegion region, int[] types, float defValue) {
 			Object o = evaluate(convert(region, types));
 			if(!(o instanceof Number)) {
+				return defValue;
+			}
+			return ((Number)o).floatValue();
+		}
+		
+		public float evaluateFloat(BitSet rawTypes, float defValue) {
+			Object o = evaluate(rawTypes);
+			if(!(o instanceof Number)){
 				return defValue;
 			}
 			return ((Number)o).floatValue();

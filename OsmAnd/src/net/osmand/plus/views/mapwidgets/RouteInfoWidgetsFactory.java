@@ -41,7 +41,7 @@ import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.base.MapViewTrackingUtilities;
 import net.osmand.plus.helpers.AndroidUiHelper;
 import net.osmand.plus.helpers.WaypointHelper;
-import net.osmand.plus.mapcontextmenu.other.MapRouteInfoMenu;
+import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
 import net.osmand.plus.routing.AlarmInfo;
 import net.osmand.plus.routing.AlarmInfo.AlarmInfoType;
 import net.osmand.plus.routing.RouteCalculationResult.NextDirectionInfo;
@@ -681,7 +681,7 @@ public class RouteInfoWidgetsFactory {
 				if (degreesChanged(cachedDegrees, b) || modeChanged) {
 					cachedDegrees = b;
 					if (b != -1000) {
-						setText(String.valueOf(b) + "°" + (relative ? "" : " M"), null);
+						setText(OsmAndFormatter.getFormattedAzimuth(b, getOsmandApplication()) + (relative ? "" : " M"), null);
 					} else {
 						setText(null, null);
 					}
@@ -755,6 +755,7 @@ public class RouteInfoWidgetsFactory {
 	public static class LanesControl {
 		private MapViewTrackingUtilities trackingUtilities;
 		private OsmAndLocationProvider locationProvider;
+		private MapRouteInfoMenu mapRouteInfoMenu;
 		private RoutingHelper rh;
 		private OsmandSettings settings;
 		private ImageView lanesView;
@@ -776,6 +777,7 @@ public class RouteInfoWidgetsFactory {
 			trackingUtilities = map.getMapViewTrackingUtilities();
 			locationProvider = map.getMyApplication().getLocationProvider();
 			settings = map.getMyApplication().getSettings();
+			mapRouteInfoMenu = map.getMapRouteInfoMenu();
 			rh = map.getMyApplication().getRoutingHelper();
 			app = map.getMyApplication();
 		}
@@ -817,7 +819,7 @@ public class RouteInfoWidgetsFactory {
 					}
 				} else {
 					int di = MapRouteInfoMenu.getDirectionInfo();
-					if (di >= 0 && MapRouteInfoMenu.isVisible()
+					if (di >= 0 && mapRouteInfoMenu.isVisible()
 							&& di < rh.getRouteDirections().size()) {
 						RouteDirectionInfo next = rh.getRouteDirections().get(di);
 						if (next != null) {
@@ -829,7 +831,7 @@ public class RouteInfoWidgetsFactory {
 					}
 				}
 			}
-			visible = loclanes != null && loclanes.length > 0;
+			visible = loclanes != null && loclanes.length > 0 && !MapRouteInfoMenu.chooseRoutesVisible && !MapRouteInfoMenu.waypointsVisible;
 			if (visible) {
 				if (!Arrays.equals(lanesDrawable.lanes, loclanes) || 
 						(locimminent == 0) != lanesDrawable.imminent) {
@@ -1180,8 +1182,6 @@ public class RouteInfoWidgetsFactory {
 			// update cache
 			if (view.isZooming()) {
 				visible = false;
-			} else if (!orientationPortrait && ma.getRoutingHelper().isRoutePlanningMode()) {
-				visible = false;
 			} else if (!tb.isZoomAnimated() && (tb.getZoom() != cacheRulerZoom || Math.abs(tb.getCenterTileX() - cacheRulerTileX) > 1 || Math
 					.abs(tb.getCenterTileY() - cacheRulerTileY) > 1 || mapDensity.get() != cacheMapDensity) &&
 					tb.getPixWidth() > 0 && maxWidth > 0) {
@@ -1189,8 +1189,7 @@ public class RouteInfoWidgetsFactory {
 				cacheRulerTileX = tb.getCenterTileX();
 				cacheRulerTileY = tb.getCenterTileY();
 				cacheMapDensity = mapDensity.get();
-				final double dist = tb.getDistance(0, tb.getPixHeight() / 2, tb.getPixWidth(), tb.getPixHeight() / 2);
-				double pixDensity = tb.getPixWidth() / dist;
+				double pixDensity = tb.getPixDensity();
 				double roundedDist = OsmAndFormatter.calculateRoundedDist(maxWidth / 
 						pixDensity, view.getApplication());
 

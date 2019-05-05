@@ -41,12 +41,12 @@ import net.osmand.AndroidUtils;
 import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
 import net.osmand.plus.GPXDatabase.GpxDataItem;
-import net.osmand.plus.GPXUtilities;
-import net.osmand.plus.GPXUtilities.GPXFile;
-import net.osmand.plus.GPXUtilities.GPXTrackAnalysis;
-import net.osmand.plus.GPXUtilities.Track;
-import net.osmand.plus.GPXUtilities.TrkSegment;
-import net.osmand.plus.GPXUtilities.WptPt;
+import net.osmand.GPXUtilities;
+import net.osmand.GPXUtilities.GPXFile;
+import net.osmand.GPXUtilities.GPXTrackAnalysis;
+import net.osmand.GPXUtilities.Track;
+import net.osmand.GPXUtilities.TrkSegment;
+import net.osmand.GPXUtilities.WptPt;
 import net.osmand.plus.GpxSelectionHelper.GpxDisplayGroup;
 import net.osmand.plus.GpxSelectionHelper.GpxDisplayItem;
 import net.osmand.plus.GpxSelectionHelper.GpxDisplayItemType;
@@ -477,7 +477,8 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 
 		private TrkSegment getTrackSegment(LineChart chart) {
 			if (segment == null) {
-				List<ILineDataSet> ds = chart.getLineData().getDataSets();
+				LineData lineData = chart.getLineData();
+				List<ILineDataSet> ds = lineData != null ? lineData.getDataSets() : null;
 				if (ds != null && ds.size() > 0) {
 					for (GPXUtilities.Track t : gpxItem.group.getGpx().tracks) {
 						for (TrkSegment s : t.segments) {
@@ -497,7 +498,8 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 
 		private WptPt getPoint(LineChart chart, float pos) {
 			WptPt wpt = null;
-			List<ILineDataSet> ds = chart.getLineData().getDataSets();
+			LineData lineData = chart.getLineData();
+			List<ILineDataSet> ds = lineData != null ? lineData.getDataSets() : null;
 			if (ds != null && ds.size() > 0) {
 				TrkSegment segment = getTrackSegment(chart);
 				OrderedLineDataSet dataSet = (OrderedLineDataSet) ds.get(0);
@@ -1168,12 +1170,6 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 				gpxItem.locationOnMap = gpxItem.locationStart;
 			}
 
-			GPXFile gpx = getGpx();
-			GPXFile groupGpx = gpxItem.group.getGpx();
-			if (gpx != null && groupGpx != null) {
-				gpxItem.wasHidden = app.getSelectedGpxHelper().getSelectedFileByPath(gpx.path) == null;
-				app.getSelectedGpxHelper().setGpxFileToDisplay(groupGpx);
-			}
 			final OsmandSettings settings = app.getSettings();
 			settings.setMapLocationToShow(location.getLatitude(), location.getLongitude(),
 					settings.getLastKnownMapZoom(),
@@ -1220,7 +1216,7 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			GPXUtilities.writeGpxFile(new File(gpx.path), gpx, app);
+			GPXUtilities.writeGpxFile(new File(gpx.path), gpx);
 			return null;
 		}
 

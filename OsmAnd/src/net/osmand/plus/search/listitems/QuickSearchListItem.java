@@ -18,8 +18,8 @@ import net.osmand.osm.PoiCategory;
 import net.osmand.osm.PoiFilter;
 import net.osmand.osm.PoiType;
 import net.osmand.plus.FavouritesDbHelper.FavoriteGroup;
-import net.osmand.plus.GPXUtilities.GPXFile;
-import net.osmand.plus.GPXUtilities.WptPt;
+import net.osmand.GPXUtilities.GPXFile;
+import net.osmand.GPXUtilities.WptPt;
 import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
@@ -364,17 +364,7 @@ public class QuickSearchListItem {
 				return getIcon(app, R.drawable.ic_world_globe_dark);
 			case RECENT_OBJ:
 				HistoryEntry entry = (HistoryEntry) searchResult.object;
-				if (entry.getName() != null && !Algorithms.isEmpty(entry.getName().getIconName())) {
-					String iconName = entry.getName().getIconName();
-					if (RenderingIcons.containsBigIcon(iconName)) {
-						iconId = RenderingIcons.getBigIconResourceId(iconName);
-					} else {
-						iconId = app.getResources().getIdentifier(iconName, "drawable", app.getPackageName());
-					}
-				}
-				if (iconId <= 0) {
-					iconId = SearchHistoryFragment.getItemIcon(entry.getName());
-				}
+				iconId = getHistoryIconId(app, entry);
 				try {
 					return getIcon(app, iconId);
 				} catch (Exception e) {
@@ -387,6 +377,22 @@ public class QuickSearchListItem {
 				break;
 		}
 		return null;
+	}
+
+	public static int getHistoryIconId(OsmandApplication app, HistoryEntry entry) {
+		int iconId = -1;
+		if (entry.getName() != null && !Algorithms.isEmpty(entry.getName().getIconName())) {
+			String iconName = entry.getName().getIconName();
+			if (RenderingIcons.containsBigIcon(iconName)) {
+				iconId = RenderingIcons.getBigIconResourceId(iconName);
+			} else {
+				iconId = app.getResources().getIdentifier(iconName, "drawable", app.getPackageName());
+			}
+		}
+		if (iconId <= 0) {
+			iconId = SearchHistoryFragment.getItemIcon(entry.getName());
+		}
+		return iconId;
 	}
 
 	private static Drawable getIcon(OsmandApplication app, int iconId) {

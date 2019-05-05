@@ -68,6 +68,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import gnu.trove.list.array.TLongArrayList;
+
 import static net.osmand.plus.download.DownloadOsmandIndexesHelper.assetMapping;
 
 /**
@@ -108,7 +110,8 @@ public class ResourceManager {
 		TRANSPORT,
 		ADDRESS,
 		QUICK_SEARCH, 
-		ROUTING
+		ROUTING,
+		TRANSPORT_ROUTING
 	}
 	
 	public static class BinaryMapReaderResource {
@@ -116,6 +119,7 @@ public class ResourceManager {
 		private File filename;
 		private List<BinaryMapIndexReader> readers = new ArrayList<>(BinaryMapReaderResourceType.values().length);
 		private boolean useForRouting;
+		private boolean useForPublicTransport;
 		public BinaryMapReaderResource(File f, BinaryMapIndexReader initialReader) {
 			this.filename = f;
 			this.initialReader = initialReader;
@@ -178,6 +182,14 @@ public class ResourceManager {
 		
 		public boolean isUseForRouting() {
 			return useForRouting;
+		}
+
+		public boolean isUseForPublicTransport() {
+			return useForPublicTransport;
+		}
+
+		public void setUseForPublicTransport(boolean useForPublicTransport) {
+			this.useForPublicTransport = useForPublicTransport;
 		}
 	}
 	
@@ -638,6 +650,19 @@ public class ResourceManager {
 		}
 		File liveDir = context.getAppPath(IndexConstants.LIVE_INDEX_DIR);
 		depthContours = false;
+		boolean hasWorldBasemap = false;
+		File worldBasemapMini = null;
+		for (File f : files) {
+			if (f.getName().equals("World_basemap.obf")) {
+				hasWorldBasemap = true;
+			}
+			if (f.getName().startsWith("World_basemap_mini")) {
+				worldBasemapMini = f;
+			}
+		}
+		if (hasWorldBasemap && worldBasemapMini != null) {
+			files.remove(worldBasemapMini);
+		}
 		for (File f : files) {
 			progress.startTask(context.getString(R.string.indexing_map) + " " + f.getName(), -1); //$NON-NLS-1$
 			try {
@@ -694,6 +719,10 @@ public class ResourceManager {
 					if (mapReader.containsRouteData() && (!f.getParentFile().equals(liveDir) || 
 							context.getSettings().USE_OSM_LIVE_FOR_ROUTING.get())) {
 						resource.setUseForRouting(true);
+					}
+					if (mapReader.hasTransportData() && (!f.getParentFile().equals(liveDir) ||
+							context.getSettings().USE_OSM_LIVE_FOR_PUBLIC_TRANSPORT.get())) {
+						resource.setUseForPublicTransport(true);
 					}
 					if (mapReader.containsPoiData()) {
 						try {
@@ -908,7 +937,7 @@ public class ResourceManager {
 	public List<TransportIndexRepository> searchTransportRepositories(double latitude, double longitude) {
 		List<TransportIndexRepository> repos = new ArrayList<TransportIndexRepository>();
 		for (TransportIndexRepository index : transportRepositories.values()) {
-			if (index.checkContains(latitude,longitude)) {
+			if (index.checkContains(latitude,longitude) && index.isUseForPublicTransport()) {
 				repos.add(index);
 			}
 		}
@@ -920,14 +949,24 @@ public class ResourceManager {
 		List<TransportIndexRepository> repos = new ArrayList<TransportIndexRepository>();
 		List<TransportStop> stops = new ArrayList<>();
 		for (TransportIndexRepository index : transportRepositories.values()) {
-			if (index.checkContains(topLatitude, leftLongitude, bottomLatitude, rightLongitude)) {
+			if (index.checkContains(topLatitude, leftLongitude, bottomLatitude, rightLongitude) && index.isUseForPublicTransport()) {
 				repos.add(index);
 			}
 		}
-		if(!repos.isEmpty()){
+		if (!repos.isEmpty()){
+			TLongArrayList addedTransportStops = new TLongArrayList();
 			for (TransportIndexRepository repository : repos) {
-				repository.searchTransportStops(topLatitude, leftLongitude, bottomLatitude, rightLongitude, 
-						-1, stops, matcher);
+				List<TransportStop> ls = new ArrayList<>();
+				repository.searchTransportStops(topLatitude, leftLongitude, bottomLatitude, rightLongitude,
+						-1, ls, matcher);
+				for (TransportStop tstop : ls) {
+					if (!addedTransportStops.contains(tstop.getId())) {
+						addedTransportStops.add(tstop.getId());
+						if (!tstop.isDeleted()) {
+							stops.add(tstop);
+						}
+					}
+				}
 			}
 		}
 		return stops;
@@ -998,7 +1037,20 @@ public class ResourceManager {
 		}
 		return readers.toArray(new BinaryMapIndexReader[readers.size()]);
 	}
-	
+
+	public BinaryMapIndexReader[] getTransportRoutingMapFiles() {
+		List<BinaryMapIndexReader> readers = new ArrayList<>(fileReaders.size());
+		for(BinaryMapReaderResource r : fileReaders.values()) {
+			if(r.isUseForPublicTransport()) {
+				BinaryMapIndexReader reader = r.getReader(BinaryMapReaderResourceType.TRANSPORT_ROUTING);
+				if (reader != null) {
+					readers.add(reader);
+				}
+			}
+		}
+		return readers.toArray(new BinaryMapIndexReader[readers.size()]);
+	}
+
 	public BinaryMapIndexReader[] getQuickSearchFiles() {
 		List<BinaryMapIndexReader> readers = new ArrayList<>(fileReaders.size());
 		for(BinaryMapReaderResource r : fileReaders.values()) {
@@ -1029,7 +1081,8 @@ public class ResourceManager {
 		File[] maps = dir.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File pathname) {
-				return pathname.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT);
+				return pathname.getName().endsWith(IndexConstants.BINARY_MAP_INDEX_EXT) &&
+						!pathname.getName().endsWith("World_basemap_mini.obf");
 			}
 		});
 		return maps != null && maps.length > 0;

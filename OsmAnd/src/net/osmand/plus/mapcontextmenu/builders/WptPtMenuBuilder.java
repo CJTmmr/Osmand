@@ -10,8 +10,8 @@ import android.widget.LinearLayout;
 
 import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
-import net.osmand.plus.GPXUtilities;
-import net.osmand.plus.GPXUtilities.WptPt;
+import net.osmand.GPXUtilities;
+import net.osmand.GPXUtilities.WptPt;
 import net.osmand.plus.GpxSelectionHelper;
 import net.osmand.plus.GpxSelectionHelper.SelectedGpxFile;
 import net.osmand.plus.OsmAndAppCustomization;
@@ -78,7 +78,7 @@ public class WptPtMenuBuilder extends MenuBuilder {
 				@Override
 				public void onClick(View v) {
 					POIMapLayer.showDescriptionDialog(row.getContext(), app, wpt.desc,
-							row.getResources().getString(R.string.description));
+							row.getResources().getString(R.string.shared_string_description));
 				}
 			});
 		}
@@ -150,6 +150,7 @@ public class WptPtMenuBuilder extends MenuBuilder {
 					public void onClick(View v) {
 						LatLon latLon = new LatLon(point.getLatitude(), point.getLongitude());
 						PointDescription pointDescription = new PointDescription(PointDescription.POINT_TYPE_WPT, point.name);
+						mapActivity.getContextMenu().setCenterMarker(true);
 						mapActivity.getContextMenu().show(latLon, pointDescription, point);
 					}
 				});

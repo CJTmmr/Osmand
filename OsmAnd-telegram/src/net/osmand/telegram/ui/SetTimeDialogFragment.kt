@@ -21,6 +21,7 @@ import net.osmand.telegram.helpers.TelegramUiHelper
 import net.osmand.telegram.ui.SetTimeDialogFragment.SetTimeListAdapter.ChatViewHolder
 import net.osmand.telegram.utils.AndroidUtils
 import net.osmand.telegram.utils.OsmandFormatter
+import net.osmand.telegram.utils.OsmandLocationUtils
 import net.osmand.telegram.utils.UiUtils
 import net.osmand.util.MapUtils
 import org.drinkless.td.libcore.telegram.TdApi
@@ -78,6 +79,9 @@ class SetTimeDialogFragment : BaseDialogFragment(), TelegramLocationListener, Te
 		view.findViewById<TextView>(R.id.secondary_btn).apply {
 			text = getString(R.string.shared_string_back)
 			setOnClickListener {
+				targetFragment?.also {
+					it.onActivityResult(targetRequestCode, LOCATION_SHARING_CANCELED_CODE, null)
+				}
 				dismiss()
 			}
 		}
@@ -270,12 +274,18 @@ class SetTimeDialogFragment : BaseDialogFragment(), TelegramLocationListener, Te
 
 	private fun updateList() {
 		val items: MutableList<TdApi.Object> = mutableListOf()
-		telegramHelper.getChatList().filter { chatLivePeriods.keys.contains(it.chatId) }
-			.forEach { orderedChat ->
-				telegramHelper.getChat(orderedChat.chatId)?.also { items.add(it) }
+		chatLivePeriods.keys.forEach {
+			val chat = telegramHelper.getChat(it)
+			if (chat != null) {
+				items.add(chat)
 			}
-		telegramHelper.getContacts().values.filter { userLivePeriods.keys.contains(it.id.toLong()) }
-			.forEach { user -> items.add(user) }
+		}
+		userLivePeriods.keys.forEach {
+			val user = telegramHelper.getUser(it.toInt())
+			if (user != null) {
+				items.add(user)
+			}
+		}
 		adapter.items = items
 	}
 
@@ -328,7 +338,7 @@ class SetTimeDialogFragment : BaseDialogFragment(), TelegramLocationListener, Te
 				val message = telegramHelper.getChatMessages(itemId).firstOrNull()
 				val content = message?.content
 				if (message != null && content is TdApi.MessageLocation && (location != null && content.location != null)) {
-					val lastUpdated = telegramHelper.getLastUpdatedTime(message)
+					val lastUpdated = OsmandLocationUtils.getLastUpdatedTime(message)
 					holder.description?.visibility = View.VISIBLE
 					holder.description?.text = OsmandFormatter.getListItemLiveTimeDescr(app, lastUpdated)
 
@@ -356,6 +366,7 @@ class SetTimeDialogFragment : BaseDialogFragment(), TelegramLocationListener, Te
 					userLivePeriods[itemId]?.also { text = formatLivePeriod(it) }
 				}
 			}
+			holder.topShadowDivider?.visibility = View.GONE
 			holder.bottomShadow?.visibility = View.GONE
 			holder.itemView.setOnClickListener {
 				selectDuration(itemId, isChat)
@@ -372,6 +383,7 @@ class SetTimeDialogFragment : BaseDialogFragment(), TelegramLocationListener, Te
 			val locationViewContainer: View? = view.findViewById(R.id.location_view_container)
 			val description: TextView? = view.findViewById(R.id.description)
 			val textInArea: TextView? = view.findViewById(R.id.text_in_area)
+			val topShadowDivider: View? = view.findViewById(R.id.top_divider)
 			val bottomShadow: View? = view.findViewById(R.id.bottom_shadow)
 		}
 	}
@@ -379,6 +391,7 @@ class SetTimeDialogFragment : BaseDialogFragment(), TelegramLocationListener, Te
 	companion object {
 
 		const val LOCATION_SHARED_REQUEST_CODE = 0
+		const val LOCATION_SHARING_CANCELED_CODE = 1
 
 		private const val TAG = "SetTimeDialogFragment"
 		private const val CHATS_KEY = "chats_key"

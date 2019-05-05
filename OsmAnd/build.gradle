@@ -31,6 +31,7 @@ task printc {
 android {
 	compileSdkVersion 27
 	buildToolsVersion "27.0.3"
+	// compileNdkVersion "android-ndk-r17b"
 
 	signingConfigs {
 		development {
@@ -65,6 +66,23 @@ android {
 		abortOnError false
 		warningsAsErrors false
 	}
+
+	bundle {
+		language {
+			// Specifies that the app bundle should not support
+			// configuration APKs for language resources. These
+			// resources are instead packaged with each base and
+			// dynamic feature APK.
+			enableSplit = false
+		}
+	}
+
+	// related to kuromoji
+	//packagingOptions {
+	//	exclude '/META-INF/CONTRIBUTORS.md'
+	//	exclude '/META-INF/LICENSE.md'
+	//	exclude '/META-INF/NOTICE.md'
+	//}
 
 	// This is from OsmAndCore_android.aar - for some reason it's not inherited
 	aaptOptions {
@@ -234,6 +252,12 @@ task validateTranslate {
 	}
 }
 
+task downloadWorldMiniBasemap {
+	doLast {
+		ant.get(src: 'http://builder.osmand.net/basemap/World_basemap_mini_2.obf', dest: 'assets/World_basemap_mini.obf', skipexisting: 'true')
+	}
+}
+
 task collectVoiceAssets(type: Sync) {
 	from "../../resources/voice"
 	into "assets/voice"
@@ -292,14 +316,14 @@ task copyWidgetIcons(type: Exec) {
 
 task collectExternalResources {
 	dependsOn collectVoiceAssets,
-		collectFonts,
-		collectHelpContentsAssets,
-		collectHelpContentsStyle,
-		copyStyleIcons,
-		updateNoTranslate,
-		validateTranslate
-	// CJT - no copyW - to build in Windows... manualy copy done.
-	//		copyWidgetIcons
+			collectFonts,
+			collectHelpContentsAssets,
+			collectHelpContentsStyle,
+			copyStyleIcons,
+			updateNoTranslate,
+			validateTranslate,
+			copyWidgetIcons,
+			downloadWorldMiniBasemap
 }
 
 // Legacy core build
@@ -363,11 +387,12 @@ project.logger.warn("Analytics enabled for free version: $analytics")
 dependencies {
 	implementation project(path: ':OsmAnd-java', configuration: 'android')
 	if (analytics) {
-		implementation 'com.google.firebase:firebase-core:12.0.1'
-		implementation 'com.google.firebase:firebase-messaging:12.0.1'
-		implementation 'com.google.firebase:firebase-iid:12.0.1'
-		implementation 'com.google.firebase:firebase-config:12.0.1'
-		implementation 'com.facebook.android:facebook-android-sdk:4.31.0'	
+	// Analytics is totally removed to stay free from 3rd party collecting users data
+//		implementation 'com.google.firebase:firebase-core:12.0.1'
+//		implementation 'com.google.firebase:firebase-messaging:12.0.1'
+//		implementation 'com.google.firebase:firebase-iid:12.0.1'
+//		implementation 'com.google.firebase:firebase-config:12.0.1'
+//		implementation 'com.facebook.android:facebook-android-sdk:4.31.0'	
 	}
 	implementation 'com.android.support:multidex:1.0.1'
 	implementation 'com.android.support:gridlayout-v7:27.1.1'
@@ -385,11 +410,12 @@ dependencies {
 	implementation 'com.moparisthebest:junidecode:0.1.1'
 	implementation 'org.immutables:gson:2.5.0'
 	implementation 'com.vividsolutions:jts-core:1.14.0'
-
+	// turn off for now
+	//implementation 'com.atilika.kuromoji:kuromoji-ipadic:0.9.0'
 	implementation 'com.squareup.picasso:picasso:2.71828'
+	implementation 'me.zhanghai.android.materialprogressbar:library:1.4.2'
 	// JS core
 	implementation group: 'org.mozilla', name: 'rhino', version: '1.7.9'
-
 // size restrictions
 // implementation 'com.ibm.icu:icu4j:50.1' 
 // implementation 'net.sf.trove4j:trove4j:3.0.3'

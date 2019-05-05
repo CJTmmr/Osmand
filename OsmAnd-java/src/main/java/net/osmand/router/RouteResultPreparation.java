@@ -41,7 +41,6 @@ public class RouteResultPreparation {
 	 */
 	List<RouteSegmentResult> prepareResult(RoutingContext ctx, FinalRouteSegment finalSegment) throws IOException {
 		List<RouteSegmentResult> result  = convertFinalSegmentToResults(ctx, finalSegment);
-		combineWayPointsForAreaRouting(ctx, result);
 		prepareResult(ctx, result);
 		return result;
 	}
@@ -158,6 +157,10 @@ public class RouteResultPreparation {
 	}
 
 	List<RouteSegmentResult> prepareResult(RoutingContext ctx, List<RouteSegmentResult> result) throws IOException {
+		for(int i = 0; i < result.size(); i++) {
+			checkAndInitRouteRegion(ctx, result.get(i).getObject());
+		}
+		combineWayPointsForAreaRouting(ctx, result);
 		validateAllPointsConnected(result);
 		splitRoadsAndAttachRoadSegments(ctx, result);
 		calculateTimeSpeed(ctx, result);
@@ -290,8 +293,6 @@ public class RouteResultPreparation {
 				ctx.unloadUnusedTiles(ctx.config.memoryLimitation);
 			}
 			RouteSegmentResult rr = result.get(i);
-			RouteDataObject road = rr.getObject();
-			checkAndInitRouteRegion(ctx, road);
 			boolean plus = rr.getStartPointIndex() < rr.getEndPointIndex();
 			int next;
 			for (int j = rr.getStartPointIndex(); j != rr.getEndPointIndex(); j = next) {
@@ -1718,4 +1719,6 @@ public class RouteResultPreparation {
 		return MapUtils.getDistance(MapUtils.get31LatitudeY(y1), MapUtils.get31LongitudeX(x1), 
 				MapUtils.get31LatitudeY(y2), MapUtils.get31LongitudeX(x2));
 	}
+
+
 }

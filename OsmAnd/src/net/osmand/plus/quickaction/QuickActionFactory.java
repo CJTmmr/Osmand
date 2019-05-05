@@ -33,8 +33,10 @@ import net.osmand.plus.quickaction.actions.NavStartStopAction;
 import net.osmand.plus.quickaction.actions.NavVoiceAction;
 import net.osmand.plus.quickaction.actions.NewAction;
 import net.osmand.plus.quickaction.actions.ShowHideFavoritesAction;
+import net.osmand.plus.quickaction.actions.ShowHideGpxTracksAction;
 import net.osmand.plus.quickaction.actions.ShowHideOSMBugAction;
 import net.osmand.plus.quickaction.actions.ShowHidePoiAction;
+import net.osmand.plus.quickaction.actions.DayNightModeAction;
 import net.osmand.plus.rastermaps.OsmandRasterMapsPlugin;
 
 import java.lang.reflect.Type;
@@ -101,6 +103,9 @@ public class QuickActionFactory {
 		if (!favorites.hasInstanceInList(active)) {
 			quickActions.add(favorites);
 		}
+
+		quickActions.add(new ShowHideGpxTracksAction());
+
 		quickActions.add(new ShowHidePoiAction());
 		if (OsmandPlugin.getEnabledPlugin(OsmEditingPlugin.class) != null) {
 			QuickAction showHideOSMBugAction = new ShowHideOSMBugAction();
@@ -115,6 +120,9 @@ public class QuickActionFactory {
 			quickActions.add(new MapOverlayAction());
 			quickActions.add(new MapUnderlayAction());
 		}
+
+		quickActions.add(new DayNightModeAction());
+
 
 		QuickAction voice = new NavVoiceAction();
 		QuickAction addDestination = new NavAddDestinationAction();
@@ -232,6 +240,12 @@ public class QuickActionFactory {
 			case NavResumePauseAction.TYPE:
 				return new NavResumePauseAction();
 
+			case DayNightModeAction.TYPE:
+				return new DayNightModeAction();
+
+			case ShowHideGpxTracksAction.TYPE:
+				return new ShowHideGpxTracksAction();
+
 			default:
 				return new QuickAction();
 		}
@@ -312,6 +326,12 @@ public class QuickActionFactory {
 
 			case NavResumePauseAction.TYPE:
 				return new NavResumePauseAction(quickAction);
+
+			case DayNightModeAction.TYPE:
+				return new DayNightModeAction(quickAction);
+
+			case ShowHideGpxTracksAction.TYPE:
+				return new ShowHideGpxTracksAction(quickAction);
 
 			default:
 				return quickAction;
@@ -394,6 +414,12 @@ public class QuickActionFactory {
 			case NavResumePauseAction.TYPE:
 				return R.drawable.ic_play_dark;
 
+			case DayNightModeAction.TYPE:
+				return R.drawable.ic_action_map_day;
+
+			case ShowHideGpxTracksAction.TYPE:
+				return R.drawable.ic_gpx_track;
+
 			default:
 				return R.drawable.ic_action_plus;
 		}
@@ -457,6 +483,9 @@ public class QuickActionFactory {
 			case MapUnderlayAction.TYPE:
 				return R.string.quick_action_map_underlay;
 
+			case DayNightModeAction.TYPE:
+				return R.string.quick_action_day_night_switch_mode;
+
 			case NavAddDestinationAction.TYPE:
 				return R.string.quick_action_add_destination;
 
@@ -474,6 +503,9 @@ public class QuickActionFactory {
 
 			case NavResumePauseAction.TYPE:
 				return R.string.quick_action_resume_pause_navigation;
+
+			case ShowHideGpxTracksAction.TYPE:
+				return R.string.quick_action_show_hide_gpx_tracks;
 
 			default:
 				return R.string.quick_action_new_action;
@@ -500,6 +532,8 @@ public class QuickActionFactory {
 			case ShowHideOSMBugAction.TYPE:
 			case NavStartStopAction.TYPE:
 			case NavResumePauseAction.TYPE:
+			case DayNightModeAction.TYPE:
+			case ShowHideGpxTracksAction.TYPE:
 				return false;
 
 			default:

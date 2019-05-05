@@ -54,7 +54,7 @@ public class OptionsBottomSheetDialogFragment extends MenuBottomSheetDialogFragm
 
 		items.add(new DividerHalfItem(getContext()));
 
-		if (addLineMode) {
+		if (addLineMode && !snapToRoadEnabled) {
 			BaseBottomSheetItem saveAsNewSegmentItem = new SimpleBottomSheetItem.Builder()
 					.setIcon(getContentIcon(R.drawable.ic_action_polygom_dark))
 					.setTitle(getString(R.string.shared_string_save))
@@ -64,6 +64,39 @@ public class OptionsBottomSheetDialogFragment extends MenuBottomSheetDialogFragm
 						public void onClick(View v) {
 							if (listener != null) {
 								listener.addToGpxOnClick();
+							}
+							dismiss();
+						}
+					})
+					.create();
+			items.add(saveAsNewSegmentItem);
+		} else if (addLineMode) {
+
+			BaseBottomSheetItem saveAsNewTrackItem = new SimpleBottomSheetItem.Builder()
+					.setIcon(getContentIcon(R.drawable.ic_action_polygom_dark))
+					.setTitle(getString(R.string.shared_string_save_as_gpx))
+					.setLayoutId(R.layout.bottom_sheet_item_simple)
+					.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							if (listener != null) {
+								listener.saveAsNewTrackOnClick();
+							}
+							dismiss();
+						}
+					})
+					.create();
+			items.add(saveAsNewTrackItem);
+
+			BaseBottomSheetItem saveAsNewSegmentItem = new SimpleBottomSheetItem.Builder()
+					.setIcon(getContentIcon(R.drawable.ic_action_polygom_dark))
+					.setTitle("Overwrite GPX")
+					.setLayoutId(R.layout.bottom_sheet_item_simple)
+					.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							if (listener != null) {
+								listener.overwriteOldTrackOnClick();
 							}
 							dismiss();
 						}
@@ -137,6 +170,8 @@ public class OptionsBottomSheetDialogFragment extends MenuBottomSheetDialogFragm
 		void saveAsNewTrackOnClick();
 
 		void addToTheTrackOnClick();
+
+		void overwriteOldTrackOnClick();
 
 		void clearAllOnClick();
 	}

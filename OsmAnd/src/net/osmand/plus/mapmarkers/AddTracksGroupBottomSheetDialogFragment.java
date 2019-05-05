@@ -9,12 +9,12 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import net.osmand.GPXUtilities;
+import net.osmand.GPXUtilities.GPXFile;
+import net.osmand.GPXUtilities.GPXTrackAnalysis;
 import net.osmand.IndexConstants;
 import net.osmand.plus.GPXDatabase;
 import net.osmand.plus.GPXDatabase.GpxDataItem;
-import net.osmand.plus.GPXUtilities;
-import net.osmand.plus.GPXUtilities.GPXFile;
-import net.osmand.plus.GPXUtilities.GPXTrackAnalysis;
 import net.osmand.plus.GpxSelectionHelper;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
@@ -58,7 +58,8 @@ public class AddTracksGroupBottomSheetDialogFragment extends AddGroupBottomSheet
 	@Override
 	protected void onItemClick(int position) {
 		GpxDataItem dataItem = gpxList.get(position - 1);
-		if (dataItem.getAnalysis().wptCategoryNames != null && dataItem.getAnalysis().wptCategoryNames.size() > 1) {
+		GPXTrackAnalysis analysis = dataItem.getAnalysis();
+		if (analysis != null && analysis.wptCategoryNames != null && analysis.wptCategoryNames.size() > 1) {
 			Bundle args = new Bundle();
 			args.putString(SelectWptCategoriesBottomSheetDialogFragment.GPX_FILE_PATH_KEY, dataItem.getFile().getAbsolutePath());
 
@@ -72,7 +73,7 @@ public class AddTracksGroupBottomSheetDialogFragment extends AddGroupBottomSheet
 				GpxSelectionHelper selectionHelper = app.getSelectedGpxHelper();
 				File gpx = dataItem.getFile();
 				if (selectionHelper.getSelectedFileByPath(gpx.getAbsolutePath()) == null) {
-					GPXFile res = GPXUtilities.loadGPXFile(app, gpx);
+					GPXFile res = GPXUtilities.loadGPXFile(gpx);
 					selectionHelper.selectGpxFile(res, true, false, false, false, false);
 				}
 				app.getMapMarkersHelper().addOrEnableGpxGroup(gpx);
@@ -131,10 +132,12 @@ public class AddTracksGroupBottomSheetDialogFragment extends AddGroupBottomSheet
 					processGPXFolder(gpxFile, sub);
 				} else if (gpxFile.isFile() && gpxFile.getName().toLowerCase().endsWith(".gpx")) {
 					GpxDataItem item = processedDataFiles.get(gpxFile);
+					GPXTrackAnalysis itemAnalysis = item != null ? item.getAnalysis() : null;
 					if (item == null
 							|| item.getFileLastModifiedTime() != gpxFile.lastModified()
-							|| item.getAnalysis().wptCategoryNames == null) {
-						GPXFile f = GPXUtilities.loadGPXFile(app, gpxFile);
+							|| itemAnalysis == null
+							|| itemAnalysis.wptCategoryNames == null) {
+						GPXFile f = GPXUtilities.loadGPXFile(gpxFile);
 						GPXTrackAnalysis analysis = f.getAnalysis(gpxFile.lastModified());
 						if (item == null) {
 							item = new GpxDataItem(gpxFile, analysis);
@@ -144,7 +147,7 @@ public class AddTracksGroupBottomSheetDialogFragment extends AddGroupBottomSheet
 						}
 					}
 					processedDataFiles.put(gpxFile, item);
-					if (item.getAnalysis().wptPoints > 0) {
+					if (itemAnalysis != null && itemAnalysis.wptPoints > 0) {
 						gpxList.add(item);
 					}
 				}

@@ -229,9 +229,9 @@ public abstract class ChoosePlanDialogFragment extends BaseOsmAndDialogFragment 
 	}
 
 	public String getInfoDescription() {
-		if (Version.isFreeVersion(getOsmandApplication())) {
+		if (!Version.isPaidVersion(getOsmandApplication())) {
 			String description = getString(R.string.free_version_message,
-					DownloadValidationManager.MAXIMUM_AVAILABLE_FREE_DOWNLOADS) + "\n";
+					DownloadValidationManager.MAXIMUM_AVAILABLE_FREE_DOWNLOADS + "") + "\n";
 			return description + getString(R.string.get_osmand_live);
 		} else {
 			return getString(R.string.get_osmand_live);

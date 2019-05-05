@@ -40,15 +40,14 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewParent;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import net.osmand.plus.R;
 import net.osmand.plus.download.DownloadActivity;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -307,6 +306,24 @@ public class AndroidUtils {
 					ctx.getTheme()));
 		} else {
 			view.setBackgroundDrawable(ctx.getResources().getDrawable(night ? darkResId : lightResId));
+		}
+	}
+
+	public static void setForeground(Context ctx, View view, boolean night, int lightResId, int darkResId) {
+		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+			view.setForeground(ctx.getResources().getDrawable(night ? darkResId : lightResId,
+					ctx.getTheme()));
+		} else if (view instanceof FrameLayout) {
+			((FrameLayout) view).setForeground(ctx.getResources().getDrawable(night ? darkResId : lightResId));
+		}
+	}
+
+	public static void updateImageButton(Context ctx, ImageButton button, int iconLightId, int iconDarkId, int bgLightId, int bgDarkId, boolean night) {
+		button.setImageDrawable(ctx.getResources().getDrawable(night ? iconDarkId : iconLightId));
+		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+			button.setBackground(ctx.getResources().getDrawable(night ? bgDarkId : bgLightId, ctx.getTheme()));
+		} else {
+			button.setBackgroundDrawable(ctx.getResources().getDrawable(night ? bgDarkId : bgLightId));
 		}
 	}
 
