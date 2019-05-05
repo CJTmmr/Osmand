@@ -322,7 +322,7 @@ task collectExternalResources {
 			copyStyleIcons,
 			updateNoTranslate,
 			validateTranslate,
-			copyWidgetIcons,
+//			copyWidgetIcons,
 			downloadWorldMiniBasemap
 }
 
