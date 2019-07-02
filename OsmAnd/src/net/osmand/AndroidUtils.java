@@ -298,6 +298,12 @@ public class AndroidUtils {
 		tv.setTextColor(ContextCompat.getColor(view.getContext(), colorId));
 	}
 
+	public static void setSnackbarTextMaxLines(Snackbar snackbar, int maxLines) {
+		View view = snackbar.getView();
+		TextView tv = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
+		tv.setMaxLines(maxLines);
+	}
+
 	@SuppressLint("NewApi")
 	@SuppressWarnings("deprecation")
 	public static void setBackground(Context ctx, View view, boolean night, int lightResId, int darkResId) {
@@ -345,20 +351,20 @@ public class AndroidUtils {
 
 	public static void setTextPrimaryColor(Context ctx, TextView textView, boolean night) {
 		textView.setTextColor(night ?
-				ctx.getResources().getColor(R.color.primary_text_dark)
-				: ctx.getResources().getColor(R.color.primary_text_light));
+				ctx.getResources().getColor(R.color.text_color_primary_dark)
+				: ctx.getResources().getColor(R.color.text_color_primary_light));
 	}
 
 	public static void setTextSecondaryColor(Context ctx, TextView textView, boolean night) {
 		textView.setTextColor(night ?
-				ctx.getResources().getColor(R.color.secondary_text_dark)
-				: ctx.getResources().getColor(R.color.secondary_text_light));
+				ctx.getResources().getColor(R.color.text_color_secondary_dark)
+				: ctx.getResources().getColor(R.color.text_color_secondary_light));
 	}
 
 	public static void setHintTextSecondaryColor(Context ctx, TextView textView, boolean night) {
 		textView.setHintTextColor(night ?
-				ctx.getResources().getColor(R.color.secondary_text_dark)
-				: ctx.getResources().getColor(R.color.secondary_text_light));
+				ctx.getResources().getColor(R.color.text_color_secondary_dark)
+				: ctx.getResources().getColor(R.color.text_color_secondary_light));
 	}
 
 

@@ -1449,7 +1449,7 @@
     <string name="parking_place">Lugar de aparcamiento</string>
     <string name="remove_the_tag">QUITAR ETIQUETA</string>
     <string name="shared_string_disabled">Desactivado</string>
-    <string name="shared_string_enabled">Activado</string>
+    <string name="shared_string_enabled">Habilitado</string>
     <string name="edit_group">Editar grupo</string>
     <string name="plugin_install_needs_network">Debe conectarse a Internet para instalar este complemento.</string>
     <string name="plugin_ski_name">Vista invernal</string>
@@ -1557,7 +1557,7 @@
     <string name="rendering_value__name">Predefinido</string>
     <string name="rendering_value_highContrastRoads_name">Caminos en alto contraste</string>
     <string name="specified_directiory_not_writeable">No se pueden crear mapas en el directorio indicado</string>
-    <string name="copying_osmand_file_failed">Falló al copiar archivos</string>
+    <string name="copying_osmand_file_failed">Falló al mover archivos</string>
     <string name="storage_directory_external">Almacenamiento externo</string>
     <string name="storage_directory_multiuser">Almacenamiento multiusuario</string>
     <string name="storage_directory_internal_app">Memoria interna de la aplicación</string>
@@ -1565,7 +1565,7 @@
     <string name="storage_directory_default">Memoria interna</string>
     <string name="storage_directory">Almacenamiento del mapa</string>
     <string name="shared_string_copy">Copiar</string>
-    <string name="application_dir_change_warning3">¿Copiar los archivos de datos de OsmAnd al nuevo destino?</string>
+    <string name="application_dir_change_warning3">¿Mover los archivos de datos de OsmAnd al nuevo destino\?</string>
     <string name="rendering_attr_hideHouseNumbers_name">Números de casa</string>
     <string name="routing_attr_avoid_borders_description">Evita cruzar las fronteras nacionales</string>
     <string name="routing_attr_height_name">Límite de altura</string>
@@ -1791,7 +1791,7 @@
     <string name="context_menu_item_open_note">Abrir nota de OSM</string>
     <string name="osm_edit_reopened_note">Nota de OSM reabierta</string>
     <string name="osm_edit_commented_note">Nota de OSM comentada</string>
-    <string name="osm_edit_removed_note">Nota de OSM borrada</string>
+    <string name="osm_edit_removed_note">Nota de OSM resuelta</string>
     <string name="osm_edit_created_note">Nota de OSM creada</string>
     <string name="osn_bug_name">Nota de OSM</string>
     <string name="osn_add_dialog_title">Crear nota</string>
@@ -1877,7 +1877,7 @@
     <string name="clear_updates_proposition_message">Quitar las actualizaciones descargadas y volver a la edición original del mapa</string>
     <string name="add_time_span">Añadir intervalo de tiempo</string>
     <string name="road_blocked">Camino bloqueado</string>
-    <string name="shared_string_select">Seleccionar</string>
+    <string name="shared_string_select">Elegir</string>
     <string name="switch_start_finish">Invertir puntos de partida y destino</string>
     <string name="rendering_attr_hideIcons_name">Iconos de PDI</string>
     <string name="number_of_contributors">Número de editores</string>
@@ -2453,13 +2453,13 @@
     <string name="improve_coverage_mapillary">Mejorar cobertura de fotos con Mapillary</string>
     <string name="improve_coverage_install_mapillary_desc">Instala Mapillary para añadir una o más fotos a esta ubicación del mapa.</string>
     <string name="online_photos">Fotos en línea</string>
-    <string name="mapillary_image">Imagen de Mapillary</string>
+    <string name="mapillary_image">Imagen Mapillary</string>
     <string name="shared_string_permissions">Permisos</string>
     <string name="import_gpx_failed_descr">OsmAnd no puede importar el archivo. Comprueba si OsmAnd tiene permiso para leer archivos desde esta ubicación.</string>
     <string name="distance_moving">Distancia recorrida</string>
     <string name="store_tracks_in_monthly_directories">Guardar las trazas grabadas en carpetas mensuales</string>
     <string name="store_tracks_in_monthly_directories_descrp">Guardar las trazas grabadas en subcarpetas, por mes de grabación (como 2018-01).</string>
-    <string name="shared_string_reset">Restablecer</string>
+    <string name="shared_string_reset">Reiniciar</string>
     <string name="shared_string_reload">Recargar</string>
     <string name="mapillary_menu_descr_tile_cache">Recarga las teselas para ver la información actualizada.</string>
     <string name="mapillary_menu_title_tile_cache">Caché de teselas</string>
@@ -3023,7 +3023,7 @@
     <string name="routing_attr_avoid_sett_description">Evita las calles empedradas y adoquinadas</string>
     <string name="shared_string_degrees">Grados</string>
     <string name="shared_string_milliradians">Mil angular</string>
-    <string name="angular_measeurement">Unidades de medición angular</string>
+    <string name="angular_measeurement">Unidad angular</string>
     <string name="angular_measeurement_descr">Cambiar el acimut en el que se mide.</string>
     <string name="routing_attr_avoid_tram_name">Evitar tranvías</string>
     <string name="routing_attr_avoid_tram_description">Evita usar los tranvías</string>
@@ -3046,4 +3046,92 @@
 \n • Visualización de medida «azimut» en «Medir distancia»
 \n</string>
     <string name="send_log">Enviar registro de problemas</string>
+    <string name="files_moved">Se movieron %1$d archivos (%2$s).</string>
+    <string name="files_copied">Se copiaron %1$d archivos (%2$s).</string>
+    <string name="files_failed">Error al copiar %1$d archivo(s) (%2$s).</string>
+    <string name="files_present">Existen %1$d archivo(s) (%2$s) en la ubicación anterior «%3$s».</string>
+    <string name="move_maps">Mover mapas</string>
+    <string name="dont_move_maps">No mover</string>
+    <string name="public_transport_ped_route_title">La ruta a pie es de aproximadamente %1$s y podría ser más rápida que en transporte público</string>
+    <string name="public_transport_no_route_title">Por desgracia, OsmAnd no pudo encontrar una ruta adecuada a sus ajustes.</string>
+    <string name="public_transport_try_ped">Pruebe la navegación a pie.</string>
+    <string name="public_transport_try_change_settings">Intenta cambiar los ajustes.</string>
+    <string name="public_transport_calc_pedestrian">Calcular la ruta a pie</string>
+    <string name="public_transport_type">Tipo de transporte</string>
+    <string name="searching_gps">Buscando GPS</string>
+    <string name="coordinates_widget">Widget de coordenadas</string>
+    <string name="app_mode_ufo">Ovni</string>
+    <string name="release_3_4">• Perfiles de aplicación: crea tu propio perfil según tus necesidades, con un icono y color personalizado
+\n
+\n • Se añadió en los perfiles, la velocidad predefinida y la velocidad mín./máx.
+\n
+\n • Se añadió un widget con las coordenadas actuales
+\n
+\n • Se añadieron opciones para mostrar la brújula en el mapa con una regla radial
+\n
+\n • Se mejoraron las descargas de mapas en segundo plano
+\n
+\n • Se corrigió la selección de idioma de Wikipedia
+\n
+\n • Se corrigió el comportamiento de los botones de la brújula durante la navegación
+\n
+\n • Corrección de errores
+\n
+\n</string>
+    <string name="app_mode_personal_transporter">Transportador personal</string>
+    <string name="app_mode_monowheel">Monociclo</string>
+    <string name="app_mode_scooter">Motoneta</string>
+    <string name="precision_hdop_and_vdop">Precisión horizontal: %1$s, vertical: %2$s</string>
+    <string name="precision_hdop">Precisión horizontal: %s</string>
+    <string name="rate_dialog_descr">Por favor, dedícanos 30 segundos, comparte comentarios y califica nuestro trabajo en Google Play.</string>
+    <string name="button_rate">Puntúa</string>
+    <string name="shared_string_privacy_policy">Política de privacidad</string>
+    <string name="help_us_make_osmand_better">¡Ayúdanos a mejorar OsmAnd!</string>
+    <string name="make_osmand_better_descr">Permite que OsmAnd recopile y procese datos anónimos de uso de la aplicación. No recopilamos ni almacenamos datos sobre su ubicación, ni sobre los lugares que ve en el mapa.
+\n
+\nSiempre puedes cambiar su selección en Configuración &gt; Privacidad y seguridad.</string>
+    <string name="choose_data_to_share">Elige el tipo de datos que deseas compartir:</string>
+    <string name="downloaded_maps">Mapas descargados</string>
+    <string name="visited_screens">Pantallas visitadas</string>
+    <string name="collected_data_descr">Lista de datos que deseas compartir con OsmAnd.</string>
+    <string name="downloaded_maps_collect_descr">Recopilamos estos datos para comprender los mapas de qué regiones y países son los más populares.</string>
+    <string name="visited_screens_collect_descr">Recopilamos estos datos para conocer las características más populares de OsmAnd.</string>
+    <string name="privacy_and_security_change_descr">Al pulsar en \"Permitir\" está de acuerdo con nuestra %1$s</string>
+    <string name="settings_privacy_and_security">Privacidad y seguridad</string>
+    <string name="settings_privacy_and_security_desc">Elige tus datos a compartir con nosotros</string>
+    <string name="shared_string_no_thank_you">No, gracias</string>
+    <string name="shared_string_allow">Permitir</string>
+    <string name="profile_name_hint">Nombre de perfil</string>
+    <string name="nav_type_hint">Tipo de navegación</string>
+    <string name="app_mode_taxi">Taxi</string>
+    <string name="app_mode_shuttle_bus">Autobús de enlace</string>
+    <string name="app_mode_subway">Metro</string>
+    <string name="app_mode_horse">Caballo</string>
+    <string name="app_mode_helicopter">Helicóptero</string>
+    <string name="osmand_routing_promo">Puedes añadir tu propia versión modificada de routing.xml a ..osmand/routing</string>
+    <string name="app_mode_skiing">Esquí</string>
+    <string name="base_profile_descr_ski">Esquí</string>
+    <string name="show_compass_ruler">Mostrar regla de brújula</string>
+    <string name="hide_compass_ruler">Ocultar regla de brújula</string>
+    <string name="process_downloading_service">Servicio de descarga de OsmAnd</string>
+    <string name="shared_string_color_magenta">Magenta</string>
+    <string name="shared_string_icon">Icono</string>
+    <string name="collected_data">Datos recogidos</string>
+    <string name="press_again_to_change_the_map_orientation">Pulsa otra vez para cambiar la orientación de mapa</string>
+    <string name="shared_string_min_speed">Velocidad mínima</string>
+    <string name="shared_string_max_speed">Velocidad máxima</string>
+    <string name="default_speed_setting_title">Velocidad por defecto</string>
+    <string name="default_speed_setting_descr">Cambiar la configuración de velocidad por defecto</string>
+    <string name="minmax_speed_dialog_title">Ajustar la velocidad mínima/máxima</string>
+    <string name="default_speed_dialog_msg">"Se utiliza para los cálculos de la hora prevista de llegada  durante el enrutamiento"</string>
+    <string name="new_profile">Nuevo perfil</string>
+    <string name="last_launch_crashed">Las última ejecución de OsmAnd falló. Ayúdanos a mejorar OsmAnd. Por favor, envíanos un mensaje de error.</string>
+    <string name="select_icon_profile_dialog_title">Seleccionar icono</string>
+    <string name="settings_routing_mode_string">Modo: %s</string>
+    <string name="settings_derived_routing_mode_string">Modo Usuario, derivado de: %s</string>
+    <string name="routing_profile_ski">Esquí</string>
+    <string name="profile_type_descr_string">Tipo: %s</string>
+    <string name="profile_type_base_string">Perfil base</string>
+    <string name="profile_alert_need_routing_type_title">Selecciona el tipo de navegación</string>
+    <string name="profile_alert_need_routing_type_msg">Debes seleccionar Tipo de navegación para crear un nuevo perfil de aplicación</string>
 </resources>

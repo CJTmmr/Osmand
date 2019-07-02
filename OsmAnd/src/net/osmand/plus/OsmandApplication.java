@@ -1,8 +1,8 @@
 package net.osmand.plus;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
-import android.app.Application;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -14,9 +14,9 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
 import android.support.v7.app.AlertDialog;
@@ -47,10 +47,11 @@ import net.osmand.plus.activities.SavingTrackHelper;
 import net.osmand.plus.api.SQLiteAPI;
 import net.osmand.plus.api.SQLiteAPIImpl;
 import net.osmand.plus.base.MapViewTrackingUtilities;
-import net.osmand.plus.dashboard.DashErrorFragment;
-import net.osmand.plus.dialogs.ErrorBottomSheetDialog;
+import net.osmand.plus.dialogs.CrashBottomSheetDialogFragment;
 import net.osmand.plus.dialogs.RateUsBottomSheetDialog;
 import net.osmand.plus.download.DownloadIndexesThread;
+import net.osmand.plus.download.DownloadService;
+import net.osmand.plus.download.IndexItem;
 import net.osmand.plus.helpers.AvoidSpecificRoads;
 import net.osmand.plus.helpers.WaypointHelper;
 import net.osmand.plus.inapp.InAppPurchaseHelper;
@@ -67,6 +68,7 @@ import net.osmand.plus.search.QuickSearchHelper;
 import net.osmand.plus.voice.CommandPlayer;
 import net.osmand.plus.wikivoyage.data.TravelDbHelper;
 import net.osmand.router.RoutingConfiguration;
+import net.osmand.router.RoutingConfiguration.Builder;
 import net.osmand.search.SearchUICore;
 import net.osmand.util.Algorithms;
 
@@ -76,20 +78,17 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
+import java.util.UUID;
 
 import btools.routingapp.BRouterServiceConnection;
 import btools.routingapp.IBRouterService;
 
 public class OsmandApplication extends MultiDexApplication {
-	public static final String EXCEPTION_PATH = "exception.log"; 
+	public static final String EXCEPTION_PATH = "exception.log";
+	public static final String OSMAND_PRIVACY_POLICY_URL = "https://osmand.net/help-online/privacy-policy";
 	private static final org.apache.commons.logging.Log LOG = PlatformUtil.getLog(OsmandApplication.class);
-
-	private static final String SHOW_PLUS_VERSION_INAPP_PARAM = "show_plus_version_inapp";
 
 	final AppInitializer appInitializer = new AppInitializer(this);
 	OsmandSettings osmandSettings = null;
@@ -98,9 +97,9 @@ public class OsmandApplication extends MultiDexApplication {
 	private final OsmAndTaskManager taskManager = new OsmAndTaskManager(this);
 	private final UiUtilities iconsCache = new UiUtilities(this);
 	Handler uiHandler;
-	private boolean plusVersionInApp;
 
 	NavigationService navigationService;
+	DownloadService downloadService;
 
 	OsmandAidlApi aidlApi;
 
@@ -118,6 +117,7 @@ public class OsmandApplication extends MultiDexApplication {
 	GpxSelectionHelper selectedGpxHelper;
 	GPXDatabase gpxDatabase;
 	SavingTrackHelper savingTrackHelper;
+	AnalyticsHelper analyticsHelper;
 	NotificationHelper notificationHelper;
 	LiveMonitoringHelper liveMonitoringHelper;
 	TargetPointsHelper targetPointsHelper;
@@ -135,7 +135,7 @@ public class OsmandApplication extends MultiDexApplication {
 	InAppPurchaseHelper inAppPurchaseHelper;
 	MapViewTrackingUtilities mapViewTrackingUtilities;
 
-	RoutingConfiguration.Builder defaultRoutingConfig;
+	private RoutingConfiguration.Builder routingConfig;
 	private Locale preferredLocale = null;
 	private Locale defaultLocale;
 	private File externalStorageDirectory;
@@ -182,8 +182,6 @@ public class OsmandApplication extends MultiDexApplication {
 //		if(!osmandSettings.FOLLOW_THE_ROUTE.get()) {
 //			targetPointsHelper.clearPointToNavigate(false);
 //		}
-		initExternalLibs();
-		plusVersionInApp = getRemoteBoolean(SHOW_PLUS_VERSION_INAPP_PARAM, true);
 		startApplication();
 		System.out.println("Time to start application " + (System.currentTimeMillis() - timeToStart) + " ms. Should be less < 800 ms");
 		timeToStart = System.currentTimeMillis();
@@ -194,7 +192,7 @@ public class OsmandApplication extends MultiDexApplication {
 	}
 
 	public boolean isPlusVersionInApp() {
-		return plusVersionInApp;
+		return true;
 	}
 
 	public boolean isExternalStorageDirectoryReadOnly() {
@@ -286,6 +284,7 @@ public class OsmandApplication extends MultiDexApplication {
 	public void setOsmandSettings(OsmandSettings osmandSettings) {
 		//android.os.Process.killProcess(android.os.Process.myPid());
 		this.osmandSettings = osmandSettings;
+		resourceManager.getRenderer().updateSettings();
 		OsmandPlugin.initPlugins(this);
 	}
 
@@ -507,6 +506,14 @@ public class OsmandApplication extends MultiDexApplication {
 
 	public void setNavigationService(NavigationService navigationService) {
 		this.navigationService = navigationService;
+	}
+
+	public DownloadService getDownloadService() {
+		return downloadService;
+	}
+
+	public void setDownloadService(DownloadService downloadService) {
+		this.downloadService = downloadService;
 	}
 
 	public OsmandAidlApi getAidlApi() {
@@ -807,13 +814,20 @@ public class OsmandApplication extends MultiDexApplication {
 		return lang;
 	}
 	
-	public synchronized RoutingConfiguration.Builder getDefaultRoutingConfig() {
-		if(defaultRoutingConfig == null) {
-			defaultRoutingConfig = appInitializer.getLazyDefaultRoutingConfig();
+	public synchronized RoutingConfiguration.Builder getRoutingConfig() {
+		RoutingConfiguration.Builder rc;
+		if(routingConfig == null) {
+			rc = new RoutingConfiguration.Builder();
+		} else {
+			rc = routingConfig;
 		}
-		return defaultRoutingConfig;
+		return rc;
 	}
-	
+
+	public void updateRoutingConfig(Builder update) {
+			routingConfig = update;
+	}
+
 	public OsmandRegions getRegions() {
 		return regions;
 	}
@@ -848,7 +862,23 @@ public class OsmandApplication extends MultiDexApplication {
 			return 0;
 		}
 	}
-	
+
+
+	public int navigationServiceGpsInterval(int interval) {
+		// Issue 5632 Workaround: Keep GPS always on instead of using AlarmManager, as API>=19 restricts repeated AlarmManager reception
+		// Maybe do not apply to API=19 devices, many still behave acceptably (often restriction not worse than 1/min)
+		if ((Build.VERSION.SDK_INT > 19) && (getSettings().SAVE_GLOBAL_TRACK_INTERVAL.get() < 5 * 60000)) {
+			return 0;
+		}
+		// Default: Save battery power by turning off GPS between measurements
+		if (interval >= 30000) {
+			return interval;
+		// GPS continuous
+		} else {
+			return 0;
+		}
+	}
+
 
 	public void startNavigationService(int intent, int interval) {
 		final Intent serviceIntent = new Intent(this, NavigationService.class);
@@ -869,6 +899,15 @@ public class OsmandApplication extends MultiDexApplication {
 		//getNotificationHelper().showNotifications();
 	}
 
+	public void startDownloadService() {
+		final Intent serviceIntent = new Intent(this, DownloadService.class);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			startForegroundService(serviceIntent);
+		} else {
+			startService(serviceIntent);
+		}
+	}
 
 	public String getLangTranslation(String l) {
 		try {
@@ -904,120 +943,46 @@ public class OsmandApplication extends MultiDexApplication {
 		}
 	}
 
-	public void logEvent(Activity ctx, String event) {
-		try {
-			if (Version.isGooglePlayEnabled(this) && !Version.isPaidVersion(this)
-					&& !osmandSettings.DO_NOT_SEND_ANONYMOUS_APP_USAGE.get()) {
-				Class<?> cl = Class.forName("com.google.firebase.analytics.FirebaseAnalytics");
-				Method mm = cl.getMethod("getInstance", Context.class);
-				Object inst = mm.invoke(null, ctx == null ? this : ctx);
-				Method log = cl.getMethod("logEvent", String.class, Bundle.class);
-				log.invoke(inst, event, new Bundle());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+	@SuppressLint("HardwareIds")
+	public String getUserAndroidId() {
+		String userAndroidId = osmandSettings.USER_ANDROID_ID.get();
+		if (!Algorithms.isEmpty(userAndroidId)) {
+			return userAndroidId;
 		}
-	}
-	
-	
-	public void initExternalLibs() {
-		initRemoteConfig();
-		printFirebasetoken();
-		initFBEvents();
-	}
-	
-	public void initFBEvents() {
 		try {
-			if (Version.isGooglePlayEnabled(this) && Version.isFreeVersion(this)) {
-				Class<?> cls = Class.forName("com.facebook.FacebookSdk");
-				Method ms = cls.getMethod("sdkInitialize", Context.class);
-				ms.invoke(null, getApplicationContext());
-				Class<?> cl = Class.forName("com.facebook.appevents.AppEventsLogger");
-				Method mm = cl.getMethod("activateApp", Application.class);
-				mm.invoke(null, this);
-				Method mu = cl.getMethod("getUserID");
-				String uid = (String) mu.invoke(null);
-				LOG.info("FB token: " + uid);
-			}
+			userAndroidId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
+			// ignore
+		}
+		if (userAndroidId == null || userAndroidId.length() < 16 || userAndroidId.equals("0000000000000000")) {
+			userAndroidId = UUID.randomUUID().toString();
+		}
+		osmandSettings.USER_ANDROID_ID.set(userAndroidId);
+		return userAndroidId;
+	}
+
+	public void logEvent(String event) {
+		try {
+			analyticsHelper.addEvent(event, AnalyticsHelper.EVENT_TYPE_APP_USAGE);
+		} catch (Exception e) {
+			LOG.error(e);
 		}
 	}
 
-	public void initRemoteConfig() {
+	public void logMapDownloadEvent(String event, IndexItem item) {
 		try {
-			if (Version.isGooglePlayEnabled(this) && Version.isFreeVersion(this)) {
-				Class<?> cl = Class.forName("com.google.firebase.remoteconfig.FirebaseRemoteConfig");
-				Method mm = cl.getMethod("getInstance");
-				Object inst = mm.invoke(null);
-				Method log = cl.getMethod("setDefaults", Map.class);
-				Map<String, Object> defaults = new HashMap<>();
-				defaults.put(SHOW_PLUS_VERSION_INAPP_PARAM, Boolean.TRUE);
-				log.invoke(inst, defaults);
-			}
+			analyticsHelper.addEvent("map_download_" + event + ": " + item.getFileName(), AnalyticsHelper.EVENT_TYPE_MAP_DOWNLOAD);
 		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
-		}
-	}
-	
-	
-	public void printFirebasetoken() {
-		try {
-			if (Version.isGooglePlayEnabled(this) && Version.isFreeVersion(this)) {
-				Class<?> cl = Class.forName("com.google.firebase.iid.FirebaseInstanceId");
-				Method mm = cl.getMethod("getInstance");
-				Object inst = mm.invoke(null);
-				Method getToken = cl.getMethod("getToken");
-				String firebaseToken = (String) getToken.invoke(inst);
-				LOG.info("Fbase token: " + firebaseToken);
-			}
-		} catch (Exception e) {
-			LOG.error(e.getMessage(), e);
+			LOG.error(e);
 		}
 	}
 
-	public void fetchRemoteParams() {
+	public void logMapDownloadEvent(String event, IndexItem item, long time) {
 		try {
-			if(Version.isGooglePlayEnabled(this) && Version.isFreeVersion(this)) {
-				Class<?> cl = Class.forName("com.google.firebase.remoteconfig.FirebaseRemoteConfig");
-				Method mm = cl.getMethod("getInstance");
-				Object inst = mm.invoke(null);
-				Method log = cl.getMethod("fetch");
-				log.invoke(inst);
-			}
+			analyticsHelper.addEvent("map_download_" + event + ": " + item.getFileName() + " in " + time + " msec", AnalyticsHelper.EVENT_TYPE_MAP_DOWNLOAD);
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error(e);
 		}
-	}
-
-	public void activateFetchedRemoteParams() {
-		try {
-			if (Version.isGooglePlayEnabled(this) && Version.isFreeVersion(this)) {
-				Class<?> cl = Class.forName("com.google.firebase.remoteconfig.FirebaseRemoteConfig");
-				Method mm = cl.getMethod("getInstance");
-				Object inst = mm.invoke(null);
-				Method log = cl.getMethod("activateFetched");
-				log.invoke(inst);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public boolean getRemoteBoolean(String key, boolean defaultValue) {
-		try {
-			if (Version.isGooglePlayEnabled(this) && Version.isFreeVersion(this)) {
-				Class<?> cl = Class.forName("com.google.firebase.remoteconfig.FirebaseRemoteConfig");
-				Method mm = cl.getMethod("getInstance");
-				Object inst = mm.invoke(null);
-				Method log = cl.getMethod("getBoolean", String.class);
-				Boolean res = (Boolean)log.invoke(inst, key);
-				return res == null ? defaultValue : res;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return defaultValue;
 	}
 
 	public void restartApp(Context ctx) {
@@ -1059,9 +1024,11 @@ public class OsmandApplication extends MultiDexApplication {
 				text.append("\nApk Version : ").append(info.versionName).append(" ").append(info.versionCode);  
 			}
 		} catch (PackageManager.NameNotFoundException e) {
-			PlatformUtil.getLog(ErrorBottomSheetDialog.class).error("", e);
+			PlatformUtil.getLog(CrashBottomSheetDialogFragment.class).error("", e);
 		}
 		intent.putExtra(Intent.EXTRA_TEXT, text.toString());
-		startActivity(Intent.createChooser(intent, getString(R.string.send_report)));
+		Intent chooserIntent = Intent.createChooser(intent, getString(R.string.send_report));
+		chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		startActivity(chooserIntent);
 	}
 }

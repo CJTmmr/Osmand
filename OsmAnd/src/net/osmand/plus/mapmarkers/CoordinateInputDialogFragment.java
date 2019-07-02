@@ -286,7 +286,7 @@ public class CoordinateInputDialogFragment extends DialogFragment implements Osm
 			setBackgroundColor(mainView, lightTheme ? R.color.ctx_menu_info_view_bg_light : R.color.coordinate_input_markers_list_bg_dark);
 		} else {
 			TextView toolbar = (TextView) mainView.findViewById(R.id.toolbar_text);
-			toolbar.setTextColor(getResolvedColor(lightTheme ? R.color.color_white : R.color.ctx_menu_title_color_dark));
+			toolbar.setTextColor(getResolvedColor(lightTheme ? R.color.text_color_primary_light : R.color.text_color_primary_dark));
 			toolbar.setText(R.string.coord_input_add_point);
 			setBackgroundColor(R.id.app_bar, lightTheme ? R.color.actionbar_light_color : R.color.route_info_bottom_view_bg_dark);
 		}
@@ -465,29 +465,24 @@ public class CoordinateInputDialogFragment extends DialogFragment implements Osm
 					if (focusedView != null && focusedView instanceof EditText) {
 						EditText focusedEditText = (EditText) focusedView;
 						int id = v.getId();
-						switch (id) {
-							case R.id.keyboard_item_clear:
-								focusedEditText.setText("");
-								break;
-							case R.id.keyboard_item_backspace:
-								String str = focusedEditText.getText().toString();
-								if (str.length() > 0) {
-									str = str.substring(0, str.length() - 1);
-									focusedEditText.setText(str);
-									focusedEditText.setSelection(str.length());
-								} else {
-									switchEditText(focusedEditText.getId(), false);
-								}
-								break;
-							case R.id.keyboard_item_next_field:
-								switchEditText(focusedEditText.getId(), true);
-								break;
-							case R.id.keyboard_item_hide:
-								changeOsmandKeyboardVisibility(false);
-								break;
-							default:
-								focusedEditText.setText(focusedEditText.getText().toString() + getItemObjectById(id));
-								focusedEditText.setSelection(focusedEditText.getText().length());
+						if (id == R.id.keyboard_item_clear) {
+							focusedEditText.setText("");
+						} else if (id == R.id.keyboard_item_backspace) {
+							String str = focusedEditText.getText().toString();
+							if (str.length() > 0) {
+								str = str.substring(0, str.length() - 1);
+								focusedEditText.setText(str);
+								focusedEditText.setSelection(str.length());
+							} else {
+								switchEditText(focusedEditText.getId(), false);
+							}
+						} else if (id == R.id.keyboard_item_next_field) {
+							switchEditText(focusedEditText.getId(), true);
+						} else if (id == R.id.keyboard_item_hide) {
+							changeOsmandKeyboardVisibility(false);
+						} else {
+							focusedEditText.setText(focusedEditText.getText().toString() + getItemObjectById(id));
+							focusedEditText.setSelection(focusedEditText.getText().length());
 						}
 					}
 				}
@@ -653,35 +648,34 @@ public class CoordinateInputDialogFragment extends DialogFragment implements Osm
 	}
 
 	private Object getItemObjectById(@IdRes int id) {
-		switch (id) {
-			case R.id.keyboard_item_0:
-				return "0";
-			case R.id.keyboard_item_1:
-				return "1";
-			case R.id.keyboard_item_2:
-				return "2";
-			case R.id.keyboard_item_3:
-				return "3";
-			case R.id.keyboard_item_4:
-				return "4";
-			case R.id.keyboard_item_5:
-				return "5";
-			case R.id.keyboard_item_6:
-				return "6";
-			case R.id.keyboard_item_7:
-				return "7";
-			case R.id.keyboard_item_8:
-				return "8";
-			case R.id.keyboard_item_9:
-				return "9";
-			case R.id.keyboard_item_clear:
-				return getString(R.string.shared_string_clear);
-			case R.id.keyboard_item_next_field:
-				return R.drawable.ic_keyboard_next_field;
-			case R.id.keyboard_item_backspace:
-				return R.drawable.ic_keyboard_backspace;
-			case R.id.keyboard_item_hide:
-				return R.drawable.ic_action_keyboard_hide;
+		if (id == R.id.keyboard_item_0) {
+			return "0";
+		} else if (id == R.id.keyboard_item_1) {
+			return "1";
+		} else if (id == R.id.keyboard_item_2) {
+			return "2";
+		} else if (id == R.id.keyboard_item_3) {
+			return "3";
+		} else if (id == R.id.keyboard_item_4) {
+			return "4";
+		} else if (id == R.id.keyboard_item_5) {
+			return "5";
+		} else if (id == R.id.keyboard_item_6) {
+			return "6";
+		} else if (id == R.id.keyboard_item_7) {
+			return "7";
+		} else if (id == R.id.keyboard_item_8) {
+			return "8";
+		} else if (id == R.id.keyboard_item_9) {
+			return "9";
+		} else if (id == R.id.keyboard_item_clear) {
+			return getString(R.string.shared_string_clear);
+		} else if (id == R.id.keyboard_item_next_field) {
+			return R.drawable.ic_keyboard_next_field;
+		} else if (id == R.id.keyboard_item_backspace) {
+			return R.drawable.ic_keyboard_backspace;
+		} else if (id == R.id.keyboard_item_hide) {
+			return R.drawable.ic_action_keyboard_hide;
 		}
 		return -1;
 	}
@@ -732,7 +726,7 @@ public class CoordinateInputDialogFragment extends DialogFragment implements Osm
 				}
 			});
 
-			@ColorRes int colorId = lightTheme ? R.color.dashboard_blue : R.color.ctx_menu_direction_color_dark;
+			@ColorRes int colorId = lightTheme ? R.color.active_color_primary_light : R.color.active_color_primary_dark;
 			boolean lat = id == R.id.lat_side_of_the_world_btn;
 			Drawable icon = getColoredIcon(
 					lat ? R.drawable.ic_action_coordinates_longitude : R.drawable.ic_action_coordinates_latitude, colorId
@@ -887,23 +881,22 @@ public class CoordinateInputDialogFragment extends DialogFragment implements Osm
 						popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
 							@Override
 							public boolean onMenuItemClick(MenuItem item) {
-								switch (item.getItemId()) {
-									case R.id.action_copy:
-										ClipData clip = ClipData.newPlainText("", inputEditText.getText().toString());
-										clipboardManager.setPrimaryClip(clip);
-										return true;
-									case R.id.action_paste:
-										ClipData.Item pasteItem = clipboardManager.getPrimaryClip().getItemAt(0);
-										CharSequence pasteData = pasteItem.getText();
-										if (pasteData != null) {
-											String str = inputEditText.getText().toString();
-											inputEditText.setText(str + pasteData.toString());
-											inputEditText.setSelection(inputEditText.getText().length());
-										}
-										return true;
-									default:
-										return false;
+								int i = item.getItemId();
+								if (i == R.id.action_copy) {
+									ClipData clip = ClipData.newPlainText("", inputEditText.getText().toString());
+									clipboardManager.setPrimaryClip(clip);
+									return true;
+								} else if (i == R.id.action_paste) {
+									ClipData.Item pasteItem = clipboardManager.getPrimaryClip().getItemAt(0);
+									CharSequence pasteData = pasteItem.getText();
+									if (pasteData != null) {
+										String str = inputEditText.getText().toString();
+										inputEditText.setText(str + pasteData.toString());
+										inputEditText.setSelection(inputEditText.getText().length());
+									}
+									return true;
 								}
+								return false;
 							}
 						});
 						popupMenu.show();

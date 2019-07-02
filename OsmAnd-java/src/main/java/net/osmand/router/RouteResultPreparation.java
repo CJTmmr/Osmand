@@ -222,6 +222,11 @@ public class RouteResultPreparation {
 		}
 	}
 
+	// decrease speed proportionally from 15ms (50kmh)
+	private static final double SLOW_DOWN_SPEED_THRESHOLD = 15;
+	// reference speed 30ms (108kmh) - 2ms (7kmh)
+	private static final double SLOW_DOWN_SPEED = 2;
+	
 	private void calculateTimeSpeed(RoutingContext ctx, List<RouteSegmentResult> result) throws IOException {
 		//for Naismith
 		boolean usePedestrianHeight = ((((GeneralRouter) ctx.getRouter()).getProfile() == GeneralRouterProfile.PEDESTRIAN) && ((GeneralRouter) ctx.getRouter()).getHeightObstacles());
@@ -232,12 +237,10 @@ public class RouteResultPreparation {
 			double distOnRoadToPass = 0;
 			double speed = ctx.getRouter().defineVehicleSpeed(road);
 			if (speed == 0) {
-				speed = ctx.getRouter().getMinDefaultSpeed();
+				speed = ctx.getRouter().getDefaultSpeed();
 			} else {
-				if(speed > 15) {
-					// decrease speed proportionally from 15ms=50kmh - 
-					// reference speed 30ms=108kmh - 7kmh
-					speed = speed - ((speed - 15f) / (30f - 15f) * 2f);
+				if (speed > SLOW_DOWN_SPEED_THRESHOLD) {
+					speed = speed - (speed / SLOW_DOWN_SPEED_THRESHOLD - 1) * SLOW_DOWN_SPEED;
 				}
 			}
 			boolean plus = rr.getStartPointIndex() < rr.getEndPointIndex();

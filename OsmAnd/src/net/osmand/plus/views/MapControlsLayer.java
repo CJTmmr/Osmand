@@ -79,6 +79,8 @@ public class MapControlsLayer extends OsmandMapLayer {
 	private static final int REQUEST_LOCATION_FOR_NAVIGATION_FAB_PERMISSION = 201;
 	private static final int REQUEST_LOCATION_FOR_ADD_DESTINATION_PERMISSION = 202;
 
+	private static final int COMPASS_PRESSED_TIME_INTERVAL_MS = 5000;
+
 	public MapHudButton createHudButton(View iv, int resId, String id) {
 		MapHudButton mc = new MapHudButton();
 		mc.iv = iv;
@@ -89,7 +91,6 @@ public class MapControlsLayer extends OsmandMapLayer {
 
 	private List<MapHudButton> controls = new ArrayList<>();
 	private final MapActivity mapActivity;
-	private int shadowColor = -1;
 	// private RulerControl rulerControl;
 	// private List<MapControls> allControls = new ArrayList<MapControls>();
 
@@ -120,6 +121,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 	private MapQuickActionLayer mapQuickActionLayer;
 	private boolean forceShowCompass;
 	private LatLon requestedLatLon;
+	private long compassPressed;
 
 	public MapControlsLayer(MapActivity activity) {
 		this.mapActivity = activity;
@@ -271,7 +273,20 @@ public class MapControlsLayer extends OsmandMapLayer {
 		compass.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				mapActivity.getMapViewTrackingUtilities().switchRotateMapMode();
+				boolean followingMode = app.getRoutingHelper().isFollowingMode();
+
+				if (followingMode) {
+					if (compassPressed + COMPASS_PRESSED_TIME_INTERVAL_MS > System.currentTimeMillis()) {
+						compassPressed = 0;
+						mapActivity.getMapViewTrackingUtilities().switchRotateMapMode();
+					} else {
+						compassPressed = System.currentTimeMillis();
+						app.showShortToastMessage(app.getString(R.string.press_again_to_change_the_map_orientation));
+					}
+				} else {
+					compassPressed = 0;
+					mapActivity.getMapViewTrackingUtilities().switchRotateMapMode();
+				}
 			}
 		});
 
@@ -703,9 +718,9 @@ public class MapControlsLayer extends OsmandMapLayer {
 				mapRouteInfoMenu.show();
 			} else {
 				touchEvent = 0;
-				app.logEvent(mapActivity, "start_navigation");
+				app.logEvent("start_navigation");
 				app.getSettings().APPLICATION_MODE.set(routingHelper.getAppMode());
-				mapActivity.getMapViewTrackingUtilities().backToLocationImpl(17);
+				mapActivity.getMapViewTrackingUtilities().backToLocationImpl(17, true);
 				app.getSettings().FOLLOW_THE_ROUTE.set(true);
 				routingHelper.setFollowingMode(true);
 				routingHelper.setRoutePlanningMode(false);
@@ -734,13 +749,12 @@ public class MapControlsLayer extends OsmandMapLayer {
 	private void updateControls(@NonNull RotatedTileBox tileBox, DrawSettings drawSettings) {
 		boolean isNight = drawSettings != null && drawSettings.isNightMode();
 		boolean portrait = isPotrait();
-		int shadw = isNight ? Color.TRANSPARENT : Color.WHITE;
-		int textColor = isNight ? mapActivity.getResources().getColor(R.color.widgettext_night) : Color.BLACK;
-		if (shadowColor != shadw) {
-			shadowColor = shadw;
-			// TODOnightMode
-			// updatextColor(textColor, shadw, rulerControl, zoomControls, mapMenuControls);
-		}
+//		int shadw = isNight ? mapActivity.getResources().getColor(R.color.widgettext_shadow_night) :
+//				mapActivity.getResources().getColor(R.color.widgettext_shadow_day);
+		int textColor = isNight ? mapActivity.getResources().getColor(R.color.widgettext_night) :
+				mapActivity.getResources().getColor(R.color.widgettext_day);
+		// TODOnightMode
+		// updatextColor(textColor, shadw, rulerControl, zoomControls, mapMenuControls);
 		// default buttons
 		boolean routePlanningMode = false;
 		RoutingHelper rh = mapActivity.getRoutingHelper();
@@ -780,7 +794,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 		compassHud.forceHideCompass = forceHideCompass;
 		compassHud.updateVisibility(!forceHideCompass && shouldShowCompass());
 
-		if (layersHud.setIconResId(settings.getApplicationMode().getMapIconId())) {
+		if (layersHud.setIconResId(settings.getApplicationMode().getMapIconRes())) {
 			layersHud.update(app, isNight);
 		}
 		layersHud.updateVisibility(!routeDialogOpened && !trackDialogOpened && !isInMeasurementToolMode() && !isInPlanRouteMode()

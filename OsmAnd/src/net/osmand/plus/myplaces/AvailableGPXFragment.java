@@ -101,10 +101,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class AvailableGPXFragment extends OsmandExpandableListFragment {
+import static net.osmand.plus.myplaces.FavoritesActivity.GPX_TAB;
+import static net.osmand.plus.myplaces.FavoritesActivity.TAB_ID;
+
+public class AvailableGPXFragment extends OsmandExpandableListFragment implements
+	FavoritesFragmentStateHolder {
 
 	public static final Pattern ILLEGAL_PATH_NAME_CHARACTERS = Pattern.compile("[?:\"*|<>]");
-
 	public static final int SEARCH_ID = -1;
 	// public static final int ACTION_ID = 0;
 	// protected static final int DELETE_ACTION_ID = 1;
@@ -196,6 +199,7 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 
 		updateEnable = true;
 		startHandler();
+		restoreState(getArguments());
 	}
 
 	@Override
@@ -708,12 +712,13 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 		boolean e = true;
 		if (info.gpx != null) {
 			WptPt loc = info.gpx.findPointToShow();
-			OsmandSettings settings = getMyApplication().getSettings();
+			OsmandApplication app = requireMyApplication();
+			OsmandSettings settings = app.getSettings();
 			if (loc != null) {
 				settings.setMapLocationToShow(loc.lat, loc.lon, settings.getLastKnownMapZoom());
 				e = false;
-				getMyApplication().getSelectedGpxHelper().setGpxFileToDisplay(info.gpx);
-				MapActivity.launchMapActivityMoveToTop(getActivity());
+				app.getSelectedGpxHelper().setGpxFileToDisplay(info.gpx);
+				MapActivity.launchMapActivityMoveToTop(getActivity(), storeState());
 			}
 		}
 		if (e) {
@@ -860,6 +865,17 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment {
 		});
 		builder.setNegativeButton(R.string.shared_string_cancel, null);
 		builder.create().show();
+	}
+
+	@Override
+	public Bundle storeState() {
+		Bundle bundle = new Bundle();
+		bundle.putInt(TAB_ID, GPX_TAB);
+		return bundle;
+	}
+
+	@Override
+	public void restoreState(Bundle bundle) {
 	}
 
 	public class LoadGpxTask extends AsyncTask<Activity, GpxInfo, List<GpxInfo>> {

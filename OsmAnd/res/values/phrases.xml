@@ -1020,7 +1020,7 @@
 	<string name="poi_boat_sharing">Boat sharing</string>
 	<string name="poi_dock">Dock</string>
 	<string name="poi_cutline">Cutline</string>
-	<string name="poi_toilets">Restroom</string>
+	<string name="poi_toilets">Restroom;Toilets</string>
 	<string name="poi_shower">Shower</string>
 	<string name="poi_sauna">Sauna</string>
 	<string name="poi_brothel">Brothel</string>
@@ -1283,6 +1283,7 @@
 	<string name="poi_email">Email</string>
 	<string name="poi_fax">Fax</string>
 	<string name="facebook">Facebook</string>
+        <string name="reddit">Reddit</string>
 	<string name="twitter">Twitter</string>
 	<string name="poi_skype">Skype</string>
 	<string name="poi_youtube">YouTube</string>
@@ -3938,5 +3939,32 @@
 
 	<string name="poi_rescue_box">Rescue box</string>
 	<string name="poi_climbing_crag">Yes</string>
+
+	<string name="poi_hazard_additional_erosion">Hazard: erosion</string>
+	<string name="poi_hazard_additional_rockfall">Hazard: rockfall</string>
+	<string name="poi_hazard_additional_nuclear">Hazard: nuclear</string>
+	<string name="poi_hazard_additional_flood">Hazard: flood</string>
+	<string name="poi_hazard_additional_avalanche">Hazard: avalanche</string>
+	<string name="poi_hazard_additional_minefield">Hazard: minefield</string>
+	<string name="poi_hazard_additional_contamination">Hazard: contamination</string>
+
+	<string name="poi_defibrillator_location">Location</string>
+
+	<string name="poi_changing_table_yes">Changing table: yes</string>
+	<string name="poi_changing_table_no">Changing table: no</string>
+	<string name="poi_changing_table_limited">Changing table: limited</string>
+	<string name="poi_changing_table_location_room">Changing table location: room</string>
+	<string name="poi_changing_table_location_male_toilet">Changing table location: male toilet</string>
+	<string name="poi_changing_table_location_female_toilet">Changing table location: female toilet</string>
+	<string name="poi_changing_table_location_unisex_toilet">Changing table location: unisex toilet</string>
+	<string name="poi_changing_table_count">Changing table count</string>
+	<string name="poi_changing_table_fee_yes">Changing table fee: yes</string>
+	<string name="poi_changing_table_fee_no">Changing table fee: no</string>
+
+	<string name="poi_charcoal_pile">Charcoal pile</string>
+
+	<string name="poi_historic_tank">Historic tank</string>
+
+	<string name="poi_hookah_lounge">Hookah lounge</string>
 
 </resources>

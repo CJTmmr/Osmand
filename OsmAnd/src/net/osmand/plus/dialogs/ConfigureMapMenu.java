@@ -161,15 +161,18 @@ public class ConfigureMapMenu {
 			for (GpxSelectionHelper.SelectedGpxFile file : selectedGpxFiles) {
 				files.add(file.getGpxFile().path);
 			}
-			Map<GPXUtilities.GPXFile, Long> fls = selectedGpxHelper.getSelectedGpxFilesBackUp();
-			for(Map.Entry<GPXUtilities.GPXFile, Long> f : fls.entrySet()) {
-				if(!Algorithms.isEmpty(f.getKey().path)) {
-					File file = new File(f.getKey().path);
-					if(file.exists() && !file.isDirectory()) {
-						files.add(f.getKey().path);
+			if (selectedGpxFiles.isEmpty()) {
+				Map<GPXUtilities.GPXFile, Long> fls = selectedGpxHelper.getSelectedGpxFilesBackUp();
+				for(Map.Entry<GPXUtilities.GPXFile, Long> f : fls.entrySet()) {
+					if(!Algorithms.isEmpty(f.getKey().path)) {
+						File file = new File(f.getKey().path);
+						if(file.exists() && !file.isDirectory()) {
+							files.add(f.getKey().path);
+						}
 					}
 				}
 			}
+
 			return files;
 		}
 
@@ -216,7 +219,7 @@ public class ConfigureMapMenu {
 			} else if (itemId == R.string.layer_gpx_layer) {
 				final GpxSelectionHelper selectedGpxHelper = ma.getMyApplication().getSelectedGpxHelper();
 				if (selectedGpxHelper.isShowingAnyGpxFiles()) {
-					selectedGpxHelper.clearAllGpxFileToShow();
+					selectedGpxHelper.clearAllGpxFilesToShow(true);
 					adapter.getItem(pos).setDescription(selectedGpxHelper.getGpxDescription());
 				} else {
 					showGpxSelectionDialog(adapter, adapter.getItem(pos));
@@ -1322,7 +1325,7 @@ public class ConfigureMapMenu {
 			String text = getItem(position);
 			label.setText(text);
 			label.setTextColor(!lightTheme ?
-					ContextCompat.getColorStateList(getContext(), android.R.color.primary_text_dark) : ContextCompat.getColorStateList(getContext(), android.R.color.primary_text_light));
+					ContextCompat.getColorStateList(getContext(), R.color.text_color_primary_dark) : ContextCompat.getColorStateList(getContext(), R.color.text_color_primary_light));
 			return label;
 		}
 
@@ -1333,7 +1336,7 @@ public class ConfigureMapMenu {
 			String text = getItem(position);
 			label.setText(text);
 			label.setTextColor(!lightTheme ?
-						ContextCompat.getColorStateList(getContext(), android.R.color.primary_text_dark) : ContextCompat.getColorStateList(getContext(), android.R.color.primary_text_light));
+						ContextCompat.getColorStateList(getContext(), R.color.text_color_primary_dark) : ContextCompat.getColorStateList(getContext(), R.color.text_color_primary_light));
 
 			return label;
 		}

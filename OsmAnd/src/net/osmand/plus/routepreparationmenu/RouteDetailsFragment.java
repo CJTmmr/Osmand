@@ -382,7 +382,7 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 				addRouteCard(cardsContainer, routeSurfaceCard);
 
 				if (slopeDataSet != null) {
-					List<Incline> inclines = createInclinesAndAdd100MetersWith0Incline(slopeDataSet.getValues());
+					List<Incline> inclines = createInclinesAndAdd100MetersWith0Incline(slopeDataSet.getValues(), slopeDataSet.getDivX());
 					RouteInfoCard routeSteepnessCard = new RouteInfoCard(mapActivity, routeStatistics.getRouteSteepnessStatistic(inclines), analysis);
 					addRouteCard(cardsContainer, routeSteepnessCard);
 				}
@@ -797,13 +797,13 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 		if (walkTime < 60) {
 			walkTime = 60;
 		}
-		SpannableStringBuilder spannable = new SpannableStringBuilder("~");
+		SpannableStringBuilder spannable = new SpannableStringBuilder(getString(R.string.shared_string_walk)).append(" ");
 		spannable.setSpan(new ForegroundColorSpan(getSecondaryColor()), 0, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		int startIndex = spannable.length();
-		spannable.append(OsmAndFormatter.getFormattedDuration(walkTime, app)).append(" ");
+		spannable.append("~").append(OsmAndFormatter.getFormattedDuration(walkTime, app));
 		spannable.setSpan(new CustomTypefaceSpan(typeface), startIndex, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 		startIndex = spannable.length();
-		spannable.append(getString(R.string.shared_string_walk)).append(", ").append(OsmAndFormatter.getFormattedDistance((float) walkDist, app));
+		spannable.append(", ").append(OsmAndFormatter.getFormattedDistance((float) walkDist, app));
 		spannable.setSpan(new ForegroundColorSpan(getSecondaryColor()), startIndex, spannable.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
 		buildWalkRow(infoContainer, spannable, imagesContainer, new OnClickListener() {
@@ -838,13 +838,13 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 	@ColorInt
 	private int getActiveColor() {
 		OsmandApplication app = requireMyApplication();
-		return ContextCompat.getColor(app, isNightMode() ? R.color.active_buttons_and_links_dark : R.color.active_buttons_and_links_light);
+		return ContextCompat.getColor(app, isNightMode() ? R.color.active_color_primary_dark : R.color.active_color_primary_light);
 	}
 
 	@ColorInt
 	protected int getMainFontColor() {
 		OsmandApplication app = requireMyApplication();
-		return ContextCompat.getColor(app, isNightMode() ? R.color.main_font_dark : R.color.main_font_light);
+		return ContextCompat.getColor(app, isNightMode() ? R.color.text_color_primary_dark : R.color.text_color_primary_light);
 	}
 
 	@ColorInt
@@ -1517,7 +1517,7 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 		((LinearLayout) view).addView(horizontalLine);
 	}
 
-	private List<Incline> createInclinesAndAdd100MetersWith0Incline(List<Entry> entries) {
+	private List<Incline> createInclinesAndAdd100MetersWith0Incline(List<Entry> entries, float divX) {
 		float minIncline = 0;
 		float maxIncline = 0;
 		int size = entries.size();
@@ -1527,7 +1527,7 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 			maxIncline = Math.max(inclineValue, maxIncline);
 			minIncline = Math.min(inclineValue, minIncline);
 
-			Incline incline = new Incline(inclineValue, entry.getX() * 1000);
+			Incline incline = new Incline(inclineValue, entry.getX() * divX);
 			inclines.add(incline);
 		}
 		for (int i = 0; i < 10; i++) {
@@ -1537,7 +1537,7 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 		if (slopeDataSet != null) {
 			float lastDistance = slopeDataSet.getEntryForIndex(size - 1).getX();
 			for (int i = 1; i <= 10; i++) {
-				float distance = lastDistance * 1000f + i * 5f;
+				float distance = lastDistance * divX + i * 5f;
 				inclines.add(new Incline(0f, distance));
 			}
 		}

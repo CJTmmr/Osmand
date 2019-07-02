@@ -19,6 +19,7 @@ import net.osmand.telegram.utils.OsmandLocationUtils.MessageUserLocation
 import org.drinkless.td.libcore.telegram.TdApi
 import java.io.File
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
 class ShowLocationHelper(private val app: TelegramApplication) {
@@ -37,8 +38,8 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 	private val osmandAidlHelper = app.osmandAidlHelper
 	private val executor = Executors.newSingleThreadExecutor()
 
-	private val points = mutableMapOf<String, TdApi.Message>()
-	private val markers = mutableMapOf<String, AMapMarker>()
+	private val points = ConcurrentHashMap<String, TdApi.Message>()
+	private val markers = ConcurrentHashMap<String, AMapMarker>()
 
 	var showingLocation: Boolean = false
 		private set
@@ -49,7 +50,7 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		app.osmandAidlHelper.setContextMenuButtonsListener(object : ContextMenuButtonsListener {
 
 			override fun onContextMenuButtonClicked(buttonId: Int, pointId: String, layerId: String) {
-				updateDirectionMarker(pointId)
+				updateDirectionMarker(pointId, true)
 			}
 
 		})
@@ -61,7 +62,7 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		}
 	}
 
-	private fun updateDirectionMarker(pointId: String) {
+	private fun updateDirectionMarker(pointId: String, forceAdd: Boolean = false) {
 		val message = points[pointId]
 		if (message != null) {
 			val aLatLon = getALatLonFromMessage(message.content)
@@ -73,8 +74,12 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 				if (markerPrev != null) {
 					markerUpdated = app.osmandAidlHelper.updateMapMarker(markerPrev, marker)
 					if (!markerUpdated) {
-						app.osmandAidlHelper.removeMapMarker(markerPrev.latLon.latitude, markerPrev.latLon.longitude, name)
-						markerUpdated = app.osmandAidlHelper.addMapMarker(marker)
+						if (forceAdd) {
+							app.osmandAidlHelper.removeMapMarker(markerPrev.latLon.latitude, markerPrev.latLon.longitude, name)
+							markerUpdated = app.osmandAidlHelper.addMapMarker(marker)
+						} else {
+							markers.remove(pointId)
+						}
 					}
 				} else {
 					markerUpdated = app.osmandAidlHelper.addMapMarker(marker)
@@ -90,18 +95,16 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		if (item.latLon == null) {
 			return
 		}
+		setupMapLayer()
 		osmandAidlHelper.execOsmandApi {
-			osmandAidlHelper.showMapPoint(
-				MAP_LAYER_ID,
-				item.getMapPointId(),
-				item.getVisibleName(),
-				item.getVisibleName(),
-				item.chatTitle,
-				Color.WHITE,
-				ALatLon(item.latLon!!.latitude, item.latLon!!.longitude),
-				generatePointDetails(item.bearing?.toFloat(), item.altitude?.toFloat(), item.precision?.toFloat()),
-				generatePointParams(if (stale) item.grayscalePhotoPath else item.photoPath, stale, item.speed?.toFloat())
-			)
+			val pointId = item.getMapPointId()
+			val name = item.getVisibleName()
+			val aLatLon = ALatLon(item.latLon!!.latitude, item.latLon!!.longitude)
+			val details = generatePointDetails(item.bearing?.toFloat(), item.altitude?.toFloat(), item.precision?.toFloat())
+			val params = generatePointParams(if (stale) item.grayscalePhotoPath else item.photoPath, stale, item.speed?.toFloat(), item.bearing?.toFloat())
+
+			osmandAidlHelper.addMapPoint(MAP_LAYER_ID, pointId, name, name, item.chatTitle, Color.WHITE, aLatLon, details, params)
+			osmandAidlHelper.showMapPoint(MAP_LAYER_ID, pointId, name, name, item.chatTitle, Color.WHITE, aLatLon, details, params)
 		}
 	}
 	
@@ -147,8 +150,13 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 						}
 					}
 					setupMapLayer()
-					val params = generatePointParams(photoPath, stale, if (content is MessageUserLocation) content.speed.toFloat() else null)
-
+					var speed = 0f
+					var bearing = 0f
+					if (content is MessageUserLocation) {
+						speed = content.speed.toFloat()
+						bearing = content.bearing.toFloat()
+					}
+					val params = generatePointParams(photoPath, stale, speed, bearing)
 					val typeName = if (isGroup) chatTitle else OsmandFormatter.getListItemLiveTimeDescr(app, date, app.getString(R.string.last_response) + ": ")
 					if (update) {
 						osmandAidlHelper.updateMapPoint(MAP_LAYER_ID, pointId, name, name, typeName, Color.WHITE, aLatLon, details, params)
@@ -158,7 +166,7 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 					points[pointId] = message
 				} else if (content is MessageOsmAndBotLocation && content.isValid()) {
 					setupMapLayer()
-					val params = generatePointParams(null, stale, content.speed.toFloat())
+					val params = generatePointParams(null, stale, content.speed.toFloat(), content.bearing.toFloat())
 					if (update) {
 						osmandAidlHelper.updateMapPoint(MAP_LAYER_ID, pointId, name, name, chatTitle, Color.WHITE, aLatLon, details, params)
 					} else {
@@ -340,7 +348,7 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 	private fun generatePointDetails(bearing: Float?, altitude: Float?, precision: Float?): List<String> {
 		val details = mutableListOf<String>()
 		if (bearing != null && bearing != 0.0f) {
-			details.add(String.format(Locale.US, "${OsmandLocationUtils.BEARING_PREFIX}%.1f \n", bearing))
+			details.add(String.format(Locale.US, "${OsmandLocationUtils.BEARING_PREFIX}%.1f${OsmandLocationUtils.BEARING_SUFFIX} \n", bearing))
 		}
 		if (altitude != null && altitude != 0.0f) {
 			details.add(String.format(Locale.US, "${OsmandLocationUtils.ALTITUDE_PREFIX}%.1f m\n", altitude))
@@ -352,7 +360,7 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		return details
 	}
 
-	private fun generatePointParams(photoPath: String?, stale: Boolean, speed: Float?): Map<String, String> {
+	private fun generatePointParams(photoPath: String?, stale: Boolean, speed: Float?, bearing: Float?): Map<String, String> {
 		val photoUri = generatePhotoUri(photoPath, stale)
 		app.grantUriPermission(
 			app.settings.appToConnectPackage,
@@ -365,6 +373,9 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		)
 		if (speed != 0.0f) {
 			params[AMapPoint.POINT_SPEED_PARAM] = speed.toString()
+		}
+		if (bearing != 0.0f) {
+			params[AMapPoint.POINT_BEARING_PARAM] = bearing.toString()
 		}
 
 		return params
