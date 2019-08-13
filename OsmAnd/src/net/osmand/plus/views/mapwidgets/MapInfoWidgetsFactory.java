@@ -287,9 +287,9 @@ public class MapInfoWidgetsFactory {
 		private TopToolbarControllerType type;
 
 		@ColorRes
-		int bgLightId = R.color.bg_color_light;
+		int bgLightId = R.color.list_background_color_light;
 		@ColorRes
-		int bgDarkId = R.color.bg_color_dark;
+		int bgDarkId = R.color.list_background_color_dark;
 		@DrawableRes
 		int bgLightLandId = R.drawable.btn_round;
 		@DrawableRes
@@ -308,7 +308,7 @@ public class MapInfoWidgetsFactory {
 		@DrawableRes
 		int backBtnIconDarkId = R.drawable.ic_arrow_back;
 		@ColorRes
-		int backBtnIconClrLightId = R.color.icon_color;
+		int backBtnIconClrLightId = R.color.icon_color_default_light;
 		@ColorRes
 		int backBtnIconClrDarkId = 0;
 		@ColorInt
@@ -321,7 +321,7 @@ public class MapInfoWidgetsFactory {
 		@DrawableRes
 		int closeBtnIconDarkId = R.drawable.ic_action_remove_dark;
 		@ColorRes
-		int closeBtnIconClrLightId = R.color.icon_color;
+		int closeBtnIconClrLightId = R.color.icon_color_default_light;
 		@ColorRes
 		int closeBtnIconClrDarkId = 0;
 		boolean closeBtnVisible = true;
@@ -331,7 +331,7 @@ public class MapInfoWidgetsFactory {
 		@DrawableRes
 		int refreshBtnIconDarkId = R.drawable.ic_action_refresh_dark;
 		@ColorRes
-		int refreshBtnIconClrLightId = R.color.icon_color;
+		int refreshBtnIconClrLightId = R.color.icon_color_default_light;
 		@ColorRes
 		int refreshBtnIconClrDarkId = 0;
 
@@ -1160,8 +1160,12 @@ public class MapInfoWidgetsFactory {
 						} catch (RuntimeException e) {
 							e.printStackTrace();
 						}
-						latitudeIcon.setImageDrawable(iconsCache.getIcon(nightMode ? R.drawable.widget_coordinates_latitude_night : R.drawable.widget_coordinates_latitude_day));
-						longitudeIcon.setImageDrawable(iconsCache.getIcon(nightMode ? R.drawable.widget_coordinates_longitude_night : R.drawable.widget_coordinates_longitude_day));
+						int latDayImgId = lat >= 0 ? R.drawable.widget_coordinates_latitude_north_day : R.drawable.widget_coordinates_latitude_south_day;
+						int latNightImgId = lat >= 0 ? R.drawable.widget_coordinates_latitude_north_night : R.drawable.widget_coordinates_latitude_south_night;
+						int lonDayImgId = lon >= 0 ? R.drawable.widget_coordinates_longitude_east_day : R.drawable.widget_coordinates_longitude_west_day;
+						int lonNightImgId = lon >= 0 ? R.drawable.widget_coordinates_longitude_east_night : R.drawable.widget_coordinates_longitude_west_night;
+						latitudeIcon.setImageDrawable(iconsCache.getIcon(nightMode ? latDayImgId : latNightImgId));
+						longitudeIcon.setImageDrawable(iconsCache.getIcon(nightMode ? lonDayImgId : lonNightImgId));
 						latitudeText.setText(latitude);
 						longitudeText.setText(longitude);
 					}
@@ -1196,7 +1200,7 @@ public class MapInfoWidgetsFactory {
 							ctx.startActivity(Intent.createChooser(intent, ctx.getString(R.string.send_location)));
 						}
 					});
-			AndroidUtils.setSnackbarTextColor(snackbar, R.color.color_dialog_buttons_dark);
+			AndroidUtils.setSnackbarTextColor(snackbar, R.color.active_color_primary_dark);
 			AndroidUtils.setSnackbarTextMaxLines(snackbar, 5);
 			snackbar.show();
 		}
@@ -1215,7 +1219,7 @@ public class MapInfoWidgetsFactory {
 			int textColor = ContextCompat.getColor(map, nightMode ? R.color.activity_background_light : R.color.activity_background_light);
 			latitudeText.setTextColor(textColor);
 			longitudeText.setTextColor(textColor);
-			coordinatesDivider.setBackgroundColor(ContextCompat.getColor(map, nightMode ? R.color.divider_dark : R.color.divider_dark));
+			coordinatesDivider.setBackgroundColor(ContextCompat.getColor(map, nightMode ? R.color.divider_color_dark : R.color.divider_color_dark));
 			latitudeText.setTypeface(Typeface.DEFAULT, bold ? Typeface.BOLD : Typeface.NORMAL);
 			longitudeText.setTypeface(Typeface.DEFAULT, bold ? Typeface.BOLD : Typeface.NORMAL);
 		}

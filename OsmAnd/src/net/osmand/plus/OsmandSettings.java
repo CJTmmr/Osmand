@@ -35,7 +35,6 @@ import net.osmand.plus.helpers.SearchHistoryHelper;
 import net.osmand.plus.mapillary.MapillaryPlugin;
 import net.osmand.plus.mapmarkers.CoordinateInputFormats.Format;
 import net.osmand.plus.render.RendererRegistry;
-import net.osmand.plus.routing.RouteProvider.RouteService;
 import net.osmand.render.RenderingRulesStorage;
 import net.osmand.util.Algorithms;
 
@@ -339,6 +338,14 @@ public class OsmandSettings {
 
 	public ApplicationMode getApplicationMode() {
 		return APPLICATION_MODE.get();
+	}
+	
+	public boolean hasAvailableApplicationMode() {
+		int currentModeCount = ApplicationMode.values(ctx).size();
+		if (currentModeCount == 0 || currentModeCount == 1 && getApplicationMode() == ApplicationMode.DEFAULT) {
+			return false;
+		}
+		return true;
 	}
 
 	protected ApplicationMode readApplicationMode() {
@@ -1051,15 +1058,6 @@ public class OsmandSettings {
 	// this value string is synchronized with settings_pref.xml preference name
 	public final OsmandPreference<Boolean> DIRECTION_HAPTIC_FEEDBACK =
 		new BooleanAccessibilityPreference("direction_haptic_feedback", false).makeGlobal();
-	
-	// this value string is synchronized with settings_pref.xml preference name
-	public final OsmandPreference<Boolean> ZOOM_BY_TRACKBALL =
-			new BooleanAccessibilityPreference("zoom_by_trackball", false).makeGlobal();
-
-	// this value string is synchronized with settings_pref.xml preference name
-	public final OsmandPreference<Boolean> ZOOM_BY_WUNDERLINQ =
-			new BooleanAccessibilityPreference("zoom_by_wunderlinq", false).makeGlobal();
-
 
 	// magnetic field doesn'torkmost of the time on some phones
 	public final OsmandPreference<Boolean> USE_MAGNETIC_FIELD_SENSOR_COMPASS = new BooleanPreference("use_magnetic_field_sensor_compass", false).makeGlobal().cache();
@@ -1224,8 +1222,9 @@ public class OsmandSettings {
 
 	// this value string is synchronized with settings_pref.xml preference name
 	public final OsmandPreference<Boolean> FAST_ROUTE_MODE = new BooleanPreference("fast_route_mode", true).makeProfile();
-	// temporarily for new version
+	// dev version
 	public final CommonPreference<Boolean> DISABLE_COMPLEX_ROUTING = new BooleanPreference("disable_complex_routing", false).makeGlobal();
+	public final CommonPreference<Boolean> ENABLE_TIME_CONDITIONAL_ROUTING = new BooleanPreference("enable_time_conditional_routing", true).makeGlobal();
 
 	public final CommonPreference<Boolean> SHOW_TRAFFIC_WARNINGS = new BooleanPreference("show_traffic_warnings", false).makeProfile().cache();
 
@@ -1258,9 +1257,15 @@ public class OsmandSettings {
 	public final OsmandPreference<Boolean> SHOW_NEARBY_POI = new BooleanPreference("show_nearby_poi", false).makeProfile().cache();
 
 	public final OsmandPreference<Boolean> SPEAK_STREET_NAMES = new BooleanPreference("speak_street_names", true).makeProfile().cache();
-	public final OsmandPreference<Boolean> SPEAK_TRAFFIC_WARNINGS = new BooleanPreference("speak_traffic_warnings", true).makeProfile().cache();
-	public final OsmandPreference<Boolean> SPEAK_PEDESTRIAN = new BooleanPreference("speak_pedestrian", true).makeProfile().cache();
-	public final OsmandPreference<Boolean> SPEAK_SPEED_LIMIT = new BooleanPreference("speak_speed_limit", true).makeProfile().cache();
+	public final CommonPreference<Boolean> SPEAK_TRAFFIC_WARNINGS = new BooleanPreference("speak_traffic_warnings", true).makeProfile().cache();
+	{
+		SPEAK_TRAFFIC_WARNINGS.setModeDefaultValue(ApplicationMode.CAR, true);
+	}
+	public final CommonPreference<Boolean> SPEAK_PEDESTRIAN = new BooleanPreference("speak_pedestrian", false).makeProfile().cache();
+	{
+		SPEAK_PEDESTRIAN.setModeDefaultValue(ApplicationMode.CAR, true);
+	}
+	public final OsmandPreference<Boolean> SPEAK_SPEED_LIMIT = new BooleanPreference("speak_speed_limit", false).makeProfile().cache();
 	public final OsmandPreference<Boolean> SPEAK_SPEED_CAMERA = new BooleanPreference("speak_cameras", false).makeProfile().cache();
 	public final OsmandPreference<Boolean> SPEAK_TUNNELS = new BooleanPreference("speak_tunnels", false).makeProfile().cache();
 	public final OsmandPreference<Boolean> ANNOUNCE_WPT = new BooleanPreference("announce_wpt", true).makeGlobal().cache();
@@ -1298,7 +1303,7 @@ public class OsmandSettings {
 	//	SAVE_TRACK_MIN_DISTANCE.setModeDefaultValue(ApplicationMode.BICYCLE, 5.f);
 	//	SAVE_TRACK_MIN_DISTANCE.setModeDefaultValue(ApplicationMode.PEDESTRIAN, 5.f);
 	//}
-	public final CommonPreference<Float> SAVE_TRACK_PRECISION = new FloatPreference("save_track_precision", 0.f).makeGlobal();
+	public final CommonPreference<Float> SAVE_TRACK_PRECISION = new FloatPreference("save_track_precision", 50.0f).makeGlobal();
 	//{
 //		SAVE_TRACK_PRECISION.setModeDefaultValue(ApplicationMode.CAR, 50.f);
 //		SAVE_TRACK_PRECISION.setModeDefaultValue(ApplicationMode.BICYCLE, 50.f);
@@ -1386,10 +1391,25 @@ public class OsmandSettings {
 	public final CommonPreference<Integer> KEEP_INFORMING = new IntPreference("keep_informing", 0).makeProfile();
 
 	{
-		// 0 means never
 		KEEP_INFORMING.setModeDefaultValue(ApplicationMode.CAR, 0);
 		KEEP_INFORMING.setModeDefaultValue(ApplicationMode.BICYCLE, 0);
 		KEEP_INFORMING.setModeDefaultValue(ApplicationMode.PEDESTRIAN, 0);
+	}
+	
+	public final CommonPreference<Integer> TURN_SCREEN_ON_TIME_INT = new IntPreference("turn_screen_on_time_int", 0).makeProfile();
+
+	{
+		TURN_SCREEN_ON_TIME_INT.setModeDefaultValue(ApplicationMode.CAR, 0);
+		TURN_SCREEN_ON_TIME_INT.setModeDefaultValue(ApplicationMode.BICYCLE, 0);
+		TURN_SCREEN_ON_TIME_INT.setModeDefaultValue(ApplicationMode.PEDESTRIAN, 0);
+	}
+
+	public final CommonPreference<Boolean> TURN_SCREEN_ON_SENSOR = new BooleanPreference("turn_screen_on_sensor", false).makeProfile();
+	
+	{
+		TURN_SCREEN_ON_SENSOR.setModeDefaultValue(ApplicationMode.CAR, false);
+		TURN_SCREEN_ON_SENSOR.setModeDefaultValue(ApplicationMode.BICYCLE, false);
+		TURN_SCREEN_ON_SENSOR.setModeDefaultValue(ApplicationMode.PEDESTRIAN, false);
 	}
 
 	// this value string is synchronized with settings_pref.xml preference name
@@ -1426,6 +1446,9 @@ public class OsmandSettings {
 	// this value string is synchronized with settings_pref.xml preference name
 	public final OsmandPreference<Integer> AUDIO_STREAM_GUIDANCE = new IntPreference("audio_stream",
 			3/*AudioManager.STREAM_MUSIC*/).makeProfile();
+	// Corresponding USAGE value for AudioAttributes
+	public final OsmandPreference<Integer> AUDIO_USAGE = new IntPreference("audio_usage",
+			12/*AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE*/).makeProfile();
 
 	// For now this can be changed only in TestVoiceActivity
 	public final OsmandPreference<Integer> BT_SCO_DELAY = new IntPreference("bt_sco_delay",	1500).makeGlobal().cache();
@@ -1486,6 +1509,9 @@ public class OsmandSettings {
 	public final CommonPreference<NotesSortByMode> NOTES_SORT_BY_MODE = new EnumIntPreference<>("notes_sort_by_mode", NotesSortByMode.BY_DATE, NotesSortByMode.values());
 
 	public final OsmandPreference<Boolean> ANIMATE_MY_LOCATION = new BooleanPreference("animate_my_location", true).makeGlobal().cache();
+
+	public final OsmandPreference<Integer> EXTERNAL_INPUT_DEVICE =
+			new IntPreference("external_input_device", 0).makeGlobal();
 
 	public final OsmandPreference<Boolean> ROUTE_MAP_MARKERS_START_MY_LOC = new BooleanPreference("route_map_markers_start_my_loc", false).makeGlobal().cache();
 	public final OsmandPreference<Boolean> ROUTE_MAP_MARKERS_ROUND_TRIP = new BooleanPreference("route_map_markers_round_trip", false).makeGlobal().cache();
@@ -2655,7 +2681,7 @@ public class OsmandSettings {
 
 	public final OsmandPreference<Boolean> USE_OSM_LIVE_FOR_ROUTING = new BooleanPreference("enable_osmc_routing", true).makeGlobal();
 
-	public final OsmandPreference<Boolean> USE_OSM_LIVE_FOR_PUBLIC_TRANSPORT = new BooleanPreference("enable_osmc_public_transport", true).makeGlobal();
+	public final OsmandPreference<Boolean> USE_OSM_LIVE_FOR_PUBLIC_TRANSPORT = new BooleanPreference("enable_osmc_public_transport", false).makeGlobal();
 
 	public final OsmandPreference<Boolean> VOICE_MUTE = new BooleanPreference("voice_mute", false).makeGlobal();
 
@@ -2732,6 +2758,10 @@ public class OsmandSettings {
 	public static final int OSMAND_DARK_THEME = 0;
 	public static final int OSMAND_LIGHT_THEME = 1;
 
+	public static final int NO_EXTERNAL_DEVICE = 0;
+	public static final int GENERIC_EXTERNAL_DEVICE = 1;
+	public static final int WUNDERLINQ_EXTERNAL_DEVICE = 2;
+	public static final int PARROT_EXTERNAL_DEVICE = 3;
 
 	public final CommonPreference<Integer> SEARCH_TAB =
 			new IntPreference("SEARCH_TAB", 0).makeGlobal().cache();
@@ -2743,7 +2773,7 @@ public class OsmandSettings {
 			new IntPreference("osmand_theme", OSMAND_LIGHT_THEME).makeGlobal().cache();
 
 	public boolean isLightActionBar() {
-		return true;
+		return isLightContent();
 	}
 
 
@@ -2949,6 +2979,7 @@ public class OsmandSettings {
 
 	public enum AngularConstants {
 		DEGREES(R.string.shared_string_degrees, "°"),
+		DEGREES360(R.string.shared_string_degrees, "°"),
 		MILLIRADS(R.string.shared_string_milliradians, "mil");
 
 		private final int key;

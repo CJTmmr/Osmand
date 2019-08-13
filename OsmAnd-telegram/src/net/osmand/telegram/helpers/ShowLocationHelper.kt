@@ -4,6 +4,9 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.AsyncTask
 import android.text.TextUtils
+import net.osmand.GPXUtilities
+import net.osmand.PlatformUtil
+import net.osmand.aidl.gpx.AGpxFile
 import net.osmand.aidl.map.ALatLon
 import net.osmand.aidl.maplayer.point.AMapPoint
 import net.osmand.aidl.mapmarker.AMapMarker
@@ -24,19 +27,33 @@ import java.util.concurrent.Executors
 
 class ShowLocationHelper(private val app: TelegramApplication) {
 
+	private val log = PlatformUtil.getLog(ShowLocationHelper::class.java)
+
 	companion object {
 		const val MAP_LAYER_ID = "telegram_layer"
 		
 		const val MIN_OSMAND_CALLBACK_VERSION_CODE = 320
+		const val MIN_OSMAND_CREATE_IMPORT_DIRS_VERSION_CODE = 340
 
 		const val MAP_CONTEXT_MENU_BUTTON_ID = 1
 		const val MAP_CONTEXT_MENU_BUTTONS_PARAMS_ID = "DIRECTION"
 		const val DIRECTION_ICON_ID = "ic_action_start_navigation"
+
+		const val LIVE_TRACKS_DIR = "livetracks"
+
+		const val GPX_COLORS_COUNT = 10
+
+		val GPX_COLORS = arrayOf(
+			"red", "orange", "lightblue", "blue", "purple",
+			"translucent_red", "translucent_orange", "translucent_lightblue",
+			"translucent_blue", "translucent_purple"
+		)
 	}
 
 	private val telegramHelper = app.telegramHelper
 	private val osmandAidlHelper = app.osmandAidlHelper
 	private val executor = Executors.newSingleThreadExecutor()
+	private val liveTracksExecutor = Executors.newSingleThreadExecutor()
 
 	private val points = ConcurrentHashMap<String, TdApi.Message>()
 	private val markers = ConcurrentHashMap<String, AMapMarker>()
@@ -98,7 +115,7 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		setupMapLayer()
 		osmandAidlHelper.execOsmandApi {
 			val pointId = item.getMapPointId()
-			val name = item.getVisibleName()
+			val name = item.name
 			val aLatLon = ALatLon(item.latLon!!.latitude, item.latLon!!.longitude)
 			val details = generatePointDetails(item.bearing?.toFloat(), item.altitude?.toFloat(), item.precision?.toFloat())
 			val params = generatePointParams(if (stale) item.grayscalePhotoPath else item.photoPath, stale, item.speed?.toFloat(), item.bearing?.toFloat())
@@ -246,6 +263,77 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		osmandAidlHelper.removeContextMenuButtons(MAP_CONTEXT_MENU_BUTTONS_PARAMS_ID)
 	}
 
+	private fun updateTracksOnMap() {
+		val startTime = System.currentTimeMillis()
+		osmandAidlHelper.execOsmandApi {
+			val gpxFiles = getLiveGpxFiles()
+			if (gpxFiles.isEmpty()) {
+				return@execOsmandApi
+			}
+
+			val importedGpxFiles = osmandAidlHelper.importedGpxFiles
+			gpxFiles.forEach {
+				if (!checkAlreadyImportedGpx(importedGpxFiles, it)) {
+					val listener = object : OsmandLocationUtils.SaveGpxListener {
+
+						override fun onSavingGpxFinish(path: String) {
+							log.debug("LiveTracks onSavingGpxFinish $path time ${startTime - System.currentTimeMillis()}")
+							val uri = AndroidUtils.getUriForFile(app, File(path))
+							val destinationPath = if (canOsmandCreateGpxDirs()) "$LIVE_TRACKS_DIR/${it.metadata.name}.gpx" else "${it.metadata.name}.gpx"
+							val color = it.extensionsToRead["color"] ?: ""
+							osmandAidlHelper.importGpxFromUri(uri, destinationPath, color, true)
+							log.debug("LiveTracks importGpxFromUri finish time ${startTime - System.currentTimeMillis()}")
+						}
+
+						override fun onSavingGpxError(error: Exception) {
+							log.error(error)
+						}
+					}
+					OsmandLocationUtils.saveGpx(app, it, listener)
+				}
+			}
+		}
+	}
+
+	private fun checkAlreadyImportedGpx(importedGpxFiles: List<AGpxFile>?, gpxFile: GPXUtilities.GPXFile): Boolean {
+		if (importedGpxFiles != null && importedGpxFiles.isNotEmpty()) {
+			val name = "${gpxFile.metadata.name}.gpx"
+			val aGpxFile = importedGpxFiles.firstOrNull { it.fileName == name }
+
+			if (aGpxFile != null) {
+				val color = osmandAidlHelper.getGpxColor(aGpxFile.fileName)
+				if (!color.isNullOrEmpty()) {
+					gpxFile.extensionsToWrite["color"] = color
+				}
+				val startTimeImported = aGpxFile.details?.startTime
+				val endTimeImported = aGpxFile.details?.endTime
+				if (startTimeImported != null && endTimeImported != null) {
+					val startTime = gpxFile.findPointToShow()?.time
+					val endTime = gpxFile.lastPoint?.time
+					if (aGpxFile.details?.startTime == startTime && endTimeImported == endTime) {
+						return true
+					}
+				}
+			}
+		}
+		return false
+	}
+
+	private fun getLiveGpxFiles(): List<GPXUtilities.GPXFile> {
+		val currentTime = System.currentTimeMillis()
+		val start = currentTime - app.settings.locHistoryTime * 1000
+		val locationMessages = mutableListOf<LocationMessages.LocationMessage>()
+
+		app.settings.getLiveTracksInfo().forEach {
+			val messages = app.locationMessages.getMessagesForUserInChat(it.userId, it.chatId, it.deviceName, start, currentTime)
+			if (messages.isNotEmpty()) {
+				locationMessages.addAll(messages)
+			}
+		}
+
+		return OsmandLocationUtils.convertLocationMessagesToGpxFiles(app, locationMessages)
+	}
+
 	fun startShowingLocation() {
 		if (!showingLocation && !forcedStop) {
 			showingLocation = if (isUseOsmandCallback() && !app.settings.monitoringEnabled) {
@@ -301,6 +389,11 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 		return version >= MIN_OSMAND_CALLBACK_VERSION_CODE
 	}
 
+	fun canOsmandCreateGpxDirs(): Boolean {
+		val version = AndroidUtils.getAppVersionCode(app, app.settings.appToConnectPackage)
+		return version >= MIN_OSMAND_CREATE_IMPORT_DIRS_VERSION_CODE
+	}
+
 	fun startShowMessagesTask(chatId: Long, vararg messages: TdApi.Message) {
 		if (app.settings.isShowingChatOnMap(chatId)) {
 			ShowMessagesTask(app).executeOnExecutor(executor, *messages)
@@ -315,6 +408,10 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 
 	fun startUpdateMessagesTask() {
 		UpdateMessagesTask(app).executeOnExecutor(executor)
+	}
+
+	fun startUpdateTracksTask() {
+		UpdateTracksTask(app).executeOnExecutor(liveTracksExecutor)
 	}
 	
 	private class ShowMessagesTask(private val app: TelegramApplication) : AsyncTask<TdApi.Message, Void, Void?>() {
@@ -341,6 +438,14 @@ class ShowLocationHelper(private val app: TelegramApplication) {
 
 		override fun doInBackground(vararg params: Void?): Void? {
 			app.showLocationHelper.updateLocationsOnMap()
+			return null
+		}
+	}
+
+	private class UpdateTracksTask(private val app: TelegramApplication) : AsyncTask<Void, Void, Void?>() {
+
+		override fun doInBackground(vararg params: Void?): Void? {
+			app.showLocationHelper.updateTracksOnMap()
 			return null
 		}
 	}

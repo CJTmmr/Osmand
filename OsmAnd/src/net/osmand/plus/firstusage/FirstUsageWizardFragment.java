@@ -474,6 +474,9 @@ public class FirstUsageWizardFragment extends BaseOsmAndFragment implements OsmA
 	}
 
 	private void updateDownloadedItem() {
+		if (mapIndexItem == null) {
+			return;
+		}
 		final View firstRowLayout = view.findViewById(R.id.map_downloading_layout);
 		final View progressLayout = view.findViewById(R.id.map_download_progress_layout);
 		final ImageButton redownloadButton = (ImageButton) view.findViewById(R.id.map_redownload_button);
@@ -556,7 +559,7 @@ public class FirstUsageWizardFragment extends BaseOsmAndFragment implements OsmA
 
 			List<BinaryMapDataObject> mapDataObjects = null;
 			try {
-				mapDataObjects = osmandRegions.queryBbox(point31x, point31x, point31y, point31y);
+				mapDataObjects = osmandRegions.query(point31x, point31x, point31y, point31y);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

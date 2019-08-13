@@ -39,6 +39,7 @@ import net.osmand.aidl.gpx.AGpxBitmap;
 import net.osmand.aidl.gpx.AGpxFile;
 import net.osmand.aidl.gpx.AGpxFileDetails;
 import net.osmand.aidl.gpx.ASelectedGpxFile;
+import net.osmand.aidl.gpx.GpxColorParams;
 import net.osmand.aidl.gpx.StartGpxRecordingParams;
 import net.osmand.aidl.gpx.StopGpxRecordingParams;
 import net.osmand.aidl.maplayer.AMapLayer;
@@ -47,6 +48,7 @@ import net.osmand.aidl.mapmarker.AMapMarker;
 import net.osmand.aidl.mapwidget.AMapWidget;
 import net.osmand.aidl.navdrawer.NavDrawerFooterParams;
 import net.osmand.aidl.navigation.ADirectionInfo;
+import net.osmand.aidl.navigation.OnVoiceNavigationParams;
 import net.osmand.aidl.plugins.PluginParams;
 import net.osmand.aidl.search.SearchResult;
 import net.osmand.aidl.tiles.ASqliteDbFile;
@@ -81,6 +83,7 @@ import net.osmand.plus.rastermaps.OsmandRasterMapsPlugin;
 import net.osmand.plus.routing.IRoutingDataUpdateListener;
 import net.osmand.plus.routing.RouteCalculationResult.NextDirectionInfo;
 import net.osmand.plus.routing.RoutingHelper;
+import net.osmand.plus.routing.VoiceRouter;
 import net.osmand.plus.views.AidlMapLayer;
 import net.osmand.plus.views.MapInfoLayer;
 import net.osmand.plus.views.OsmandMapLayer;
@@ -123,6 +126,7 @@ import static net.osmand.aidl.OsmandAidlConstants.COPY_FILE_WRITE_LOCK_ERROR;
 import static net.osmand.aidl.OsmandAidlConstants.OK_RESPONSE;
 import static net.osmand.aidl.OsmandAidlService.KEY_ON_CONTEXT_MENU_BUTTONS_CLICK;
 import static net.osmand.aidl.OsmandAidlService.KEY_ON_NAV_DATA_UPDATE;
+import static net.osmand.aidl.OsmandAidlService.KEY_ON_VOICE_MESSAGE;
 
 public class OsmandAidlApi {
 
@@ -198,6 +202,7 @@ public class OsmandAidlApi {
 	private Map<String, BroadcastReceiver> receivers = new TreeMap<>();
 	private Map<String, ConnectedApp> connectedApps = new ConcurrentHashMap<>();
 	private Map<String, ContextMenuButtonsParams> contextMenuButtonsParams = new ConcurrentHashMap<>();
+	private Map<Long, VoiceRouter.VoiceMessageListener> voiceRouterMessageCallbacks= new ConcurrentHashMap<>();
 
 	private AMapPointUpdateListener aMapPointUpdateListener;
 
@@ -1033,16 +1038,18 @@ public class OsmandAidlApi {
 		}
 	}
 
-	boolean removeMapMarker(AMapMarker marker) {
+	boolean removeMapMarker(AMapMarker marker, boolean ignoreCoordinates) {
 		if (marker != null) {
 			LatLon latLon = new LatLon(marker.getLatLon().getLatitude(), marker.getLatLon().getLongitude());
 			MapMarkersHelper markersHelper = app.getMapMarkersHelper();
 			List<MapMarker> mapMarkers = markersHelper.getMapMarkers();
 			for (MapMarker m : mapMarkers) {
-				if (m.getOnlyName().equals(marker.getName()) && latLon.equals(new LatLon(m.getLatitude(), m.getLongitude()))) {
-					markersHelper.moveMapMarkerToHistory(m);
-					refreshMap();
-					return true;
+				if (m.getOnlyName().equals(marker.getName())) {
+					if (ignoreCoordinates || latLon.equals(new LatLon(m.getLatitude(), m.getLongitude()))) {
+						markersHelper.moveMapMarkerToHistory(m);
+						refreshMap();
+						return true;
+					}
 				}
 			}
 			return false;
@@ -1051,23 +1058,40 @@ public class OsmandAidlApi {
 		}
 	}
 
-	boolean updateMapMarker(AMapMarker markerPrev, AMapMarker markerNew) {
+	boolean removeAllActiveMapMarkers() {
+		boolean refreshNeeded = false;
+		MapMarkersHelper markersHelper = app.getMapMarkersHelper();
+		List<MapMarker> mapMarkers = markersHelper.getMapMarkers();
+		for (MapMarker m : mapMarkers) {
+			markersHelper.moveMapMarkerToHistory(m);
+			refreshNeeded = true;
+		}
+		if (refreshNeeded) {
+			refreshMap();
+		}
+		return true;
+	}
+
+
+	boolean updateMapMarker(AMapMarker markerPrev, AMapMarker markerNew, boolean ignoreCoordinates) {
 		if (markerPrev != null && markerNew != null) {
 			LatLon latLon = new LatLon(markerPrev.getLatLon().getLatitude(), markerPrev.getLatLon().getLongitude());
 			LatLon latLonNew = new LatLon(markerNew.getLatLon().getLatitude(), markerNew.getLatLon().getLongitude());
 			MapMarkersHelper markersHelper = app.getMapMarkersHelper();
 			List<MapMarker> mapMarkers = markersHelper.getMapMarkers();
 			for (MapMarker m : mapMarkers) {
-				if (m.getOnlyName().equals(markerPrev.getName()) && latLon.equals(new LatLon(m.getLatitude(), m.getLongitude()))) {
-					PointDescription pd = new PointDescription(
-							PointDescription.POINT_TYPE_MAP_MARKER, markerNew.getName() != null ? markerNew.getName() : "");
-					MapMarker marker = new MapMarker(m.point, pd, m.colorIndex, m.selected, m.index);
-					marker.id = m.id;
-					marker.creationDate = m.creationDate;
-					marker.visitedDate = m.visitedDate;
-					markersHelper.moveMapMarker(marker, latLonNew);
-					refreshMap();
-					return true;
+				if (m.getOnlyName().equals(markerPrev.getName())) {
+					if (ignoreCoordinates || latLon.equals(new LatLon(m.getLatitude(), m.getLongitude()))) {
+						PointDescription pd = new PointDescription(
+								PointDescription.POINT_TYPE_MAP_MARKER, markerNew.getName() != null ? markerNew.getName() : "");
+						MapMarker marker = new MapMarker(m.point, pd, m.colorIndex, m.selected, m.index);
+						marker.id = m.id;
+						marker.creationDate = m.creationDate;
+						marker.visitedDate = m.visitedDate;
+						markersHelper.moveMapMarker(marker, latLonNew);
+						refreshMap();
+						return true;
+					}
 				}
 			}
 			return false;
@@ -1291,6 +1315,9 @@ public class OsmandAidlApi {
 				File destination = app.getAppPath(IndexConstants.GPX_INDEX_DIR + destinationPath);
 				if (destination.getParentFile().canWrite()) {
 					boolean destinationExists = destination.exists();
+					if (!destinationExists) {
+						Algorithms.createParentDirsForFile(destination);
+					}
 					try {
 						Algorithms.fileCopy(source, destination);
 						finishGpxImport(destinationExists, destination, color, show);
@@ -1312,6 +1339,9 @@ public class OsmandAidlApi {
 				gpxParcelDescriptor = app.getContentResolver().openFileDescriptor(gpxUri, "r");
 				if (gpxParcelDescriptor != null) {
 					boolean destinationExists = destination.exists();
+					if (!destinationExists) {
+						Algorithms.createParentDirsForFile(destination);
+					}
 					FileDescriptor fileDescriptor = gpxParcelDescriptor.getFileDescriptor();
 					InputStream is = new FileInputStream(fileDescriptor);
 					FileOutputStream fout = new FileOutputStream(destination);
@@ -1346,6 +1376,9 @@ public class OsmandAidlApi {
 				InputStream is = new ByteArrayInputStream(sourceRawData.getBytes());
 				FileOutputStream fout = new FileOutputStream(destination);
 				boolean destinationExists = destination.exists();
+				if (!destinationExists) {
+					Algorithms.createParentDirsForFile(destination);
+				}
 				try {
 					Algorithms.streamCopy(is, fout);
 					finishGpxImport(destinationExists, destination, color, show);
@@ -1455,6 +1488,26 @@ public class OsmandAidlApi {
 				//}
 			}
 			return true;
+		}
+		return false;
+	}
+
+	boolean getGpxColor(GpxColorParams params) {
+		if (params != null) {
+			List<GpxDataItem> gpxDataItems = app.getGpxDatabase().getItems();
+			for (GpxDataItem dataItem : gpxDataItems) {
+				File file = dataItem.getFile();
+				if (file.exists()) {
+					if (file.getName().equals(params.getFileName())) {
+						int color = dataItem.getColor();
+						if (color != 0) {
+							String colorName = ConfigureMapMenu.GpxAppearanceAdapter.parseTrackColorName(app.getRendererRegistry().getCurrentSelectedRenderer(), color);
+							params.setGpxColor(colorName);
+							return true;
+						}
+					}
+				}
+			}
 		}
 		return false;
 	}
@@ -1881,7 +1934,7 @@ public class OsmandAidlApi {
 							try {
 								cb.getCallback().updateNavigationInfo(directionInfo);
 							} catch (Exception e) {
-								LOG.debug(e.getMessage(), e);
+								LOG.error(e.getMessage(), e);
 							}
 						}
 					}
@@ -1897,6 +1950,31 @@ public class OsmandAidlApi {
 		navUpdateCallbacks.remove(id);
 	}
 
+	public void registerForVoiceRouterMessages(long id) {
+		VoiceRouter.VoiceMessageListener listener = new VoiceRouter.VoiceMessageListener() {
+			@Override
+			public void onVoiceMessage(List<String> cmds, List<String> played) {
+				if (aidlCallbackListener != null) {
+					for (OsmandAidlService.AidlCallbackParams cb : aidlCallbackListener.getAidlCallbacks().values()) {
+						if (!aidlCallbackListener.getAidlCallbacks().isEmpty() && (cb.getKey() & KEY_ON_VOICE_MESSAGE) > 0) {
+							try {
+								cb.getCallback().onVoiceRouterNotify(new OnVoiceNavigationParams(cmds, played));
+							} catch (Exception e) {
+								LOG.error(e.getMessage(), e);
+							}
+						}
+					}
+				}
+			}
+		};
+		voiceRouterMessageCallbacks.put(id, listener);
+		app.getRoutingHelper().getVoiceRouter().addVoiceMessageListener(listener);
+	}
+
+	public void unregisterFromVoiceRouterMessages(long id) {
+		app.getRoutingHelper().getVoiceRouter().removeVoiceMessageListener(voiceRouterMessageCallbacks.get(id));
+		voiceRouterMessageCallbacks.remove(id);
+	}
 
 	public Map<String, ContextMenuButtonsParams> getContextMenuButtonsParams() {
 		return contextMenuButtonsParams;
@@ -1964,7 +2042,7 @@ public class OsmandAidlApi {
 							try {
 								cb.getCallback().onContextMenuButtonClicked(buttonId, pointId, layerId);
 							} catch (Exception e) {
-								LOG.debug(e.getMessage(), e);
+								LOG.error(e.getMessage(), e);
 							}
 						}
 					}

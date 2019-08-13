@@ -4,6 +4,7 @@ package net.osmand.plus.routing;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Base64;
 
 import net.osmand.Location;
 import net.osmand.PlatformUtil;
@@ -51,6 +52,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URLConnection;
@@ -60,6 +62,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
 import javax.xml.parsers.FactoryConfigurationError;
 import javax.xml.parsers.ParserConfigurationException;
@@ -708,7 +712,6 @@ public class RouteProvider {
 		if (maxSpeed > 0) {
 			paramsR.put(GeneralRouter.MAX_SPEED, String.valueOf(maxSpeed));
 		}
-
 		float mb = (1 << 20);
 		Runtime rt = Runtime.getRuntime();
 		// make visible
@@ -717,6 +720,9 @@ public class RouteProvider {
 		RoutingConfiguration cf = config.build( params.mode.getRoutingProfile(), params.start.hasBearing() ?
 				params.start.getBearing() / 180d * Math.PI : null, 
 				memoryLimit, paramsR);
+		if(settings.ENABLE_TIME_CONDITIONAL_ROUTING.get()) {
+			cf.routeCalculationTime = System.currentTimeMillis();
+		}
 		return cf;
 	}
 
@@ -763,7 +769,7 @@ public class RouteProvider {
 				return emptyResult();
 			} else {
 				RouteCalculationResult res = new RouteCalculationResult(result, params.start, params.end,
-						params.intermediates, params.ctx, params.leftSide, ctx.routingTime, params.gpxRoute  == null? null: params.gpxRoute.wpt,
+						params.intermediates, params.ctx, params.leftSide, ctx, params.gpxRoute  == null? null: params.gpxRoute.wpt,
 								params.mode);
 				return res;
 			}
@@ -1145,6 +1151,22 @@ public class RouteProvider {
 		}
 		lats[index] = params.end.getLatitude();
 		lons[index] = params.end.getLongitude();
+
+		Set<LatLon> impassableRoads = params.ctx.getAvoidSpecificRoads().getImpassableRoads().keySet();
+		double[] nogoLats = new double[impassableRoads.size()];
+		double[] nogoLons = new double[impassableRoads.size()];
+		double[] nogoRadi = new double[impassableRoads.size()];
+
+		if(impassableRoads.size() != 0) {
+			int nogoindex = 0;
+			for (LatLon nogos : impassableRoads) {
+				nogoLats[nogoindex] = nogos.getLatitude();
+				nogoLons[nogoindex] = nogos.getLongitude();
+				nogoRadi[nogoindex] = 10;
+				nogoindex++;
+			}
+		}
+		
 		if (params.mode.isDerivedRoutingFrom(ApplicationMode.PEDESTRIAN)) {
 			mode = "foot"; //$NON-NLS-1$
 		} else if (params.mode.isDerivedRoutingFrom(ApplicationMode.BICYCLE)) {
@@ -1155,10 +1177,14 @@ public class RouteProvider {
 		Bundle bpars = new Bundle();
 		bpars.putDoubleArray("lats", lats);
 		bpars.putDoubleArray("lons", lons);
+		bpars.putDoubleArray("nogoLats", nogoLats);
+		bpars.putDoubleArray("nogoLons", nogoLons);
+		bpars.putDoubleArray("nogoRadi", nogoRadi);
 		bpars.putString("fast", params.fast ? "1" : "0");
 		bpars.putString("v", mode);
 		bpars.putString("trackFormat", "gpx");
 		bpars.putString("turnInstructionFormat", "osmand");
+		bpars.putString("acceptCompressedResult", "true");
 
 		OsmandApplication ctx = (OsmandApplication) params.ctx;
 		List<Location> res = new ArrayList<Location>();
@@ -1172,11 +1198,23 @@ public class RouteProvider {
 			String gpxMessage = brouterService.getTrackFromParams(bpars);
 			if (gpxMessage == null)
 				gpxMessage = "no result from brouter";
-			if (!gpxMessage.startsWith("<")) {
+
+			boolean isZ64Encoded = gpxMessage.startsWith("ejY0"); // base-64 version of "z64"
+
+			if (!( isZ64Encoded || gpxMessage.startsWith("<") ) ) {
 				return new RouteCalculationResult(gpxMessage);
 			}
 
-			GPXFile gpxFile = GPXUtilities.loadGPXFile(new ByteArrayInputStream(gpxMessage.getBytes("UTF-8")));
+			InputStream gpxStream;
+			if ( isZ64Encoded ) {
+				ByteArrayInputStream bais = new ByteArrayInputStream( Base64.decode(gpxMessage, Base64.DEFAULT) );
+				bais.read( new byte[3] ); // skip prefix
+				gpxStream = new GZIPInputStream( bais );
+			} else {
+				gpxStream = new ByteArrayInputStream(gpxMessage.getBytes("UTF-8"));
+			}
+
+			GPXFile gpxFile = GPXUtilities.loadGPXFile(gpxStream);
 
 			dir = parseOsmAndGPXRoute(res, gpxFile, true, params.leftSide, params.mode.getDefaultSpeed());
 

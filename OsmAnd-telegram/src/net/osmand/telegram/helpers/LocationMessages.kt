@@ -11,6 +11,7 @@ import net.osmand.telegram.TelegramApplication
 import net.osmand.telegram.utils.OsmandLocationUtils
 import net.osmand.util.MapUtils
 import org.drinkless.td.libcore.telegram.TdApi
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class LocationMessages(val app: TelegramApplication) {
 
@@ -18,7 +19,7 @@ class LocationMessages(val app: TelegramApplication) {
 
 	private var bufferedMessages = emptyList<BufferMessage>()
 
-	private var lastLocationPoints = mutableListOf<LocationMessage>()
+	private var lastLocationPoints = ConcurrentLinkedQueue<LocationMessage>()
 
 	private val dbHelper: SQLiteHelper
 
@@ -69,12 +70,17 @@ class LocationMessages(val app: TelegramApplication) {
 	}
 
 	fun getMessagesForUserInChat(userId: Int, chatId: Long, deviceName: String, start: Long, end: Long): List<LocationMessage> {
-		return dbHelper.getMessagesForUserInChat(userId, chatId,deviceName, start, end)
+		return dbHelper.getMessagesForUserInChat(userId, chatId, deviceName, start, end)
 	}
 
 	fun getMessagesForUser(userId: Int, start: Long, end: Long): List<LocationMessage> {
 		return dbHelper.getMessagesForUser(userId, start, end)
 	}
+
+	fun getLastLocationInfoForUserInChat(userId: Int, chatId: Long, deviceName: String) =
+		lastLocationPoints.sortedByDescending { it.time }.firstOrNull { it.userId == userId && it.chatId == chatId && it.deviceName == deviceName }
+
+	fun getLastLocationMessagesSinceTime(time: Long) = lastLocationPoints.filter { it.time > time }
 
 	fun addBufferedMessage(message: BufferMessage) {
 		log.debug("addBufferedMessage $message")
@@ -91,7 +97,7 @@ class LocationMessages(val app: TelegramApplication) {
 		val content = OsmandLocationUtils.parseMessageContent(message, app.telegramHelper)
 		if (content != null) {
 			val deviceName = if (content is OsmandLocationUtils.MessageOsmAndBotLocation) content.deviceName else ""
-			val previousLocationMessage = lastLocationPoints.sortedBy { it.time }.firstOrNull {
+			val previousLocationMessage = lastLocationPoints.sortedByDescending { it.time }.firstOrNull {
 				it.userId == senderId && it.chatId == message.chatId && it.deviceName == deviceName && it.type == type
 			}
 			if (previousLocationMessage == null || content.lastUpdated * 1000L > previousLocationMessage.time) {
@@ -139,7 +145,7 @@ class LocationMessages(val app: TelegramApplication) {
 	}
 
 	private fun readLastMessages() {
-		this.lastLocationPoints = dbHelper.getLastMessages()
+		this.lastLocationPoints.addAll(dbHelper.getLastMessages())
 	}
 
 	private class SQLiteHelper(context: Context) :

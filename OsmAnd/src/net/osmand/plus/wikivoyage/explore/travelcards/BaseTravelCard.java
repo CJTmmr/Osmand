@@ -31,7 +31,7 @@ public abstract class BaseTravelCard {
 	}
 
 	protected Drawable getContentIcon(@DrawableRes int icon) {
-		return getColoredIcon(icon, R.color.icon_color);
+		return getColoredIcon(icon, R.color.icon_color_default_light);
 	}
 
 	protected Drawable getActiveIcon(@DrawableRes int icon) {
@@ -64,5 +64,10 @@ public abstract class BaseTravelCard {
 			return nightMode ? R.color.active_buttons_and_links_text_dark : R.color.active_buttons_and_links_text_light;
 		}
 		return R.color.wikivoyage_secondary_text;
+	}
+
+	@ColorRes
+	protected int getPrimaryTextColorRes() {
+		return nightMode ? R.color.text_color_primary_dark : R.color.text_color_primary_light;
 	}
 }

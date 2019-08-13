@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="rendering_attr_winter_road_name">Автозимник</string>
+    <string name="rendering_attr_ice_road_name">Ледовый автозимник</string>
+    <string name="routeInfo_winter_ice_road_name">Зимники</string>
+    <string name="rendering_attr_tracktype_grade1_name">Твёрдое</string>
+    <string name="rendering_attr_tracktype_grade2_name">Почти твёрдое</string>
+    <string name="rendering_attr_tracktype_grade3_name">Смешанное</string>
+    <string name="rendering_attr_tracktype_grade4_name">Почти мягкое</string>
+    <string name="rendering_attr_tracktype_grade5_name">Мягкое</string>
+    <string name="routeInfo_tracktype_name">Состояние дороги</string>
     <string name="intermediate_waypoint">Промежуточная точка</string>
     <string name="intermediate_destinations">Промежуточные точки</string>
     <string name="arrive_at_time">Прибытие в %1$s</string>
@@ -2473,7 +2482,6 @@
     <string name="route_is_calculated">Маршрут рассчитан</string>
     <string name="round_trip">Путешествие</string>
     <string name="add_location_as_first_point_descr">Добавить ваше местоположение как точку старта при планировании маршрута.</string>
-    <string name="is_saved">сохранено</string>
     <string name="show_passed">Показать пройденные</string>
     <string name="hide_passed">Скрыть пройденные</string>
     <string name="remove_from_map_markers">Удалить из маркеров карты</string>
@@ -2893,13 +2901,13 @@
     <string name="transfers">пересадки</string>
     <string name="on_foot">пешком</string>
     <string name="show_along_the_route">Показывать вдоль маршрута</string>
-    <string name="route_surface_stat_container">Поверхность</string>
-    <string name="route_class_stat_container">Класс</string>
-    <string name="route_steepness_stat_container">Крутизна</string>
+    <string name="routeInfo_surface_name">Поверхность</string>
+    <string name="routeInfo_roadClass_name">Класс</string>
+    <string name="routeInfo_steepness_name">Крутизна</string>
     <string name="add_home">Добавить дом</string>
     <string name="add_work">Добавить работу</string>
     <string name="work_button">Работа</string>
-    <string name="route_smoothness_stat_container">Проходимость</string>
+    <string name="routeInfo_smoothness_name">Проходимость</string>
     <string name="previous_route">Предыдущий маршрут</string>
     <string name="add_destination_query">Сначала добавьте пункт назначения</string>
     <string name="shared_string_swap">Поменять</string>
@@ -2910,7 +2918,7 @@
     <string name="quick_action_gpx_tracks_show">Показать GPX треки</string>
     <string name="time_of_day">Время суток</string>
     <string name="step_by_step">Шаг за шагом</string>
-    <string name="road_types">Типы дорог</string>
+    <string name="routeInfo_road_types_name">Типы дорог</string>
     <string name="quick_action_show_hide_gpx_tracks_descr">Нажатие на кнопку действия отобразит или скроет выбранные GPX треки на карте</string>
     <string name="by_transport_type">На %1$s</string>
     <string name="exit_at">Выход на</string>
@@ -3089,7 +3097,7 @@
     <string name="shared_string_icon">Значок</string>
     <string name="collected_data">Собранные данные</string>
     <string name="press_again_to_change_the_map_orientation">Нажмите еще раз, чтобы изменить ориентацию карты</string>
-    <string name="last_launch_crashed">Последний запуск OsmAnd завершился с ошибкой. Помогите нам улучшить OsmAnd. Пожалуйста, отправьте нам сообщение об ошибке.</string>
+    <string name="last_launch_crashed">"Последний запуск OsmAnd завершился с ошибкой. Помогите нам улучшить OsmAnd. Пожалуйста, поделитесь с  нами сообщением об ошибке."</string>
     <string name="settings_routing_mode_string">Режим: %s</string>
     <string name="settings_derived_routing_mode_string">Режим пользователя, полученный из: %s</string>
     <string name="profile_alert_duplicate_name_title">Повторяющееся имя</string>
@@ -3131,7 +3139,42 @@
 \n
 \n</string>
     <string name="app_mode_monowheel">Моноколесо</string>
-    <string name="app_mode_scooter">Скутер</string>
+    <string name="app_mode_scooter">Самокат</string>
     <string name="precision_hdop_and_vdop">Точность по горизонтали: %1$s, по вертикали: %2$s</string>
     <string name="precision_hdop">Точность по горизонтали: %s</string>
+    <string name="app_mode_shuttle_bus">Маршрутка</string>
+    <string name="app_mode_ufo">НЛО</string>
+    <string name="edit_profile_setup_title">Настройка профиля</string>
+    <string name="edit_profile_setup_subtitle">У каждого профиля свои настройки</string>
+    <string name="minmax_speed_dialog_title">Мин/макс скорость</string>
+    <string name="shared_string_crash">Аварии</string>
+    <string name="app_mode_offroad">Бездорожье</string>
+    <string name="edit_profile_setup_map_subtitle">Выберите настройки карты по умолчанию для профиля</string>
+    <string name="edit_profile_screen_options_subtitle">Выбор параметров экрана по умолчанию для профиля</string>
+    <string name="edit_profile_nav_settings_subtitle">Выбор параметров навигации по умолчанию для профиля</string>
+    <string name="routing_attr_max_num_changes_description">Укажите максимальное количество изменений</string>
+    <string name="turn_screen_on_sensor">Использовать датчик приближения</string>
+    <string name="turn_on_profile_desc">Пожалуйста, включите по крайней мере один профиль приложения, чтобы использовать этот параметр.</string>
+    <string name="shared_string_file_is_saved">%s сохранено</string>
+    <string name="osmand_default_routing">Навигация OsmAnd</string>
+    <string name="custom_routing">Пользовательский профиль навигации</string>
+    <string name="special_routing_type">Специальная навигация</string>
+    <string name="third_party_routing_type">Сторонняя навигация</string>
+    <string name="routing_attr_piste_type_nordic_name">Лыжные гонки / северные дисциплины</string>
+    <string name="routing_attr_piste_type_nordic_description">Трассы для северных дисциплин или лыжных гонок.</string>
+    <string name="app_mode_personal_transporter">Сегвей</string>
+    <string name="routing_attr_max_num_changes_name">Количество изменений</string>
+    <string name="turn_screen_on_time_descr">Укажите время до поворота за которое экран будет включен.</string>
+    <string name="turn_screen_on_sensor_descr">Включение экрана во время навигации при проведении рукой в верхней части экрана.</string>
+    <string name="external_input_device">Внешние устройства ввода</string>
+    <string name="external_input_device_descr">Выберите устройство для внешнего управления, например, типовую клавиатуру или WunderLINQ.</string>
+    <string name="sett_no_ext_input">Нет</string>
+    <string name="sett_generic_ext_input">Типовая клавиатура</string>
+    <string name="sett_wunderlinq_ext_input">WunderLINQ</string>
+    <string name="sett_parrot_ext_input">Parrot</string>
+    <string name="shared_string_track_is_saved">Трек %s сохранен</string>
+    <string name="rendering_attr_showLez_name">Отображать зоны с низким уровнем выбросов</string>
+    <string name="temporary_conditional_routing">Учитывать временные ограничения</string>
+    <string name="new_route_calculated_dist_dbg">Маршрут: расстояние %s, время навигации %s 
+\nРасчет: %.1f с, %d дорог, %d тайлов)</string>
 </resources>

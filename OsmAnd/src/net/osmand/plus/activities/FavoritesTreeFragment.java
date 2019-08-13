@@ -130,7 +130,7 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 		arrowImageDisabled = ContextCompat.getDrawable(context, R.drawable.ic_direction_arrow);
 		arrowImageDisabled.mutate();
 		arrowImageDisabled.setColorFilter(ContextCompat.getColor(
-				context, light ? R.color.icon_color : R.color.icon_color_light), PorterDuff.Mode.MULTIPLY);
+				context, light ? R.color.icon_color_default_light : R.color.icon_color_default_dark), PorterDuff.Mode.MULTIPLY);
 	}
 
 	private void deleteFavorites() {
@@ -167,7 +167,7 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 		if (!favouritesAdapter.isEmpty()) {
 			boolean light = getMyApplication().getSettings().isLightContent();
 			View searchView = inflater.inflate(R.layout.search_fav_list_item, null);
-			searchView.setBackgroundResource(light ? R.color.bg_color_light : R.color.bg_color_dark);
+			searchView.setBackgroundResource(light ? R.color.list_background_color_light : R.color.list_background_color_dark);
 			TextView title = (TextView) searchView.findViewById(R.id.title);
 			title.setCompoundDrawablesWithIntrinsicBounds(getMyApplication().getUIUtilities().getThemedIcon(R.drawable.ic_action_search_dark), null, null, null);
 			title.setHint(R.string.shared_string_search);
@@ -240,8 +240,8 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		listView.setBackgroundColor(getResources().getColor(
-				getMyApplication().getSettings().isLightContent() ? R.color.ctx_menu_info_view_bg_light
-						: R.color.ctx_menu_info_view_bg_dark));
+				getMyApplication().getSettings().isLightContent() ? R.color.activity_background_color_light
+						: R.color.activity_background_color_dark));
 	}
 
 	@Override
@@ -359,8 +359,7 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		menu.clear();
-		MenuItem mi = createMenuItem(menu, SEARCH_ID, R.string.search_poi_filter, R.drawable.ic_action_search_dark,
-				R.drawable.ic_action_search_dark, MenuItemCompat.SHOW_AS_ACTION_ALWAYS | MenuItemCompat.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+		MenuItem mi = createMenuItem(menu, SEARCH_ID, R.string.search_poi_filter, R.drawable.ic_action_search_dark, MenuItemCompat.SHOW_AS_ACTION_ALWAYS | MenuItemCompat.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 		mi.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
 			@Override
 			public boolean onMenuItemClick(MenuItem item) {
@@ -378,17 +377,10 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 
 
 		if (!MenuItemCompat.isActionViewExpanded(mi)) {
-			createMenuItem(menu, IMPORT_FAVOURITES_ID, R.string.shared_string_add_to_favorites, R.drawable.ic_action_plus,
-					R.drawable.ic_action_plus, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-			createMenuItem(menu, SHARE_ID, R.string.shared_string_share, R.drawable.ic_action_gshare_dark,
-					R.drawable.ic_action_gshare_dark, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-			createMenuItem(menu, SELECT_MAP_MARKERS_ID, R.string.select_map_markers, R.drawable.ic_action_flag_dark,
-					R.drawable.ic_action_flag_dark, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-			createMenuItem(menu, DELETE_ID, R.string.shared_string_delete, R.drawable.ic_action_delete_dark,
-					R.drawable.ic_action_delete_dark, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
-//			createMenuItem(menu, EXPORT_ID, R.string.shared_string_export, R.drawable.ic_action_gsave_light,
-//					R.drawable.ic_action_gsave_dark, MenuItem.SHOW_AS_ACTION_IF_ROOM);
-
+			createMenuItem(menu, IMPORT_FAVOURITES_ID, R.string.shared_string_add_to_favorites, R.drawable.ic_action_plus, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+			createMenuItem(menu, SHARE_ID, R.string.shared_string_share, R.drawable.ic_action_gshare_dark, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+			createMenuItem(menu, SELECT_MAP_MARKERS_ID, R.string.select_map_markers, R.drawable.ic_action_flag_dark, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+			createMenuItem(menu, DELETE_ID, R.string.shared_string_delete, R.drawable.ic_action_delete_dark, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
 		}
 	}
 
@@ -414,7 +406,7 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 			public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 				enableSelectionMode(true);
 				createMenuItem(menu, SELECT_MAP_MARKERS_ACTION_MODE_ID, R.string.select_map_markers,
-						R.drawable.ic_action_flag_dark, R.drawable.ic_action_flag_dark,
+						R.drawable.ic_action_flag_dark,
 						MenuItemCompat.SHOW_AS_ACTION_IF_ROOM);
 				favoritesSelected.clear();
 				groupsToDelete.clear();
@@ -477,7 +469,7 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 			public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 				enableSelectionMode(true);
 				createMenuItem(menu, DELETE_ACTION_ID, R.string.shared_string_delete,
-						R.drawable.ic_action_delete_dark, R.drawable.ic_action_delete_dark,
+						R.drawable.ic_action_delete_dark,
 						MenuItemCompat.SHOW_AS_ACTION_IF_ROOM);
 				favoritesSelected.clear();
 				groupsToDelete.clear();
@@ -917,7 +909,7 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 			boolean light = app.getSettings().isLightContent();
 			int enabledColor = light ? R.color.text_color_primary_light : R.color.text_color_primary_dark;
 			int disabledColor = light ? R.color.text_color_secondary_light : R.color.text_color_secondary_dark;
-			int disabledIconColor = light ? R.color.icon_color : R.color.icon_color_light;
+			int disabledIconColor = light ? R.color.icon_color_default_light : R.color.icon_color_default_dark;
 
 			TextView name = (TextView) row.findViewById(R.id.favourite_label);
 			TextView distanceText = (TextView) row.findViewById(R.id.distance);

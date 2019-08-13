@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -25,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.ContextMenuAdapter;
@@ -81,14 +83,29 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
     public void onCreate(Bundle savedInstanceState) {
 		((OsmandApplication) getApplication()).applyTheme(this);
 		super.onCreate(savedInstanceState);
+		settings = getMyApplication().getSettings();
+		if (!settings.hasAvailableApplicationMode()) {
+			Toast.makeText(this, R.string.turn_on_profile_desc, Toast.LENGTH_SHORT).show();
+			finish();
+			return;
+		}
 		getToolbar().setTitle(R.string.routing_settings);
 		createUI();
     }
 
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if(getIntent() != null && getIntent().hasExtra(INTENT_SKIP_DIALOG)) {
+			setSelectedAppMode(settings.getApplicationMode());
+		} else if (selectedAppMode == null) {
+			selectAppModeDialog().show();
+		}
+	}
+
 	private void createUI() {
 		addPreferencesFromResource(R.xml.navigation_settings);
 		PreferenceScreen screen = getPreferenceScreen();
-		settings = getMyApplication().getSettings();
 		RouteService[] vls = RouteService.getAvailableRouters(getMyApplication());
 		String[] entries = new String[vls.length];
 		for (int i = 0; i < entries.length; i++) {
@@ -142,23 +159,34 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
 		};
 		registerListPreference(settings.ARRIVAL_DISTANCE_FACTOR, screen, arrivalNames, arrivalValues);
 
-		//array size should be equal!
-		Float[] speedLimitsKm = new Float[]{-10f, -7f,-5f, 0f, 5f, 7f, 10f, 15f, 20f};
-		Float[] speedLimitsMiles = new Float[]{-7f, -5f, -3f, 0f, 3f, 5f, 7f, 10f, 15f};
+
 		if (settings.METRIC_SYSTEM.get() == OsmandSettings.MetricsConstants.KILOMETERS_AND_METERS) {
+			Float[] speedLimitsKm = new Float[]{-10f, -7f, -5f, 0f, 5f, 7f, 10f, 15f, 20f};
+			Float[] speedLimitsKmPos = new Float[]{0f, 5f, 7f, 10f, 15f, 20f};
 			String[] speedNames = new String[speedLimitsKm.length];
-			for (int i =0; i<speedLimitsKm.length;i++){
-				speedNames[i] = speedLimitsKm[i] + " " + getString(R.string.km_h);
+			String[] speedNamesPos = new String[speedLimitsKmPos.length];
+			for (int i = 0; i < speedLimitsKm.length; i++) {
+				speedNames[i] = speedLimitsKm[i].intValue() + " " + getString(R.string.km_h);
+			}
+			for (int i = 0; i < speedLimitsKmPos.length; i++) {
+				speedNamesPos[i] = speedLimitsKmPos[i].intValue() + " " + getString(R.string.km_h);
 			}
 			registerListPreference(settings.SPEED_LIMIT_EXCEED, screen, speedNames, speedLimitsKm);
-			registerListPreference(settings.SWITCH_MAP_DIRECTION_TO_COMPASS, screen, speedNames, speedLimitsKm);
+			registerListPreference(settings.SWITCH_MAP_DIRECTION_TO_COMPASS, screen, speedNamesPos, speedLimitsKmPos);
 		} else {
-			String[] speedNames = new String[speedLimitsKm.length];
-			for (int i =0; i<speedNames.length;i++){
-				speedNames[i] = speedLimitsMiles[i] + " " + getString(R.string.mile_per_hour);
+			Float[] speedLimitsMiles = new Float[]{-7f, -5f, -3f, 0f, 3f, 5f, 7f, 10f, 15f};
+			Float[] speedLimitsMilesPos = new Float[]{0f, 3f, 5f, 7f, 10f, 15f};
+
+			String[] speedNames = new String[speedLimitsMiles.length];
+			for (int i = 0; i < speedNames.length; i++) {
+				speedNames[i] = speedLimitsMiles[i].intValue() + " " + getString(R.string.mile_per_hour);
 			}
-			registerListPreference(settings.SPEED_LIMIT_EXCEED, screen, speedNames, speedLimitsKm);
-			registerListPreference(settings.SWITCH_MAP_DIRECTION_TO_COMPASS, screen, speedNames, speedLimitsKm);
+			String[] speedNamesPos = new String[speedLimitsMilesPos.length];
+			for (int i = 0; i < speedNamesPos.length; i++) {
+				speedNamesPos[i] = speedLimitsMiles[i].intValue() + " " + getString(R.string.mile_per_hour);
+			}
+			registerListPreference(settings.SPEED_LIMIT_EXCEED, screen, speedNames, speedLimitsMiles);
+			registerListPreference(settings.SWITCH_MAP_DIRECTION_TO_COMPASS, screen, speedNamesPos, speedLimitsMilesPos);
 		}
 
 		PreferenceCategory category = (PreferenceCategory) screen.findPreference("guidance_preferences");
@@ -181,13 +209,24 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
 		// registerListPreference(settings.DELAY_TO_START_NAVIGATION, screen, delayIntervalNames, delayIntervals);
 
 
-		if(getIntent() != null && getIntent().hasExtra(INTENT_SKIP_DIALOG)) {
-			setSelectedAppMode(settings.getApplicationMode());
-		} else {
-			selectAppModeDialog().show();
-		}
+
+		registerBooleanPreference(settings.ENABLE_TIME_CONDITIONAL_ROUTING, screen);
+
+		addTurnScreenOn((PreferenceGroup) screen.findPreference("turn_screen_on"));
 
 		addVoicePrefs((PreferenceGroup) screen.findPreference("voice"));
+	}
+
+	private void addTurnScreenOn(PreferenceGroup screen) {
+		Integer[] screenPowerSaveValues = new Integer[] { 0, 5, 10, 15, 20, 30, 45, 60 };
+		String[] screenPowerSaveNames = new String[screenPowerSaveValues.length];
+		screenPowerSaveNames[0] = getString(R.string.shared_string_never);
+		for (int i = 1; i < screenPowerSaveValues.length; i++) {
+			screenPowerSaveNames[i] = screenPowerSaveValues[i] + " "
+					+ getString(R.string.int_seconds);
+		}
+		registerListPreference(settings.TURN_SCREEN_ON_TIME_INT, screen, screenPowerSaveNames, screenPowerSaveValues);
+		registerBooleanPreference(settings.TURN_SCREEN_ON_SENSOR, screen);
 	}
 
 	private void reloadVoiceListPreference(PreferenceScreen screen) {
@@ -213,11 +252,14 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
 
 	private void addVoicePrefs(PreferenceGroup cat) {
 		if (!Version.isBlackberry((OsmandApplication) getApplication())) {
+			String[] streamTypes = new String[]{getString(R.string.voice_stream_music),
+					getString(R.string.voice_stream_notification), getString(R.string.voice_stream_voice_call)};
+					//getString(R.string.shared_string_default)};
+			Integer[] streamIntTypes = new Integer[]{AudioManager.STREAM_MUSIC,
+					AudioManager.STREAM_NOTIFICATION, AudioManager.STREAM_VOICE_CALL};
+					//AudioManager.USE_DEFAULT_STREAM_TYPE};
 			ListPreference lp = createListPreference(
-					settings.AUDIO_STREAM_GUIDANCE,
-					new String[]{getString(R.string.voice_stream_music), getString(R.string.voice_stream_notification),
-							getString(R.string.voice_stream_voice_call)}, new Integer[]{AudioManager.STREAM_MUSIC,
-							AudioManager.STREAM_NOTIFICATION, AudioManager.STREAM_VOICE_CALL}, R.string.choose_audio_stream,
+					settings.AUDIO_STREAM_GUIDANCE, streamTypes, streamIntTypes , R.string.choose_audio_stream,
 					R.string.choose_audio_stream_descr);
 			final Preference.OnPreferenceChangeListener prev = lp.getOnPreferenceChangeListener();
 			lp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -229,8 +271,20 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
 					if (player != null) {
 						player.updateAudioStream(settings.AUDIO_STREAM_GUIDANCE.get());
 					}
+					// Sync corresponding AUDIO_USAGE value
+					ApplicationMode mode = getMyApplication().getSettings().getApplicationMode();
+					int stream = settings.AUDIO_STREAM_GUIDANCE.getModeValue(mode);
+					if (stream == AudioManager.STREAM_MUSIC) {
+						settings.AUDIO_USAGE.setModeValue(mode, AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE);
+					} else if (stream == AudioManager.STREAM_NOTIFICATION) {
+						settings.AUDIO_USAGE.setModeValue(mode, AudioAttributes.USAGE_NOTIFICATION);
+					} else if (stream == AudioManager.STREAM_VOICE_CALL) {
+						settings.AUDIO_USAGE.setModeValue(mode, AudioAttributes.USAGE_VOICE_COMMUNICATION);
+					}
+
 					// Sync DEFAULT value with CAR value, as we have other way to set it for now
 					settings.AUDIO_STREAM_GUIDANCE.setModeValue(ApplicationMode.DEFAULT, settings.AUDIO_STREAM_GUIDANCE.getModeValue(ApplicationMode.CAR));
+					settings.AUDIO_USAGE.setModeValue(ApplicationMode.DEFAULT, settings.AUDIO_USAGE.getModeValue(ApplicationMode.CAR));
 					return true;
 				}
 			});

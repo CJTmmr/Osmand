@@ -1,18 +1,23 @@
 package net.osmand.plus.activities.actions;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.support.annotation.LayoutRes;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
 import net.osmand.AndroidUtils;
+import net.osmand.PlatformUtil;
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandSettings;
@@ -21,9 +26,12 @@ import net.osmand.plus.R;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.logging.Log;
 
 public class AppModeDialog {
 
+	private static final Log LOG = PlatformUtil.getLog(AppModeDialog.class);
+	
 	public static View prepareAppModeView(Activity a, final Set<ApplicationMode> selected, boolean showDefault,
 	                                      ViewGroup parent, final boolean singleSelection, boolean useListBg, boolean useMapTheme, final View.OnClickListener onClickListener) {
 		OsmandApplication app = (OsmandApplication) a.getApplication();
@@ -58,7 +66,7 @@ public class AppModeDialog {
 
 	public static View prepareAppModeView(Activity a, final List<ApplicationMode> values, final Set<ApplicationMode> selected,
 	                                      ViewGroup parent, final boolean singleSelection, boolean useListBg, boolean useMapTheme, final View.OnClickListener onClickListener, boolean nightMode) {
-		View ll = a.getLayoutInflater().inflate(R.layout.mode_toggles, parent);
+		final View ll = a.getLayoutInflater().inflate(R.layout.mode_toggles, parent);
 		if (useListBg) {
 			AndroidUtils.setListItemBackground(a, ll, nightMode);
 		} else {
@@ -73,6 +81,27 @@ public class AppModeDialog {
 			updateButtonState((OsmandApplication) a.getApplication(), values, selected, onClickListener, buttons, i,
 					singleSelection, useMapTheme, nightMode);
 		}
+
+		
+		ApplicationMode activeMode = ((OsmandApplication) a.getApplication()).getSettings().getApplicationMode();
+		final int idx = values.indexOf(activeMode);
+		
+		OnGlobalLayoutListener globalListener = new OnGlobalLayoutListener() {
+			@Override
+			public void onGlobalLayout() {
+				HorizontalScrollView scrollView = ll.findViewById(R.id.app_modes_scroll_container);
+				LinearLayout container = ll.findViewById(R.id.app_modes_content);
+				int s = container.getChildAt(idx) != null ? container.getChildAt(idx).getRight() : 0;
+				scrollView.scrollTo(s - scrollView.getWidth() > 0 ? s - scrollView.getWidth() : 0, 0);
+				if (Build.VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
+					ll.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+				} else {
+					ll.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+				}
+			}
+		};
+		ll.getViewTreeObserver().addOnGlobalLayoutListener(globalListener);
+		
 		return ll;
 	}
 
@@ -84,11 +113,13 @@ public class AppModeDialog {
 			View tb = buttons[i];
 			final ApplicationMode mode = visible.get(i);
 			final boolean checked = selected.contains(mode);
+			final View selection = tb.findViewById(R.id.selection);
 			ImageView iv = (ImageView) tb.findViewById(R.id.app_mode_icon);
 			if (checked) {
 				iv.setImageDrawable(ctx.getUIUtilities().getIcon(mode.getIconRes(), mode.getIconColorInfo().getColor(nightMode)));
 				iv.setContentDescription(String.format("%s %s", mode.toHumanString(ctx), ctx.getString(R.string.item_checked)));
-				tb.findViewById(R.id.selection).setVisibility(View.VISIBLE);
+				selection.setBackgroundResource(mode.getIconColorInfo().getColor(nightMode));
+				selection.setVisibility(View.VISIBLE);
 			} else {
 				if (useMapTheme) {
 					iv.setImageDrawable(ctx.getUIUtilities().getIcon(mode.getIconRes(), mode.getIconColorInfo().getColor(nightMode)));
@@ -97,7 +128,7 @@ public class AppModeDialog {
 					iv.setImageDrawable(ctx.getUIUtilities().getThemedIcon(mode.getIconRes()));
 				}
 				iv.setContentDescription(String.format("%s %s", mode.toHumanString(ctx), ctx.getString(R.string.item_unchecked)));
-				tb.findViewById(R.id.selection).setVisibility(View.INVISIBLE);
+				selection.setVisibility(View.INVISIBLE);
 			}
 			iv.setOnClickListener(new View.OnClickListener() {
 
@@ -141,10 +172,10 @@ public class AppModeDialog {
 				iv.setImageDrawable(drawable);
 				iv.setContentDescription(String.format("%s %s", mode.toHumanString(ctx), ctx.getString(R.string.item_checked)));
 				if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-					AndroidUtils.setBackground(ctx, iv, nightMode, R.drawable.btn_border_light, R.drawable.btn_border_dark);
-					AndroidUtils.setBackground(ctx, selection, nightMode, R.drawable.ripple_light, R.drawable.ripple_dark);
+					AndroidUtils.setBackground(ctx, iv, nightMode, R.drawable.btn_checked_border_light, R.drawable.btn_checked_border_light);
+					AndroidUtils.setBackground(ctx, selection, nightMode, R.drawable.ripple_light, R.drawable.ripple_light);
 				} else {
-					AndroidUtils.setBackground(ctx, selection, nightMode, R.drawable.btn_border_trans_light, R.drawable.btn_border_trans_dark);
+					AndroidUtils.setBackground(ctx, selection, nightMode, R.drawable.btn_border_trans_light, R.drawable.btn_border_trans_light);
 				}
 			} else {
 				if (useMapTheme) {
@@ -154,10 +185,10 @@ public class AppModeDialog {
 					}
 					iv.setImageDrawable(drawable);
 					if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-						AndroidUtils.setBackground(ctx, iv, nightMode, R.drawable.btn_border_pressed_light, R.drawable.btn_border_pressed_dark);
-						AndroidUtils.setBackground(ctx, selection, nightMode, R.drawable.ripple_light, R.drawable.ripple_dark);
+						AndroidUtils.setBackground(ctx, iv, nightMode, R.drawable.btn_border_pressed_light, R.drawable.btn_border_pressed_light);
+						AndroidUtils.setBackground(ctx, selection, nightMode, R.drawable.ripple_light, R.drawable.ripple_light);
 					} else {
-						AndroidUtils.setBackground(ctx, selection, nightMode, R.drawable.btn_border_pressed_trans_light, R.drawable.btn_border_pressed_trans_dark);
+						AndroidUtils.setBackground(ctx, selection, nightMode, R.drawable.btn_border_pressed_trans_light, R.drawable.btn_border_pressed_trans_light);
 					}
 				} else {
 					iv.setImageDrawable(ctx.getUIUtilities().getIcon(mode.getIconRes(), mode.getIconColorInfo().getColor(nightMode)));

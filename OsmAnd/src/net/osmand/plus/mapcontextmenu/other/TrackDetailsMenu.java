@@ -104,18 +104,18 @@ public class TrackDetailsMenu {
 		}
 	}
 
-	public void dismiss() {
+	public void dismiss(boolean backPressed) {
 		TrackDetailsMenuFragment fragment = getMenuFragment();
 		if (fragment != null) {
-			fragment.dismiss();
+			fragment.dismiss(backPressed);
 		}
 	}
 
-	public void hide() {
+	public void hide(boolean backPressed) {
 		TrackDetailsMenuFragment fragment = getMenuFragment();
 		if (fragment != null) {
 			hidding = true;
-			fragment.dismiss();
+			fragment.dismiss(backPressed);
 		} else {
 			segment = null;
 			trackChartPoints = null;
@@ -174,7 +174,7 @@ public class TrackDetailsMenu {
 				toolbarController.setOnCloseButtonClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
-						hide();
+						hide(false);
 					}
 				});
 				mapActivity.showTopToolbar(toolbarController);
@@ -751,8 +751,8 @@ public class TrackDetailsMenu {
 			setBackBtnIconClrIds(0, 0);
 			setRefreshBtnIconClrIds(0, 0);
 			setCloseBtnIconClrIds(0, 0);
-			setTitleTextClrIds(R.color.primary_text_dark, R.color.primary_text_dark);
-			setDescrTextClrIds(R.color.primary_text_dark, R.color.primary_text_dark);
+			setTitleTextClrIds(R.color.text_color_tab_active_light, R.color.text_color_tab_active_dark);
+			setDescrTextClrIds(R.color.text_color_tab_active_light, R.color.text_color_tab_active_dark);
 			setBgIds(R.drawable.gradient_toolbar, R.drawable.gradient_toolbar,
 					R.drawable.gradient_toolbar, R.drawable.gradient_toolbar);
 		}

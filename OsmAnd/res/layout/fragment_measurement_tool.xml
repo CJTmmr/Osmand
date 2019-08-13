@@ -139,7 +139,7 @@
             android:id="@+id/points_list_container"
             android:layout_width="match_parent"
             android:layout_height="@dimen/measurement_tool_points_list_container_height"
-            android:background="@color/ctx_menu_info_view_bg_dark"
+            android:background="@color/activity_background_color_dark"
             android:visibility="gone">
 
             <android.support.v7.widget.RecyclerView
@@ -222,7 +222,7 @@
                     android:layout_marginEnd="@dimen/measurement_tool_button_margin"
                     android:layout_marginRight="@dimen/measurement_tool_button_margin"
                     android:layout_marginTop="@dimen/measurement_tool_button_margin"
-                    android:background="@drawable/btn_round_blue"
+                    android:background="?attr/btn_round"
                     android:drawableLeft="@drawable/ic_action_plus"
                     android:ellipsize="end"
                     android:maxLines="1"
@@ -252,7 +252,7 @@
                 android:layout_marginEnd="@dimen/measurement_tool_button_margin"
                 android:layout_marginRight="@dimen/measurement_tool_button_margin"
                 android:layout_marginTop="@dimen/measurement_tool_button_margin"
-                android:background="@drawable/btn_round_blue"
+                android:background="?attr/btn_round"
                 android:minHeight="@dimen/measurement_tool_button_height"
                 android:paddingLeft="@dimen/measurement_tool_button_padding"
                 android:paddingRight="@dimen/measurement_tool_button_padding"
@@ -326,7 +326,7 @@
                 android:layout_marginEnd="@dimen/measurement_tool_button_margin"
                 android:layout_marginRight="@dimen/measurement_tool_button_margin"
                 android:layout_marginTop="@dimen/measurement_tool_button_margin"
-                android:background="@drawable/btn_round_blue"
+                android:background="?attr/btn_round"
                 android:drawableLeft="@drawable/ic_action_plus"
                 android:minHeight="@dimen/measurement_tool_button_height"
                 android:paddingLeft="@dimen/measurement_tool_button_padding"

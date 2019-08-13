@@ -408,7 +408,7 @@ public class DownloadResourceGroupFragment extends DialogFragment implements Dow
 		super.onActivityCreated(savedInstanceState);
 		setShowsDialog(openAsDialog());
 		listView.setBackgroundColor(getResources().getColor(
-				getMyApplication().getSettings().isLightContent() ? R.color.bg_color_light : R.color.bg_color_dark));
+				getMyApplication().getSettings().isLightContent() ? R.color.list_background_color_light : R.color.list_background_color_dark));
 	}
 
 	@Override
@@ -478,12 +478,17 @@ public class DownloadResourceGroupFragment extends DialogFragment implements Dow
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		if (!openAsDialog()) {
+			OsmandApplication app = getMyApplication();
+			int colorResId = app.getSettings().isLightContent() ? R.color.active_buttons_and_links_text_light : R.color.active_buttons_and_links_text_dark;
+			
 			MenuItem itemReload = menu.add(0, RELOAD_ID, 0, R.string.shared_string_refresh);
-			itemReload.setIcon(R.drawable.ic_action_refresh_dark);
+			Drawable icReload = app.getUIUtilities().getIcon(R.drawable.ic_action_refresh_dark, colorResId);
+			itemReload.setIcon(icReload);
 			MenuItemCompat.setShowAsAction(itemReload, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
 
 			MenuItem itemSearch = menu.add(0, SEARCH_ID, 1, R.string.shared_string_search);
-			itemSearch.setIcon(R.drawable.ic_action_search_dark);
+			Drawable icSearch = app.getUIUtilities().getIcon(R.drawable.ic_action_search_dark, colorResId);
+			itemSearch.setIcon(icSearch);
 			MenuItemCompat.setShowAsAction(itemSearch, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
 		}
 	}
@@ -668,7 +673,7 @@ public class DownloadResourceGroupFragment extends DialogFragment implements Dow
 			v.setOnClickListener(null);
 			TypedValue typedValue = new TypedValue();
 			Resources.Theme theme = ctx.getTheme();
-			theme.resolveAttribute(R.attr.ctx_menu_info_view_bg, typedValue, true);
+			theme.resolveAttribute(R.attr.activity_background_color, typedValue, true);
 			v.setBackgroundColor(typedValue.data);
 
 			return v;

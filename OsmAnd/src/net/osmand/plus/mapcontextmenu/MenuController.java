@@ -198,7 +198,7 @@ public abstract class MenuController extends BaseMenuController implements Colla
 			} else if (object instanceof OsmPoint) {
 				menuController = new EditPOIMenuController(mapActivity, pointDescription, (OsmPoint) object);
 			} else if (object instanceof WptPt) {
-				menuController = new WptPtMenuController(mapActivity, pointDescription, (WptPt) object);
+				menuController = WptPtMenuController.getInstance(mapActivity, pointDescription, (WptPt) object);
 			} else if (object instanceof DownloadMapObject) {
 				menuController = new MapDataMenuController(mapActivity, pointDescription, (DownloadMapObject) object);
 			} else if (object instanceof OpenStreetNote) {
@@ -281,17 +281,6 @@ public abstract class MenuController extends BaseMenuController implements Colla
 			addSpeedToPlainItems();
 			addAltitudeToPlainItems();
 			addPrecisionToPlainItems();
-		}
-		addMyLocationToPlainItems(latLon);
-	}
-
-	protected void addMyLocationToPlainItems(LatLon latlon) {
-		final MapActivity mapActivity = getMapActivity();
-		if (mapActivity != null) {
-			String f = PointDescription.formatToHumanString(mapActivity,  mapActivity.getMyApplication().getSettings().COORDINATES_FORMAT.get());
-			Map<String, String> locationData = PointDescription.getLocationData(mapActivity, latlon.getLatitude(), latlon.getLongitude(), true);
-			CollapsableView cv = builder.getLocationCollapsableView(locationData);
-			addPlainMenuItem(R.drawable.ic_action_get_my_location, locationData.get(f).replace("\n", " "), true, false, true, cv, null);
 		}
 	}
 
@@ -553,7 +542,7 @@ public abstract class MenuController extends BaseMenuController implements Colla
 			}
 			return open ? R.color.ctx_menu_amenity_opened_text_color : R.color.ctx_menu_amenity_closed_text_color;
 		} else if (shouldShowMapSize()) {
-			return R.color.icon_color;
+			return R.color.icon_color_default_light;
 		}
 		return 0;
 	}
@@ -849,8 +838,8 @@ public abstract class MenuController extends BaseMenuController implements Colla
 		public ContextMenuToolbarController(MenuController menuController) {
 			super(TopToolbarControllerType.CONTEXT_MENU);
 			this.menuController = menuController;
-			setBgIds(R.color.actionbar_light_color, R.color.actionbar_dark_color,
-					R.color.actionbar_light_color, R.color.actionbar_dark_color);
+			setBgIds(R.color.app_bar_color_light, R.color.app_bar_color_dark,
+					R.color.app_bar_color_light, R.color.app_bar_color_dark);
 			setBackBtnIconClrIds(R.color.color_white, R.color.color_white);
 			setCloseBtnIconClrIds(R.color.color_white, R.color.color_white);
 			setTitleTextClrIds(R.color.color_white, R.color.color_white);
@@ -964,7 +953,7 @@ public abstract class MenuController extends BaseMenuController implements Colla
 
 			List<BinaryMapDataObject> mapDataObjects = null;
 			try {
-				mapDataObjects = osmandRegions.queryBbox(point31x, point31x, point31y, point31y);
+				mapDataObjects = osmandRegions.query(point31x, point31x, point31y, point31y);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -84,9 +84,17 @@ public class TransportRoutingHelper {
 		return endLocation;
 	}
 
-
 	public int getCurrentRoute() {
 		return currentRoute;
+	}
+
+	public boolean hasActiveRoute() {
+		return routingHelper.isPublicTransportMode() && currentRoute >= 0;
+	}
+
+	@Nullable
+	public TransportRouteResult getActiveRoute() {
+		return routes != null && routes.size() > currentRoute && currentRoute >= 0 ? routes.get(currentRoute) : null;
 	}
 
 	@Nullable
@@ -288,6 +296,7 @@ public class TransportRoutingHelper {
 	}
 
 	public synchronized void clearCurrentRoute(LatLon newFinalLocation) {
+		currentRoute = -1;
 		routes = null;
 		walkingRouteSegments = null;
 		app.getWaypointHelper().setNewRoute(new RouteCalculationResult(""));

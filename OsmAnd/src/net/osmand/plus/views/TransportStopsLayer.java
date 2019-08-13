@@ -28,6 +28,7 @@ import net.osmand.plus.render.RenderingIcons;
 import net.osmand.plus.transport.TransportStopRoute;
 import net.osmand.plus.transport.TransportStopType;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -42,7 +43,8 @@ public class TransportStopsLayer extends OsmandMapLayer implements ContextMenuLa
 	private OsmandMapTileView view;
 
 	private Paint paintIcon;
-	private Paint paintWhiteIcon;
+	private Paint paintLightIcon;
+	private Paint paintDarkIcon;
 	private Bitmap backgroundIcon;
 	private Bitmap stopBus;
 	private Bitmap stopSmall;
@@ -64,15 +66,17 @@ public class TransportStopsLayer extends OsmandMapLayer implements ContextMenuLa
 	@Override
 	public void initLayer(final OsmandMapTileView view) {
 		backgroundIcon = BitmapFactory.decodeResource(view.getResources(), R.drawable.map_transport_stop_bg);
-		backgroundIconHalfWidth = backgroundIcon.getWidth() / 2;
-		backgroundIconHalfHeight = backgroundIcon.getWidth() / 2;
+		backgroundIconHalfWidth = backgroundIcon.getWidth() / 2f;
+		backgroundIconHalfHeight = backgroundIcon.getWidth() / 2f;
 		this.view = view;
 		DisplayMetrics dm = new DisplayMetrics();
 		WindowManager wmgr = (WindowManager) view.getContext().getSystemService(Context.WINDOW_SERVICE);
 		wmgr.getDefaultDisplay().getMetrics(dm);
 		paintIcon = new Paint();
-		paintWhiteIcon = new Paint();
-		paintWhiteIcon.setColorFilter(new PorterDuffColorFilter(ContextCompat.getColor(mapActivity,R.color.primary_text_dark), PorterDuff.Mode.SRC_IN));
+		paintLightIcon = new Paint();
+		paintLightIcon.setColorFilter(new PorterDuffColorFilter(ContextCompat.getColor(mapActivity, R.color.active_buttons_and_links_text_light), PorterDuff.Mode.SRC_IN));
+		paintDarkIcon = new Paint();
+		paintDarkIcon.setColorFilter(new PorterDuffColorFilter(ContextCompat.getColor(mapActivity, R.color.active_buttons_and_links_text_dark), PorterDuff.Mode.SRC_IN));
 		path = new Path();
 		stopBus = BitmapFactory.decodeResource(view.getResources(), R.drawable.map_transport_stop_bus);
 		stopSmall = BitmapFactory.decodeResource(view.getResources(), R.drawable.map_transport_stop_small);
@@ -99,33 +103,36 @@ public class TransportStopsLayer extends OsmandMapLayer implements ContextMenuLa
 				if (latLonBounds == null) {
 					return new ArrayList<>();
 				}
-				List<TransportStop> res = view.getApplication().getResourceManager().searchTransportSync(latLonBounds.top, latLonBounds.left,
-						latLonBounds.bottom, latLonBounds.right, new ResultMatcher<TransportStop>() {
+				try {
+					List<TransportStop> res = view.getApplication().getResourceManager().searchTransportSync(latLonBounds.top, latLonBounds.left,
+							latLonBounds.bottom, latLonBounds.right, new ResultMatcher<TransportStop>() {
 
-							@Override
-							public boolean publish(TransportStop object) {
-								return true;
-							}
+								@Override
+								public boolean publish(TransportStop object) {
+									return true;
+								}
 
-							@Override
-							public boolean isCancelled() {
-								return isInterrupted();
-							}
-						});
-				Collections.sort(res, new Comparator<TransportStop>() {
-					@Override
-					public int compare(TransportStop lhs, TransportStop rhs) {
-						return lhs.getId() < rhs.getId() ? -1 : (lhs.getId().longValue() == rhs.getId().longValue() ? 0 : 1);
-					}
-				});
-
-				return res;
+								@Override
+								public boolean isCancelled() {
+									return isInterrupted();
+								}
+							});
+					Collections.sort(res, new Comparator<TransportStop>() {
+						@Override
+						public int compare(TransportStop lhs, TransportStop rhs) {
+							return lhs.getId() < rhs.getId() ? -1 : (lhs.getId().longValue() == rhs.getId().longValue() ? 0 : 1);
+						}
+					});
+					return res;
+				} catch (IOException e) {
+					return new ArrayList<>();
+				}
 			}
 		};
 	}
 
-	public void getFromPoint(RotatedTileBox tb, PointF point, List<? super TransportStop> res,
-	                         List<TransportStop> objects) {
+	private void getFromPoint(RotatedTileBox tb, PointF point, List<? super TransportStop> res,
+							  List<TransportStop> objects) {
 		int ex = (int) point.x;
 		int ey = (int) point.y;
 		final int rp = getRadiusPoi(tb);
@@ -169,7 +176,7 @@ public class TransportStopsLayer extends OsmandMapLayer implements ContextMenuLa
 		this.showTransportStops = showTransportStops;
 	}
 
-	public int getRadiusPoi(RotatedTileBox tb){
+	private int getRadiusPoi(RotatedTileBox tb){
 		final double zoom = tb.getZoom();
 		int r;
 		if(zoom < startZoomRoute){
@@ -189,10 +196,11 @@ public class TransportStopsLayer extends OsmandMapLayer implements ContextMenuLa
 	@Override
 	public void onPrepareBufferImage(Canvas canvas, RotatedTileBox tb, DrawSettings settings) {
 		List<TransportStop> objects = null;
+		boolean nightMode = settings.isNightMode();
 		if (tb.getZoom() >= startZoomRoute) {
 			if (stopRoute != null) {
 				objects = stopRoute.route.getForwardStops();
-				int color = stopRoute.getColor(mapActivity.getMyApplication(), settings.isNightMode());
+				int color = stopRoute.getColor(mapActivity.getMyApplication(), nightMode);
 				attrs.paint.setColor(color);
 				attrs.updatePaints(view.getApplication(), settings, tb);
 				try {
@@ -233,7 +241,7 @@ public class TransportStopsLayer extends OsmandMapLayer implements ContextMenuLa
 				float y = tb.getPixYFromLatLon(o.getLocation().getLatitude(), o.getLocation().getLongitude());
 
 				if (intersects(boundIntersections, x, y, iconSize, iconSize)) {
-					canvas.drawBitmap(stopSmall, x - stopSmall.getWidth() / 2, y - stopSmall.getHeight() / 2, paintIcon);
+					canvas.drawBitmap(stopSmall, x - stopSmall.getWidth() / 2f, y - stopSmall.getHeight() / 2f, paintIcon);
 				} else {
 					fullObjects.add(o);
 				}
@@ -247,11 +255,11 @@ public class TransportStopsLayer extends OsmandMapLayer implements ContextMenuLa
 					if (type != null) {
 						Bitmap foregroundIcon = RenderingIcons.getIcon(mapActivity, type.getResName(), false);
 						canvas.drawBitmap(backgroundIcon, x - backgroundIconHalfWidth, y - backgroundIconHalfHeight, paintIcon);
-						canvas.drawBitmap(foregroundIcon, x - foregroundIcon.getWidth() / 2, y - foregroundIcon.getHeight() / 2, paintWhiteIcon);
+						canvas.drawBitmap(foregroundIcon, x - foregroundIcon.getWidth() / 2f, y - foregroundIcon.getHeight() / 2f, nightMode ? paintDarkIcon : paintLightIcon);
 					}
 				} else {
 					Bitmap b = stopBus;
-					canvas.drawBitmap(b, x - b.getWidth() / 2, y - b.getHeight() / 2, paintIcon);
+					canvas.drawBitmap(b, x - b.getWidth() / 2f, y - b.getHeight() / 2f, paintIcon);
 				}
 			}
 		}

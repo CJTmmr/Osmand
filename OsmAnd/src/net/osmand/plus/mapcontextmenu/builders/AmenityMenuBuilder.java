@@ -282,24 +282,7 @@ public class AmenityMenuBuilder extends MenuBuilder {
 			ll.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(final View v) {
-					final String[] phones = text.split(",|;");
-					if (phones.length > 1) {
-						AlertDialog.Builder dlg = new AlertDialog.Builder(v.getContext());
-						dlg.setNegativeButton(R.string.shared_string_cancel, null);
-						dlg.setItems(phones, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								Intent intent = new Intent(Intent.ACTION_DIAL);
-								intent.setData(Uri.parse("tel:" + phones[which]));
-								v.getContext().startActivity(intent);
-							}
-						});
-						dlg.show();
-					} else {
-						Intent intent = new Intent(Intent.ACTION_DIAL);
-						intent.setData(Uri.parse("tel:" + text));
-						v.getContext().startActivity(intent);
-					}
+					showDialog(text, Intent.ACTION_DIAL, "tel:", v);
 				}
 			});
 		} else if (isUrl) {
@@ -672,13 +655,6 @@ public class AmenityMenuBuilder extends MenuBuilder {
 			buildRow(view, R.drawable.ic_action_openstreetmap_logo, null, link + (amenity.getId() >> 1),
 					0, false, null, true, 0, true, null, false);
 		}
-
-		String f = PointDescription.formatToHumanString(mapActivity, app.getSettings().COORDINATES_FORMAT.get());
-		Map<String, String> locationData = PointDescription.getLocationData(mapActivity, amenity.getLocation().getLatitude(), amenity.getLocation().getLongitude(), true);
-		CollapsableView cv = getLocationCollapsableView(locationData);
-		buildRow(view, R.drawable.ic_action_get_my_location, null, locationData.get(f).replace("\n", " "), 0, true, cv,
-			true, 1, false, null, false);
-
 	}
 
 	private String getFormattedInt(String value) {

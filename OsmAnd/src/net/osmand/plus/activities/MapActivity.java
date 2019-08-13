@@ -36,6 +36,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewStub;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -86,7 +87,6 @@ import net.osmand.plus.dashboard.DashboardOnMap.DashboardType;
 import net.osmand.plus.dialogs.CrashBottomSheetDialogFragment;
 import net.osmand.plus.dialogs.RateUsBottomSheetDialogFragment;
 import net.osmand.plus.dialogs.SendAnalyticsBottomSheetDialogFragment;
-import net.osmand.plus.dialogs.RateUsBottomSheetDialog;
 import net.osmand.plus.dialogs.WhatsNewDialogFragment;
 import net.osmand.plus.dialogs.XMasDialogFragment;
 import net.osmand.plus.download.DownloadActivity;
@@ -99,6 +99,7 @@ import net.osmand.plus.helpers.DiscountHelper;
 import net.osmand.plus.helpers.ExternalApiHelper;
 import net.osmand.plus.helpers.ImportHelper;
 import net.osmand.plus.helpers.ImportHelper.ImportGpxBottomSheetDialogFragment;
+import net.osmand.plus.helpers.LockHelper;
 import net.osmand.plus.mapcontextmenu.AdditionalActionsBottomSheetDialogFragment;
 import net.osmand.plus.mapcontextmenu.MapContextMenu;
 import net.osmand.plus.mapcontextmenu.MenuController.MenuState;
@@ -157,7 +158,7 @@ import java.util.regex.Pattern;
 
 public class MapActivity extends OsmandActionBarActivity implements DownloadEvents,
 		OnRequestPermissionsResultCallback, IRouteInformationListener, AMapPointUpdateListener,
-		MapMarkerChangedListener, OnDismissDialogFragmentListener, OnDrawMapListener, OsmAndAppCustomizationListener {
+		MapMarkerChangedListener, OnDismissDialogFragmentListener, OnDrawMapListener, OsmAndAppCustomizationListener, LockHelper.LockUIAdapter {
 	public static final String INTENT_KEY_PARENT_MAP_ACTIVITY = "intent_parent_map_activity_key";
 	public static final String INTENT_PARAMS = "intent_prarams";
 
@@ -222,12 +223,15 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	private ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 
+	private LockHelper lockHelper;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		setRequestedOrientation(AndroidUiHelper.getScreenOrientation(this));
 		long tm = System.currentTimeMillis();
 		app = getMyApplication();
 		settings = app.getSettings();
+		lockHelper = app.getLockHelper();
 		app.applyTheme(this);
 		supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -339,6 +343,8 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 		app.getAidlApi().onCreateMapActivity(this);
 
+		lockHelper.setLockUIAdapter(this);
+
 		mIsDestroyed = false;
 	}
 
@@ -356,7 +362,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			app.getMapMarkersHelper().getPlanRouteContext().setFragmentVisible(true);
 		}
 		if (trackDetailsMenu.isVisible()) {
-			trackDetailsMenu.dismiss();
+			trackDetailsMenu.dismiss(false);
 		}
 		removeFragment(ImportGpxBottomSheetDialogFragment.TAG);
 		removeFragment(AdditionalActionsBottomSheetDialogFragment.TAG);
@@ -600,7 +606,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			return;
 		}
 		if (trackDetailsMenu.isVisible()) {
-			trackDetailsMenu.hide();
+			trackDetailsMenu.hide(true);
 			if (prevActivityIntent == null) {
 				return;
 			}
@@ -619,7 +625,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		}
 		ChooseRouteFragment chooseRouteFragment = getChooseRouteFragment();
 		if (chooseRouteFragment != null) {
-			chooseRouteFragment.dismiss();
+			chooseRouteFragment.dismiss(true);
 			return;
 		}
 		if (mapContextMenu.isVisible() && mapContextMenu.isClosable()) {
@@ -904,6 +910,13 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		}
 	}
 
+	public void setKeepScreenOn(boolean keepScreenOn) {
+		View mainView = findViewById(R.id.MapViewWithLayers);
+		if (mainView != null) {
+			mainView.setKeepScreenOn(keepScreenOn);
+		}
+	}
+
 	private void clearIntent(Intent intent) {
 		intent.setAction(null);
 		intent.setData(null);
@@ -945,7 +958,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 				} else if (mapTopBar && mapControlsVisible) {
 					colorId = night ? R.color.status_bar_route_dark : R.color.status_bar_route_light;
 				} else if (markerTopBar && mapControlsVisible) {
-					colorId = R.color.status_bar_dark;
+					colorId = R.color.status_bar_color_dark;
 				} else {
 					colorId = night ? R.color.status_bar_transparent_dark : R.color.status_bar_transparent_light;
 				}
@@ -1289,6 +1302,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	protected void onStart() {
 		super.onStart();
 		stopped = false;
+		lockHelper.onStart(this);
 		getMyApplication().getNotificationHelper().showNotifications();
 	}
 
@@ -1307,6 +1321,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			onPauseActivity();
 		}
 		stopped = true;
+		lockHelper.onStop(this);
 		super.onStop();
 	}
 
@@ -1326,6 +1341,8 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		if (atlasMapRendererView != null) {
 			atlasMapRendererView.handleOnDestroy();
 		}
+		lockHelper.setLockUIAdapter(null);
+
 		mIsDestroyed = true;
 	}
 
@@ -1388,6 +1405,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	}
 
 	public void updateApplicationModeSettings() {
+		changeKeyguardFlags(true);
 		updateMapSettings();
 		mapViewTrackingUtilities.updateSettings();
 		//app.getRoutingHelper().setAppMode(settings.getApplicationMode());
@@ -1477,7 +1495,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			// repeat count 0 doesn't work for samsung, 1 doesn't work for lg
 			toggleDrawer();
 			return true;
-		} else if (settings.ZOOM_BY_TRACKBALL.get()) {
+		} else if (settings.EXTERNAL_INPUT_DEVICE.get() == 3) {
 			// Parrot device has only dpad left and right
 			if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
 				changeZoom(-1);
@@ -1486,7 +1504,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 				changeZoom(1);
 				return true;
 			}
-		} else if (settings.ZOOM_BY_WUNDERLINQ.get()) {
+		} else if (settings.EXTERNAL_INPUT_DEVICE.get() == 2) {
 			// WunderLINQ device, motorcycle smart phone control
 			if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
 				changeZoom(-1);
@@ -1499,6 +1517,14 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 				Intent intent = new Intent(Intent.ACTION_VIEW);
 				intent.setData(Uri.parse(callingApp));
 				startActivity(intent);
+				return true;
+			}
+		} else if (settings.EXTERNAL_INPUT_DEVICE.get() == 1) {
+			if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+				changeZoom(-1);
+				return true;
+			} else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+				changeZoom(1);
 				return true;
 			}
 		} else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT
@@ -1877,6 +1903,27 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		return oldPoint.getLayerId().equals(layerId) && oldPoint.getId().equals(point.getId());
 	}
 
+	public void changeKeyguardFlags(final boolean enable) {
+		if (enable) {
+			getWindow().setFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
+					WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+			setKeepScreenOn(true);
+		} else {
+			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+			setKeepScreenOn(false);
+		}
+	}
+
+	@Override
+	public void lock() {
+		changeKeyguardFlags(false);
+	}
+
+	@Override
+	public void unlock() {
+		changeKeyguardFlags(true);
+	}
+
 	private class ScreenOffReceiver extends BroadcastReceiver {
 
 		@Override
@@ -1940,14 +1987,16 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	@Override
 	public void routeWasCancelled() {
+		changeKeyguardFlags(true);
 	}
 
 	@Override
 	public void routeWasFinished() {
-		// disable RouteFinishDialog CJT
-		// if (!mIsDestroyed) {
-		// DestinationReachedMenu.show(this);
-		// }
+		if (!mIsDestroyed) {
+            // disable RouteFinishDialog CJT
+			// DestinationReachedMenu.show(this);
+			changeKeyguardFlags(true);
+		}
 	}
 
 	public void showQuickSearch(double latitude, double longitude) {

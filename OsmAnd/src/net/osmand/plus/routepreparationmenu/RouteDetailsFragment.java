@@ -88,8 +88,8 @@ import net.osmand.plus.widgets.style.CustomTypefaceSpan;
 import net.osmand.render.RenderingRuleSearchRequest;
 import net.osmand.render.RenderingRulesStorage;
 import net.osmand.router.RouteSegmentResult;
-import net.osmand.router.RouteStatistics;
-import net.osmand.router.RouteStatistics.Incline;
+import net.osmand.router.RouteStatisticsHelper;
+import net.osmand.router.RouteStatisticsHelper.RouteStatistics;
 import net.osmand.router.TransportRoutePlanner.TransportRouteResult;
 import net.osmand.router.TransportRoutePlanner.TransportRouteResultSegment;
 import net.osmand.util.Algorithms;
@@ -187,6 +187,7 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 				FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) cardsContainer.getLayoutParams();
 				layoutParams.setMargins(pageMarginPx, 0, pageMarginPx, 0);
 				cardsContainer.setLayoutParams(layoutParams);
+				updateCardsLayout();
 			}
 			updateCards();
 			runLayoutListener();
@@ -257,27 +258,6 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 			View topShadow = getTopShadow();
 			FrameLayout bottomContainer = getBottomContainer();
 			if (getCurrentMenuState() == MenuState.HEADER_ONLY) {
-				topShadow.setVisibility(View.INVISIBLE);
-				bottomContainer.setBackgroundDrawable(null);
-				AndroidUtils.setBackground(mainView.getContext(), cardsContainer, isNightMode(), R.drawable.travel_card_bg_light, R.drawable.travel_card_bg_dark);
-			} else {
-				topShadow.setVisibility(View.VISIBLE);
-				AndroidUtils.setBackground(mainView.getContext(), bottomContainer, isNightMode(), R.color.card_and_list_background_light, R.color.card_and_list_background_dark);
-				AndroidUtils.setBackground(mainView.getContext(), cardsContainer, isNightMode(), R.color.card_and_list_background_light, R.color.card_and_list_background_dark);
-			}
-		}
-	}
-
-	@Override
-	protected void setViewY(int y, boolean animated, boolean adjustMapPos) {
-		super.setViewY(y, animated, adjustMapPos);
-		View mainView = getMainView();
-		if (mainView != null && isPortrait()) {
-			LinearLayout cardsContainer = getCardsContainer();
-			View topShadow = getTopShadow();
-			FrameLayout bottomContainer = getBottomContainer();
-			int top = Math.max(getMenuStatePosY(MenuState.HALF_SCREEN), getViewHeight() - getMenuFullHeightMax());
-			if (y > top) {
 				topShadow.setVisibility(View.INVISIBLE);
 				bottomContainer.setBackgroundDrawable(null);
 				AndroidUtils.setBackground(mainView.getContext(), cardsContainer, isNightMode(), R.drawable.travel_card_bg_light, R.drawable.travel_card_bg_dark);
@@ -362,33 +342,24 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 		buildRowDivider(cardsContainer, false);
 		slopeDataSet = statisticCard.getSlopeDataSet();
 		elevationDataSet = statisticCard.getElevationDataSet();
-		if (gpx.hasAltitude) {
-			List<RouteSegmentResult> route = app.getRoutingHelper().getRoute().getOriginalRoute();
-			if (route != null) {
-				RenderingRulesStorage currentRenderer = app.getRendererRegistry().getCurrentSelectedRenderer();
-				RenderingRulesStorage defaultRender = app.getRendererRegistry().defaultRender();
 
-				MapRenderRepositories maps = app.getResourceManager().getRenderer();
-				RenderingRuleSearchRequest currentSearchRequest = maps.getSearchRequestWithAppliedCustomRules(currentRenderer, isNightMode());
-				RenderingRuleSearchRequest defaultSearchRequest = maps.getSearchRequestWithAppliedCustomRules(defaultRender, isNightMode());
+		List<RouteSegmentResult> route = app.getRoutingHelper().getRoute().getOriginalRoute();
+		if (route != null) {
+			RenderingRulesStorage currentRenderer = app.getRendererRegistry().getCurrentSelectedRenderer();
+			RenderingRulesStorage defaultRender = app.getRendererRegistry().defaultRender();
 
-				RouteStatistics routeStatistics = RouteStatistics.newRouteStatistic(route, currentRenderer, defaultRender, currentSearchRequest, defaultSearchRequest);
-				GPXTrackAnalysis analysis = gpx.getAnalysis(0);
+			MapRenderRepositories maps = app.getResourceManager().getRenderer();
+			RenderingRuleSearchRequest currentSearchRequest = maps.getSearchRequestWithAppliedCustomRules(currentRenderer, isNightMode());
+			RenderingRuleSearchRequest defaultSearchRequest = maps.getSearchRequestWithAppliedCustomRules(defaultRender, isNightMode());
 
-				RouteInfoCard routeClassCard = new RouteInfoCard(mapActivity, routeStatistics.getRouteClassStatistic(), analysis);
+			List<RouteStatistics> routeStatistics = RouteStatisticsHelper.calculateRouteStatistic(route,
+					currentRenderer, defaultRender, currentSearchRequest, defaultSearchRequest);
+			GPXTrackAnalysis analysis = gpx.getAnalysis(0);
+
+
+			for (RouteStatistics statistic : routeStatistics) {
+				RouteInfoCard routeClassCard = new RouteInfoCard(mapActivity, statistic, analysis);
 				addRouteCard(cardsContainer, routeClassCard);
-
-				RouteInfoCard routeSurfaceCard = new RouteInfoCard(mapActivity, routeStatistics.getRouteSurfaceStatistic(), analysis);
-				addRouteCard(cardsContainer, routeSurfaceCard);
-
-				if (slopeDataSet != null) {
-					List<Incline> inclines = createInclinesAndAdd100MetersWith0Incline(slopeDataSet.getValues(), slopeDataSet.getDivX());
-					RouteInfoCard routeSteepnessCard = new RouteInfoCard(mapActivity, routeStatistics.getRouteSteepnessStatistic(inclines), analysis);
-					addRouteCard(cardsContainer, routeSteepnessCard);
-				}
-
-				RouteInfoCard routeSmoothnessCard = new RouteInfoCard(mapActivity, routeStatistics.getRouteSmoothnessStatistic(), analysis);
-				addRouteCard(cardsContainer, routeSmoothnessCard);
 			}
 		}
 		routeDetailsMenu = new RouteDetailsMenu();
@@ -937,7 +908,6 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 		if (mapActivity == null) {
 			return;
 		}
-		OsmandApplication app = mapActivity.getMyApplication();
 
 		FrameLayout baseItemView = new FrameLayout(view.getContext());
 		FrameLayout.LayoutParams baseViewLayoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -1035,16 +1005,7 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 		LinearLayout llText = buildTextContainerView(view.getContext());
 		ll.addView(llText);
 
-		TextView routeTypeView = new TextView(view.getContext());
-		LinearLayout.LayoutParams routeTypeParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-		routeTypeParams.setMargins(0, dpToPx(4), 0, 0);
-		routeTypeView.setLayoutParams(routeTypeParams);
-		routeTypeView.setTextSize(16);
-		routeTypeView.setTextColor(getSecondaryColor());
-		routeTypeView.setText(routeDescription);
-		llText.addView(routeTypeView);
-
-		View routeBadge = createRouteBadge(mapActivity, transportStopRoute, isNightMode());
+		View routeBadge = createRouteBadge(mapActivity, transportStopRoute);
 		LinearLayout.LayoutParams routeBadgeParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		routeBadgeParams.setMargins(0, dpToPx(6), 0, dpToPx(8));
 		routeBadge.setLayoutParams(routeBadgeParams);
@@ -1449,10 +1410,11 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 		return ll;
 	}
 
-	public View createRouteBadge(@NonNull MapActivity mapActivity, TransportStopRoute transportStopRoute, boolean isNightMode) {
+	public View createRouteBadge(@NonNull MapActivity mapActivity, TransportStopRoute transportStopRoute) {
 		OsmandApplication app = mapActivity.getMyApplication();
 		LinearLayout convertView = (LinearLayout) mapActivity.getLayoutInflater().inflate(R.layout.transport_stop_route_item_with_icon, null, false);
 		if (transportStopRoute != null) {
+			String routeDescription = transportStopRoute.getDescription(app);
 			String routeRef = transportStopRoute.route.getAdjustedRouteRef(true);
 			int bgColor = transportStopRoute.getColor(app, isNightMode());
 
@@ -1461,7 +1423,7 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 
 			int drawableResId = transportStopRoute.type == null ? R.drawable.ic_action_bus_dark : transportStopRoute.type.getResourceId();
 			transportStopRouteImageView.setImageDrawable(app.getUIUtilities().getPaintedIcon(drawableResId, UiUtilities.getContrastColor(mapActivity, bgColor, true)));
-			transportStopRouteTextView.setText(routeRef);
+			transportStopRouteTextView.setText(routeRef + ": " + routeDescription);
 			GradientDrawable gradientDrawableBg = (GradientDrawable) convertView.getBackground();
 			gradientDrawableBg.setColor(bgColor);
 			transportStopRouteTextView.setTextColor(UiUtilities.getContrastColor(mapActivity, bgColor, true));
@@ -1513,38 +1475,8 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 			llHorLineParams.setMargins(dpToPx(64), 0, 0, 0);
 		}
 		horizontalLine.setLayoutParams(llHorLineParams);
-		horizontalLine.setBackgroundColor(ContextCompat.getColor(app, isNightMode() ? R.color.divider_dark : R.color.divider_light));
+		horizontalLine.setBackgroundColor(ContextCompat.getColor(app, isNightMode() ? R.color.divider_color_dark : R.color.divider_color_light));
 		((LinearLayout) view).addView(horizontalLine);
-	}
-
-	private List<Incline> createInclinesAndAdd100MetersWith0Incline(List<Entry> entries, float divX) {
-		float minIncline = 0;
-		float maxIncline = 0;
-		int size = entries.size();
-		List<Incline> inclines = new ArrayList<>();
-		for (Entry entry : entries) {
-			float inclineValue = entry.getY();
-			maxIncline = Math.max(inclineValue, maxIncline);
-			minIncline = Math.min(inclineValue, minIncline);
-
-			Incline incline = new Incline(inclineValue, entry.getX() * divX);
-			inclines.add(incline);
-		}
-		for (int i = 0; i < 10; i++) {
-			float distance = i * 5;
-			inclines.add(i, new Incline(0f, distance));
-		}
-		if (slopeDataSet != null) {
-			float lastDistance = slopeDataSet.getEntryForIndex(size - 1).getX();
-			for (int i = 1; i <= 10; i++) {
-				float distance = lastDistance * divX + i * 5f;
-				inclines.add(new Incline(0f, distance));
-			}
-		}
-		for (Incline incline : inclines) {
-			incline.computeBoundaries(minIncline, maxIncline);
-		}
-		return inclines;
 	}
 
 	private void makeGpx() {
@@ -1647,10 +1579,22 @@ public class RouteDetailsFragment extends ContextMenuFragment implements PublicT
 
 	@Override
 	public void onCardButtonPressed(@NonNull BaseCard card, int buttonIndex) {
-		if (card instanceof PublicTransportCard && buttonIndex == 0) {
-			openMenuFullScreen();
-		} else if (card instanceof RouteDirectionsCard && buttonIndex >= 0) {
-			showDirectionsInfo(buttonIndex);
+		if (card instanceof PublicTransportCard) {
+			switch (buttonIndex) {
+				case PublicTransportCard.DETAILS_BUTTON_INDEX:
+					openMenuFullScreen();
+					break;
+				case PublicTransportCard.SHOW_BUTTON_INDEX:
+					RouteDetailsFragmentListener listener = getRouteDetailsListener();
+					if (listener != null) {
+						listener.onNavigationRequested();
+					}
+					break;
+			}
+		} else if (card instanceof RouteDirectionsCard) {
+			if (buttonIndex >= 0) {
+				showDirectionsInfo(buttonIndex);
+			}
 		} else if (card instanceof RouteStatisticCard) {
 			switch (buttonIndex) {
 				case RouteStatisticCard.DETAILS_BUTTON_INDEX:

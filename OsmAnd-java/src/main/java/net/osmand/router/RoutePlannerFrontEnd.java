@@ -67,6 +67,9 @@ public class RoutePlannerFrontEnd {
 		if (dataObjects.isEmpty()) {
 			ctx.loadTileData(px, py, 15, dataObjects);
 		}
+		if (dataObjects.isEmpty()) {
+			ctx.loadTileData(px, py, 14, dataObjects);
+		}
 		if (list == null) {
 			list = new ArrayList<BinaryRoutePlanner.RouteSegmentPoint>();
 		}
@@ -170,6 +173,7 @@ public class RoutePlannerFrontEnd {
 
 	public List<RouteSegmentResult> searchRoute(final RoutingContext ctx, LatLon start, LatLon end, List<LatLon> intermediates,
 	                                            PrecalculatedRouteDirection routeDirection) throws IOException, InterruptedException {
+		ctx.timeToCalculate = System.nanoTime();
 		if (ctx.calculationProgress == null) {
 			ctx.calculationProgress = new RouteCalculationProgress();
 		}
@@ -196,6 +200,9 @@ public class RoutePlannerFrontEnd {
 			RoutingContext nctx = buildRoutingContext(ctx.config, ctx.nativeLib, ctx.getMaps(), RouteCalculationMode.BASE);
 			nctx.calculationProgress = ctx.calculationProgress;
 			List<RouteSegmentResult> ls = searchRoute(nctx, start, end, intermediates);
+			if(ls == null) {
+				return null;
+			}
 			routeDirection = PrecalculatedRouteDirection.build(ls, ctx.config.DEVIATION_RADIUS, ctx.getRouter().getMaxSpeed());
 		}
 		if (intermediatesEmpty && ctx.nativeLib != null) {

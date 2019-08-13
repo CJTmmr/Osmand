@@ -1741,7 +1741,6 @@
     <string name="routing_attr_avoid_ice_roads_fords_description">Evită drumurile cu polei și traversarile râurilor.</string>
     <string name="plan_route">Planul rutei</string>
     <string name="coordinate_input">Introduceți coordonatele</string>
-    <string name="is_saved">este salvat</string>
     <string name="marker_save_as_track_descr">Exportați marcajele dvs. în următorul fișier GPX:</string>
     <string name="marker_save_as_track">Salvați ca fișier GPX</string>
     <string name="group_will_be_removed_after_restart">Grupul va dispărea data viitoare când porniți aplicația.</string>
@@ -2202,7 +2201,7 @@
     <string name="time_of_day">Ora din zi</string>
     <string name="by_transport_type">După %1$s</string>
     <string name="step_by_step">Pas cu pas</string>
-    <string name="road_types">Tipuri drum</string>
+    <string name="routeInfo_road_types_name">Tipuri drum</string>
     <string name="exit_at">Ieșire la</string>
     <string name="sit_on_the_stop">Îmbarcați-vă la oprirea</string>
     <string name="shared_string_swap">Schimbați</string>
@@ -2306,7 +2305,7 @@
     <string name="empty_state_favourites_desc">Importați Favorite sau adăugați prin marcarea punctelor pe hartă.</string>
     <string name="poi_cannot_be_found">Nodul sau calea nu pot fi găsite.</string>
     <string name="run_full_osmand_header">Pornesc OsmAnd\?</string>
-    <string name="route_steepness_stat_container">Înclinație</string>
+    <string name="routeInfo_steepness_name">Înclinație</string>
     <string name="move_maps">Mutați hărțile</string>
     <string name="dont_move_maps">Nu muta</string>
     <string name="public_transport_try_ped">Încercați navigarea pentru pietoni.</string>

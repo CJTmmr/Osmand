@@ -92,7 +92,8 @@ import net.osmand.plus.monitoring.OsmandMonitoringPlugin;
 import net.osmand.plus.routing.RouteCalculationResult;
 import net.osmand.render.RenderingRuleProperty;
 import net.osmand.render.RenderingRulesStorage;
-import net.osmand.router.RouteStatistics;
+import net.osmand.router.RouteStatisticsHelper;
+import net.osmand.router.RouteStatisticsHelper.RouteSegmentAttribute;
 import net.osmand.util.Algorithms;
 import net.osmand.util.MapUtils;
 
@@ -962,7 +963,7 @@ public class GpxUiHelper {
 				for (String fname : filename) {
 					final File f = new File(dir, fname);
 					GPXFile res = GPXUtilities.loadGPXFile(f);
-					if (res.error != null && res.error.getMessage().length() > 0) {
+					if (res.error != null && !Algorithms.isEmpty(res.error.getMessage())) {
 						w += res.error.getMessage() + "\n";
 					}
 					result[k++] = res;
@@ -1163,7 +1164,7 @@ public class GpxUiHelper {
 	}
 
 	private static List<Entry> calculateElevationArray(GPXTrackAnalysis analysis, GPXDataSetAxisType axisType,
-													   float divX, float convEle) {
+													   float divX, float convEle, boolean useGeneralTrackPoints) {
 		List<Entry> values = new ArrayList<>();
 		List<Elevation> elevationData = analysis.elevationData;
 		float nextX = 0;
@@ -1205,6 +1206,9 @@ public class GpxUiHelper {
 							values.add(new Entry(lastXSameY, lastEntry.getY()));
 						}
 						hasSameY = false;
+					}
+					if (useGeneralTrackPoints && e.firstPoint && lastEntry != null) {
+						values.add(new Entry(nextX, lastEntry.getY()));
 					}
 					prevElevOrig = e.elevation;
 					prevElev = elev;
@@ -1261,7 +1265,7 @@ public class GpxUiHelper {
 		yr.setTextColor(mainFontColor);
 
 		chart.setFitBars(true);
-		chart.setBorderColor(ContextCompat.getColor(app, nightMode ? R.color.divider_dark : R.color.divider_light));
+		chart.setBorderColor(ContextCompat.getColor(app, nightMode ? R.color.divider_color_dark : R.color.divider_color_light));
 
 		Legend l = chart.getLegend();
 		l.setEnabled(false);
@@ -1269,7 +1273,7 @@ public class GpxUiHelper {
 
 	public static <E> BarData buildStatisticChart(@NonNull OsmandApplication app,
 	                                              @NonNull HorizontalBarChart mChart,
-	                                              @NonNull RouteStatistics.Statistics<E> routeStatistics,
+	                                              @NonNull RouteStatisticsHelper.RouteStatistics routeStatistics,
 	                                              @NonNull GPXTrackAnalysis analysis,
 	                                              boolean useRightAxis,
 	                                              boolean nightMode) {
@@ -1286,12 +1290,12 @@ public class GpxUiHelper {
 		}
 		float divX = setupAxisDistance(app, yAxis, analysis.totalDistance);
 
-		List<RouteStatistics.RouteSegmentAttribute<E>> segments = routeStatistics.getElements();
+		List<RouteSegmentAttribute> segments = routeStatistics.elements;
 		List<BarEntry> entries = new ArrayList<>();
 		float[] stacks = new float[segments.size()];
 		int[] colors = new int[segments.size()];
 		for (int i = 0; i < stacks.length; i++) {
-			RouteStatistics.RouteSegmentAttribute segment = segments.get(i);
+			RouteSegmentAttribute segment = segments.get(i);
 			stacks[i] = segment.getDistance() / divX;
 			colors[i] = segment.getColor();
 		}
@@ -1351,7 +1355,7 @@ public class GpxUiHelper {
 			}
 		});
 
-		List<Entry> values = calculateElevationArray(analysis, axisType, divX, convEle);
+		List<Entry> values = calculateElevationArray(analysis, axisType, divX, convEle, true);
 
 		OrderedLineDataSet dataSet = new OrderedLineDataSet(values, "", GPXDataSetType.ALTITUDE, axisType);
 		dataSet.priority = (float) (analysis.avgElevation - analysis.minElevation) * convEle;
@@ -1482,7 +1486,13 @@ public class GpxUiHelper {
 				if (nextY < 0 || Float.isInfinite(nextY)) {
 					nextY = 0;
 				}
+				if (s.firstPoint) {
+					values.add(new Entry(nextX, 0));
+				}
 				values.add(new Entry(nextX, nextY));
+				if (s.lastPoint) {
+					values.add(new Entry(nextX, 0));
+				}
 			}
 		}
 
@@ -1548,7 +1558,7 @@ public class GpxUiHelper {
 		dataSet.setHighlightEnabled(true);
 		dataSet.setDrawVerticalHighlightIndicator(true);
 		dataSet.setDrawHorizontalHighlightIndicator(false);
-		dataSet.setHighLightColor(light ? mChart.getResources().getColor(R.color.text_color_secondary_light) : mChart.getResources().getColor(R.color.secondary_text_dark));
+		dataSet.setHighLightColor(mChart.getResources().getColor(light ? R.color.text_color_secondary_light : R.color.text_color_secondary_dark));
 
 		//dataSet.setMode(LineDataSet.Mode.HORIZONTAL_BEZIER);
 
@@ -1601,7 +1611,7 @@ public class GpxUiHelper {
 
 		List<Entry> values;
 		if (eleValues == null) {
-			values = calculateElevationArray(analysis, GPXDataSetAxisType.DISTANCE, 1f, 1f);
+			values = calculateElevationArray(analysis, GPXDataSetAxisType.DISTANCE, 1f, 1f, false);
 		} else {
 			values = new ArrayList<>(eleValues.size());
 			for (Entry e : eleValues) {

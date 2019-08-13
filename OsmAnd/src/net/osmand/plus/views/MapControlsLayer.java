@@ -52,9 +52,11 @@ import net.osmand.plus.dialogs.DirectionsDialogs;
 import net.osmand.plus.helpers.AndroidUiHelper;
 import net.osmand.plus.mapcontextmenu.MapContextMenu;
 import net.osmand.plus.rastermaps.OsmandRasterMapsPlugin;
+import net.osmand.plus.routepreparationmenu.ChooseRouteFragment;
 import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
 import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu.PointType;
 import net.osmand.plus.routing.RoutingHelper;
+import net.osmand.plus.routing.TransportRoutingHelper;
 import net.osmand.plus.search.QuickSearchDialogFragment.QuickSearchType;
 import net.osmand.plus.views.corenative.NativeCoreContext;
 
@@ -338,10 +340,6 @@ public class MapControlsLayer extends OsmandMapLayer {
 		mapRouteInfoMenu.showHideMenu();
 	}
 
-	public void showRouteInfoControlDialog(int menuState) {
-		mapRouteInfoMenu.showHideMenu(menuState);
-	}
-
 	public void showRouteInfoMenu() {
 		mapRouteInfoMenu.setShowMenu(MapRouteInfoMenu.DEFAULT_MENU_STATE);
 	}
@@ -426,7 +424,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 				mapActivity.getMapActions().enterRoutePlanningMode(null, null);
 			}
 		} else {
-			showRouteInfoControlDialog(MenuState.HEADER_ONLY);
+			showRouteInfoControlDialog();
 		}
 		hasTargets = false;
 	}
@@ -758,6 +756,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 		// default buttons
 		boolean routePlanningMode = false;
 		RoutingHelper rh = mapActivity.getRoutingHelper();
+		TransportRoutingHelper trh = mapActivity.getRoutingHelper().getTransportRoutingHelper();
 		if (rh.isRoutePlanningMode()) {
 			routePlanningMode = true;
 		} else if ((rh.isRouteCalculated() || rh.isRouteBeingCalculated()) && !rh.isFollowingMode()) {
@@ -773,7 +772,11 @@ public class MapControlsLayer extends OsmandMapLayer {
 		boolean showButtons = (showRouteCalculationControls || !routeFollowingMode)
 				&& !isInMovingMarkerMode() && !isInGpxDetailsMode() && !isInMeasurementToolMode() && !isInPlanRouteMode() && !contextMenuOpened && !isInChoosingRoutesMode() && !isInWaypointsChoosingMode();
 		//routePlanningBtn.setIconResId(routeFollowingMode ? R.drawable.ic_action_gabout_dark : R.drawable.map_directions);
-		if (rh.isFollowingMode()) {
+		int routePlanningBtnImage = mapRouteInfoMenu.getRoutePlanningBtnImage();
+		if (routePlanningBtnImage != 0) {
+			routePlanningBtn.setIconResId(routePlanningBtnImage);
+			routePlanningBtn.setIconColorId(R.color.color_myloc_distance);
+		} else if (rh.isFollowingMode()) {
 			routePlanningBtn.setIconResId(R.drawable.map_start_navigation);
 			routePlanningBtn.setIconColorId(R.color.color_myloc_distance);
 		} else if (routePlanningMode) {
@@ -869,7 +872,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 
 		if (!enabled) {
 			backToLocationControl.setBg(R.drawable.btn_circle, R.drawable.btn_circle_night);
-			backToLocationControl.setIconColorId(R.color.icon_color, 0);
+			backToLocationControl.setIconColorId(R.color.icon_color_default_light, 0);
 			backToLocationControl.iv.setContentDescription(mapActivity.getString(R.string.unknown_location));
 		} else if (tracked) {
 			backToLocationControl.setBg(R.drawable.btn_circle, R.drawable.btn_circle_night);
@@ -969,7 +972,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 		int resId;
 		int resLightId;
 		int resDarkId;
-		int resClrLight = R.color.icon_color;
+		int resClrLight = R.color.icon_color_default_light;
 		int resClrDark = 0;
 		String id;
 
@@ -1079,10 +1082,10 @@ public class MapControlsLayer extends OsmandMapLayer {
 		}
 
 		public boolean resetIconColors() {
-			if (resClrLight == R.color.icon_color && resClrDark == 0) {
+			if (resClrLight == R.color.icon_color_default_light && resClrDark == 0) {
 				return false;
 			}
-			resClrLight = R.color.icon_color;
+			resClrLight = R.color.icon_color_default_light;
 			resClrDark = 0;
 			f = true;
 			return true;

@@ -77,6 +77,7 @@ import net.osmand.aidl.customization.CustomizationInfoParams;
 import net.osmand.aidl.gpx.AGpxFile;
 import net.osmand.aidl.gpx.AGpxFileDetails;
 import net.osmand.aidl.gpx.CreateGpxBitmapParams;
+import net.osmand.aidl.gpx.GpxColorParams;
 
 import net.osmand.aidl.tiles.ASqliteDbFile;
 
@@ -84,11 +85,13 @@ import net.osmand.aidl.plugins.PluginParams;
 import net.osmand.aidl.copyfile.CopyFileParams;
 
 import net.osmand.aidl.navigation.ANavigationUpdateParams;
+import net.osmand.aidl.navigation.ANavigationVoiceRouterMessageParams;
 
 import net.osmand.aidl.contextmenu.ContextMenuButtonsParams;
 import net.osmand.aidl.contextmenu.UpdateContextMenuButtonsParams;
 import net.osmand.aidl.contextmenu.RemoveContextMenuButtonsParams;
 
+import net.osmand.aidl.mapmarker.RemoveMapMarkersParams;
 
 // NOTE: Add new methods at the end of file!!!
 
@@ -104,16 +107,23 @@ interface IOsmAndAidlInterface {
     boolean addMapMarker(in AddMapMarkerParams params);
 
     /**
-     * Add map marker at given location.
+     * Remove map marker.
+     *
+     * If ignoreCoordinates is false the marker is only removed if lat/lon match the currently set values of the marker.
+     * If ignoreCoordinates is true the marker is removed if the name matches, the values of lat/lon are ignored.
      *
      * @param lat (double) -  latitude.
      * @param lon (double) - longitude.
      * @param name (String)- name of marker.
+     * @param ignoreCoordinates (boolean) - flag to determine whether lat/lon shall be ignored
      */
     boolean removeMapMarker(in RemoveMapMarkerParams params);
 
     /**
-     * Update map marker at given location with name.
+     * Update map marker.
+     *
+     * If ignoreCoordinates is false the marker gets updated only if latPrev/lonPrev match the currently set values of the marker.
+     * If ignoreCoordinates is true the marker gets updated if the name matches, the values of latPrev/lonPrev are ignored.
      *
      * @param latPrev (double) - latitude (current marker).
      * @param lonPrev (double) - longitude (current marker).
@@ -121,6 +131,7 @@ interface IOsmAndAidlInterface {
      * @param latNew (double) - latitude (new marker).
      * @param lonNew (double) - longitude (new marker).
      * @param nameNew (String) - name (new marker).
+     * @param ignoreCoordinates (boolean) - flag to determine whether latPrev/lonPrev shall be ignored
      */
     boolean updateMapMarker(in UpdateMapMarkerParams params);
 
@@ -806,4 +817,33 @@ interface IOsmAndAidlInterface {
      *
      */
     boolean setCustomization(in CustomizationInfoParams params);
+    
+    /**
+     * Method to register for Voice Router voice messages during navigation. Notifies user about voice messages.
+     *    
+     * @params subscribeToUpdates (boolean) - boolean flag to subscribe or unsubscribe from messages
+     * @params callbackId (long) - id of callback, needed to unsubscribe from messages
+     * @params callback (IOsmAndAidlCallback) - callback to notify user on voice message
+     */
+    long registerForVoiceRouterMessages(in ANavigationVoiceRouterMessageParams params, IOsmAndAidlCallback callback);
+
+    /**
+     * Removes all active map markers (marks them as passed and moves to history)
+     * Empty class of params
+     */
+    boolean removeAllActiveMapMarkers(in RemoveMapMarkersParams params);
+
+    /**
+    * Method to get color name for gpx.
+    *
+    * @param fileName (String) - name of gpx file.
+    *
+    * @param gpxColor (String) - color name of gpx. Can be one of: "red", "orange", "lightblue",
+    *                                              "blue", "purple", "translucent_red", "translucent_orange",
+    *                                              "translucent_lightblue", "translucent_blue", "translucent_purple"
+    * Which used in {@link #importGpx(in ImportGpxParams params) importGpx}
+    * Or color hex if gpx has custom color.
+    *
+    */
+    boolean getGpxColor(inout GpxColorParams params);
 }

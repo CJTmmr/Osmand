@@ -11,6 +11,40 @@
 	Thx - Hardy
 
 -->
+    <string name="app_mode_wagon">Wagon</string>
+    <string name="app_mode_pickup_truck">Pickup truck</string>
+    <string name="shared_string_default">Default</string>
+    <string name="gpx_join_gaps">Join gaps</string>
+    <string name="app_mode_camper">Camper</string>
+    <string name="app_mode_campervan">Campervan</string>
+    <string name="rendering_attr_showLez_description">Show Low Emission zones on the map. Does not affect routing.</string>
+    <string name="rendering_attr_showLez_name">Show Low Emission Zones</string>
+    <string name="temporary_conditional_routing">Consider temporary limitations</string>
+    <string name="turn_on_profile_desc">Please turn on at least one application profile, to use this setting.</string>
+    <string name="rendering_attr_winter_road_name">Winter road</string>
+    <string name="rendering_attr_ice_road_name">Ice road</string>
+    <string name="routeInfo_winter_ice_road_name">Winter and ice roads</string>
+    <string name="rendering_attr_tracktype_grade1_name">Solid (paved)</string>
+    <string name="rendering_attr_tracktype_grade2_name">Solid (unpaved)</string>
+    <string name="rendering_attr_tracktype_grade3_name">Mostly solid</string>
+    <string name="rendering_attr_tracktype_grade4_name">Mostly soft</string>
+    <string name="rendering_attr_tracktype_grade5_name">Soft</string>
+    <string name="routeInfo_tracktype_name">Surface firmness</string>
+    <string name="shared_string_file_is_saved">%s is saved</string>
+    <string name="shared_string_open_track">Open track</string>
+    <string name="shared_string_track_is_saved">Track %s is saved</string>
+    <string name="turn_screen_on_router">Wake on turn</string>
+    <string name="turn_screen_on_time_descr">Set the time for which the screen will turn on.</string>
+    <string name="turn_screen_on_sensor">Use proximity sensor</string>
+    <string name="turn_screen_on_sensor_descr">Wave your hand over the top of the screen to turn on the screen while navigating.</string>
+    <string name="app_mode_offroad">Offroad</string>
+    <string name="edit_profile_setup_title">Setup profile</string>
+    <string name="edit_profile_setup_subtitle">Profile keeps its own settings</string>
+    <string name="edit_profile_setup_map_subtitle">Select default map options for profile</string>
+    <string name="edit_profile_screen_options_subtitle">Select default screen options for profile</string>
+    <string name="edit_profile_nav_settings_subtitle">Select default navigation settings for profile</string>
+    <string name="routing_attr_max_num_changes_description">Specify max number of changes</string>
+    <string name="routing_attr_max_num_changes_name">Number of changes</string>
     <string name="app_mode_ufo">UFO</string>
     <string name="release_3_4">
         • Application profiles: create a custom profile for your own needs, with a custom icon and color\n\n
@@ -19,6 +53,7 @@
         • Added options to show the compass and a radius ruler on the map\n\n
         • Fix background track logging\n\n
         • Improved background map downloads\n\n
+        • Returned \'Turn Screen On\' option\n\n
         • Fixed Wikipedia language selection\n\n
         • Fixed compass button behavior during navigation\n\n
         • Other bug fixes\n\n
@@ -50,11 +85,11 @@
     <string name="downloaded_maps">Maps downloaded</string>
     <string name="visited_screens">Screens visited</string>
     <string name="collected_data">Data collected</string>
-    <string name="collected_data_descr">List of data you want to share with OsmAnd.</string>
-    <string name="downloaded_maps_collect_descr">We collect this data to understand which maps of which regions and countries are the most popular.</string>
-    <string name="visited_screens_collect_descr">We collect this data to understand which OsmAnd features are the most popular.</string>
+    <string name="collected_data_descr">Define which data you allow OsmAnd to share.</string>
+    <string name="downloaded_maps_collect_descr">Helps us understand which maps of which regions and countries are the most popular.</string>
+    <string name="visited_screens_collect_descr">Helps us understand which OsmAnd features are the most popular.</string>
     <string name="privacy_and_security_change_descr">By tapping \"Allow\" you agree with our %1$s</string>
-    <string name="settings_privacy_and_security">Privacy and Security</string>
+    <string name="settings_privacy_and_security">Privacy and security</string>
     <string name="settings_privacy_and_security_desc">Select which data you are sharing with us</string>
     <string name="shared_string_no_thank_you">No, thank you</string>
     <string name="shared_string_allow">Allow</string>
@@ -75,7 +110,7 @@
     <string name="settings_derived_routing_mode_string">User mode, derived from: %s</string>
     <string name="routing_profile_ski">Ski</string>
     <string name="profile_type_descr_string">Type: %s</string>
-    <string name="profile_type_base_string">Base Profile</string>
+    <string name="profile_type_base_string">Base profile</string>
     <string name="profile_alert_need_routing_type_title">Select navigation type</string>
     <string name="profile_alert_need_routing_type_msg">Please select a navigation type for the new application profile</string>
     <string name="profile_alert_need_profile_name_title">Enter profile name</string>
@@ -103,8 +138,8 @@
     <string name="custom_routing">Custom routing profile</string>
     <string name="special_routing_type">Special routing</string>
     <string name="third_party_routing_type">Third-party routing</string>
-  <string name="application_profiles_descr">Select the profiles to be visible in the app.</string>
-  <string name="application_profiles">Application profiles</string>
+    <string name="application_profiles_descr">Select the profiles to be visible in the app.</string>
+    <string name="application_profiles">Application profiles</string>
     <string name="searching_gps">Searching GPS</string>
     <string name="coordinates_widget">Coordinates widget</string>
     <string name="files_moved">Moved %1$d files (%2$s).</string>
@@ -199,6 +234,11 @@
     <string name="rendering_attr_highway_class_path_name">Path</string>
     <string name="rendering_attr_highway_class_cycleway_name">Cycleway</string>
     <string name="rendering_attr_undefined_name">Undefined</string>
+	<string name="rendering_attr_highway_class_track_grade1_name">Grade 1</string>
+	<string name="rendering_attr_highway_class_track_grade2_name">Grade 2</string>
+	<string name="rendering_attr_highway_class_track_grade3_name">Grade 3</string>
+	<string name="rendering_attr_highway_class_track_grade4_name">Grade 4</string>
+	<string name="rendering_attr_highway_class_track_grade5_name">Grade 5</string>
     <string name="release_3_3">
         • New \'Directions\' screen: Displays Home and Work destination buttons, \'previous route\' shortcut, list of active GPX tracks and markers, search history\n\n
         • Additional info under \'Route details\': road types, surface, steepness, smoothness\n\n
@@ -213,8 +253,8 @@
     <string name="use_osm_live_public_transport">OsmAnd Live public transport</string>
     <string name="time_of_day">Time of day</string>
     <string name="by_transport_type">By %1$s</string>
-    <string name="step_by_step">Step by step</string>
-    <string name="road_types">Road types</string>
+    <string name="step_by_step">Turn-by-turn</string>
+    <string name="routeInfo_road_types_name">Road types</string>
     <string name="exit_at">Exit at</string>
     <string name="sit_on_the_stop">Board at stop</string>
     <string name="shared_string_swap">Swap</string>
@@ -542,7 +582,6 @@
     <string name="plan_route">Plan route</string>
     <string name="shared_string_sort">Sort</string>
     <string name="coordinate_input">Coordinate input</string>
-    <string name="is_saved">is saved</string>
     <string name="marker_save_as_track_descr">Export your markers to the following GPX file:</string>
     <string name="marker_save_as_track">Save as GPX file</string>
     <string name="move_to_history">Move to history</string>
@@ -1181,7 +1220,7 @@
     <string name="simulate_your_location_stop_descr">Stop simulating your position.</string>
     <string name="simulate_your_location_descr">Simulate your position using a calculated route or a recorded GPX track.</string>
     <string name="looking_up_address">Looking up address</string>
-    <string name="av_locations_descr">GPX file with note locations.</string>
+    <string name="av_locations_descr">GPX file with locations.</string>
     <string name="av_locations">Locations</string>
     <string name="plugin_settings">Plugins</string>
     <string name="routing_attr_avoid_shuttle_train_name">Avoid shuttle train</string>
@@ -1246,6 +1285,7 @@
     <string name="lang_th">Thai</string>
     <string name="lang_te">Telugu</string>
     <string name="lang_nn">Norwegian Nynorsk</string>
+    <string name="lang_oc">Occitan</string>
     <string name="lang_new">Newar / Nepal Bhasa</string>
     <string name="lang_ms">Malaysian</string>
     <string name="lang_ht">Haitian</string>
@@ -1736,8 +1776,8 @@
     <string name="lang_ro">Romanian</string>
     <string name="lang_ru">Russian</string>
     <string name="lang_sc">Sardinian</string>
-    <string name="lang_sr">Serbian</string>
-    <string name="lang_sr_latn">Serbian (Latin)</string>
+    <string name="lang_sr">Serbian (cyrillic)</string>
+    <string name="lang_sr_latn">Serbian (latin)</string>
     <string name="lang_zh_cn">Chinese (Simplified)</string>
     <string name="lang_zh_hk">Chinese (Hong Kong)</string>
     <string name="lang_sk">Slovak</string>
@@ -1908,6 +1948,12 @@
     <string name="contribution_activity">Install version</string>
     <string name="choose_osmand_theme_descr">Choose how the app looks.</string>
     <string name="choose_osmand_theme">App theme</string>
+    <string name="external_input_device">External input devices</string>
+    <string name="external_input_device_descr">Select a device such as a generic keyboard or WunderLINQ for external controls.</string>
+    <string name="sett_no_ext_input">None</string>
+    <string name="sett_generic_ext_input">Generic Keyboard</string>
+    <string name="sett_wunderlinq_ext_input">WunderLINQ</string>
+    <string name="sett_parrot_ext_input">Parrot</string>
     <string name="accessibility_options">Accessibility options</string>
     <string name="select_address_activity">Select address</string>
     <string name="favourites_list_activity">Select Favorite</string>
@@ -2422,8 +2468,6 @@
     <string name="i_am_here">I am here</string>
     <string name="zoom_by_trackball_descr">Change map zooming by horizontal trackball movement.</string>
     <string name="zoom_by_trackball">Use trackball for zoom control</string>
-    <string name="zoom_by_wunderlinq_descr">Change map zooming by scrolling the wheel up and down. Escape returns you to the WunderLINQ App.</string>
-    <string name="zoom_by_wunderlinq">Use WunderLINQ for control</string>
     <string name="accessibility_preferences_descr">Accessibility related preferences.</string>
     <string name="arrival_distance_factor_early">Early</string>
     <string name="arrival_distance_factor_normally">Normal</string>
@@ -2590,9 +2634,9 @@
     <string name="switch_to_vector_map_to_see">Offline vector map present for this location. \n\t\n\tTo use activate \'Menu\' → \'Configure map\' → \'Map Source…\' → \'Offline vector maps\'.</string>
     <string name="choose_audio_stream">Voice guidance output</string>
     <string name="choose_audio_stream_descr">Select the speaker to play the voice guidance.</string>
-    <string name="voice_stream_voice_call">Phone call audio (also to interrupt car BT stereos)</string>
+    <string name="voice_stream_voice_call">Phone call audio (to interrupt car BT stereos)</string>
     <string name="voice_stream_notification">Notification audio</string>
-    <string name="voice_stream_music">Media/music audio</string>
+    <string name="voice_stream_music">Media/Navigation audio</string>
     <string name="warning_tile_layer_not_downloadable">The app cannot download the map layer %1$s, reinstalling it might help.</string>
     <string name="overlay_transparency_descr">Modify the overlay transparency.</string>
     <string name="overlay_transparency">Overlay transparency</string>
@@ -2870,7 +2914,7 @@
     <string name="error_calculating_route">Could not calculate route</string>
     <string name="error_calculating_route_occured">Could not calculate route</string>
     <string name="empty_route_calculated">Calculated route is empty</string>
-    <string name="new_route_calculated_dist">New route calculated, distance</string>
+    <string name="new_route_calculated_dist_dbg">Route: distance %s, router time %s \nCalculation: %.1f sec, %d roads, %d tiles)</string>
     <string name="arrived_at_destination">You have arrived at your destination</string>
     <string name="invalid_locations">Invalid coordinates</string>
     <string name="go_back_to_osmand">Go back to OsmAnd map</string>
@@ -3207,10 +3251,10 @@
     <string name="wiki_article_not_found">Article not found</string>
     <string name="how_to_open_wiki_title">How to open Wikipedia articles?</string>
     <string name="test_voice_desrc">Tap a button and listen to the corresponding voice prompt to identify missing or faulty prompts.</string>
-    <string name="route_class_stat_container">Class</string>
-    <string name="route_surface_stat_container">Surface</string>
-    <string name="route_smoothness_stat_container">Smoothness</string>
-    <string name="route_steepness_stat_container">Steepness</string>
+    <string name="routeInfo_roadClass_name">Road type</string>
+    <string name="routeInfo_surface_name">Surface</string>
+    <string name="routeInfo_smoothness_name">Smoothness</string>
+    <string name="routeInfo_steepness_name">Steepness</string>
     <string name="run_full_osmand_msg">You are using {0} Map which is powered by OsmAnd. Do you want to launch OsmAnd full version?</string>
     <string name="run_full_osmand_header">Launch OsmAnd?</string>
     <string name="routing_attr_avoid_sett_name">Avoid cobblestone and sett</string>
@@ -3238,5 +3282,6 @@
     <string name="routing_attr_difficulty_preference_description">Prefer routes of this difficulty, although routing over harder or easier pistes is still possible if shorter.</string>
     <string name="routing_attr_freeride_policy_name">Off-piste</string>
     <string name="routing_attr_freeride_policy_description">Freerides and offpiste are unofficial routes and passages. Typically ungroomed, unmainted by the officials and not checked in the evening. Enter at own risk.</string>
+
 
 </resources>

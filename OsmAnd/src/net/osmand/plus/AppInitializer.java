@@ -32,6 +32,7 @@ import net.osmand.plus.base.MapViewTrackingUtilities;
 import net.osmand.plus.download.DownloadActivity;
 import net.osmand.plus.download.ui.AbstractLoadLocalIndexTask;
 import net.osmand.plus.helpers.AvoidSpecificRoads;
+import net.osmand.plus.helpers.LockHelper;
 import net.osmand.plus.helpers.WaypointHelper;
 import net.osmand.plus.inapp.InAppPurchaseHelper;
 import net.osmand.plus.liveupdates.LiveUpdatesHelper;
@@ -497,6 +498,7 @@ public class AppInitializer implements IProgress {
 			app.travelDbHelper.initTravelBooks();
 		}
 		app.travelDbHelper = startupInit(app.travelDbHelper, TravelDbHelper.class);
+		app.lockHelper = startupInit(new LockHelper(app), LockHelper.class);
 
 
 		initOpeningHoursParser();
@@ -559,14 +561,16 @@ public class AppInitializer implements IProgress {
 			protected Builder doInBackground(Void... voids) {
 				File routingFolder = app.getAppPath(IndexConstants.ROUTING_PROFILES_DIR);
 				RoutingConfiguration.Builder builder = RoutingConfiguration.getDefault();
-				if (routingFolder.isDirectory() && routingFolder.listFiles().length > 0) {
+				if (routingFolder.isDirectory()) {
 					File[] fl = routingFolder.listFiles();
-					for (File f : fl) {
-						if (f.isFile() && f.getName().endsWith(".xml") && f.canRead()) {
-							try {
-								RoutingConfiguration.parseFromInputStream(new FileInputStream(f), f.getName(), builder);
-							} catch (XmlPullParserException | IOException e) {
-								throw new IllegalStateException(e);
+					if (fl != null && fl.length > 0) {
+						for (File f : fl) {
+							if (f.isFile() && f.getName().endsWith(".xml") && f.canRead()) {
+								try {
+									RoutingConfiguration.parseFromInputStream(new FileInputStream(f), f.getName(), builder);
+								} catch (XmlPullParserException | IOException e) {
+									throw new IllegalStateException(e);
+								}
 							}
 						}
 					}
@@ -741,7 +745,7 @@ public class AppInitializer implements IProgress {
 			if (System.currentTimeMillis() - timeUpdated >= 1000 * 60 * 30) {
 				startTask(app.getString(R.string.saving_gpx_tracks), -1);
 				try {
-					warnings.addAll(app.savingTrackHelper.saveDataToGpx(app.getAppCustomization().getTracksDir()));
+					warnings.addAll(app.savingTrackHelper.saveDataToGpx(app.getAppCustomization().getTracksDir()).getWarnings());
 				} catch (RuntimeException e) {
 					warnings.add(e.getMessage());
 				}
