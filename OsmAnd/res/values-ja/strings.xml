@@ -217,7 +217,7 @@ MB)をダウンロードしますか?</string>
     <string name="use_trackball">トラックボールを使用</string>
     <string name="background_service_wait_int_descr">位置修正用の待ち時間をセットします</string>
     <string name="background_service_wait_int">待ち時間</string>
-    <string name="where_am_i">現在地を表示</string>
+    <string name="where_am_i">現在地を表示\?</string>
     <string name="process_navigation_service">OsmAnd ナビゲーションサービス</string>
     <string name="network_provider">ネットワーク</string>
     <string name="gps_provider">GPS</string>
@@ -1002,7 +1002,7 @@ POIの更新は利用できません</string>
     <string name="search_position_map_view">マップ画面中心</string>
     <string name="select_search_position">検索基点:</string>
     <string name="context_menu_item_search">近隣を検索</string>
-    <string name="shared_string_save_as_gpx">新規としてGPX経路を保存</string>
+    <string name="shared_string_save_as_gpx">GPX経路を新規保存</string>
     <string name="route_successfully_saved_at">ルートを「%1$s」として保存しました。</string>
     <string name="filename_input">ファイル名: </string>
     <string name="file_with_name_already_exist">同じ名前のファイルが既に存在します。</string>
@@ -1231,7 +1231,7 @@ POIの更新は利用できません</string>
     <string name="keep_informing">ナビゲーション指示の繰り返し</string>
     <string name="keep_informing_descr">ナビゲーション指示を繰り返す間隔を設定します</string>
     <string name="arrival_distance">目的地周辺でのアナウンスタイミング</string>
-    <string name="arrival_distance_descr">目的地周辺でのアナウンスをするタイミングを設定します</string>
+    <string name="arrival_distance_descr">目的地周辺でのアナウンスをするタイミングを設定します\?</string>
     <string name="always_center_position_on_map">移動時、現在地を画面中央よりに表示</string>
     <string name="voice_pref_title">音声関連設定</string>
     <string name="misc_pref_title">その他の設定</string>
@@ -2544,11 +2544,11 @@ POIの更新は利用できません</string>
     <string name="save_as_line">線として保存</string>
     <string name="route_point">ルートポイント</string>
     <string name="edit_line">線の編集</string>
-    <string name="add_point_before">その前にポイントを追加する</string>
-    <string name="add_point_after">その後にポイントを追加する</string>
+    <string name="add_point_before">選択地点の前に追加</string>
+    <string name="add_point_after">選択地点の後に追加</string>
     <string name="shared_string_options">オプション</string>
     <string name="measurement_tool_snap_to_road_descr">OsmAndは、選択したプロファイルのルートにポイントを接続します。</string>
-    <string name="measurement_tool_save_as_new_track_descr">そのルートポイントを点または線として保存できます。</string>
+    <string name="measurement_tool_save_as_new_track_descr">選択した地点をルートポイントまたは線として保存できます。</string>
     <string name="add_line">線の追加</string>
     <string name="wrong_input">入力が間違っています</string>
     <string name="enter_new_name">新しい名前を入力</string>
@@ -2991,7 +2991,7 @@ POIの更新は利用できません</string>
 \n• 案内メニューとルート詳細の暗色テーマ時の表示を修正
 \n
 \n• 距離測定時に方位を表示</string>
-    <string name="shared_string_degrees">度</string>
+    <string name="shared_string_degrees">角度(°)</string>
     <string name="shared_string_milliradians">ミリラジアン</string>
     <string name="angular_measeurement">角度単位</string>
     <string name="angular_measeurement_descr">方位角度の単位を変更します。</string>

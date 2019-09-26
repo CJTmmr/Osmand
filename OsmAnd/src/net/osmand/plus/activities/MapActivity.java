@@ -29,6 +29,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -64,6 +66,7 @@ import net.osmand.plus.AppInitializer.AppInitializeListener;
 import net.osmand.plus.AppInitializer.InitEvents;
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.GpxSelectionHelper.GpxDisplayItem;
+import net.osmand.plus.HuaweiDrmHelper;
 import net.osmand.plus.MapMarkersHelper;
 import net.osmand.plus.MapMarkersHelper.MapMarker;
 import net.osmand.plus.MapMarkersHelper.MapMarkerChangedListener;
@@ -124,6 +127,8 @@ import net.osmand.plus.routing.TransportRoutingHelper.TransportRouteCalculationP
 import net.osmand.plus.search.QuickSearchDialogFragment;
 import net.osmand.plus.search.QuickSearchDialogFragment.QuickSearchTab;
 import net.osmand.plus.search.QuickSearchDialogFragment.QuickSearchType;
+import net.osmand.plus.settings.BaseSettingsFragment;
+import net.osmand.plus.settings.MainSettingsFragment;
 import net.osmand.plus.views.AddGpxPointBottomSheetHelper.NewGpxPoint;
 import net.osmand.plus.views.AnimateDraggingMapThread;
 import net.osmand.plus.views.MapControlsLayer;
@@ -158,7 +163,9 @@ import java.util.regex.Pattern;
 
 public class MapActivity extends OsmandActionBarActivity implements DownloadEvents,
 		OnRequestPermissionsResultCallback, IRouteInformationListener, AMapPointUpdateListener,
-		MapMarkerChangedListener, OnDismissDialogFragmentListener, OnDrawMapListener, OsmAndAppCustomizationListener, LockHelper.LockUIAdapter {
+		MapMarkerChangedListener, OnDismissDialogFragmentListener, OnDrawMapListener,
+		OsmAndAppCustomizationListener, LockHelper.LockUIAdapter, PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
+
 	public static final String INTENT_KEY_PARENT_MAP_ACTIVITY = "intent_parent_map_activity_key";
 	public static final String INTENT_PARAMS = "intent_prarams";
 
@@ -222,7 +229,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	private boolean stopped = true;
 
 	private ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
-
+	
 	private LockHelper lockHelper;
 
 	@Override
@@ -244,6 +251,10 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		trackDetailsMenu.setMapActivity(this);
 
 		super.onCreate(savedInstanceState);
+
+		if (Version.isHuawei(getMyApplication())) {
+			HuaweiDrmHelper.check(this);
+		}
 		// Full screen is not used here
 		// getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.main);
@@ -342,7 +353,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		registerReceiver(screenOffReceiver, filter);
 
 		app.getAidlApi().onCreateMapActivity(this);
-
+		
 		lockHelper.setLockUIAdapter(this);
 
 		mIsDestroyed = false;
@@ -814,10 +825,9 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 		app.getDownloadThread().setUiActivity(this);
 
-		if (mapViewTrackingUtilities.getShowRouteFinishDialog()) {
-// disable RouteFinishDialog CJT
-			//			DestinationReachedMenu.show(this);
-			mapViewTrackingUtilities.setShowRouteFinishDialog(false);
+		boolean routeWasFinished = routingHelper.isRouteWasFinished();
+		if (routeWasFinished && !DestinationReachedMenu.wasShown()) {
+		//	DestinationReachedMenu.show(this);
 		}
 
 		routingHelper.addListener(this);
@@ -871,7 +881,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		} else if (!isFirstScreenShowing() && OsmLiveCancelledDialog.shouldShowDialog(app)) {
 			OsmLiveCancelledDialog.showInstance(getSupportFragmentManager());
 		} else if (SendAnalyticsBottomSheetDialogFragment.shouldShowDialog(app)) {
-			SendAnalyticsBottomSheetDialogFragment.showInstance(app, getSupportFragmentManager());
+			SendAnalyticsBottomSheetDialogFragment.showInstance(app, getSupportFragmentManager(), null);
 		}
 		FirstUsageWelcomeFragment.SHOW = false;
 		if (isFirstScreenShowing() && (!settings.SHOW_OSMAND_WELCOME_SCREEN.get() || !showOsmAndWelcomeScreen)) {
@@ -1316,7 +1326,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	@Override
 	protected void onStop() {
-		getMyApplication().getNotificationHelper().removeNotifications();
+		getMyApplication().getNotificationHelper().removeNotifications(true);
 		if(pendingPause) {
 			onPauseActivity();
 		}
@@ -1378,6 +1388,9 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	}
 
 	private void onPauseActivity() {
+		if (!app.getRoutingHelper().isRouteWasFinished()) {
+			DestinationReachedMenu.resetShownState();
+		}
 		pendingPause = false;
 		mapView.setOnDrawMapListener(null);
 		cancelSplashScreenTimer();
@@ -1405,7 +1418,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	}
 
 	public void updateApplicationModeSettings() {
-		changeKeyguardFlags(true);
+		changeKeyguardFlags();
 		updateMapSettings();
 		mapViewTrackingUtilities.updateSettings();
 		//app.getRoutingHelper().setAppMode(settings.getApplicationMode());
@@ -1903,25 +1916,50 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		return oldPoint.getLayerId().equals(layerId) && oldPoint.getId().equals(point.getId());
 	}
 
-	public void changeKeyguardFlags(final boolean enable) {
+	public void changeKeyguardFlags() {
+		changeKeyguardFlags(settings.TURN_SCREEN_ON_TIME_INT.get() > 0, true);
+	}
+
+	private void changeKeyguardFlags(boolean enable, boolean forceKeepScreenOn) {
 		if (enable) {
 			getWindow().setFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED,
 					WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
 			setKeepScreenOn(true);
 		} else {
 			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-			setKeepScreenOn(false);
+			setKeepScreenOn(forceKeepScreenOn);
 		}
 	}
 
 	@Override
 	public void lock() {
-		changeKeyguardFlags(false);
+		changeKeyguardFlags(false, false);
 	}
 
 	@Override
 	public void unlock() {
-		changeKeyguardFlags(true);
+		changeKeyguardFlags(true, false);
+	}
+
+	@Override
+	public boolean onPreferenceStartFragment(PreferenceFragmentCompat caller, Preference pref) {
+		if (caller instanceof BaseSettingsFragment) {
+			BaseSettingsFragment baseFragment = (BaseSettingsFragment) caller;
+
+			ApplicationMode mode = baseFragment.getSelectedAppMode();
+			if (mode != null) {
+				String fragmentName = pref.getFragment();
+				Fragment fragment = Fragment.instantiate(this, fragmentName);
+
+				getSupportFragmentManager().beginTransaction()
+						.replace(R.id.fragmentContainer, fragment, fragmentName)
+						.addToBackStack(fragmentName)
+						.commitAllowingStateLoss();
+
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private class ScreenOffReceiver extends BroadcastReceiver {
@@ -1942,7 +1980,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		if (mapRouteInfoMenu.isSelectFromMapTouch()) {
 			return;
 		}
-
 		RoutingHelper rh = app.getRoutingHelper();
 		if (newRoute && rh.isRoutePlanningMode() && mapView != null) {
 			Location lt = rh.getLastProjection();
@@ -1987,7 +2024,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	@Override
 	public void routeWasCancelled() {
-		changeKeyguardFlags(true);
+		changeKeyguardFlags();
 	}
 
 	@Override
@@ -1995,7 +2032,8 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		if (!mIsDestroyed) {
             // disable RouteFinishDialog CJT
 			// DestinationReachedMenu.show(this);
-			changeKeyguardFlags(true);
+			// DestinationReachedMenu.show(this);
+			changeKeyguardFlags();
 		}
 	}
 
@@ -2140,6 +2178,10 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			QuickSearchDialogFragment.showInstance(this, searchQuery, null,
 					QuickSearchType.REGULAR, showSearchTab, searchLocation);
 		}
+	}
+
+	public void showSettings() {
+		MainSettingsFragment.showInstance(getSupportFragmentManager());
 	}
 
 	private void hideContextMenu() {

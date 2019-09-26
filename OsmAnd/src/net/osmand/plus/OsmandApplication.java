@@ -242,7 +242,7 @@ public class OsmandApplication extends MultiDexApplication {
         if(RateUsBottomSheetDialog.shouldShow(this)) {
             osmandSettings.RATE_US_STATE.set(RateUsBottomSheetDialog.RateUsState.IGNORED);
         }
-        getNotificationHelper().removeNotifications();
+        getNotificationHelper().removeNotifications(false);
 	}
 
 	public RendererRegistry getRendererRegistry() {
@@ -1009,9 +1009,13 @@ public class OsmandApplication extends MultiDexApplication {
 	}
 
 	public void sendCrashLog() {
-		Intent intent = new Intent(Intent.ACTION_SEND);
-		intent.putExtra(Intent.EXTRA_EMAIL, new String[]{"crash@osmand.net"}); 
 		File file = getAppPath(OsmandApplication.EXCEPTION_PATH);
+		sendCrashLog(file);
+	}
+
+	public void sendCrashLog(File file) {
+		Intent intent = new Intent(Intent.ACTION_SEND);
+		intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"crash@osmand.net"});
 		intent.putExtra(Intent.EXTRA_STREAM, AndroidUtils.getUriForFile(this, file));
 		intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 		intent.setType("vnd.android.cursor.dir/email"); 

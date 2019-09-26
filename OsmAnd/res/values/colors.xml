@@ -27,7 +27,7 @@
 	<color name="inactive_buttons_and_links_bg_light">#f0f0f0</color>
 	<color name="inactive_buttons_and_links_bg_dark">#303436</color>
 	<color name="active_buttons_and_links_text_light">#ffffff</color>
-	<color name="active_buttons_and_links_text_dark">#cccccc</color>
+	<color name="active_buttons_and_links_text_dark">#ebebeb</color>
 	<color name="active_buttons_and_links_text_disabled_light">#727272</color>
 	<color name="active_buttons_and_links_text_disabled_dark">#727272</color>
 	<color name="stroked_buttons_and_links_bg_light">#00ffffff</color>
@@ -422,6 +422,9 @@
 
 	<color name="text_field_box_dark">#3F474B</color>
 	<color name="text_field_box_light">#eeeeee</color>
+
+	<color name="preference_category_title">#7E33FF</color>
+	<color name="preference_top_switch_off">#808080</color>
 
 	<!-- Basic colors -->
 	<color name="app_bar_main_dark">#101112</color>

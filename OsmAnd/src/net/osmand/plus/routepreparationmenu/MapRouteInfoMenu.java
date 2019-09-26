@@ -68,6 +68,7 @@ import net.osmand.plus.mapmarkers.MapMarkerSelectionFragment;
 import net.osmand.plus.poi.PoiUIFilter;
 import net.osmand.plus.profiles.AppModesBottomSheetDialogFragment;
 import net.osmand.plus.profiles.AppModesBottomSheetDialogFragment.UpdateMapRouteMenuListener;
+import net.osmand.plus.profiles.ConfigureAppModesBottomSheetDialogFragment;
 import net.osmand.plus.routepreparationmenu.RoutingOptionsHelper.AvoidPTTypesRoutingParameter;
 import net.osmand.plus.routepreparationmenu.RoutingOptionsHelper.AvoidRoadsRoutingParameter;
 import net.osmand.plus.routepreparationmenu.RoutingOptionsHelper.LocalRoutingParameter;
@@ -777,7 +778,7 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 	}
 
 	private void showProfileBottomSheetDialog() {
-		final AppModesBottomSheetDialogFragment fragment = new AppModesBottomSheetDialogFragment();
+		final AppModesBottomSheetDialogFragment fragment = new ConfigureAppModesBottomSheetDialogFragment();
 		fragment.setUsedOnMap(true);
 		fragment.setUpdateMapRouteMenuListener(new UpdateMapRouteMenuListener() {
 			@Override
@@ -786,7 +787,7 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 			}
 		});
 		getMapActivity().getSupportFragmentManager().beginTransaction()
-			.add(fragment, "app_profile_settings").commitAllowingStateLoss();
+			.add(fragment, ConfigureAppModesBottomSheetDialogFragment.TAG).commitAllowingStateLoss();
 	}
 
 	private void updateApplicationMode(ApplicationMode mode, ApplicationMode next) {
@@ -965,10 +966,10 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 				color2 = color1;
 			}
 		} else {
-			color1 = nightMode ? R.color.active_buttons_and_links_text_disabled_dark : R.color.active_buttons_and_links_text_light;
+			color1 = nightMode ? R.color.active_buttons_and_links_text_dark : R.color.active_buttons_and_links_text_light;
 			if (routeCalculated) {
 				AndroidUtils.setBackground(app, startButton, nightMode, R.color.active_color_primary_light, R.color.active_color_primary_dark);
-				color2 = nightMode ? R.color.active_buttons_and_links_text_disabled_dark : R.color.active_buttons_and_links_text_light;
+				color2 = color1;
 			} else {
 				AndroidUtils.setBackground(app, startButton, nightMode, R.color.activity_background_light, R.color.activity_background_dark);
 				color2 = R.color.description_font_and_bottom_sheet_icons;
@@ -1080,7 +1081,7 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 		if (!poiFilters.isEmpty()) {
 			createPoiFiltersItems(mapActivity, poiFilters, optionsContainer);
 		}
-		if (traffic) {
+		if (traffic && app.getSettings().SHOW_ROUTING_ALARMS.get()) {
 			createWaypointItem(mapActivity, optionsContainer, WaypointHelper.ALARMS);
 		}
 		if (fav) {

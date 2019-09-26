@@ -30,7 +30,8 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
-import android.text.ParcelableSpan;
+import android.support.v4.text.TextUtilsCompat;
+import android.support.v4.view.ViewCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -62,6 +63,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static android.content.Context.POWER_SERVICE;
@@ -316,14 +318,21 @@ public class AndroidUtils {
 		tv.setMaxLines(maxLines);
 	}
 
-	@SuppressLint("NewApi")
-	@SuppressWarnings("deprecation")
 	public static void setBackground(Context ctx, View view, boolean night, int lightResId, int darkResId) {
+		Drawable drawable;
 		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-			view.setBackground(ctx.getResources().getDrawable(night ? darkResId : lightResId,
-					ctx.getTheme()));
+			drawable = ctx.getResources().getDrawable(night ? darkResId : lightResId, ctx.getTheme());
 		} else {
-			view.setBackgroundDrawable(ctx.getResources().getDrawable(night ? darkResId : lightResId));
+			drawable = ctx.getResources().getDrawable(night ? darkResId : lightResId);
+		}
+		setBackground(view, drawable);
+	}
+
+	public static void setBackground(View view, Drawable drawable) {
+		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+			view.setBackground(drawable);
+		} else {
+			view.setBackgroundDrawable(drawable);
 		}
 	}
 
@@ -591,11 +600,15 @@ public class AndroidUtils {
 			}
 			if(replaceStyle != null) {
 				ssb.setSpan(replaceStyle, indexOfPlaceholder,
-						stringToInsertAndStyle.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+						indexOfPlaceholder + stringToInsertAndStyle.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 			}
 			return ssb;
 		} else {
 			return baseString;
 		}
+	}
+
+	public static boolean isRTL() {
+		return TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault()) == ViewCompat.LAYOUT_DIRECTION_RTL;
 	}
 }

@@ -2,13 +2,16 @@ package net.osmand.plus;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.net.Uri;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IdRes;
 import android.support.annotation.LayoutRes;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.AppCompatImageView;
 import android.text.TextUtils;
 import android.view.ContextThemeWrapper;
@@ -179,6 +182,33 @@ public class ContextMenuAdapter {
 			}
 			if (item.getMinHeight() > 0) {
 				convertView.setMinimumHeight(item.getMinHeight());
+			}
+			if (layoutId == R.layout.main_menu_drawer_btn_switch_profile || 
+					layoutId == R.layout.main_menu_drawer_btn_configure_profile) {
+				int colorResId = item.getColorRes();
+				int colorNoAlpha = ContextCompat.getColor(app, colorResId);
+				
+				TextView title = convertView.findViewById(R.id.title);
+				title.setText(item.getTitle());
+				
+				if (layoutId == R.layout.main_menu_drawer_btn_switch_profile) {
+					ImageView icon = convertView.findViewById(R.id.icon);
+					icon.setImageDrawable(mIconsCache.getIcon(item.getIcon(), colorResId));
+					TextView desc = convertView.findViewById(R.id.description);
+					desc.setText(item.getDescription());
+				}
+				if (layoutId == R.layout.main_menu_drawer_btn_configure_profile) {
+					View fatDivider = convertView.findViewById(R.id.fatDivider);
+					fatDivider.setBackgroundColor(colorNoAlpha);
+				}
+
+				Drawable selectableBg = UiUtilities.getColoredSelectableDrawable(app, colorNoAlpha, 0.3f);
+				Drawable[] layers = {new ColorDrawable(UiUtilities.getColorWithAlpha(colorNoAlpha, 0.15f)), selectableBg};
+				LayerDrawable layerDrawable = new LayerDrawable(layers);
+
+				AndroidUtils.setBackground(convertView, layerDrawable);
+
+				return convertView;
 			}
 			if (layoutId == R.layout.help_to_improve_item) {
 				TextView feedbackButton = (TextView) convertView.findViewById(R.id.feedbackButton);

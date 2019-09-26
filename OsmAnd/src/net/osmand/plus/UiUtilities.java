@@ -1,9 +1,12 @@
 package net.osmand.plus;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.RippleDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Build;
@@ -67,9 +70,7 @@ public class UiUtilities {
 		Drawable d = drawableCache.get(hash);
 		if (d == null) {
 			d = ContextCompat.getDrawable(app, resId);
-			d = DrawableCompat.wrap(d);
-			d.mutate();
-			DrawableCompat.setTint(d, color);
+			d = tintDrawable(d, color);
 
 			drawableCache.put(hash, d);
 		}
@@ -84,9 +85,14 @@ public class UiUtilities {
 		return getDrawable(id, colorId);
 	}
 
-	public Drawable getIcon(@DrawableRes int backgroundId, @DrawableRes int id, @ColorRes int colorId) {
-		Drawable b = getDrawable(backgroundId, 0);
-		Drawable f = getDrawable(id, colorId);
+	public Drawable getLayeredIcon(@DrawableRes int bgIconId, @DrawableRes int foregroundIconId) {
+		return getLayeredIcon(bgIconId, foregroundIconId, 0, 0);
+	}
+
+	public Drawable getLayeredIcon(@DrawableRes int bgIconId, @DrawableRes int foregroundIconId,
+	                               @ColorRes int bgColorId, @ColorRes int foregroundColorId) {
+		Drawable b = getDrawable(bgIconId, bgColorId);
+		Drawable f = getDrawable(foregroundIconId, foregroundColorId);
 		Drawable[] layers = new Drawable[2];
 		layers[0] = b;
 		layers[1] = f;
@@ -105,6 +111,42 @@ public class UiUtilities {
 		return getDrawable(id, light ? R.color.icon_color_default_light : R.color.icon_color_default_dark);
 	}
 
+	public static Drawable getSelectableDrawable(Context ctx) {
+		int bgResId = AndroidUtils.resolveAttribute(ctx, R.attr.selectableItemBackground);
+		if (bgResId != 0) {
+			return ContextCompat.getDrawable(ctx, bgResId);
+		}
+		return null;
+	}
+
+	public static Drawable getColoredSelectableDrawable(Context ctx, int color, float alpha) {
+		Drawable drawable = null;
+		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+			Drawable bg = getSelectableDrawable(ctx);
+			if (bg != null) {
+				drawable = tintDrawable(bg, getColorWithAlpha(color, alpha));
+			}
+		} else {
+			drawable = AndroidUtils.createPressedStateListDrawable(new ColorDrawable(Color.TRANSPARENT), new ColorDrawable(getColorWithAlpha(color, alpha)));
+		}
+		return drawable;
+	}
+
+	public static Drawable tintDrawable(Drawable drawable, int color) {
+		Drawable coloredDrawable = null;
+		if (drawable != null) {
+			coloredDrawable = DrawableCompat.wrap(drawable);
+			coloredDrawable.mutate();
+			if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP && coloredDrawable instanceof RippleDrawable) {
+				((RippleDrawable) coloredDrawable).setColor(ColorStateList.valueOf(color));
+			} else {
+				DrawableCompat.setTint(coloredDrawable, color);
+			}
+		}
+
+		return coloredDrawable;
+	}
+
 	@ColorRes
 	public static int getDefaultColorRes(Context context) {
 		final OsmandApplication app = (OsmandApplication) context.getApplicationContext();
@@ -117,6 +159,39 @@ public class UiUtilities {
 		// Counting the perceptive luminance - human eye favors green color...
 		double luminance = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255;
 		return luminance < 0.5 ? transparent ? ContextCompat.getColor(context, R.color.color_black_transparent) : Color.BLACK : Color.WHITE;
+	}
+
+	@ColorInt
+	public static int getColorWithAlpha(@ColorInt int color, float ratio) {
+		int newColor = 0;
+		int alpha = Math.round(Color.alpha(color) * ratio);
+		int r = Color.red(color);
+		int g = Color.green(color);
+		int b = Color.blue(color);
+		newColor = Color.argb(alpha, r, g, b);
+		return newColor;
+	}
+
+	@ColorInt
+	public static int mixTwoColors(@ColorInt int color1, @ColorInt int color2, float amount )
+	{
+		final byte ALPHA_CHANNEL = 24;
+		final byte RED_CHANNEL   = 16;
+		final byte GREEN_CHANNEL =  8;
+		final byte BLUE_CHANNEL  =  0;
+
+		final float inverseAmount = 1.0f - amount;
+
+		int a = ((int)(((float)(color1 >> ALPHA_CHANNEL & 0xff )*amount) +
+				((float)(color2 >> ALPHA_CHANNEL & 0xff )*inverseAmount))) & 0xff;
+		int r = ((int)(((float)(color1 >> RED_CHANNEL & 0xff )*amount) +
+				((float)(color2 >> RED_CHANNEL & 0xff )*inverseAmount))) & 0xff;
+		int g = ((int)(((float)(color1 >> GREEN_CHANNEL & 0xff )*amount) +
+				((float)(color2 >> GREEN_CHANNEL & 0xff )*inverseAmount))) & 0xff;
+		int b = ((int)(((float)(color1 & 0xff )*amount) +
+				((float)(color2 & 0xff )*inverseAmount))) & 0xff;
+
+		return a << ALPHA_CHANNEL | r << RED_CHANNEL | g << GREEN_CHANNEL | b << BLUE_CHANNEL;
 	}
 
 	public UpdateLocationViewCache getUpdateLocationViewCache(){
