@@ -550,7 +550,8 @@ public class TrackPointFragment extends OsmandExpandableListFragment implements 
 					super.onDismissed(transientBottomBar, event);
 				}
 			});
-			AndroidUtils.setSnackbarTextColor(snackbar, R.color.active_color_primary_dark);
+			boolean nightMode = !app.getSettings().isLightContent();
+			UiUtilities.setupSnackbar(snackbar, nightMode);
 			snackbar.show();
 		}
 	}
@@ -1110,7 +1111,7 @@ public class TrackPointFragment extends OsmandExpandableListFragment implements 
 				} else {
 					description.setVisibility(View.GONE);
 				}
-				icon.setImageDrawable(FavoriteImageDrawable.getOrCreate(getActivity(), groupColor, false));
+				icon.setImageDrawable(FavoriteImageDrawable.getOrCreate(getActivity(), groupColor, false, wpt));
 
 			} else {
 				boolean showAll = gpxItem == null;

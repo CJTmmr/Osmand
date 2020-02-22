@@ -5,7 +5,7 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
 	compileSdkVersion 28
-	buildToolsVersion "27.0.3"
+	buildToolsVersion "28.0.3"
 
 	sourceSets {
 		main {
@@ -23,7 +23,7 @@ android {
 	defaultConfig {
 		applicationId "net.osmand.telegram"
 		minSdkVersion 15
-		targetSdkVersion 27
+		targetSdkVersion 28
 		versionCode 1
 		versionCode System.getenv("APK_NUMBER_VERSION") ? System.getenv("APK_NUMBER_VERSION").toInteger() : versionCode
 		versionName "1.0"

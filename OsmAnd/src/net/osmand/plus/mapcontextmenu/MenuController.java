@@ -2,9 +2,7 @@ package net.osmand.plus.mapcontextmenu;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.StateListDrawable;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
@@ -17,16 +15,13 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
 
-import java.util.Map;
-import net.osmand.AndroidUtils;
 import net.osmand.IndexConstants;
 import net.osmand.Location;
 import net.osmand.NativeLibrary.RenderedObject;
 import net.osmand.PlatformUtil;
-import net.osmand.aidl.maplayer.point.AMapPoint;
+import net.osmand.aidl.AidlMapPointWrapper;
 import net.osmand.binary.BinaryMapDataObject;
 import net.osmand.binary.BinaryMapIndexReader.TagValuePair;
-import net.osmand.binary.RouteDataObject;
 import net.osmand.data.Amenity;
 import net.osmand.data.FavouritePoint;
 import net.osmand.data.LatLon;
@@ -49,6 +44,7 @@ import net.osmand.plus.download.DownloadActivityType;
 import net.osmand.plus.download.DownloadIndexesThread;
 import net.osmand.plus.download.DownloadValidationManager;
 import net.osmand.plus.download.IndexItem;
+import net.osmand.plus.helpers.AvoidSpecificRoads;
 import net.osmand.plus.helpers.SearchHistoryHelper;
 import net.osmand.plus.mapcontextmenu.MenuBuilder.CollapsableView;
 import net.osmand.plus.mapcontextmenu.MenuBuilder.CollapseExpandListener;
@@ -188,7 +184,12 @@ public abstract class MenuController extends BaseMenuController implements Colla
 			if (object instanceof Amenity) {
 				menuController = new AmenityMenuController(mapActivity, pointDescription, (Amenity) object);
 			} else if (object instanceof FavouritePoint) {
-				menuController = new FavouritePointMenuController(mapActivity, pointDescription, (FavouritePoint) object);
+				if (pointDescription.isParking()
+						|| (FavouritePoint.SpecialPointType.PARKING.equals(((FavouritePoint) object).getSpecialPointType()))) {
+					menuController = new ParkingPositionMenuController(mapActivity, pointDescription);
+				} else {
+					menuController = new FavouritePointMenuController(mapActivity, pointDescription, (FavouritePoint) object);
+				}
 			} else if (object instanceof SearchHistoryHelper.HistoryEntry) {
 				menuController = new HistoryMenuController(mapActivity, pointDescription, (SearchHistoryHelper.HistoryEntry) object);
 			} else if (object instanceof TargetPoint) {
@@ -211,16 +212,16 @@ public abstract class MenuController extends BaseMenuController implements Colla
 				menuController = new TransportRouteController(mapActivity, pointDescription, (TransportStopRoute) object);
 			} else if (object instanceof TransportStop) {
 				menuController = new TransportStopController(mapActivity, pointDescription, (TransportStop) object);
-			} else if (object instanceof AMapPoint) {
-				menuController = new AMapPointMenuController(mapActivity, pointDescription, (AMapPoint) object);
+			} else if (object instanceof AidlMapPointWrapper) {
+				menuController = new AMapPointMenuController(mapActivity, pointDescription, (AidlMapPointWrapper) object);
 			} else if (object instanceof LatLon) {
 				if (pointDescription.isParking()) {
 					menuController = new ParkingPositionMenuController(mapActivity, pointDescription);
 				} else if (pointDescription.isMyLocation()) {
 					menuController = new MyLocationMenuController(mapActivity, pointDescription);
 				}
-			} else if (object instanceof RouteDataObject) {
-				menuController = new ImpassibleRoadsMenuController(mapActivity, pointDescription, (RouteDataObject) object);
+			} else if (object instanceof AvoidSpecificRoads.AvoidRoadInfo) {
+				menuController = new ImpassibleRoadsMenuController(mapActivity, pointDescription, (AvoidSpecificRoads.AvoidRoadInfo) object);
 			} else if (object instanceof RenderedObject) {
 				menuController = new RenderedObjectMenuController(mapActivity, pointDescription, (RenderedObject) object);
 			} else if (object instanceof MapillaryImage) {
@@ -506,6 +507,10 @@ public abstract class MenuController extends BaseMenuController implements Colla
 
 	public int getFavActionStringId() {
 		return R.string.shared_string_add;
+	}
+
+	public boolean isFavButtonEnabled() {
+		return true;
 	}
 
 	public int getWaypointActionIconId() {

@@ -8,29 +8,26 @@ import android.support.v7.preference.CheckBoxPreference;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.preference.PreferenceViewHolder;
-import android.text.Layout;
-import android.text.Selection;
-import android.text.Spannable;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
 import net.osmand.Location;
 import net.osmand.data.PointDescription;
+import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.R;
 import net.osmand.plus.settings.bottomsheets.ChangeGeneralProfilesPrefBottomSheet;
+import net.osmand.plus.widgets.tools.ClickableSpanTouchListener;
 import net.osmand.plus.wikipedia.WikipediaDialogFragment;
 
 
 public class CoordinatesFormatFragment extends BaseSettingsFragment {
 
-	public static final String TAG = "CoordinatesFormatFragment";
+	public static final String TAG = CoordinatesFormatFragment.class.getSimpleName();
 
 	private static final String UTM_FORMAT_WIKI_LINK = "https://en.wikipedia.org/wiki/Universal_Transverse_Mercator_coordinate_system";
 
@@ -41,25 +38,7 @@ public class CoordinatesFormatFragment extends BaseSettingsFragment {
 	private static final String OLC_FORMAT = "olc_format";
 
 	@Override
-	protected int getPreferencesResId() {
-		return R.xml.coordinates_format;
-	}
-
-	@Override
-	protected int getToolbarResId() {
-		return R.layout.profile_preference_toolbar;
-	}
-
-	@Override
-	protected int getToolbarTitle() {
-		return R.string.coordinates_format;
-	}
-
-	@Override
 	protected void setupPreferences() {
-		Preference generalSettings = findPreference("coordinates_format_info");
-		generalSettings.setIcon(getContentIcon(R.drawable.ic_action_info_dark));
-
 		CheckBoxPreference degreesPref = (CheckBoxPreference) findPreference(FORMAT_DEGREES);
 		CheckBoxPreference minutesPref = (CheckBoxPreference) findPreference(FORMAT_MINUTES);
 		CheckBoxPreference secondsPref = (CheckBoxPreference) findPreference(FORMAT_SECONDS);
@@ -74,7 +53,7 @@ public class CoordinatesFormatFragment extends BaseSettingsFragment {
 		utmPref.setSummary(getCoordinatesFormatSummary(loc, PointDescription.UTM_FORMAT));
 		olcPref.setSummary(getCoordinatesFormatSummary(loc, PointDescription.OLC_FORMAT));
 
-		int currentFormat = settings.COORDINATES_FORMAT.get();
+		int currentFormat = settings.COORDINATES_FORMAT.getModeValue(getSelectedAppMode());
 		String currentPrefKey = getCoordinatesKeyForFormat(currentFormat);
 		updateSelectedFormatPrefs(currentPrefKey);
 	}
@@ -86,51 +65,9 @@ public class CoordinatesFormatFragment extends BaseSettingsFragment {
 		if (UTM_FORMAT.equals(preference.getKey())) {
 			TextView summaryView = (TextView) holder.findViewById(android.R.id.summary);
 			if (summaryView != null) {
-				summaryView.setOnTouchListener(getSummaryTouchListener());
+				summaryView.setOnTouchListener(new ClickableSpanTouchListener());
 			}
 		}
-	}
-
-	private View.OnTouchListener getSummaryTouchListener() {
-		return new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				int action = event.getAction();
-
-				if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
-					TextView widget = (TextView) v;
-
-					int x = (int) event.getX();
-					int y = (int) event.getY();
-
-					x -= widget.getTotalPaddingLeft();
-					y -= widget.getTotalPaddingTop();
-
-					x += widget.getScrollX();
-					y += widget.getScrollY();
-
-					Layout layout = widget.getLayout();
-					int line = layout.getLineForVertical(y);
-					int off = layout.getOffsetForHorizontal(line, x);
-
-					Spannable spannable = new SpannableString(widget.getText());
-					ClickableSpan[] links = spannable.getSpans(off, off, ClickableSpan.class);
-
-					if (links.length != 0) {
-						if (action == MotionEvent.ACTION_UP) {
-							links[0].onClick(widget);
-						} else {
-							Selection.setSelection(spannable, spannable.getSpanStart(links[0]), spannable.getSpanEnd(links[0]));
-						}
-						return true;
-					} else {
-						Selection.removeSelection(spannable);
-					}
-				}
-
-				return false;
-			}
-		};
 	}
 
 	private CharSequence getCoordinatesFormatSummary(Location loc, int format) {
@@ -140,9 +77,8 @@ public class CoordinatesFormatFragment extends BaseSettingsFragment {
 		String formattedCoordinates = OsmAndFormatter.getFormattedCoordinates(lat, lon, format);
 		if (format == PointDescription.UTM_FORMAT) {
 			SpannableStringBuilder spannableBuilder = new SpannableStringBuilder();
-			spannableBuilder.append(getString(R.string.shared_string_example));
-			spannableBuilder.append(": ");
-			spannableBuilder.append(formattedCoordinates);
+			String combined = getString(R.string.ltr_or_rtl_combine_via_colon, getString(R.string.shared_string_example), formattedCoordinates);
+			spannableBuilder.append(combined);
 			spannableBuilder.append("\n");
 			spannableBuilder.append(getString(R.string.utm_format_descr));
 
@@ -169,7 +105,7 @@ public class CoordinatesFormatFragment extends BaseSettingsFragment {
 
 			return spannableBuilder;
 		}
-		return getString(R.string.shared_string_example) + ": " + formattedCoordinates;
+		return getString(R.string.ltr_or_rtl_combine_via_colon, getString(R.string.shared_string_example), formattedCoordinates);
 	}
 
 	@Override
@@ -178,19 +114,24 @@ public class CoordinatesFormatFragment extends BaseSettingsFragment {
 
 		int newFormat = getCoordinatesFormatForKey(key);
 		if (newFormat != -1) {
-			if (settings.COORDINATES_FORMAT.isSetForMode(getSelectedAppMode())) {
-				settings.COORDINATES_FORMAT.set(newFormat);
+			ApplicationMode selectedAppMode = getSelectedAppMode();
+			if (!settings.COORDINATES_FORMAT.getModeValue(selectedAppMode).equals(newFormat)) {
 				updateSelectedFormatPrefs(key);
-				return true;
-			} else {
+
 				FragmentManager fragmentManager = getFragmentManager();
 				if (fragmentManager != null) {
-					ChangeGeneralProfilesPrefBottomSheet.showInstance(fragmentManager, settings.COORDINATES_FORMAT.getId(), newFormat, this, false);
+					ChangeGeneralProfilesPrefBottomSheet.showInstance(fragmentManager,
+							settings.COORDINATES_FORMAT.getId(), newFormat, this, false, getSelectedAppMode());
 				}
 			}
 		}
 
 		return false;
+	}
+
+	@Override
+	public boolean shouldDismissOnChange() {
+		return true;
 	}
 
 	private void updateSelectedFormatPrefs(String key) {

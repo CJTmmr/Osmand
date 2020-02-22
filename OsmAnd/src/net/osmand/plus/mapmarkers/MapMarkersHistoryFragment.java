@@ -26,6 +26,7 @@ import net.osmand.plus.MapMarkersHelper;
 import net.osmand.plus.MapMarkersHelper.MapMarker;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
+import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.mapmarkers.adapters.MapMarkerHeaderViewHolder;
 import net.osmand.plus.mapmarkers.adapters.MapMarkerItemViewHolder;
@@ -76,7 +77,7 @@ public class MapMarkersHistoryFragment extends Fragment implements MapMarkersHel
 			((HistoryMarkerMenuBottomSheetDialogFragment) historyMarkerMenuFragment).setListener(createHistoryMarkerMenuListener());
 		}
 
-		final View mainView = inflater.inflate(R.layout.fragment_map_markers_history, container, false);
+		final View mainView = UiUtilities.getInflater(mapActivity, night).inflate(R.layout.fragment_map_markers_history, container, false);
 		final EmptyStateRecyclerView recyclerView = (EmptyStateRecyclerView) mainView.findViewById(R.id.list);
 		recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -170,8 +171,7 @@ public class MapMarkersHistoryFragment extends Fragment implements MapMarkersHel
 									}
 								}
 							});
-					AndroidUtils.setSnackbarTextColor(snackbar, night ? R.color.active_color_primary_dark : R.color.active_color_primary_light);
-					snackbar.getView().setBackgroundColor(ContextCompat.getColor(app, night ? R.color.list_background_color_dark : R.color.list_background_color_light));
+					UiUtilities.setupSnackbar(snackbar, night);
 					snackbar.show();
 				}
 			}

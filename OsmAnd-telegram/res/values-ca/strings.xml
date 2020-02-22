@@ -46,7 +46,7 @@
     <string name="closing">S\'està tancant</string>
     <string name="app_name_short">Rastrejador OsmAnd</string>
     <string name="privacy_policy_telegram_client">El rastrejador d\'OsmAnd és un dels clients que usen la plataforma oberta de Telegram. Els vostres contactes poden usar qualsevol altra client de Telegram.</string>
-    <string name="privacy_policy_agree">En fer clic a continuar, accepteu les condicions de la Política de Privadesa de Telegram i de la Política de Privadesa d\'OsmAnd.</string>
+    <string name="privacy_policy_agree">En clicar \"Continua\" accepteu les condicions de les polítiques de privadesa de Telegram i d\'OsmAnd.</string>
     <string name="shared_string_accept">D\'acord</string>
     <string name="telegram_privacy_policy">Política de Privadesa de Telegram</string>
     <string name="osmand_privacy_policy">Política de Privadesa d\'OsmAnd</string>
@@ -103,7 +103,8 @@
     <string name="re_send_location">Torna a enviar la ubicació</string>
     <string name="last_available_location">Última ubicació disponible</string>
     <string name="sharing_status">Estat de la compartició</string>
-    <string name="sharing_enabled">Compartició: activada</string>
+    <string name="location_sharing_status">Compartició: %1$s</string>
+    <string name="shared_string_enabled">Activat</string>
     <string name="shared_string_status">Estat</string>
     <string name="no_gps_connection">No hi ha connexió GPS</string>
     <string name="no_internet_connection">No hi ha connexió a internet</string>
@@ -213,9 +214,7 @@
     <string name="nm_h">nusos</string>
     <string name="mile_per_hour">mph</string>
     <string name="shared_string_second_short">seg</string>
-    <string name="welcome_descr">
-        <b>OsmAnd Tracker</b> us permet compartir la vostra posició i veure la dels altres a OsmAnd.<br/>
-        <br/>L\'aplicació utilitza l\'API de Telegram, per tant us cal un compte de Telegram.</string>
+    <string name="welcome_descr"><b>OsmAnd Tracker</b> us permet compartir la vostra posició i veure la dels altres a OsmAnd.<br/> <br/>L\'aplicació utilitza l\'API de Telegram, per tant us cal un compte de Telegram.</string>
     <string name="direction">Adreça</string>
     <string name="precision">Precisió</string>
     <string name="altitude">Altitud</string>
@@ -249,4 +248,22 @@
     <string name="shared_string_apply">Aplica</string>
     <string name="set_time_timeline_descr">Seleccioneu la durada a mostrar</string>
     <string name="start_end_date">Data d\' Inici — Fi</string>
+    <string name="saved_messages">Missatges desats</string>
+    <string name="time_zone_descr">Seleccioneu fus horari per mostrar en els vostres missatges d\'ubicació.</string>
+    <string name="time_zone">Fus horari</string>
+    <string name="units_and_formats">Unitats i formats</string>
+    <string name="unit_of_length_descr">Canvieu en què es mesuren les distàncies.</string>
+    <string name="unit_of_length">Unitats de longitud</string>
+    <string name="unit_of_speed_system_descr">Establiu la unitat de velocitat.</string>
+    <string name="unit_of_speed_system">Unitat de velocitat</string>
+    <string name="buffer_time_descr">Temps màxim per mantenir punts a la memòria intermèdia</string>
+    <string name="buffer_time">Temps de caducitat de la memòria intermèdia</string>
+    <string name="shared_string_suggested">Suggeriment</string>
+    <string name="status_widget_title">Estat de l\'enregistrador d\'OsmAnd</string>
+    <string name="back_to_osmand">Torna a OsmAnd</string>
+    <string name="last_update_from_telegram_date">Darrera actualització des de Telegram: %1$s</string>
+    <string name="last_response_date">Darrera resposta: %1$s</string>
+    <string name="last_update_from_telegram_duration">Darrera actualització des de Telegram: fa %1$s</string>
+    <string name="last_response_duration">Darrera resposta: fa %1$s</string>
+    <string name="duration_ago">fa %1$s</string>
 </resources>

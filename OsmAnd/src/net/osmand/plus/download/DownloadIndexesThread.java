@@ -118,6 +118,7 @@ public class DownloadIndexesThread {
 		if (app.getDownloadService() != null) {
 			app.getDownloadService().stopService(app);
 		}
+		app.getAvoidSpecificRoads().initRouteObjects(true);
 	}
 
 	public void initSettingsFirstMap(WorldRegion reg) {
@@ -447,7 +448,7 @@ public class DownloadIndexesThread {
 					mainView.setKeepScreenOn(true);
 				}
 			}
-			startTask(ctx.getString(R.string.shared_string_downloading) + ctx.getString(R.string.shared_string_ellipsis), -1);
+			startTask(ctx.getString(R.string.shared_string_downloading), -1);
 			downloadHasStarted();
 		}
 

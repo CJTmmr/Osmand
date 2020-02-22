@@ -4,31 +4,24 @@ import android.graphics.drawable.ColorDrawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceViewHolder;
-import android.support.v7.preference.SwitchPreferenceCompat;
+import android.support.v7.widget.SwitchCompat;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import net.osmand.AndroidUtils;
+import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.R;
+import net.osmand.plus.UiUtilities;
 import net.osmand.plus.settings.preferences.ListPreferenceEx;
 import net.osmand.plus.settings.preferences.SwitchPreferenceEx;
 
+import static net.osmand.plus.UiUtilities.CompoundButtonType.TOOLBAR;
+
 public class TurnScreenOnFragment extends BaseSettingsFragment {
 
-	public static final String TAG = "TurnScreenOnFragment";
-
-	@Override
-	protected int getPreferencesResId() {
-		return R.xml.turn_screen_on;
-	}
-
-	@Override
-	protected int getToolbarResId() {
-		return R.layout.profile_preference_toolbar;
-	}
-
-	@Override
-	protected int getToolbarTitle() {
-		return R.string.turn_screen_on;
-	}
+	public static final String TAG = TurnScreenOnFragment.class.getSimpleName();
 
 	@Override
 	protected void setupPreferences() {
@@ -37,18 +30,61 @@ public class TurnScreenOnFragment extends BaseSettingsFragment {
 
 		setupTurnScreenOnTimePref();
 		setupTurnScreenOnSensorPref();
+		enableDisablePreferences(settings.TURN_SCREEN_ON_ENABLED.getModeValue(getSelectedAppMode()));
+	}
+
+	@Override
+	protected void createToolbar(LayoutInflater inflater, View view) {
+		super.createToolbar(inflater, view);
+
+		view.findViewById(R.id.toolbar_switch_container).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				ApplicationMode selectedMode = getSelectedAppMode();
+				boolean checked = !settings.TURN_SCREEN_ON_ENABLED.getModeValue(selectedMode);
+				settings.TURN_SCREEN_ON_ENABLED.setModeValue(selectedMode, checked);
+				updateToolbarSwitch();
+				enableDisablePreferences(checked);
+			}
+		});
 	}
 
 	@Override
 	protected void onBindPreferenceViewHolder(Preference preference, PreferenceViewHolder holder) {
 		super.onBindPreferenceViewHolder(preference, holder);
-
-		if (settings.TURN_SCREEN_ON_ENABLED.getId().equals(preference.getKey())) {
-			boolean checked = ((SwitchPreferenceCompat) preference).isChecked();
-			int color = checked ? getActiveProfileColor() : ContextCompat.getColor(app, R.color.preference_top_switch_off);
-
-			AndroidUtils.setBackground(holder.itemView, new ColorDrawable(color));
+		if (settings.TURN_SCREEN_ON_TIME_INT.getId().equals(preference.getKey()) && preference instanceof ListPreferenceEx) {
+			Object currentValue = ((ListPreferenceEx) preference).getValue();
+			ImageView imageView = (ImageView) holder.findViewById(android.R.id.icon);
+			if (imageView != null && currentValue instanceof Integer) {
+				boolean enabled = preference.isEnabled() && (Integer) currentValue > 0;
+				imageView.setEnabled(enabled);
+			}
 		}
+	}
+
+	@Override
+	protected void updateToolbar() {
+		super.updateToolbar();
+		updateToolbarSwitch();
+	}
+
+	private void updateToolbarSwitch() {
+		View view = getView();
+		if (view == null) {
+			return;
+		}
+		boolean checked = settings.TURN_SCREEN_ON_ENABLED.getModeValue(getSelectedAppMode());
+
+		int color = checked ? getActiveProfileColor() : ContextCompat.getColor(app, R.color.preference_top_switch_off);
+		View switchContainer = view.findViewById(R.id.toolbar_switch_container);
+		AndroidUtils.setBackground(switchContainer, new ColorDrawable(color));
+
+		SwitchCompat switchView = (SwitchCompat) switchContainer.findViewById(R.id.switchWidget);
+		switchView.setChecked(checked);
+		UiUtilities.setupCompoundButton(switchView, isNightMode(), TOOLBAR);
+
+		TextView title = switchContainer.findViewById(R.id.switchButtonText);
+		title.setText(checked ? R.string.shared_string_on : R.string.shared_string_off);
 	}
 
 	private void setupTurnScreenOnTimePref() {
@@ -63,7 +99,7 @@ public class TurnScreenOnFragment extends BaseSettingsFragment {
 		ListPreferenceEx turnScreenOnTime = (ListPreferenceEx) findPreference(settings.TURN_SCREEN_ON_TIME_INT.getId());
 		turnScreenOnTime.setEntries(entries);
 		turnScreenOnTime.setEntryValues(entryValues);
-		turnScreenOnTime.setIcon(getContentIcon(R.drawable.ic_action_time_span));
+		turnScreenOnTime.setIcon(getPersistentPrefIcon(R.drawable.ic_action_time_span));
 	}
 
 	private void setupTurnScreenOnSensorPref() {
@@ -71,7 +107,7 @@ public class TurnScreenOnFragment extends BaseSettingsFragment {
 		String description = getString(R.string.turn_screen_on_sensor_descr);
 
 		SwitchPreferenceEx turnScreenOnSensor = (SwitchPreferenceEx) findPreference(settings.TURN_SCREEN_ON_SENSOR.getId());
-		turnScreenOnSensor.setIcon(getContentIcon(R.drawable.ic_action_sensor_interaction));
+		turnScreenOnSensor.setIcon(getPersistentPrefIcon(R.drawable.ic_action_sensor_interaction));
 		turnScreenOnSensor.setTitle(title);
 		turnScreenOnSensor.setDescription(description);
 	}

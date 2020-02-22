@@ -42,6 +42,8 @@ import java.util.TimeZone;
 
 public class GPXUtilities {
 	public final static Log log = PlatformUtil.getLog(GPXUtilities.class);
+	private static final String ICON_NAME_EXTENSION = "icon";
+	private static final String DEFAULT_ICON_NAME = "special_star";
 
 	private final static String GPX_TIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'"; //$NON-NLS-1$
 	private final static String GPX_TIME_FORMAT_MILLIS = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"; //$NON-NLS-1$
@@ -187,6 +189,7 @@ public class GPXUtilities {
 		public double ele = Double.NaN;
 		public double speed = 0;
 		public double hdop = Double.NaN;
+		public float heading = Float.NaN;
 		public boolean deleted = false;
 		public int colourARGB = 0;                    // point colour (used for altitude/speed colouring)
 		public double distance = 0.0;                // cumulative distance, if in a track
@@ -208,6 +211,7 @@ public class GPXUtilities {
 			this.ele = wptPt.ele;
 			this.speed = wptPt.speed;
 			this.hdop = wptPt.hdop;
+			this.heading = wptPt.heading;
 			this.deleted = wptPt.deleted;
 			this.colourARGB = wptPt.colourARGB;
 			this.distance = wptPt.distance;
@@ -233,18 +237,38 @@ public class GPXUtilities {
 			return lon;
 		}
 
+		public float getHeading() {
+			return heading;
+		}
 
 		public WptPt(double lat, double lon, long time, double ele, double speed, double hdop) {
+			this(lat, lon, time, ele, speed, hdop, Float.NaN);
+		}
+
+		public WptPt(double lat, double lon, long time, double ele, double speed, double hdop, float heading) {
 			this.lat = lat;
 			this.lon = lon;
 			this.time = time;
 			this.ele = ele;
 			this.speed = speed;
 			this.hdop = hdop;
+			this.heading = heading;
 		}
 
 		public boolean isVisible() {
 			return true;
+		}
+
+		public String getIconName() {
+			String iconName = getExtensionsToRead().get(ICON_NAME_EXTENSION);
+			if (iconName == null) {
+				iconName = DEFAULT_ICON_NAME;
+			}
+			return iconName;
+		}
+
+		public void setIconName(String iconName) {
+			getExtensionsToWrite().put(ICON_NAME_EXTENSION, iconName);
 		}
 
 		@Override
@@ -287,17 +311,17 @@ public class GPXUtilities {
 		public Object renderer;
 
 
-		public List<GPXTrackAnalysis> splitByDistance(double meters) {
-			return split(getDistanceMetric(), getTimeSplit(), meters);
+		public List<GPXTrackAnalysis> splitByDistance(double meters, boolean joinSegments) {
+			return split(getDistanceMetric(), getTimeSplit(), meters, joinSegments);
 		}
 
-		public List<GPXTrackAnalysis> splitByTime(int seconds) {
-			return split(getTimeSplit(), getDistanceMetric(), seconds);
+		public List<GPXTrackAnalysis> splitByTime(int seconds, boolean joinSegments) {
+			return split(getTimeSplit(), getDistanceMetric(), seconds, joinSegments);
 		}
 
-		private List<GPXTrackAnalysis> split(SplitMetric metric, SplitMetric secondaryMetric, double metricLimit) {
+		private List<GPXTrackAnalysis> split(SplitMetric metric, SplitMetric secondaryMetric, double metricLimit, boolean joinSegments) {
 			List<SplitSegment> splitSegments = new ArrayList<>();
-			splitSegment(metric, secondaryMetric, metricLimit, splitSegments, this);
+			splitSegment(metric, secondaryMetric, metricLimit, splitSegments, this, joinSegments);
 			return convert(splitSegments);
 		}
 
@@ -853,7 +877,7 @@ public class GPXUtilities {
 
 	private static void splitSegment(SplitMetric metric, SplitMetric secondaryMetric,
 									 double metricLimit, List<SplitSegment> splitSegments,
-									 TrkSegment segment) {
+									 TrkSegment segment, boolean joinSegments) {
 		double currentMetricEnd = metricLimit;
 		double secondaryMetricEnd = 0;
 		SplitSegment sp = new SplitSegment(segment, 0, 0);
@@ -862,8 +886,11 @@ public class GPXUtilities {
 		for (int k = 0; k < segment.points.size(); k++) {
 			WptPt point = segment.points.get(k);
 			if (k > 0) {
-				double currentSegment = metric.metric(prev, point);
-				secondaryMetricEnd += secondaryMetric.metric(prev, point);
+				double currentSegment = 0;
+				if (!(segment.generalSegment && !joinSegments && point.firstPoint)) {
+					currentSegment = metric.metric(prev, point);
+					secondaryMetricEnd += secondaryMetric.metric(prev, point);
+				}
 				while (total + currentSegment > currentMetricEnd) {
 					double p = currentMetricEnd - total;
 					double cf = (p / currentSegment);
@@ -1530,6 +1557,8 @@ public class GPXUtilities {
 				serializer.endTag(null, "wpt"); //$NON-NLS-1$
 			}
 
+			writeExtensions(serializer, file);
+
 			serializer.endTag(null, "gpx"); //$NON-NLS-1$
 			serializer.endDocument();
 			serializer.flush();
@@ -1602,6 +1631,9 @@ public class GPXUtilities {
 		}
 		if (p.speed > 0) {
 			p.getExtensionsToWrite().put("speed", decimalFormat.format(p.speed));
+		}
+		if (!Float.isNaN(p.heading)) {
+			p.getExtensionsToWrite().put("heading", String.valueOf(Math.round(p.heading)));
 		}
 		writeExtensions(serializer, p);
 	}
@@ -1755,28 +1787,25 @@ public class GPXUtilities {
 		try {
 			XmlPullParser parser = PlatformUtil.newXMLPullParser();
 			parser.setInput(getUTF8Reader(f));
+			Track routeTrack = new Track();
+			TrkSegment routeTrackSegment = new TrkSegment();
+			routeTrack.segments.add(routeTrackSegment);
 			Stack<GPXExtensions> parserState = new Stack<>();
 			boolean extensionReadMode = false;
-			boolean parseExtension = false;
-			boolean endOfTrkSegment = false;
+			boolean routePointExtension = false;
 			parserState.push(res);
 			int tok;
 			while ((tok = parser.next()) != XmlPullParser.END_DOCUMENT) {
 				if (tok == XmlPullParser.START_TAG) {
 					GPXExtensions parse = parserState.peek();
 					String tag = parser.getName();
-					if (extensionReadMode && parse != null && !parseExtension) {
+					if (extensionReadMode && parse != null && !routePointExtension) {
 						switch (tag.toLowerCase()) {
 							case "routepointextension":
-								parseExtension = true;
-								Track track = new Track();
-								res.tracks.add(track);
-								GPXExtensions parent = parserState.size() > 1 ? parserState.get(parserState.size() - 2) : null;
-								if (parse instanceof WptPt && parent instanceof Route) {
-									track.getExtensionsToWrite().putAll(parent.getExtensionsToRead());
-									track.getExtensionsToWrite().putAll(parse.getExtensionsToRead());
+								routePointExtension = true;
+								if (parse instanceof WptPt) {
+									parse.getExtensionsToWrite().put("offset", routeTrackSegment.points.size() + "");
 								}
-								parserState.push(track);
 								break;
 
 							default:
@@ -1799,6 +1828,12 @@ public class GPXUtilities {
 						}
 					} else if (parse != null && tag.equals("extensions")) {
 						extensionReadMode = true;
+					} else if (routePointExtension) {
+						if (tag.equals("rpt")) {
+							WptPt wptPt = parseWptAttributes(parser);
+							routeTrackSegment.points.add(wptPt);
+							parserState.push(wptPt);
+						}
 					} else {
 						if (parse instanceof GPXFile) {
 							if (tag.equals("gpx")) {
@@ -1904,16 +1939,6 @@ public class GPXUtilities {
 								((Track) parse).segments.add(trkSeg);
 								parserState.push(trkSeg);
 							}
-							if (tag.equals("rpt")) {
-								endOfTrkSegment = false;
-								TrkSegment trkSeg = new TrkSegment();
-								((Track) parse).segments.add(trkSeg);
-								parserState.push(trkSeg);
-								WptPt wptPt = parseWptAttributes(parser);
-								parse = parserState.peek();
-								((TrkSegment) parse).points.add(wptPt);
-								parserState.push(wptPt);
-							}
 						} else if (parse instanceof TrkSegment) {
 							if (tag.equals("trkpt") || tag.equals("rpt")) {
 								WptPt wptPt = parseWptAttributes(parser);
@@ -1982,8 +2007,6 @@ public class GPXUtilities {
 							} else if (tag.equals("time")) {
 								String text = readText(parser, "time");
 								((WptPt) parse).time = parseTime(text, format, formatMillis);
-							} else if (tag.toLowerCase().equals("subclass")) {
-								endOfTrkSegment = true;
 							}
 						}
 					}
@@ -1993,9 +2016,7 @@ public class GPXUtilities {
 					String tag = parser.getName();
 
 					if (tag.toLowerCase().equals("routepointextension")) {
-						parseExtension = false;
-						Object pop = parserState.pop();
-						assert pop instanceof Track;
+						routePointExtension = false;
 					}
 					if (parse != null && tag.equals("extensions")) {
 						extensionReadMode = false;
@@ -2037,25 +2058,16 @@ public class GPXUtilities {
 					} else if (tag.equals("rpt")) {
 						Object pop = parserState.pop();
 						assert pop instanceof WptPt;
-						if (endOfTrkSegment) {
-							Object popSegment = parserState.pop();
-							if (popSegment instanceof TrkSegment) {
-								List<TrkSegment> segments = res.tracks.get(res.tracks.size() - 1).segments;
-								int last = segments.size() - 1;
-								if (!Algorithms.isEmpty(segments) && segments.get(last).points.size() < 2) {
-									segments.remove(last);
-								}
-							}
-							endOfTrkSegment = false;
-						}
 					}
 				}
+			}
+			if (!routeTrackSegment.points.isEmpty()) {
+				res.tracks.add(routeTrack);
 			}
 		} catch (Exception e) {
 			res.error = e;
 			log.error("Error reading gpx", e); //$NON-NLS-1$
 		}
-
 		return res;
 	}
 

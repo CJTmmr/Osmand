@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ClipData;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
@@ -52,10 +51,10 @@ import net.osmand.plus.ContextMenuAdapter.ItemClickListener;
 import net.osmand.plus.ContextMenuItem;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
-import net.osmand.plus.OsmandSettings;
 import net.osmand.plus.OsmandSettings.CommonPreference;
 import net.osmand.plus.OsmandSettings.OsmandPreference;
 import net.osmand.plus.R;
+import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.activities.SavingTrackHelper;
 import net.osmand.plus.activities.TabActivity.TabItem;
@@ -64,8 +63,11 @@ import net.osmand.plus.helpers.AndroidUiHelper;
 import net.osmand.plus.mapcontextmenu.MapContextMenu;
 import net.osmand.plus.monitoring.OsmandMonitoringPlugin;
 import net.osmand.plus.myplaces.FavoritesActivity;
+import net.osmand.plus.settings.BaseSettingsFragment;
 import net.osmand.plus.views.MapInfoLayer;
+import net.osmand.plus.views.OsmandMapLayer.DrawSettings;
 import net.osmand.plus.views.OsmandMapTileView;
+import net.osmand.plus.views.mapwidgets.MapWidgetRegistry;
 import net.osmand.plus.views.mapwidgets.TextInfoWidget;
 import net.osmand.util.Algorithms;
 import net.osmand.util.GeoPointParserUtil.GeoParsedPoint;
@@ -91,7 +93,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static net.osmand.plus.OsmAndCustomizationConstants.RECORDING_LAYER;
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.RECORDING_LAYER;
 
 
 public class AudioVideoNotesPlugin extends OsmandPlugin {
@@ -111,8 +113,8 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 	private static final int TAKE_VIDEO_NOTE_ITEM_ORDER = 4300;
 	private static final int TAKE_PHOTO_NOTE_ITEM_ORDER = 4500;
 
-	private static Method mRegisterMediaButtonEventReceiver;
-	private static Method mUnregisterMediaButtonEventReceiver;
+//	private static Method mRegisterMediaButtonEventReceiver;
+//	private static Method mUnregisterMediaButtonEventReceiver;
 	private OsmandApplication app;
 	private TextInfoWidget recordControl;
 
@@ -407,8 +409,7 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 				Method saveAttributes = exClass.getMethod("saveAttributes", new Class[]{});
 				saveAttributes.invoke(exInstance);
 			} catch (Exception e) {
-				e.printStackTrace();
-				log.error(e);
+				log.error(e.getMessage(), e);
 			}
 		}
 
@@ -424,8 +425,7 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 				Integer it = (Integer) getAttributeInt.invoke(exInstance, "Orientation", 1);
 				orientation = it;
 			} catch (Exception e) {
-				e.printStackTrace();
-				log.error(e);
+				log.error(e.getMessage(), e);
 			}
 			return orientation;
 		}
@@ -469,7 +469,7 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 		public String getExtendedDescription(Context ctx) {
 			DateFormat dateFormat = android.text.format.DateFormat.getMediumDateFormat(ctx);
 			String date = dateFormat.format(file.lastModified());
-			String size = AndroidUtils.formatSize(file.length());
+			String size = AndroidUtils.formatSize(ctx, file.length());
 			if (isPhoto()) {
 				return date + " • " + size;
 			}
@@ -512,24 +512,24 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 
 	}
 
-	private static void initializeRemoteControlRegistrationMethods() {
-		try {
+//	private static void initializeRemoteControlRegistrationMethods() {
+//		try {
 			// API 8
-			if (mRegisterMediaButtonEventReceiver == null) {
-				mRegisterMediaButtonEventReceiver = AudioManager.class.getMethod("registerMediaButtonEventReceiver",
-						new Class[]{ComponentName.class});
-			}
-			if (mUnregisterMediaButtonEventReceiver == null) {
-				mUnregisterMediaButtonEventReceiver = AudioManager.class.getMethod("unregisterMediaButtonEventReceiver",
-						new Class[]{ComponentName.class});
-			}
-			/* success, this device will take advantage of better remote */
-			/* control event handling */
-		} catch (NoSuchMethodException nsme) {
-			/* failure, still using the legacy behavior, but this app */
-			/* is future-proof! */
-		}
-	}
+//			if (mRegisterMediaButtonEventReceiver == null) {
+//				mRegisterMediaButtonEventReceiver = AudioManager.class.getMethod("registerMediaButtonEventReceiver",
+//						new Class[]{ComponentName.class});
+//			}
+//			if (mUnregisterMediaButtonEventReceiver == null) {
+//				mUnregisterMediaButtonEventReceiver = AudioManager.class.getMethod("unregisterMediaButtonEventReceiver",
+//						new Class[]{ComponentName.class});
+//			}
+//			/* success, this device will take advantage of better remote */
+//			/* control event handling */
+//		} catch (NoSuchMethodException nsme) {
+//			/* failure, still using the legacy behavior, but this app */
+//			/* is future-proof! */
+//		}
+//	}
 
 	@Override
 	public String getId() {
@@ -538,27 +538,26 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 
 	public AudioVideoNotesPlugin(OsmandApplication app) {
 		this.app = app;
-		OsmandSettings settings = app.getSettings();
 		ApplicationMode.regWidgetVisibility("audionotes", (ApplicationMode[]) null);
-		AV_EXTERNAL_RECORDER = settings.registerBooleanPreference("av_external_recorder", false).makeGlobal();
-		AV_EXTERNAL_PHOTO_CAM = settings.registerBooleanPreference("av_external_cam", true).makeGlobal();
-		AV_VIDEO_FORMAT = settings.registerIntPreference("av_video_format", VIDEO_OUTPUT_MP4).makeGlobal();
-		AV_VIDEO_QUALITY = settings.registerIntPreference("av_video_quality", VIDEO_QUALITY_DEFAULT).makeGlobal();
-		AV_AUDIO_FORMAT = settings.registerIntPreference("av_audio_format", AUDIO_FORMAT_DEFAULT).makeGlobal();
-		AV_AUDIO_BITRATE = settings.registerIntPreference("av_audio_bitrate", AUDIO_BITRATE_DEFAULT).makeGlobal();
-		AV_DEFAULT_ACTION = settings.registerIntPreference("av_default_action", AV_DEFAULT_ACTION_CHOOSE).makeGlobal();
+		AV_EXTERNAL_RECORDER = registerBooleanPreference(app, "av_external_recorder", false);
+		AV_EXTERNAL_PHOTO_CAM = registerBooleanPreference(app, "av_external_cam", true);
+		AV_VIDEO_FORMAT = registerIntPreference(app, "av_video_format", VIDEO_OUTPUT_MP4);
+		AV_VIDEO_QUALITY = registerIntPreference(app, "av_video_quality", VIDEO_QUALITY_DEFAULT);
+		AV_AUDIO_FORMAT = registerIntPreference(app, "av_audio_format", AUDIO_FORMAT_DEFAULT);
+		AV_AUDIO_BITRATE = registerIntPreference(app, "av_audio_bitrate", AUDIO_BITRATE_DEFAULT);
+		AV_DEFAULT_ACTION = registerIntPreference(app, "av_default_action", AV_DEFAULT_ACTION_CHOOSE);
 		// camera picture size:
-		AV_CAMERA_PICTURE_SIZE = settings.registerIntPreference("av_camera_picture_size", AV_PHOTO_SIZE_DEFAULT).makeGlobal();
+		AV_CAMERA_PICTURE_SIZE = registerIntPreference(app, "av_camera_picture_size", AV_PHOTO_SIZE_DEFAULT);
 		// camera focus type:
-		AV_CAMERA_FOCUS_TYPE = settings.registerIntPreference("av_camera_focus_type", AV_CAMERA_FOCUS_AUTO).makeGlobal();
+		AV_CAMERA_FOCUS_TYPE = registerIntPreference(app, "av_camera_focus_type", AV_CAMERA_FOCUS_AUTO);
 		// camera sound:
-		AV_PHOTO_PLAY_SOUND = settings.registerBooleanPreference("av_photo_play_sound", true).makeGlobal();
+		AV_PHOTO_PLAY_SOUND = registerBooleanPreference(app, "av_photo_play_sound", true);
 
-		SHOW_RECORDINGS = settings.registerBooleanPreference("show_recordings", true).makeGlobal();
+		SHOW_RECORDINGS = registerBooleanPreference(app, "show_recordings", true);
 
-		AV_RECORDER_SPLIT = settings.registerBooleanPreference("av_recorder_split", false).makeGlobal();
-		AV_RS_CLIP_LENGTH = settings.registerIntPreference("av_rs_clip_length", CLIP_LENGTH_DEFAULT).makeGlobal();
-		AV_RS_STORAGE_SIZE = settings.registerIntPreference("av_rs_storage_size", STORAGE_SIZE_DEFAULT).makeGlobal();
+		AV_RECORDER_SPLIT = registerBooleanPreference(app, "av_recorder_split", false);
+		AV_RS_CLIP_LENGTH = registerIntPreference(app, "av_rs_clip_length", CLIP_LENGTH_DEFAULT);
+		AV_RS_STORAGE_SIZE = registerIntPreference(app, "av_rs_storage_size", STORAGE_SIZE_DEFAULT);
 	}
 
 	@Override
@@ -578,11 +577,11 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 
 	@Override
 	public boolean init(@NonNull final OsmandApplication app, Activity activity) {
-		initializeRemoteControlRegistrationMethods();
-		AudioManager am = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
-		if (am != null) {
-			registerMediaListener(am);
-		}
+//		initializeRemoteControlRegistrationMethods();
+//		AudioManager am = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
+//		if (am != null) {
+//			registerMediaListener(am);
+//		}
 		return true;
 	}
 
@@ -601,30 +600,30 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 		return currentRecording;
 	}
 
-	private void registerMediaListener(AudioManager am) {
+//	private void registerMediaListener(AudioManager am) {
+//
+//		ComponentName receiver = new ComponentName(app.getPackageName(), MediaRemoteControlReceiver.class.getName());
+//		try {
+//			if (mRegisterMediaButtonEventReceiver == null) {
+//				return;
+//			}
+//			mRegisterMediaButtonEventReceiver.invoke(am, receiver);
+//		} catch (Exception ite) {
+//			log.error(ite.getMessage(), ite);
+//		}
+//	}
 
-		ComponentName receiver = new ComponentName(app.getPackageName(), MediaRemoteControlReceiver.class.getName());
-		try {
-			if (mRegisterMediaButtonEventReceiver == null) {
-				return;
-			}
-			mRegisterMediaButtonEventReceiver.invoke(am, receiver);
-		} catch (Exception ite) {
-			log.error(ite.getMessage(), ite);
-		}
-	}
-
-	private void unregisterMediaListener(AudioManager am) {
-		ComponentName receiver = new ComponentName(app.getPackageName(), MediaRemoteControlReceiver.class.getName());
-		try {
-			if (mUnregisterMediaButtonEventReceiver == null) {
-				return;
-			}
-			mUnregisterMediaButtonEventReceiver.invoke(am, receiver);
-		} catch (Exception ite) {
-			log.error(ite.getMessage(), ite);
-		}
-	}
+//	private void unregisterMediaListener(AudioManager am) {
+//		ComponentName receiver = new ComponentName(app.getPackageName(), MediaRemoteControlReceiver.class.getName());
+//		try {
+//			if (mUnregisterMediaButtonEventReceiver == null) {
+//				return;
+//			}
+//			mUnregisterMediaButtonEventReceiver.invoke(am, receiver);
+//		} catch (Exception ite) {
+//			log.error(ite.getMessage(), ite);
+//		}
+//	}
 
 	@Override
 	public void registerLayerContextMenuActions(final OsmandMapTileView mapView, ContextMenuAdapter adapter, final MapActivity mapActivity) {
@@ -724,46 +723,55 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 		}
 	}
 
-	private void registerWidget(MapActivity activity) {
+	private void registerWidget(final MapActivity activity) {
 		MapInfoLayer mapInfoLayer = activity.getMapLayers().getMapInfoLayer();
 		if (mapInfoLayer != null) {
-			recordControl = new TextInfoWidget(activity);
-			if (mediaRec != null && mediaRecFile != null) {
-				updateRecordControl(activity, mediaRecFile);
-			} else {
-				recordControl.setImageDrawable(activity.getResources().getDrawable(R.drawable.monitoring_rec_inactive));
-				setRecordListener(recordControl, activity);
-			}
-			mapInfoLayer.registerSideWidget(recordControl, R.drawable.ic_action_micro_dark,
-					R.string.map_widget_av_notes, "audionotes", false, 32);
+			recordControl = new TextInfoWidget(activity) {
+
+				private Boolean cachedRecording;
+
+				@Override
+				public boolean updateInfo(DrawSettings drawSettings) {
+					boolean recording = isRecording();
+					if (!Algorithms.objectEquals(recording, cachedRecording)) {
+						cachedRecording = recording;
+						if (recording) {
+							setText(app.getString(R.string.shared_string_control_stop), null);
+							setIcons(R.drawable.widget_icon_av_active, R.drawable.widget_icon_av_active);
+						} else {
+							setText(app.getString(R.string.shared_string_control_start), null);
+							Integer action = AV_DEFAULT_ACTION.get();
+							switch (action) {
+								case AV_DEFAULT_ACTION_VIDEO:
+									setIcons(R.drawable.widget_av_video_day, R.drawable.widget_av_video_night);
+									break;
+								case AV_DEFAULT_ACTION_TAKEPICTURE:
+									setIcons(R.drawable.widget_av_photo_day, R.drawable.widget_av_photo_night);
+									break;
+								case AV_DEFAULT_ACTION_AUDIO:
+									setIcons(R.drawable.widget_av_audio_day, R.drawable.widget_av_audio_night);
+									break;
+								default:
+									setIcons(R.drawable.widget_icon_av_inactive_day, R.drawable.widget_icon_av_inactive_night);
+									break;
+							}
+						}
+					}
+					return false;
+				};
+			};
+			recordControl.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					if (isRecording()) {
+						stopRecording(mapActivity, false);
+					} else {
+						defaultAction(mapActivity);
+					}
+				}
+			});
+			mapInfoLayer.registerSideWidget(recordControl, new AudioVideoNotesWidgetState(app), "audionotes", false, 32);
 			mapInfoLayer.recreateControls();
-		}
-	}
-
-	private void setRecordListener(final TextInfoWidget recordPlaceControl, final MapActivity mapActivity) {
-		recordPlaceControl.setText(app.getString(R.string.shared_string_control_start), "");
-		updateWidgetIcon(recordPlaceControl);
-		recordPlaceControl.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				defaultAction(mapActivity);
-			}
-		});
-	}
-
-	private void updateWidgetIcon(final TextInfoWidget recordPlaceControl) {
-		recordPlaceControl.setIcons(R.drawable.widget_icon_av_inactive_day,
-				R.drawable.widget_icon_av_inactive_night);
-		if (AV_DEFAULT_ACTION.get() == AV_DEFAULT_ACTION_VIDEO) {
-			recordPlaceControl.setIcons(R.drawable.widget_av_video_day,
-					R.drawable.widget_av_video_night);
-		} else if (AV_DEFAULT_ACTION.get() == AV_DEFAULT_ACTION_TAKEPICTURE) {
-			recordPlaceControl.setIcons(R.drawable.widget_av_photo_day,
-					R.drawable.widget_av_photo_night);
-		} else if (AV_DEFAULT_ACTION.get() == AV_DEFAULT_ACTION_AUDIO) {
-			recordPlaceControl.setIcons(R.drawable.widget_av_audio_day,
-					R.drawable.widget_av_audio_night);
 		}
 	}
 
@@ -786,9 +794,10 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 	}
 
 	private void chooseDefaultAction(final double lat, final double lon, final MapActivity mapActivity) {
-		AlertDialog.Builder ab = new AlertDialog.Builder(mapActivity);
+		boolean nightMode = app.getDaynightHelper().isNightModeForMapControls();
+		AlertDialog.Builder ab = new AlertDialog.Builder(UiUtilities.getThemedContext(mapActivity, nightMode));
 		ab.setItems(
-				new String[]{mapActivity.getString(R.string.recording_context_menu_arecord),
+				new String[] {mapActivity.getString(R.string.recording_context_menu_arecord),
 						mapActivity.getString(R.string.recording_context_menu_vrecord),
 						mapActivity.getString(R.string.recording_context_menu_precord),}, new OnClickListener() {
 					@Override
@@ -867,8 +876,8 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 	@Override
 	public void mapActivityResume(MapActivity activity) {
 		this.mapActivity = activity;
-		((AudioManager) activity.getSystemService(Context.AUDIO_SERVICE)).registerMediaButtonEventReceiver(
-				new ComponentName(activity, MediaRemoteControlReceiver.class));
+//		((AudioManager) activity.getSystemService(Context.AUDIO_SERVICE)).registerMediaButtonEventReceiver(
+//				new ComponentName(activity, MediaRemoteControlReceiver.class));
 		if (runAction != -1) {
 			takeAction(activity, actionLon, actionLat, runAction);
 			runAction = -1;
@@ -1133,8 +1142,8 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 		if (mediaRec != null) {
 			try {
 				mediaRec.stop();
-			} catch (IllegalStateException e) {
-				e.printStackTrace();
+			} catch (RuntimeException e) {
+				log.error(e.getMessage(), e);
 			}
 			indexFile(true, mediaRecFile);
 			mediaRec.release();
@@ -1165,7 +1174,7 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 
 				} catch (Exception e) {
 					Toast.makeText(app, e.getMessage(), Toast.LENGTH_LONG).show();
-					e.printStackTrace();
+					log.error(e.getMessage(), e);
 					res = false;
 				}
 			}
@@ -1381,7 +1390,6 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 						closeRecordingMenu();
 						closeCamera();
 						finishRecording();
-						e.printStackTrace();
 					}
 				}
 
@@ -1416,7 +1424,6 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 								closeRecordingMenu();
 								closeCamera();
 								finishRecording();
-								e.printStackTrace();
 							}
 						}
 					});
@@ -1595,18 +1602,7 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 		mediaRecFile = f;
 
 		recordingMenu.show();
-		updateRecordControl(mapActivity, f);
-	}
-
-	private void updateRecordControl(final MapActivity mapActivity, final File f) {
-		recordControl.setText(app.getString(R.string.shared_string_control_stop), "");
-		recordControl.setIcons(R.drawable.widget_icon_av_active, R.drawable.widget_icon_av_active);
-		recordControl.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				stopRecording(mapActivity, false);
-			}
-		});
+		mapActivity.refreshMap();
 	}
 
 	public void stopRecording(final MapActivity mapActivity, boolean restart) {
@@ -1614,12 +1610,8 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 			if (!restart || !stopMediaRecording(true)) {
 				recordingDone = true;
 				stopMediaRecording(false);
-				if (recordControl != null) {
-					setRecordListener(recordControl, mapActivity);
-				}
 				SHOW_RECORDINGS.set(true);
-				mapActivity.getMapView().refreshMap();
-				updateWidgetIcon(recordControl);
+				mapActivity.refreshMap();
 				closeRecordingMenu();
 			}
 		}
@@ -1710,10 +1702,10 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 
 	@Override
 	public void disable(OsmandApplication app) {
-		AudioManager am = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
-		if (am != null) {
-			unregisterMediaListener(am);
-		}
+//		AudioManager am = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
+//		if (am != null) {
+//			unregisterMediaListener(am);
+//		}
 	}
 
 	@Override
@@ -1791,6 +1783,15 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 		return SettingsAudioVideoActivity.class;
 	}
 
+	@Override
+	public Class<? extends BaseSettingsFragment> getSettingsFragment() {
+		return MultimediaNotesFragment.class;
+	}
+
+	@Override
+	public String getPrefsDescription() {
+		return app.getString(R.string.multimedia_notes_prefs_descr);
+	}
 
 	@Override
 	public void onMapActivityExternalResult(int requestCode, int resultCode, Intent data) {
@@ -1898,7 +1899,7 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 			try {
 				ctx.startActivity(vint);
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error(e.getMessage(), e);
 			}
 			return;
 		} else if (r.isPhoto()) {
@@ -1906,7 +1907,11 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 			vint.setDataAndType(AndroidUtils.getUriForFile(ctx, r.file), "image/*");
 			vint.setFlags(0x10000000);
 			vint.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-			ctx.startActivity(vint);
+			try {
+				ctx.startActivity(vint);
+			} catch (Exception e) {
+				log.error(e.getMessage(), e);
+			}
 			return;
 		}
 
@@ -2061,7 +2066,6 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 				closeRecordingMenu();
 				closeCamera();
 				finishRecording();
-				e.printStackTrace();
 			}
 		}
 	}
@@ -2103,5 +2107,95 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 	@Override
 	public DashFragmentData getCardFragment() {
 		return DashAudioVideoNotesFragment.FRAGMENT_DATA;
+	}
+
+	public class AudioVideoNotesWidgetState extends MapWidgetRegistry.WidgetState {
+
+		private static final int AV_WIDGET_STATE_ASK = R.id.av_notes_widget_state_ask;
+		private static final int AV_WIDGET_STATE_AUDIO = R.id.av_notes_widget_state_audio;
+		private static final int AV_WIDGET_STATE_VIDEO = R.id.av_notes_widget_state_video;
+		private static final int AV_WIDGET_STATE_PHOTO = R.id.av_notes_widget_state_photo;
+
+		AudioVideoNotesWidgetState(OsmandApplication ctx) {
+			super(ctx);
+		}
+
+		@Override
+		public int getMenuTitleId() {
+			Integer action = AV_DEFAULT_ACTION.get();
+			switch (action) {
+				case AV_DEFAULT_ACTION_AUDIO:
+					return R.string.av_def_action_audio;
+				case AV_DEFAULT_ACTION_VIDEO:
+					return R.string.av_def_action_video;
+				case AV_DEFAULT_ACTION_TAKEPICTURE:
+					return R.string.av_def_action_picture;
+				default:
+					return R.string.map_widget_av_notes;
+			}
+		}
+
+		@Override
+		public int getMenuIconId() {
+			Integer action = AV_DEFAULT_ACTION.get();
+			switch (action) {
+				case AV_DEFAULT_ACTION_AUDIO:
+					return R.drawable.ic_action_micro_dark;
+				case AV_DEFAULT_ACTION_VIDEO:
+					return R.drawable.ic_action_video_dark;
+				case AV_DEFAULT_ACTION_TAKEPICTURE:
+					return R.drawable.ic_action_photo_dark;
+				default:
+					return R.drawable.ic_action_photo_dark;
+			}
+		}
+
+		@Override
+		public int getMenuItemId() {
+			Integer action = AV_DEFAULT_ACTION.get();
+			switch (action) {
+				case AV_DEFAULT_ACTION_AUDIO:
+					return AV_WIDGET_STATE_AUDIO;
+				case AV_DEFAULT_ACTION_VIDEO:
+					return AV_WIDGET_STATE_VIDEO;
+				case AV_DEFAULT_ACTION_TAKEPICTURE:
+					return AV_WIDGET_STATE_PHOTO;
+				default:
+					return AV_WIDGET_STATE_ASK;
+			}
+		}
+
+		@Override
+		public int[] getMenuTitleIds() {
+			return new int[]{R.string.av_def_action_choose, R.string.av_def_action_audio, R.string.av_def_action_video, R.string.av_def_action_picture};
+		}
+
+		@Override
+		public int[] getMenuIconIds() {
+			return new int[]{R.drawable.ic_action_photo_dark, R.drawable.ic_action_micro_dark, R.drawable.ic_action_video_dark, R.drawable.ic_action_photo_dark};
+		}
+
+		@Override
+		public int[] getMenuItemIds() {
+			return new int[]{AV_WIDGET_STATE_ASK, AV_WIDGET_STATE_AUDIO, AV_WIDGET_STATE_VIDEO, AV_WIDGET_STATE_PHOTO};
+		}
+
+		@Override
+		public void changeState(int stateId) {
+			switch (stateId) {
+				case AV_WIDGET_STATE_AUDIO:
+					AV_DEFAULT_ACTION.set(AV_DEFAULT_ACTION_AUDIO);
+					break;
+				case AV_WIDGET_STATE_VIDEO:
+					AV_DEFAULT_ACTION.set(AV_DEFAULT_ACTION_VIDEO);
+					break;
+				case AV_WIDGET_STATE_PHOTO:
+					AV_DEFAULT_ACTION.set(AV_DEFAULT_ACTION_TAKEPICTURE);
+					break;
+				default:
+					AV_DEFAULT_ACTION.set(AV_DEFAULT_ACTION_CHOOSE);
+					break;
+			}
+		}
 	}
 }

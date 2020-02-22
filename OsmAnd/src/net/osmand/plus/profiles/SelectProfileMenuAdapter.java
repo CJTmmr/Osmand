@@ -18,6 +18,7 @@ import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
+import net.osmand.plus.settings.BaseSettingsFragment;
 import net.osmand.util.Algorithms;
 
 import org.apache.commons.logging.Log;
@@ -30,8 +31,8 @@ public class SelectProfileMenuAdapter extends AbstractProfileMenuAdapter<SelectP
 	private static final Log LOG = PlatformUtil.getLog(SelectProfileMenuAdapter.class);
 
 	private List<Object> items = new ArrayList<>();
-	@Nullable
 	private final OsmandApplication app;
+	private ApplicationMode appMode;
 	@ColorRes
 	private int selectedIconColorRes;
 	private boolean bottomButton;
@@ -40,13 +41,15 @@ public class SelectProfileMenuAdapter extends AbstractProfileMenuAdapter<SelectP
 
 	private boolean nightMode;
 
-	public SelectProfileMenuAdapter(List<ApplicationMode> items, OsmandApplication app,
-	                                String bottomButtonText, boolean nightMode) {
+	public SelectProfileMenuAdapter(List<ApplicationMode> items, @NonNull OsmandApplication app,
+	                                String bottomButtonText, boolean nightMode,
+									@Nullable ApplicationMode appMode) {
 		this.items.addAll(items);
 		if (bottomButton) {
 			this.items.add(BUTTON_ITEM);
 		}
 		this.app = app;
+		this.appMode = appMode != null ? appMode : app.getSettings().getApplicationMode();
 		this.bottomButton = !Algorithms.isEmpty(bottomButtonText);
 		this.bottomButtonText = bottomButtonText;
 		this.nightMode = nightMode;
@@ -91,23 +94,18 @@ public class SelectProfileMenuAdapter extends AbstractProfileMenuAdapter<SelectP
 			holder.dividerUp.setVisibility(View.INVISIBLE);
 			holder.icon.setVisibility(View.VISIBLE);
 			holder.descr.setVisibility(View.VISIBLE);
-			holder.switcher.setVisibility(View.GONE);
+			holder.compoundButton.setVisibility(View.GONE);
 			holder.menuIcon.setVisibility(View.GONE);
 			final ApplicationMode item = (ApplicationMode) obj;
-			holder.title.setText(item.toHumanString(app));
-			if (item.isCustomProfile()) {
-				holder.descr.setText(String.format(app.getString(R.string.profile_type_descr_string),
-						Algorithms.capitalizeFirstLetterAndLowercase(item.getParent().toHumanString(app))));
-			} else {
-				holder.descr.setText(R.string.profile_type_base_string);
-			}
+			holder.title.setText(item.toHumanString());
+			holder.descr.setText(BaseSettingsFragment.getAppModeDescription(app, item));
 
 			int profileColorResId = item.getIconColorInfo().getColor(nightMode);
 			holder.icon.setImageDrawable(app.getUIUtilities().getIcon(profileColorResId, selectedIconColorRes));
 			
 			//set up cell color
 			int colorNoAlpha = ContextCompat.getColor(app, profileColorResId);
-			boolean selectedMode = app.getSettings().APPLICATION_MODE.get() == item;
+			boolean selectedMode = appMode == item;
 			Drawable drawable = UiUtilities.getColoredSelectableDrawable(app, colorNoAlpha, 0.3f);
 
 			if (selectedMode) {
@@ -125,7 +123,7 @@ public class SelectProfileMenuAdapter extends AbstractProfileMenuAdapter<SelectP
 			}
 			holder.icon.setVisibility(View.INVISIBLE);
 			holder.descr.setVisibility(View.GONE);
-			holder.switcher.setVisibility(View.GONE);
+			holder.compoundButton.setVisibility(View.GONE);
 			holder.menuIcon.setVisibility(View.GONE);
 			int color = ContextCompat.getColor(app, nightMode
 					? R.color.active_color_primary_dark

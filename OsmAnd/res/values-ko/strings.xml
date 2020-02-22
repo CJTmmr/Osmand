@@ -204,7 +204,6 @@
     <string name="level_to_switch_vector_raster">최소 벡터 줌 레벨</string>
     <string name="create_poi_link_to_osm_doc">이미지와 함께 <u>온라인 OSM</u> 맵 분류</string>
     <string name="error_doing_search">오프라인 검색에서 오류가 발생하였습니다</string>
-    <string name="search_offline_geo_error">지오 인텐트 \'%s\' 를 구문분석(파싱)할 수 없습니다</string>
     <string name="search_osm_offline">지오 위치 검색</string>
     <string name="system_locale">시스템 언어</string>
     <string name="preferred_locale_descr">언어 선택 (OsmAnd를 재시작해 주세요)</string>
@@ -580,8 +579,8 @@
     <string name="filter_current_poiButton">필터</string>
     <string name="edit_filter_save_as_menu_item">다른이름으로 저장</string>
     <string name="edit_filter_delete_dialog_title">선택된 필터를 삭제할까요?</string>
-    <string name="edit_filter_delete_message">필터 {0} 가 삭제되었습니다</string>
-    <string name="edit_filter_create_message">필터 {0} 가 생성되었습니다</string>
+    <string name="edit_filter_delete_message">필터 %1$s 가 삭제되었습니다</string>
+    <string name="edit_filter_create_message">필터 %1$s 가 생성되었습니다</string>
     <string name="index_item_nation_addresses">전국 주소</string>
     <string name="index_item_world_altitude_correction">세계 고도 보정</string>
     <string name="index_item_world_seamarks">세계 seamarks</string>
@@ -945,14 +944,12 @@
     <string name="avoid_unpaved">비포장 도로 회피</string>
     <string name="avoid_ferries">뱃길 회피</string>
     <string name="avoid_in_routing_title">회피하기…</string>
-    <string name="avoid_in_routing_descr">유료도로, 비포장, 뱃길 회피하기</string>
     <string name="map_widget_fluorescent">깜박이는 경로</string>
     <string name="map_widget_show_ruler">축척(Ruler)</string>
     <string name="map_widget_view_direction">방향 보기</string>
     <string name="map_widget_transparent">투명 스킨</string>
     <string name="bg_service_sleep_mode_off">동작중\n 절전 모드</string>
     <string name="bg_service_sleep_mode_on">정지\n 절전 모드</string>
-    <string name="gps_wakeup_interval">GPS 깨우는(wake-up) 간격: %s</string>
     <string name="int_continuosly">연속적인</string>
     <string name="screen_is_locked">화면을 해제하려면 잠금아이콘을 누르세요</string>
     <string name="map_widget_top_text">거리 이름</string>

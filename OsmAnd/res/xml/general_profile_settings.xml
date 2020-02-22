@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:title="@string/general_settings_2">
 
 	<PreferenceCategory
 		android:key="appearance_category"
@@ -16,6 +17,13 @@
 		android:key="rotate_map"
 		android:layout="@layout/preference_with_descr"
 		android:title="@string/rotate_map_to_bearing" />
+
+	<SwitchPreferenceCompat
+		android:key="center_position_on_map"
+		android:layout="@layout/preference_switch_with_descr"
+		android:summaryOff="@string/shared_string_off"
+		android:summaryOn="@string/shared_string_on"
+		android:title="@string/always_center_position_on_map" />
 
 	<net.osmand.plus.settings.preferences.ListPreferenceEx
 		android:key="map_screen_orientation"
@@ -52,6 +60,11 @@
 		android:layout="@layout/preference_with_descr"
 		android:title="@string/angular_measeurement" />
 
+	<net.osmand.plus.settings.preferences.ListPreferenceEx
+		android:key="default_speed_system"
+		android:layout="@layout/preference_with_descr"
+		android:title="@string/default_speed_system" />
+
 	<Preference
 		android:layout="@layout/simple_divider_item"
 		android:selectable="false" />
@@ -84,7 +97,7 @@
 
 	<SwitchPreferenceCompat
 		android:key="do_not_use_animations"
-		android:layout="@layout/preference_switch"
+		android:layout="@layout/preference_switch_with_descr"
 		android:summaryOff="@string/shared_string_off"
 		android:summaryOn="@string/shared_string_on"
 		android:title="@string/do_not_use_animations" />
@@ -93,5 +106,12 @@
 		android:key="external_input_device"
 		android:layout="@layout/preference_with_descr_dialog_and_switch"
 		android:title="@string/external_input_device" />
+
+	<net.osmand.plus.settings.preferences.SwitchPreferenceEx
+		android:key="use_trackball_for_movements"
+		android:layout="@layout/preference_with_descr_dialog_and_switch"
+		android:summaryOff="@string/shared_string_off"
+		android:summaryOn="@string/shared_string_on"
+		android:title="@string/use_trackball" />
 
 </PreferenceScreen>

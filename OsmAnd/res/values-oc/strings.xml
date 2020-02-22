@@ -159,7 +159,6 @@
     <string name="shared_string_capacity">Capacitat</string>
     <string name="shared_string_width">Ample</string>
     <string name="shared_string_height">Auçada</string>
-    <string name="swap_start_and_destination">Inversar partença e destinacion</string>
     <string name="add_destination_point">Ajustar una destinacion</string>
     <string name="add_intermediate_point">Ajustar un ponch intermediari</string>
     <string name="add_start_point">Ajustar un ponch de partença</string>
@@ -224,7 +223,6 @@
     <string name="shared_string_read">Legit</string>
     <string name="process_downloading_service">Servidor de descargament d\'OsmAnd</string>
     <string name="rate_dialog_descr">Donatz-nos lèu, per plaser, vòstre avejaire, vòstrei comentaris e avaloratz lo produch dins Google Play.</string>
-    <string name="button_rate">Avalorar</string>
     <string name="shared_string_privacy_policy">Politica per la vida privada</string>
     <string name="help_us_make_osmand_better">Ajudatz-nos per melhorar OsmAnd !</string>
     <string name="choose_data_to_share">Indicatz quinei menas de dadas volètz partejar:</string>
@@ -261,14 +259,11 @@
     <string name="download_file">Descargar lo fichier</string>
     <string name="start_editing">Començar l\'edicion</string>
     <string name="wikivoyage_travel_guide">Guida de viatge</string>
-    <string name="monthly_map_updates">Actualizacion de la mapa: <b>cada mes</b>
-    </string>
-    <string name="daily_map_updates">Actualizacion de la mapa: <b>cada ora</b>
-    </string>
+    <string name="monthly_map_updates">Actualizacion de la mapa: cada mes</string>
+    <string name="daily_map_updates">Actualizacion de la mapa: cada ora</string>
     <string name="in_app_purchase">Comprés dins l\'aplicacion</string>
     <string name="in_app_purchase_desc">Pagament unic</string>
     <string name="purchase_unlim_title">Crompar - %1$s</string>
-    <string name="purchase_subscription_title">Subscriure - %1$s</string>
     <string name="unlimited_downloads">Descargaments illimitats</string>
     <string name="unlock_all_features">Desblòca totei lei foncions d\'OsmAnd</string>
     <string name="purchase_dialog_subtitle">Seleccionatz l\'element disponible:</string>
@@ -417,7 +412,6 @@
     <string name="default_speed_setting_title">Velocitat per defaut</string>
     <string name="default_speed_setting_descr">Modificar lei reglatges de la velocitat per defaut</string>
     <string name="minmax_speed_dialog_title">Fixar la velocitat min/max</string>
-    <string name="default_speed_dialog_msg">Emplegat per calcular l\'ora d\'arribada prevista dau temps dau camin</string>
     <string name="new_profile">Perfiu novèu</string>
     <string name="shared_string_crash">Auvari</string>
     <string name="last_launch_crashed">Falhida dau darrier lançament d\'OsmAnd. Ajudatz-nos a melhorar OsmAnd. Saretz brave de nos avisar per un messatge d\'error.</string>
@@ -448,7 +442,7 @@
     <string name="profile_alert_need_routing_type_msg">Seleccionatz lo tipe de navigacion per lo perfiu d\'aplicacion novèu</string>
     <string name="select_base_profile_dialog_message">Començatz vòstre perfiu personalizat d\'un perfiu predeterminat de l\'aplicacion, es eu que fixa la configuracion basica per visibilitat predeterminada, leis extensions e leis unitats de velocitat de distància. Vaicí lei perfius d\'aplicacion predeterminats, amb d’exemples de personalizacion que se pòdon ajustar:</string>
     <string name="base_profile_descr_bicycle">Cicle de montanha, ciclimotor, cavau</string>
-    <string name="increase_search_radius_to">Aumenta lo radian de recèrca fins %1s</string>
+    <string name="increase_search_radius_to">Aumenta lo radian de recèrca fins %1$s</string>
     <string name="send_search_query">Volètz mandar leis informacions de la recèca \?</string>
     <string name="light_rs_render_descr">"Estil simple e contrastat per la navigacion automobila. En mòde nocturne fatiga pas leis uelhs.  Caracteristicas principalas: corbas de nivèu, vias contrastadas de color iranja, mens d’objèctes segondaris sus la mapa que pòcan distraire."</string>
     <string name="shared_string_min_speed">Velocitat minimala</string>
@@ -484,4 +478,41 @@
     <string name="edit_profile_nav_settings_subtitle">Seleccionatz leis opcions de navigacion predeterminadas per lo perfiu</string>
     <string name="routing_attr_max_num_changes_description">Especificatz lo nombre maximum de cambiaments</string>
     <string name="routing_attr_max_num_changes_name">Nombre de cambiaments</string>
+    <string name="shared_string_memory_used_tb_desc">%1$s TB utilizats</string>
+    <string name="shared_string_memory_used_gb_desc">%1$s GB utilizats</string>
+    <string name="shared_string_memory_used_mb_desc">%1$s MB utilizats</string>
+    <string name="shared_string_memory_used_kb_desc">%1$s kB utilizats</string>
+    <string name="contour_lines_and_hillshade">Corbas de nivèu e ombrejat de relèu</string>
+    <string name="routing_attr_prefer_unpaved_name">Preferissi lei rotas sensa quitran</string>
+    <string name="routing_attr_prefer_unpaved_description">Preferissi lei rotas sensa quitran.</string>
+    <string name="update_all_maps">Actualizar totei lei mapas</string>
+    <string name="update_all_maps_q">Siatz segur que volètz actualizar totei lei mapas (%1$d)\?</string>
+    <string name="shared_preference">Partejat</string>
+    <string name="routing_attr_driving_style_prefer_unpaved_name">Preferissi lei rotas sensa quitran</string>
+    <string name="routing_attr_driving_style_prefer_unpaved_description">Preferissi lei rotas sensa quitran.</string>
+    <string name="layer_osm_edits">Edicions d\'OSM</string>
+    <string name="quick_action_contour_lines_descr">Un commutador per mostrar o amagar lei corbas de nivèu sus la mapa.</string>
+    <string name="quick_action_contour_lines_show">Mostrar lei corbas de nivèu</string>
+    <string name="quick_action_contour_lines_hide">Amagar lei corbas de nivèu</string>
+    <string name="quick_action_show_hide_contour_lines">Mòstra/Amaga lei corbas de nivèu</string>
+    <string name="quick_action_hillshade_descr">Un commutador per mostrar o amagar l\'ombrejat de relèu de la mapa.</string>
+    <string name="quick_action_hillshade_show">Mostrar l’ombrejat de relèu</string>
+    <string name="quick_action_hillshade_hide">Amagar l’ombrejat de relèu</string>
+    <string name="quick_action_show_hide_hillshade">Mòstra/Amaga l’ombrejat de relèu</string>
+    <string name="export_profile">Exportar lo perfiu</string>
+    <string name="exported_osmand_profile">Perfiu d\'OsmAnd: %1$s</string>
+    <string name="overwrite_profile_q">Lo perfiu \'%1$s\' existís ja. Lo volètz subrescriure\?</string>
+    <string name="export_profile_failed">Lo perfiu s’es pas pogut exportar.</string>
+    <string name="profile_import">Importar lo perfiu:</string>
+    <string name="profile_import_descr">Per importar un perfiu, lo seleccionar sus l’aparelh e lo dobrir amb OsmAnd.</string>
+    <string name="file_import_error">Error d\'importacion de %1$s: %2$s</string>
+    <string name="file_imported_successfully">%1$s es estat importat correctament.</string>
+    <string name="rendering_value_white_name">Blanc</string>
+    <string name="swap_two_places">"Inversar  %1$s e %2$s"</string>
+    <string name="route_start_point">Ponch de partença</string>
+    <string name="track_saved">Traça enregistrada</string>
+    <string name="empty_filename">Lo fichier es pas nommat</string>
+    <string name="shared_string_revert">Tornar arrier</string>
+    <string name="clear_confirmation_msg">Volètz netejar %1$s\?</string>
+    <string name="dialogs_and_notifications_title">Dialògs e notificacions</string>
 </resources>

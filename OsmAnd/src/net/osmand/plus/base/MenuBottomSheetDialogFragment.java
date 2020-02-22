@@ -83,7 +83,7 @@ public abstract class MenuBottomSheetDialogFragment extends BottomSheetDialogFra
 		inflateMenuItems();
 
 		dismissButton = mainView.findViewById(R.id.dismiss_button);
-		UiUtilities.setupDialogButton(nightMode, dismissButton, getDismissByttonType(), getDismissButtonTextId());
+		UiUtilities.setupDialogButton(nightMode, dismissButton, getDismissButtonType(), getDismissButtonTextId());
 		dismissButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -98,7 +98,7 @@ public abstract class MenuBottomSheetDialogFragment extends BottomSheetDialogFra
 			if (rightBottomButtonTextId != DEFAULT_VALUE) {
 				mainView.findViewById(R.id.buttons_divider).setVisibility(View.VISIBLE);
 				rightButton = mainView.findViewById(R.id.right_bottom_button);
-				UiUtilities.setupDialogButton(nightMode, rightButton, getRightBottomByttonType(), rightBottomButtonTextId);
+				UiUtilities.setupDialogButton(nightMode, rightButton, getRightBottomButtonType(), rightBottomButtonTextId);
 				rightButton.setVisibility(View.VISIBLE);
 				rightButton.setOnClickListener(new View.OnClickListener() {
 					@Override
@@ -145,9 +145,9 @@ public abstract class MenuBottomSheetDialogFragment extends BottomSheetDialogFra
 	public abstract void createMenuItems(Bundle savedInstanceState);
 
 	protected void inflateMenuItems() {
-		OsmandApplication app = getMyApplication();
+		Activity activity = requireActivity();
 		for (BaseBottomSheetItem item : items) {
-			item.inflate(app, itemsContainer, nightMode);
+			item.inflate(activity, itemsContainer, nightMode);
 		}
 	}
 
@@ -192,7 +192,7 @@ public abstract class MenuBottomSheetDialogFragment extends BottomSheetDialogFra
 
 				final View contentView = useScrollableItemsContainer() ? mainView.findViewById(R.id.scroll_view) : itemsContainer;
 				if (contentView.getHeight() > contentHeight) {
-					if (useScrollableItemsContainer()) {
+					if (useScrollableItemsContainer() || useExpandableList()) {
 						contentView.getLayoutParams().height = contentHeight;
 					} else {
 						contentView.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -231,6 +231,10 @@ public abstract class MenuBottomSheetDialogFragment extends BottomSheetDialogFra
 		return true;
 	}
 
+	protected boolean useExpandableList() {
+		return false;
+	}
+
 	protected boolean hideButtonsContainer() {
 		return false;
 	}
@@ -249,7 +253,7 @@ public abstract class MenuBottomSheetDialogFragment extends BottomSheetDialogFra
 		dismissButtonStringRes = stringRes;
 	}
 
-	protected DialogButtonType getDismissByttonType() {
+	protected DialogButtonType getDismissButtonType() {
 		return DialogButtonType.SECONDARY;
 	}
 
@@ -262,7 +266,7 @@ public abstract class MenuBottomSheetDialogFragment extends BottomSheetDialogFra
 		return DEFAULT_VALUE;
 	}
 
-	protected DialogButtonType getRightBottomByttonType() {
+	protected DialogButtonType getRightBottomButtonType() {
 		return DialogButtonType.PRIMARY;
 	}
 
@@ -311,7 +315,7 @@ public abstract class MenuBottomSheetDialogFragment extends BottomSheetDialogFra
 		return nightMode ? R.drawable.bg_bottom_sheet_sides_landscape_dark : R.drawable.bg_bottom_sheet_sides_landscape_light;
 	}
 
-	private boolean isNightMode(@NonNull OsmandApplication app) {
+	protected boolean isNightMode(@NonNull OsmandApplication app) {
 		if (usedOnMap) {
 			return app.getDaynightHelper().isNightModeForMapControls();
 		}

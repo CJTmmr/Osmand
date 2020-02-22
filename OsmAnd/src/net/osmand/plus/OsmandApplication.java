@@ -11,7 +11,9 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
@@ -23,12 +25,9 @@ import android.support.v7.app.AlertDialog;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import net.osmand.AndroidUtils;
-import net.osmand.CallbackWithObject;
 import net.osmand.IndexConstants;
 import net.osmand.PlatformUtil;
 import net.osmand.access.AccessibilityPlugin;
@@ -44,11 +43,12 @@ import net.osmand.plus.activities.DayNightHelper;
 import net.osmand.plus.activities.ExitActivity;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.activities.SavingTrackHelper;
+import net.osmand.plus.activities.actions.OsmAndDialogs;
 import net.osmand.plus.api.SQLiteAPI;
 import net.osmand.plus.api.SQLiteAPIImpl;
 import net.osmand.plus.base.MapViewTrackingUtilities;
 import net.osmand.plus.dialogs.CrashBottomSheetDialogFragment;
-import net.osmand.plus.dialogs.RateUsBottomSheetDialog;
+import net.osmand.plus.dialogs.RateUsBottomSheetDialogFragment;
 import net.osmand.plus.download.DownloadIndexesThread;
 import net.osmand.plus.download.DownloadService;
 import net.osmand.plus.download.IndexItem;
@@ -56,10 +56,10 @@ import net.osmand.plus.helpers.AvoidSpecificRoads;
 import net.osmand.plus.helpers.LockHelper;
 import net.osmand.plus.helpers.WaypointHelper;
 import net.osmand.plus.inapp.InAppPurchaseHelper;
-import net.osmand.plus.mapcontextmenu.other.RoutePreferencesMenu;
 import net.osmand.plus.mapmarkers.MapMarkersDbHelper;
 import net.osmand.plus.monitoring.LiveMonitoringHelper;
 import net.osmand.plus.poi.PoiFiltersHelper;
+import net.osmand.plus.quickaction.QuickActionRegistry;
 import net.osmand.plus.render.RendererRegistry;
 import net.osmand.plus.resources.ResourceManager;
 import net.osmand.plus.routepreparationmenu.RoutingOptionsHelper;
@@ -68,6 +68,7 @@ import net.osmand.plus.routing.TransportRoutingHelper;
 import net.osmand.plus.search.QuickSearchHelper;
 import net.osmand.plus.voice.CommandPlayer;
 import net.osmand.plus.wikivoyage.data.TravelDbHelper;
+import net.osmand.router.GeneralRouter;
 import net.osmand.router.RoutingConfiguration;
 import net.osmand.router.RoutingConfiguration.Builder;
 import net.osmand.search.SearchUICore;
@@ -80,11 +81,16 @@ import java.io.FileWriter;
 import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import btools.routingapp.BRouterServiceConnection;
 import btools.routingapp.IBRouterService;
+
+import static net.osmand.IndexConstants.ROUTING_FILE_EXT;
 
 public class OsmandApplication extends MultiDexApplication {
 	public static final String EXCEPTION_PATH = "exception.log";
@@ -116,7 +122,6 @@ public class OsmandApplication extends MultiDexApplication {
 	FavouritesDbHelper favorites;
 	CommandPlayer player;
 	GpxSelectionHelper selectedGpxHelper;
-	GPXDatabase gpxDatabase;
 	SavingTrackHelper savingTrackHelper;
 	AnalyticsHelper analyticsHelper;
 	NotificationHelper notificationHelper;
@@ -136,15 +141,19 @@ public class OsmandApplication extends MultiDexApplication {
 	InAppPurchaseHelper inAppPurchaseHelper;
 	MapViewTrackingUtilities mapViewTrackingUtilities;
 	LockHelper lockHelper;
+	SettingsHelper settingsHelper;
+	GpxDbHelper gpxDbHelper;
+	QuickActionRegistry quickActionRegistry;
 
-	private RoutingConfiguration.Builder routingConfig;
+	private Resources localizedResources;
+
+	private Map<String, Builder> customRoutingConfigs = new ConcurrentHashMap<>();
+
 	private Locale preferredLocale = null;
 	private Locale defaultLocale;
 	private File externalStorageDirectory;
 	private boolean externalStorageDirectoryReadOnly;
 
-	private String firstSelectedVoiceProvider;
-	
 	// Typeface
 	
 	@Override
@@ -239,8 +248,8 @@ public class OsmandApplication extends MultiDexApplication {
 		if (routingHelper != null) {
 			routingHelper.getVoiceRouter().onApplicationTerminate();
 		}
-        if(RateUsBottomSheetDialog.shouldShow(this)) {
-            osmandSettings.RATE_US_STATE.set(RateUsBottomSheetDialog.RateUsState.IGNORED);
+        if(RateUsBottomSheetDialogFragment.shouldShow(this)) {
+            osmandSettings.RATE_US_STATE.set(RateUsBottomSheetDialogFragment.RateUsState.IGNORED);
         }
         getNotificationHelper().removeNotifications(false);
 	}
@@ -264,7 +273,10 @@ public class OsmandApplication extends MultiDexApplication {
 	public OsmAndAppCustomization getAppCustomization() {
 		return appCustomization;
 	}
-	
+
+	public QuickActionRegistry getQuickActionRegistry() {
+		return quickActionRegistry;
+	}
 	
 	public void setAppCustomization(OsmAndAppCustomization appCustomization) {
 		this.appCustomization = appCustomization;
@@ -286,7 +298,6 @@ public class OsmandApplication extends MultiDexApplication {
 	public void setOsmandSettings(OsmandSettings osmandSettings) {
 		//android.os.Process.killProcess(android.os.Process.myPid());
 		this.osmandSettings = osmandSettings;
-		resourceManager.getRenderer().updateSettings();
 		OsmandPlugin.initPlugins(this);
 	}
 
@@ -315,8 +326,8 @@ public class OsmandApplication extends MultiDexApplication {
 		return selectedGpxHelper;
 	}
 
-	public GPXDatabase getGpxDatabase() {
-		return gpxDatabase;
+	public GpxDbHelper getGpxDbHelper() {
+		return gpxDbHelper;
 	}
 
 	public FavouritesDbHelper getFavorites() {
@@ -333,6 +344,10 @@ public class OsmandApplication extends MultiDexApplication {
 
 	public LockHelper getLockHelper() {
 		return lockHelper;
+	}
+
+	public SettingsHelper getSettingsHelper() {
+		return settingsHelper;
 	}
 
 	public synchronized DownloadIndexesThread getDownloadThread() {
@@ -371,25 +386,34 @@ public class OsmandApplication extends MultiDexApplication {
 		String lang = split[0];
 		String country = (split.length > 1) ? split[1] : "";
 
-		if(defaultLocale == null) {
+		if (defaultLocale == null) {
 			defaultLocale = Locale.getDefault();
 		}
-		if (!"".equals(lang) && !config.locale.equals(pl)) {
+		if (!"".equals(lang)) {
 			if (!"".equals(country)) {
 				preferredLocale = new Locale(lang, country);
 			} else {
 				preferredLocale = new Locale(lang);
 			}
-			Locale.setDefault(preferredLocale);
-			config.locale = preferredLocale;
-			getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
-		} else if("".equals(lang) && defaultLocale != null && Locale.getDefault() != defaultLocale) {
-			Locale.setDefault(defaultLocale);
-			config.locale = defaultLocale;
-			preferredLocale = null;
-			getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
 		}
-		
+		Locale selectedLocale = null;
+
+		if (!"".equals(lang) && !config.locale.equals(preferredLocale)) {
+			selectedLocale = preferredLocale;
+		} else if ("".equals(lang) && defaultLocale != null && Locale.getDefault() != defaultLocale) {
+			selectedLocale = defaultLocale;
+			preferredLocale = null;
+		}
+		if (selectedLocale != null) {
+			Locale.setDefault(selectedLocale);
+			config.locale = selectedLocale;
+			getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
+			if (android.os.Build.VERSION.SDK_INT >= 17) {
+				Configuration conf = new Configuration(config);
+				conf.locale = selectedLocale;
+				localizedResources = createConfigurationContext(conf).getResources();
+			}
+		}
 	}
 
 	public static final int PROGRESS_DIALOG = 5;
@@ -444,66 +468,20 @@ public class OsmandApplication extends MultiDexApplication {
 		return player;
 	}
 
-	public void initVoiceCommandPlayer(final Activity uiContext, ApplicationMode applicationMode,
-									   boolean warningNoneProvider, Runnable run, boolean showDialog, boolean force) {
-		String voiceProvider = osmandSettings.VOICE_PROVIDER.get();
+	public void initVoiceCommandPlayer(final Activity uiContext, final ApplicationMode applicationMode,
+	                                   boolean warningNoneProvider, Runnable run, boolean showDialog, boolean force, final boolean applyAllModes) {
+		String voiceProvider = osmandSettings.VOICE_PROVIDER.getModeValue(applicationMode);
 		if (voiceProvider == null || OsmandSettings.VOICE_PROVIDER_NOT_USE.equals(voiceProvider)) {
 			if (warningNoneProvider && voiceProvider == null) {
-				final AlertDialog.Builder builder = new AlertDialog.Builder(uiContext);
-
-				View view = uiContext.getLayoutInflater().inflate(R.layout.select_voice_first, null);
-
-				((ImageView) view.findViewById(R.id.icon))
-						.setImageDrawable(getUIUtilities().getIcon(R.drawable.ic_action_volume_up, getSettings().isLightContent()));
-
-				view.findViewById(R.id.spinner).setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(final View v) {
-						routingOptionsHelper.selectVoiceGuidance((MapActivity) uiContext, new CallbackWithObject<String>() {
-							@Override
-							public boolean processResult(String result) {
-								boolean acceptableValue = !RoutePreferencesMenu.MORE_VALUE.equals(firstSelectedVoiceProvider);
-								if (acceptableValue) {
-									((TextView) v.findViewById(R.id.selectText))
-											.setText(routingOptionsHelper.getVoiceProviderName(uiContext, result));
-									firstSelectedVoiceProvider = result;
-								}
-								return acceptableValue;
-							}
-						});
-					}
-				});
-
-				((ImageView) view.findViewById(R.id.dropDownIcon))
-						.setImageDrawable(getUIUtilities().getIcon(R.drawable.ic_action_arrow_drop_down, getSettings().isLightContent()));
-
-				builder.setCancelable(true);
-				builder.setNegativeButton(R.string.shared_string_cancel, null);
-				builder.setPositiveButton(R.string.shared_string_apply, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						if (!Algorithms.isEmpty(firstSelectedVoiceProvider)) {
-							routingOptionsHelper.applyVoiceProvider((MapActivity) uiContext, firstSelectedVoiceProvider);
-						}
-					}
-				});
-				builder.setNeutralButton(R.string.shared_string_do_not_use, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialogInterface, int i) {
-						osmandSettings.VOICE_PROVIDER.set(OsmandSettings.VOICE_PROVIDER_NOT_USE);
-					}
-				});
-
-				builder.setView(view);
-				builder.show();
+				if (uiContext instanceof MapActivity) {
+					OsmAndDialogs.showVoiceProviderDialog((MapActivity) uiContext, applicationMode, applyAllModes);
+				}
 			}
-
 		} else {
 			if (player == null || !Algorithms.objectEquals(voiceProvider, player.getCurrentVoice()) || force) {
 				appInitializer.initVoiceDataInDifferentThread(uiContext, applicationMode, voiceProvider, run, showDialog);
 			}
 		}
-
 	}
 
 	public NavigationService getNavigationService() {
@@ -806,6 +784,16 @@ public class OsmandApplication extends MultiDexApplication {
 			}
 		}
 	}
+
+	public String getCountry() {
+		String country;
+		if (preferredLocale != null) {
+			country = preferredLocale.getCountry();
+		} else {
+			country = Locale.getDefault().getCountry();
+		}
+		return country;
+	}
 	
 	public String getLanguage() {
 		String lang;
@@ -819,28 +807,72 @@ public class OsmandApplication extends MultiDexApplication {
 		}
 		return lang;
 	}
-	
-	public synchronized RoutingConfiguration.Builder getRoutingConfig() {
-		RoutingConfiguration.Builder rc;
-		if(routingConfig == null) {
-			rc = new RoutingConfiguration.Builder();
-		} else {
-			rc = routingConfig;
-		}
-		return rc;
+
+	@Override
+	public AssetManager getAssets() {
+		return localizedResources != null ? localizedResources.getAssets() : super.getAssets();
 	}
 
-	public void updateRoutingConfig(Builder update) {
-			routingConfig = update;
+	@Override
+	public Resources getResources() {
+		return localizedResources != null ? localizedResources : super.getResources();
+	}
+
+	public List<RoutingConfiguration.Builder> getAllRoutingConfigs() {
+		List<RoutingConfiguration.Builder> builders = new ArrayList<>(customRoutingConfigs.values());
+		builders.add(0, getDefaultRoutingConfig());
+		return builders;
+	}
+
+	public synchronized RoutingConfiguration.Builder getDefaultRoutingConfig() {
+		return RoutingConfiguration.getDefault();
+	}
+
+	public Map<String, RoutingConfiguration.Builder> getCustomRoutingConfigs() {
+		return customRoutingConfigs;
+	}
+
+	public RoutingConfiguration.Builder getCustomRoutingConfig(String key) {
+		return customRoutingConfigs.get(key);
+	}
+
+	public RoutingConfiguration.Builder getRoutingConfigForMode(ApplicationMode mode) {
+		RoutingConfiguration.Builder builder = null;
+		String routingProfileKey = mode.getRoutingProfile();
+		if (!Algorithms.isEmpty(routingProfileKey)) {
+			int index = routingProfileKey.indexOf(ROUTING_FILE_EXT);
+			if (index != -1) {
+				String configKey = routingProfileKey.substring(0, index + ROUTING_FILE_EXT.length());
+				builder = customRoutingConfigs.get(configKey);
+			}
+		}
+		return builder != null ? builder : getDefaultRoutingConfig();
+	}
+
+	public GeneralRouter getRouter(ApplicationMode mode) {
+		Builder builder = getRoutingConfigForMode(mode);
+		return getRouter(builder, mode);
+	}
+
+	public GeneralRouter getRouter(Builder builder, ApplicationMode am) {
+		GeneralRouter router = builder.getRouter(am.getRoutingProfile());
+		if (router == null && am.getParent() != null) {
+			router = builder.getRouter(am.getParent().getStringKey());
+		}
+		return router;
 	}
 
 	public OsmandRegions getRegions() {
 		return regions;
 	}
-	
+
 	public boolean accessibilityEnabled() {
-		final AccessibilityMode mode = getSettings().ACCESSIBILITY_MODE.get();
-		if(OsmandPlugin.getEnabledPlugin(AccessibilityPlugin.class) == null) {
+		return accessibilityEnabledForMode(getSettings().APPLICATION_MODE.get());
+	}
+
+	public boolean accessibilityEnabledForMode(ApplicationMode appMode) {
+		final AccessibilityMode mode = getSettings().ACCESSIBILITY_MODE.getModeValue(appMode);
+		if (OsmandPlugin.getEnabledPlugin(AccessibilityPlugin.class) == null) {
 			return false;
 		}
 		if (mode == AccessibilityMode.ON) {
@@ -848,6 +880,10 @@ public class OsmandApplication extends MultiDexApplication {
 		} else if (mode == AccessibilityMode.OFF) {
 			return false;
 		}
+		return systemAccessibilityEnabled();
+	}
+
+	public boolean systemAccessibilityEnabled() {
 		return ((AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE)).isEnabled();
 	}
 
@@ -991,14 +1027,18 @@ public class OsmandApplication extends MultiDexApplication {
 		}
 	}
 
-	public void restartApp(Context ctx) {
+	public void restartApp(final Context ctx) {
 		AlertDialog.Builder bld = new AlertDialog.Builder(ctx);
 		bld.setMessage(R.string.restart_is_required);
 		bld.setPositiveButton(R.string.shared_string_ok, new OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				android.os.Process.killProcess(android.os.Process.myPid());
+				if (ctx instanceof MapActivity) {
+					MapActivity.doRestart(ctx);
+				} else {
+					android.os.Process.killProcess(android.os.Process.myPid());
+				}
 			}
 		});
 		bld.show();

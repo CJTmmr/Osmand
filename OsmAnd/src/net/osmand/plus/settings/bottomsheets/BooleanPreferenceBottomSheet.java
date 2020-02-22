@@ -5,13 +5,14 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.view.ContextThemeWrapper;
 import android.view.View;
 
 import net.osmand.AndroidUtils;
 import net.osmand.PlatformUtil;
+import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandSettings;
 import net.osmand.plus.OsmandSettings.BooleanPreference;
@@ -22,6 +23,7 @@ import net.osmand.plus.base.bottomsheetmenu.BaseBottomSheetItem;
 import net.osmand.plus.base.bottomsheetmenu.BottomSheetItemWithCompoundButton;
 import net.osmand.plus.base.bottomsheetmenu.BottomSheetItemWithDescription;
 import net.osmand.plus.base.bottomsheetmenu.simpleitems.TitleItem;
+import net.osmand.plus.settings.OnPreferenceChanged;
 import net.osmand.plus.settings.preferences.SwitchPreferenceEx;
 
 import org.apache.commons.logging.Log;
@@ -51,27 +53,44 @@ public class BooleanPreferenceBottomSheet extends BasePreferenceBottomSheet {
 		items.add(new TitleItem(title));
 
 		final OsmandSettings.BooleanPreference pref = (BooleanPreference) preference;
-		final String on = getString(R.string.shared_string_on);
-		final String off = getString(R.string.shared_string_off);
-		boolean checked = pref.get();
+		CharSequence summaryOn = switchPreference.getSummaryOn();
+		CharSequence summaryOff = switchPreference.getSummaryOff();
+		final String on = summaryOn == null || summaryOn.toString().equals("")
+				? getString(R.string.shared_string_enabled) : summaryOn.toString();
+		final String off = summaryOff == null || summaryOff.toString().equals("")
+				? getString(R.string.shared_string_disabled) : summaryOff.toString();
+		final int activeColor = AndroidUtils.resolveAttribute(app, R.attr.active_color_basic);
+		final int disabledColor = AndroidUtils.resolveAttribute(app, android.R.attr.textColorSecondary);
+		boolean checked = pref.getModeValue(getAppMode());
 
 		final BottomSheetItemWithCompoundButton[] preferenceBtn = new BottomSheetItemWithCompoundButton[1];
 		preferenceBtn[0] = (BottomSheetItemWithCompoundButton) new BottomSheetItemWithCompoundButton.Builder()
 				.setChecked(checked)
 				.setTitle(checked ? on : off)
-				.setCustomView(getCustomButtonView())
+				.setTitleColorId(checked ? activeColor : disabledColor)
+				.setCustomView(getCustomButtonView(checked))
 				.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
-						boolean newValue = !pref.get();
+						boolean newValue = !pref.getModeValue(getAppMode());
 						if (switchPreference.callChangeListener(newValue)) {
 							switchPreference.setChecked(newValue);
 							preferenceBtn[0].setTitle(newValue ? on : off);
 							preferenceBtn[0].setChecked(newValue);
+							preferenceBtn[0].setTitleColorId(newValue ? activeColor : disabledColor);
+							updateCustomButtonView(v, newValue);
+
+							Fragment target = getTargetFragment();
+							if (target instanceof OnPreferenceChanged) {
+								((OnPreferenceChanged) target).onPreferenceChanged(switchPreference.getKey());
+							}
 						}
 					}
 				})
 				.create();
+		if (isProfileDependent()) {
+			preferenceBtn[0].setCompoundButtonColorId(getAppMode().getIconColorInfo().getColor(nightMode));
+		}
 		items.add(preferenceBtn[0]);
 
 		String description = switchPreference.getDescription();
@@ -86,18 +105,24 @@ public class BooleanPreferenceBottomSheet extends BasePreferenceBottomSheet {
 
 	@Override
 	protected int getDismissButtonTextId() {
-		return R.string.shared_string_close;
+		return R.string.shared_string_cancel;
 	}
 
-	private View getCustomButtonView() {
+	private View getCustomButtonView(boolean checked) {
+		View customView = UiUtilities.getInflater(getContext(), nightMode).inflate(R.layout.bottom_sheet_item_preference_switch, null);
+		updateCustomButtonView(customView, checked);
+
+		return customView;
+	}
+
+	private void updateCustomButtonView(View customView, boolean checked) {
 		OsmandApplication app = requiredMyApplication();
-		View customView = View.inflate(new ContextThemeWrapper(app, themeRes), R.layout.bottom_sheet_item_preference_switch, null);
 		View buttonView = customView.findViewById(R.id.button_container);
 
-		int colorRes = app.getSettings().APPLICATION_MODE.get().getIconColorInfo().getColor(nightMode);
-		int color = getResolvedColor(colorRes);
-		int bgColor = UiUtilities.getColorWithAlpha(color, 0.1f);
-		int selectedColor = UiUtilities.getColorWithAlpha(color, 0.3f);
+		int colorRes = getAppMode().getIconColorInfo().getColor(nightMode);
+		int color = checked ? getResolvedColor(colorRes) : AndroidUtils.getColorFromAttr(app, R.attr.divider_color_basic);
+		int bgColor = UiUtilities.getColorWithAlpha(color, checked ? 0.1f : 0.5f);
+		int selectedColor = UiUtilities.getColorWithAlpha(color, checked ? 0.3f : 0.5f);
 
 		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
 			int bgResId = R.drawable.rectangle_rounded_right;
@@ -112,15 +137,14 @@ public class BooleanPreferenceBottomSheet extends BasePreferenceBottomSheet {
 			Drawable bgDrawable = app.getUIUtilities().getPaintedIcon(bgResId, bgColor);
 			AndroidUtils.setBackground(buttonView, bgDrawable);
 		}
-
-		return customView;
 	}
 
 	private SwitchPreferenceEx getSwitchPreferenceEx() {
 		return (SwitchPreferenceEx) getPreference();
 	}
 
-	public static void showInstance(@NonNull FragmentManager fm, String prefId, Fragment target, boolean usedOnMap) {
+	public static void showInstance(@NonNull FragmentManager fm, String prefId, Fragment target, boolean usedOnMap,
+									@Nullable ApplicationMode appMode, boolean profileDependent) {
 		try {
 			if (fm.findFragmentByTag(BooleanPreferenceBottomSheet.TAG) == null) {
 				Bundle args = new Bundle();
@@ -129,7 +153,9 @@ public class BooleanPreferenceBottomSheet extends BasePreferenceBottomSheet {
 				BooleanPreferenceBottomSheet fragment = new BooleanPreferenceBottomSheet();
 				fragment.setArguments(args);
 				fragment.setUsedOnMap(usedOnMap);
+				fragment.setAppMode(appMode);
 				fragment.setTargetFragment(target, 0);
+				fragment.setProfileDependent(profileDependent);
 				fragment.show(fm, BooleanPreferenceBottomSheet.TAG);
 			}
 		} catch (RuntimeException e) {

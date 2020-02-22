@@ -126,6 +126,11 @@
 	<string name="poi_access_hgv">HGV access</string>
 	<string name="poi_access_goods">Light goods vehicles access</string>
 	<string name="poi_access_disabled">Disabled access</string>
+	<string name="poi_cash_withdrawal_bank_card">Cash withdrawal</string>
+	<string name="poi_bath_type">Type</string>
+	<string name="poi_bath_open_air">Open air</string>
+	<string name="poi_volcano_type">Type</string>
+	<string name="poi_volcano_status">Status</string>
 
 <!--  categories -->
 	<string name="poi_shop">Store</string>
@@ -255,7 +260,7 @@
 	<string name="poi_musical_instrument">Musical instruments</string>
 	<string name="poi_newsagent">Newsagent</string>
 	<string name="poi_optician">Optometrist</string>
-	<string name="poi_organic">Organic food</string>
+	<string name="poi_organic">Organic products</string>
 	<string name="poi_outdoor">Outdoor store</string>
 	<string name="poi_paint">Paint store</string>
 	<string name="poi_pet">Pet store</string>
@@ -629,7 +634,6 @@
 	<string name="poi_healthcare_alternative">Alternative medicine</string>
 	<string name="poi_audiologist">Audiologist</string>
 	<string name="poi_blood_bank">Blood bank</string>
-	<string name="poi_healthcare_centre">Medical center</string>
 	<string name="poi_midwife">Midwife</string>
 	<string name="poi_occupational_therapist">Occupational therapist</string>
 	<string name="poi_optometrist">Optometrist</string>
@@ -1054,7 +1058,6 @@
 	<string name="poi_internet_cafe">Internet cafe</string>
 
 	<string name="poi_bank">Bank</string>
-	<string name="poi_amenity_atm">ATM</string>
 	<string name="poi_atm">ATM</string>
 	<string name="poi_payment_terminal">Payment terminal</string>
 	<string name="poi_money_lender">Money lender</string>
@@ -2171,7 +2174,7 @@
 	<string name="poi_service_bicycle_second_hand_no">Retail sale of second-hand bicycles: no</string>
 	<string name="poi_service_bicycle_charging_yes">Charging: yes</string>
 	<string name="poi_service_bicycle_charging_no">Charging: no</string>
-	<string name="poi_bicycle_repair_station">Bicycle self-repair station</string>
+	<string name="poi_bicycle_repair_station">Bicycle repair station;Bicycle self-repair station</string>
 
 	<string name="poi_wildlife_hide">Place to observe wildlife</string>
 
@@ -2730,7 +2733,7 @@
 	<string name="poi_inscription_ne">Inscription:NE</string>
 
 	<string name="poi_construction_yes">Under construction</string>
-	<string name="poi_additional_atm_yes">ATM: yes</string>
+	<string name="poi_atm_yes">ATM: yes</string>
 	<string name="poi_atm_no">ATM: no</string>
 
 	<string name="poi_firepit">Firepit</string>
@@ -4101,5 +4104,91 @@
 
 	<string name="poi_health_food">Health food</string>
 
+	<string name="poi_craft_builder">Builder</string>
+	<string name="poi_craft_distillery">Distillery</string>
+	<string name="poi_craft_joiner">Joiner</string>
+	<string name="poi_craft_floorer">Floorer</string>
+	<string name="poi_craft_bakery">Bakehouse</string>
+	<string name="poi_craft_cabinet_maker">Cabinetmaker</string>
+
+	<string name="poi_charge">Charge</string>
+
+	<string name="poi_pet_grooming">Pet grooming</string>
+
+	<string name="poi_cash_withdrawal_yes">Cash withdrawal: yes</string>
+	<string name="poi_cash_withdrawal">Cash withdrawal</string>
+	<string name="poi_cash_withdrawal_operator">Cash withdrawal operator</string>
+	<string name="poi_cash_withdrawal_type_checkout">Cash withdrawal type: checkout</string>
+	<string name="poi_cash_withdrawal_type_self_checkout">Cash withdrawal type: self checkout</string>
+	<string name="poi_cash_withdrawal_limit">Cash withdrawal limit</string>
+	<string name="poi_cash_withdrawal_currency">Cash withdrawal currency</string>
+	<string name="poi_cash_withdrawal_purchase_required_yes">Cash withdrawal: purchase required</string>
+	<string name="poi_cash_withdrawal_purchase_required_no">Cash withdrawal: no purchase required</string>
+	<string name="poi_cash_withdrawal_fee_yes">Cash withdrawal fee: yes</string>
+	<string name="poi_cash_withdrawal_fee_no">Cash withdrawal fee: no</string>
+	<string name="poi_cash_withdrawal_purchase_minimum">Cash withdrawal: minimum purchase</string>
+	<string name="poi_cash_withdrawal_foreign_cards">Cash withdrawal: foreign cards</string>
+
+	<string name="poi_cash_withdrawal_postfinance_card">Postfinance card</string>
+	<string name="poi_cash_withdrawal_migros_bank">Migros bank</string>
+	<string name="poi_cash_withdrawal_girocard">Girocard</string>
+	<string name="poi_cash_withdrawal_postbank">Postbank</string>
+
+	<string name="poi_bath_type_hot_spring">Hot spring</string>
+	<string name="poi_bath_type_onsen">Onsen</string>
+	<string name="poi_bath_type_hammam">Hammam</string>
+	<string name="poi_bath_type_thermal">Thermal</string>
+	<string name="poi_bath_type_river">River</string>
+	<string name="poi_bath_type_lake">Lake</string>
+	<string name="poi_bath_type_foot_bath">Foot bath</string>
+	<string name="poi_bath_open_air_yes">Yes</string>
+	<string name="poi_bath_open_air_no">No</string>
+
+	<string name="poi_monastery_type_monastics">Monastery type: monastics</string>
+	<string name="poi_monastery_type_convent">Monastery type: convent</string>
+	<string name="poi_monastery_type_canonry">Monastery type: canonry</string>
+	<string name="poi_monastery_type_hermitage">Monastery type: hermitage</string>
+	<string name="poi_monastery_type_clerks_regular">Monastery type: clerks regular</string>
+
+	<string name="poi_tourist_camp">Tourist camp</string>
+
+	<string name="poi_community_gender_female">Community gender: female</string>
+	<string name="poi_community_gender_male">Community gender: male</string>
+	<string name="poi_community_gender_mixed">Community gender: mixed</string>
+
+	<string name="poi_grave">Grave</string>
+
+	<string name="poi_parking_space">Parking space</string>
+
+	<string name="poi_url">URL</string>
+
+	<string name="poi_volcano_type_scoria">Scoria</string>
+	<string name="poi_volcano_type_stratovolcano">Stratovolcano</string>
+	<string name="poi_volcano_type_shield">Shield</string>
+	<string name="poi_volcano_type_maar">Maar</string>
+	<string name="poi_volcano_type_caldera">Caldera</string>
+	<string name="poi_volcano_type_lava_dome">Lava dome</string>
+	<string name="poi_volcano_type_mud">Mud</string>
+	<string name="poi_volcano_last_eruption">Last eruption</string>
+	<string name="poi_volcano_status_extinct">Extinct</string>
+	<string name="poi_volcano_status_dormant">Dormant</string>
+	<string name="poi_volcano_status_active">Active</string>
+	<string name="poi_volcano_status_inactive">Inactive</string>
+	<string name="poi_volcano_number_of_eruptions">Number of eruptions</string>
+
+	<string name="poi_memorial_ghost_bike">Ghost bike</string>
+
+	<string name="poi_paintball">Paintball</string>
+
+	<string name="poi_mountain_rescue">Mountain rescue</string>
+	<string name="poi_shop_security">Security store</string>
+
+	<string name="poi_bowling_alley">Bowling center</string>
+
+	<string name="poi_piste_ref">Piste reference number</string>
+
+	<string name="poi_resort_hunting">Hunting base</string>
+
+	<string name="poi_dive_centre">Scuba diving centre</string>
 
 </resources>

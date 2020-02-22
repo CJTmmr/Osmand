@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:tools="http://schemas.android.com/tools">
-
-	<Preference
-		android:key="coordinates_format_info"
-		android:layout="@layout/preference_info"
-		android:persistent="false"
-		android:selectable="false"
-		android:title="@string/coordinates_format_info"
-		tools:icon="@drawable/ic_action_info_dark" />
-
+	xmlns:tools="http://schemas.android.com/tools"
+	android:title="@string/coordinates_format">
+	
 	<CheckBoxPreference
 		android:key="format_degrees"
 		android:layout="@layout/preference_radio_button"

@@ -9,7 +9,6 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
@@ -36,6 +35,7 @@ import net.osmand.data.PointDescription;
 import net.osmand.data.RotatedTileBox;
 import net.osmand.plus.OsmAndAppCustomization;
 import net.osmand.plus.OsmAndLocationProvider;
+import net.osmand.plus.OsmAndLocationSimulation;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
 import net.osmand.plus.OsmandSettings;
@@ -44,6 +44,7 @@ import net.osmand.plus.OsmandSettings.LayerTransparencySeekbarMode;
 import net.osmand.plus.R;
 import net.osmand.plus.TargetPointsHelper;
 import net.osmand.plus.TargetPointsHelper.TargetPoint;
+import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.activities.MapActivity.ShowQuickSearchMode;
 import net.osmand.plus.base.ContextMenuFragment.MenuState;
@@ -52,7 +53,6 @@ import net.osmand.plus.dialogs.DirectionsDialogs;
 import net.osmand.plus.helpers.AndroidUiHelper;
 import net.osmand.plus.mapcontextmenu.MapContextMenu;
 import net.osmand.plus.rastermaps.OsmandRasterMapsPlugin;
-import net.osmand.plus.routepreparationmenu.ChooseRouteFragment;
 import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
 import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu.PointType;
 import net.osmand.plus.routing.RoutingHelper;
@@ -65,14 +65,14 @@ import java.util.List;
 
 import gnu.trove.list.array.TIntArrayList;
 
-import static net.osmand.plus.OsmAndCustomizationConstants.BACK_TO_LOC_HUD_ID;
-import static net.osmand.plus.OsmAndCustomizationConstants.COMPASS_HUD_ID;
-import static net.osmand.plus.OsmAndCustomizationConstants.LAYERS_HUD_ID;
-import static net.osmand.plus.OsmAndCustomizationConstants.MENU_HUD_ID;
-import static net.osmand.plus.OsmAndCustomizationConstants.QUICK_SEARCH_HUD_ID;
-import static net.osmand.plus.OsmAndCustomizationConstants.ROUTE_PLANNING_HUD_ID;
-import static net.osmand.plus.OsmAndCustomizationConstants.ZOOM_IN_HUD_ID;
-import static net.osmand.plus.OsmAndCustomizationConstants.ZOOM_OUT_HUD_ID;
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.BACK_TO_LOC_HUD_ID;
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.COMPASS_HUD_ID;
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.LAYERS_HUD_ID;
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.MENU_HUD_ID;
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.QUICK_SEARCH_HUD_ID;
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.ROUTE_PLANNING_HUD_ID;
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.ZOOM_IN_HUD_ID;
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.ZOOM_OUT_HUD_ID;
 
 public class MapControlsLayer extends OsmandMapLayer {
 
@@ -595,6 +595,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 				} else {
 					mapActivity.changeZoom(1, System.currentTimeMillis());
 				}
+				lastZoom = System.currentTimeMillis();
 			}
 		});
 		final View.OnLongClickListener listener = MapControlsLayer.getOnClickMagnifierListener(view);
@@ -610,6 +611,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 					return;
 				}
 				mapActivity.changeZoom(-1, System.currentTimeMillis());
+				lastZoom = System.currentTimeMillis();
 			}
 		});
 		zoomOutButton.setOnLongClickListener(listener);
@@ -640,16 +642,19 @@ public class MapControlsLayer extends OsmandMapLayer {
 
 	private void animateMapControls(final boolean show) {
 		final View mapHudButtonsOverlay = mapActivity.findViewById(R.id.MapHudButtonsOverlay);
-		View mapHudButtonsTop = mapActivity.findViewById(R.id.MapHudButtonsOverlayTop);
-		View mapHudButtonsBottom = mapActivity.findViewById(R.id.MapHudButtonsOverlayBottom);
-		View mapHudButtonsQuickActions = mapActivity.findViewById(R.id.MapHudButtonsOverlayQuickActions);
-		AnimatorSet set = new AnimatorSet();
-		float transTopInitial = show ? -mapHudButtonsTop.getHeight() : 0;
+		final View mapHudButtonsTop = mapActivity.findViewById(R.id.MapHudButtonsOverlayTop);
+		final View mapHudButtonsBottom = mapActivity.findViewById(R.id.MapHudButtonsOverlayBottom);
+		final View mapHudButtonsQuickActions = mapActivity.findViewById(R.id.MapHudButtonsOverlayQuickActions);
+
+		final float transTopInitial = show ? -mapHudButtonsTop.getHeight() : 0;
+		final float transBottomInitial = show ? mapHudButtonsBottom.getHeight() : 0;
+		final float alphaInitial = show ? 0f : 1f;
+
 		float transTopFinal = show ? 0 : -mapHudButtonsTop.getHeight();
-		float transBottomInitial = show ? mapHudButtonsBottom.getHeight() : 0;
 		float transBottomFinal = show ? 0 : mapHudButtonsBottom.getHeight();
-		float alphaInitial = show ? 0f : 1f;
 		float alphaFinal = show ? 1f : 0f;
+
+		AnimatorSet set = new AnimatorSet();
 		set.setDuration(300).playTogether(
 				ObjectAnimator.ofFloat(mapHudButtonsTop, View.TRANSLATION_Y, transTopInitial, transTopFinal),
 				ObjectAnimator.ofFloat(mapHudButtonsBottom, View.TRANSLATION_Y, transBottomInitial, transBottomFinal),
@@ -669,6 +674,9 @@ public class MapControlsLayer extends OsmandMapLayer {
 				super.onAnimationEnd(animation);
 				if (!show) {
 					mapHudButtonsOverlay.setVisibility(View.INVISIBLE);
+					mapHudButtonsTop.setTranslationY(transTopInitial);
+					mapHudButtonsBottom.setTranslationY(transBottomInitial);
+					mapHudButtonsQuickActions.setAlpha(alphaInitial);
 				}
 				mapActivity.updateStatusBarColor();
 			}
@@ -724,7 +732,14 @@ public class MapControlsLayer extends OsmandMapLayer {
 				routingHelper.setRoutePlanningMode(false);
 				mapActivity.getMapViewTrackingUtilities().switchToRoutePlanningMode();
 				app.getRoutingHelper().notifyIfRouteIsCalculated();
-				routingHelper.setCurrentLocation(app.getLocationProvider().getLastKnownLocation(), false);
+				if (!app.getSettings().simulateNavigation) {
+					routingHelper.setCurrentLocation(app.getLocationProvider().getLastKnownLocation(), false);
+				} else if (routingHelper.isRouteCalculated() && !routingHelper.isRouteBeingCalculated()) {
+					OsmAndLocationSimulation sim = app.getLocationProvider().getLocationSimulation();
+					if (!sim.isRouteAnimating()) {
+						sim.startStopRouteAnimation(mapActivity);
+					}
+				}
 			}
 		}
 	}
@@ -805,18 +820,15 @@ public class MapControlsLayer extends OsmandMapLayer {
 		quickSearchHud.updateVisibility(!routeDialogOpened && !trackDialogOpened && !isInMeasurementToolMode() && !isInPlanRouteMode()
 				&& !contextMenuOpened && !isInChoosingRoutesMode() && !isInWaypointsChoosingMode());
 
-		if (!routePlanningMode && !routeFollowingMode) {
-			if (mapView.isZooming()) {
-				lastZoom = System.currentTimeMillis();
-			}
-			//if (!mapView.isZooming() || !OsmandPlugin.isDevelopment()) {
-			if ((System.currentTimeMillis() - lastZoom > 1000) || !OsmandPlugin.isDevelopment()) {
-				zoomText.setVisibility(View.GONE);
-			} else {
-				zoomText.setVisibility(View.VISIBLE);
-				zoomText.setTextColor(textColor);
-				zoomText.setText(getZoomLevel(tileBox));
-			}
+		if (mapView.isZooming()) {
+			lastZoom = System.currentTimeMillis();
+		}
+		if ((System.currentTimeMillis() - lastZoom > 1000) || !OsmandPlugin.isDevelopment()) {
+			zoomText.setVisibility(View.GONE);
+		} else {
+			zoomText.setVisibility(View.VISIBLE);
+			zoomText.setTextColor(textColor);
+			zoomText.setText(getZoomLevel(tileBox));
 		}
 
 		mapRouteInfoMenu.setVisible(showRouteCalculationControls);
@@ -958,6 +970,8 @@ public class MapControlsLayer extends OsmandMapLayer {
 		} else {
 			transparencyBarLayout.setVisibility(View.GONE);
 		}
+		boolean nightMode = app.getDaynightHelper().isNightModeForMapControls();
+		UiUtilities.setupSeekBar(app, transparencyBar, nightMode, true);
 	}
 
 	public void hideTransparencyBar() {
@@ -1275,26 +1289,30 @@ public class MapControlsLayer extends OsmandMapLayer {
 				break;
 		}
 		if (pointType != null) {
-			mapRouteInfoMenu.selectAddress(name != null ? name : "", new LatLon(latitude, longitude), pointType);
+			mapRouteInfoMenu.selectAddress(name, new LatLon(latitude, longitude), pointType);
 		}
 	}
 
 	public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-		if (grantResults.length > 0) {
-			if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-				switch (requestCode) {
-					case REQUEST_LOCATION_FOR_NAVIGATION_PERMISSION:
-						onNavigationClick();
-						break;
-					case REQUEST_LOCATION_FOR_NAVIGATION_FAB_PERMISSION:
-						navigateButton();
-						break;
-					case REQUEST_LOCATION_FOR_ADD_DESTINATION_PERMISSION:
-						addDestination(requestedLatLon);
-						break;
+		if ((requestCode == REQUEST_LOCATION_FOR_NAVIGATION_PERMISSION
+				|| requestCode == REQUEST_LOCATION_FOR_NAVIGATION_FAB_PERMISSION
+				|| requestCode == REQUEST_LOCATION_FOR_ADD_DESTINATION_PERMISSION)) {
+			if (grantResults.length > 0) {
+				if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					switch (requestCode) {
+						case REQUEST_LOCATION_FOR_NAVIGATION_PERMISSION:
+							onNavigationClick();
+							break;
+						case REQUEST_LOCATION_FOR_NAVIGATION_FAB_PERMISSION:
+							navigateButton();
+							break;
+						case REQUEST_LOCATION_FOR_ADD_DESTINATION_PERMISSION:
+							addDestination(requestedLatLon);
+							break;
+					}
+				} else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+					app.showToastMessage(R.string.ask_for_location_permission);
 				}
-			} else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-				app.showToastMessage(R.string.ask_for_location_permission);
 			}
 		}
 	}

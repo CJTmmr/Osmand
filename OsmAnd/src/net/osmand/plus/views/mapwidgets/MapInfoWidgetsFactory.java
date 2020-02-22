@@ -4,6 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -17,8 +21,10 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.SwitchCompat;
 import android.text.ClipboardManager;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -31,6 +37,8 @@ import com.jwetherell.openmap.common.UTMPoint;
 import net.osmand.AndroidUtils;
 import net.osmand.Location;
 import net.osmand.LocationConvert;
+import net.osmand.PlatformUtil;
+import net.osmand.binary.BinaryMapRouteReaderAdapter;
 import net.osmand.binary.RouteDataObject;
 import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
@@ -49,8 +57,11 @@ import net.osmand.plus.helpers.AndroidUiHelper;
 import net.osmand.plus.helpers.WaypointDialogHelper;
 import net.osmand.plus.helpers.WaypointHelper;
 import net.osmand.plus.helpers.WaypointHelper.LocationPointWrapper;
+import net.osmand.plus.render.OsmandRenderer;
+import net.osmand.plus.render.TextRenderer;
 import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
 import net.osmand.plus.routepreparationmenu.ShowAlongTheRouteBottomSheet;
+import net.osmand.plus.routing.RouteCalculationResult;
 import net.osmand.plus.routing.RouteDirectionInfo;
 import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.views.OsmandMapLayer.DrawSettings;
@@ -58,9 +69,14 @@ import net.osmand.plus.views.OsmandMapTileView;
 import net.osmand.plus.views.RulerControlLayer;
 import net.osmand.plus.views.mapwidgets.MapWidgetRegistry.WidgetState;
 import net.osmand.plus.views.mapwidgets.NextTurnInfoWidget.TurnDrawable;
+import net.osmand.render.RenderingRuleSearchRequest;
+import net.osmand.render.RenderingRulesStorage;
+import net.osmand.router.ExitInfo;
 import net.osmand.router.TurnType;
 import net.osmand.util.Algorithms;
 import net.osmand.util.MapUtils;
+
+import org.apache.commons.logging.Log;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -72,7 +88,8 @@ public class MapInfoWidgetsFactory {
 		TRACK_DETAILS,
 		DISCOUNT,
 		MEASUREMENT_TOOL,
-		POI_FILTER
+		POI_FILTER,
+		DOWNLOAD_MAP
 	}
 
 	public TextInfoWidget createAltitudeControl(final MapActivity map) {
@@ -85,7 +102,7 @@ public class MapInfoWidgetsFactory {
 				Location loc = map.getMyApplication().getLocationProvider().getLastKnownLocation();
 				if (loc != null && loc.hasAltitude()) {
 					double compAlt = loc.getAltitude();
-					if (cachedAlt != (int) compAlt) {
+					if (isUpdateNeeded() || cachedAlt != (int) compAlt) {
 						cachedAlt = (int) compAlt;
 						String ds = OsmAndFormatter.getFormattedAlt(cachedAlt, map.getMyApplication());
 						int ls = ds.lastIndexOf(' ');
@@ -103,6 +120,11 @@ public class MapInfoWidgetsFactory {
 				}
 				return false;
 			}
+
+			@Override
+			public boolean isMetricSystemDepended() {
+				return true;
+			}
 		};
 		altitudeControl.setText(null, null);
 		altitudeControl.setIcons(R.drawable.widget_altitude_day, R.drawable.widget_altitude_night);
@@ -119,7 +141,7 @@ public class MapInfoWidgetsFactory {
 			@Override
 			public boolean updateInfo(DrawSettings d) {
 				GPSInfo gpsInfo = loc.getGPSInfo();
-				if (gpsInfo.usedSatellites != u || gpsInfo.foundSatellites != f) {
+				if (isUpdateNeeded() || gpsInfo.usedSatellites != u || gpsInfo.foundSatellites != f) {
 					u = gpsInfo.usedSatellites;
 					f = gpsInfo.foundSatellites;
 					setText(gpsInfo.usedSatellites + "/" + gpsInfo.foundSatellites, "");
@@ -383,6 +405,10 @@ public class MapInfoWidgetsFactory {
 		Runnable onCloseToolbarListener;
 
 		View bottomView = null;
+		boolean topViewVisible = true;
+		boolean shadowViewVisible = true;
+
+		private boolean bottomViewAdded = false;
 
 		public TopToolbarController(TopToolbarControllerType type) {
 			this.type = type;
@@ -407,6 +433,22 @@ public class MapInfoWidgetsFactory {
 
 		public void setBottomView(View bottomView) {
 			this.bottomView = bottomView;
+		}
+
+		public boolean isTopViewVisible() {
+			return topViewVisible;
+		}
+
+		public void setTopViewVisible(boolean topViewVisible) {
+			this.topViewVisible = topViewVisible;
+		}
+
+		public boolean isShadowViewVisible() {
+			return shadowViewVisible;
+		}
+
+		public void setShadowViewVisible(boolean shadowViewVisible) {
+			this.shadowViewVisible = shadowViewVisible;
 		}
 
 		public void setSingleLineTitle(boolean singleLineTitle) {
@@ -573,11 +615,14 @@ public class MapInfoWidgetsFactory {
 				AndroidUiHelper.updateVisibility(descrView, false);
 			}
 			if (bottomView != null) {
-				bottomViewLayout.removeAllViews();
-				bottomViewLayout.addView(bottomView);
-				AndroidUiHelper.updateVisibility(bottomViewLayout, true);
+				if (!bottomViewAdded) {
+					bottomViewLayout.removeAllViews();
+					bottomViewLayout.addView(bottomView);
+					bottomViewLayout.setVisibility(View.VISIBLE);
+					bottomViewAdded = true;
+				}
 			} else {
-				AndroidUiHelper.updateVisibility(bottomViewLayout, false);
+				bottomViewLayout.setVisibility(View.GONE);
 			}
 			AndroidUiHelper.updateVisibility(switchCompat, topBarSwitchVisible);
 			if (topBarSwitchVisible) {
@@ -586,8 +631,9 @@ public class MapInfoWidgetsFactory {
 					DrawableCompat.setTint(switchCompat.getTrackDrawable(), ContextCompat.getColor(switchCompat.getContext(), R.color.map_toolbar_switch_track_color));
 				}
 			}
-			if (view.getShadowView() != null) {
-				view.getShadowView().setVisibility(View.VISIBLE);
+			View shadowView = view.getShadowView();
+			if (shadowView != null) {
+				AndroidUiHelper.updateVisibility(shadowView, isShadowViewVisible());
 			}
 		}
 	}
@@ -636,6 +682,10 @@ public class MapInfoWidgetsFactory {
 
 		public View getTopbar() {
 			return topbar;
+		}
+
+		public boolean isTopToolbarViewVisible() {
+			return topbar.getVisibility() == View.VISIBLE;
 		}
 
 		public View getTopBarLayout() {
@@ -706,6 +756,7 @@ public class MapInfoWidgetsFactory {
 				}
 			}
 			controllers.add(controller);
+			map.getMapLayers().getMapMarkersLayer().getWidgetsFactory().updateInfo(null, map.getMapView().getZoom());
 			updateColors();
 			updateInfo();
 		}
@@ -738,12 +789,15 @@ public class MapInfoWidgetsFactory {
 				initToolbar(defaultController);
 				defaultController.updateToolbar(this);
 			}
-			AndroidUiHelper.updateVisibility(topbar, controller != null && !MapRouteInfoMenu.chooseRoutesVisible && !MapRouteInfoMenu.waypointsVisible &&
+			boolean updated = AndroidUiHelper.updateVisibility(topbar, controller != null && !MapRouteInfoMenu.chooseRoutesVisible && !MapRouteInfoMenu.waypointsVisible &&
 					(!map.getContextMenu().isVisible() || controller.getType() == TopToolbarControllerType.CONTEXT_MENU));
+			if (updated) {
+				map.updateStatusBarColor();
+			}
 		}
 
 		public void updateColors(TopToolbarController controller) {
-			OsmandApplication app = map.getMyApplication();
+			UiUtilities uiUtils = map.getMyApplication().getUIUtilities();
 			controller.nightMode = nightMode;
 
 			boolean portrait = AndroidUiHelper.isOrientationPortrait(map);
@@ -766,29 +820,35 @@ public class MapInfoWidgetsFactory {
 			int descrTextClrId = nightMode ? controller.descrTextClrDarkId : controller.descrTextClrLightId;
 			int textBtnTitleClr = nightMode ? controller.textBtnTitleClrDark : controller.textBtnTitleClrLight;
 
-			if (bg != null) {
-				topBarLayout.setBackgroundDrawable(bg);
+			if (controller.isTopViewVisible()) {
+				if (bg != null) {
+					topBarLayout.setBackgroundDrawable(bg);
+				} else {
+					topBarLayout.setBackgroundResource(bgId);
+				}
+				topBarLayout.setVisibility(View.VISIBLE);
 			} else {
-				topBarLayout.setBackgroundResource(bgId);
+				topBarLayout.setVisibility(View.GONE);
 			}
+
 			if (backBtnIconId == 0) {
 				backButton.setImageDrawable(null);
 			} else {
 				if (backBtnIconClr != -1) {
-					backButton.setImageDrawable(app.getUIUtilities().getPaintedIcon(backBtnIconId, backBtnIconClr));
+					backButton.setImageDrawable(uiUtils.getPaintedIcon(backBtnIconId, backBtnIconClr));
 				} else {
-					backButton.setImageDrawable(app.getUIUtilities().getIcon(backBtnIconId, backBtnIconClrId));
+					backButton.setImageDrawable(uiUtils.getIcon(backBtnIconId, backBtnIconClrId));
 				}
 			}
 			if (closeBtnIconId == 0) {
 				closeButton.setImageDrawable(null);
 			} else {
-				closeButton.setImageDrawable(app.getUIUtilities().getIcon(closeBtnIconId, closeBtnIconClrId));
+				closeButton.setImageDrawable(uiUtils.getIcon(closeBtnIconId, closeBtnIconClrId));
 			}
 			if (refreshBtnIconId == 0) {
 				refreshButton.setImageDrawable(null);
 			} else {
-				refreshButton.setImageDrawable(app.getUIUtilities().getIcon(refreshBtnIconId, refreshBtnIconClrId));
+				refreshButton.setImageDrawable(uiUtils.getIcon(refreshBtnIconId, refreshBtnIconClrId));
 			}
 			int titleColor = titleTextClr != -1 ? titleTextClr : map.getResources().getColor(titleTextClrId);
 			int descrColor = descrTextClr != -1 ? descrTextClr : map.getResources().getColor(descrTextClrId);
@@ -858,10 +918,13 @@ public class MapInfoWidgetsFactory {
 	public static class TopTextView {
 		private final RoutingHelper routingHelper;
 		private final MapActivity map;
-		private View topBar;
-		private TextView addressText;
-		private TextView addressTextShadow;
-		private OsmAndLocationProvider locationProvider;
+		private final View topBar;
+		private final TextView addressText;
+		private final TextView addressTextShadow;
+		private final TextView exitRefText;
+		private final ImageView shieldIcon;
+		private final ImageView turnIcon;
+		private final OsmAndLocationProvider locationProvider;
 		private WaypointHelper waypointHelper;
 		private OsmandSettings settings;
 		private View waypointInfoBar;
@@ -869,19 +932,26 @@ public class MapInfoWidgetsFactory {
 		private TurnDrawable turnDrawable;
 		private boolean showMarker;
 		private int shadowRad;
+		RouteCalculationResult.NextDirectionInfo calc1;
+
+		private static final Log LOG = PlatformUtil.getLog(TopTextView.class);
 
 		public TopTextView(OsmandApplication app, MapActivity map) {
+			turnDrawable = new NextTurnInfoWidget.TurnDrawable(map, true);
 			topBar = map.findViewById(R.id.map_top_bar);
 			addressText = (TextView) map.findViewById(R.id.map_address_text);
 			addressTextShadow = (TextView) map.findViewById(R.id.map_address_text_shadow);
 			waypointInfoBar = map.findViewById(R.id.waypoint_info_bar);
+			exitRefText = map.findViewById(R.id.map_exit_ref);
+			shieldIcon = map.findViewById(R.id.map_shield_icon);
+			turnIcon = map.findViewById(R.id.map_turn_icon);
 			this.routingHelper = app.getRoutingHelper();
 			locationProvider = app.getLocationProvider();
 			this.map = map;
 			settings = app.getSettings();
 			waypointHelper = app.getWaypointHelper();
 			updateVisibility(false);
-			turnDrawable = new NextTurnInfoWidget.TurnDrawable(map, true);
+			calc1 = new RouteCalculationResult.NextDirectionInfo();
 		}
 
 		public boolean updateVisibility(boolean visible) {
@@ -898,6 +968,8 @@ public class MapInfoWidgetsFactory {
 			TextInfoWidget.updateTextColor((TextView) waypointInfoBar.findViewById(R.id.waypoint_text),
 					(TextView) waypointInfoBar.findViewById(R.id.waypoint_text_shadow),
 					textColor, textShadowColor, bold, rad / 2);
+			exitRefText.setTextColor(nightMode ? map.getResources().getColor(R.color.text_color_primary_dark) :
+					map.getResources().getColor(R.color.color_white));
 
 			ImageView all = (ImageView) waypointInfoBar.findViewById(R.id.waypoint_more);
 			ImageView remove = (ImageView) waypointInfoBar.findViewById(R.id.waypoint_close);
@@ -913,10 +985,17 @@ public class MapInfoWidgetsFactory {
 			TurnType[] type = new TurnType[1];
 			boolean showNextTurn = false;
 			boolean showMarker = this.showMarker;
+			boolean showExitInfo = false;
+			boolean showShield = false;
+			boolean imminentTurn = false;
+			ExitInfo exitInfo = null;
+			RouteDataObject object = null;
+
 			if (routingHelper != null && routingHelper.isRouteCalculated() && !routingHelper.isDeviatedFromRoute()) {
 				if (routingHelper.isFollowingMode()) {
 					if (settings.SHOW_STREET_NAME.get()) {
-						text = routingHelper.getCurrentName(type);
+						RouteCalculationResult.NextDirectionInfo nextDirInfo = routingHelper.getNextRouteDirectionInfo(calc1, true);
+						text = routingHelper.getCurrentName(type, nextDirInfo);
 						if (text == null) {
 							text = "";
 						} else {
@@ -925,6 +1004,30 @@ public class MapInfoWidgetsFactory {
 							} else {
 								turnDrawable.setColor(R.color.nav_arrow);
 							}
+						}
+
+						RouteDirectionInfo directionInfo = nextDirInfo.directionInfo;
+
+						if (nextDirInfo.imminent >= 0) {
+							imminentTurn = true;
+						} else {
+							imminentTurn = false;
+						}
+
+						if (directionInfo != null && directionInfo.getExitInfo() != null) {
+							exitInfo = directionInfo.getExitInfo();
+							showExitInfo = true;
+						} else {
+							showExitInfo = false;
+						}
+
+						if (showExitInfo) {
+							text = exitInfo.getExitStreetName();
+						}
+
+						if (directionInfo != null && directionInfo.getRouteDataObject() != null) {
+							object = directionInfo.getRouteDataObject();
+							showShield = true;
 						}
 					}
 				} else {
@@ -935,10 +1038,7 @@ public class MapInfoWidgetsFactory {
 						RouteDirectionInfo next = routingHelper.getRouteDirections().get(di);
 						type[0] = next.getTurnType();
 						turnDrawable.setColor(R.color.nav_arrow_distant);
-						text = RoutingHelper.formatStreetName(next.getStreetName(), next.getRef(), next.getDestinationName(), "»");
-//						if (next.distance > 0) {
-//							text += " " + OsmAndFormatter.getFormattedDistance(next.distance, map.getMyApplication());
-//						}
+						text = RoutingHelper.formatStreetName(next.getStreetName(), null, next.getDestinationName(), "»");
 						if (text == null) {
 							text = "";
 						}
@@ -987,25 +1087,34 @@ public class MapInfoWidgetsFactory {
 				AndroidUiHelper.updateVisibility(addressTextShadow, shadowRad > 0);
 				boolean update = turnDrawable.setTurnType(type[0]) || showMarker != this.showMarker;
 				this.showMarker = showMarker;
-				int h = addressText.getHeight() / 4 * 3;
-				if (h != turnDrawable.getBounds().bottom) {
-					turnDrawable.setBounds(0, 0, h, h);
+				if (showShield && setRoadShield(shieldIcon, object)) {
+					AndroidUiHelper.updateVisibility(shieldIcon, true);
+				} else {
+					AndroidUiHelper.updateVisibility(shieldIcon, false);
+				}
+
+				if (showExitInfo) {
+					String exitRef = exitInfo.getRef();
+					if (!Algorithms.isEmpty(exitRef) && imminentTurn) {
+						exitRefText.setText(exitRef);
+						AndroidUiHelper.updateVisibility(exitRefText, true);
+					} else {
+						AndroidUiHelper.updateVisibility(exitRefText, false);
+					}
+				} else {
+					AndroidUiHelper.updateVisibility(exitRefText, false);
 				}
 				if (update) {
 					if (type[0] != null) {
-						addressTextShadow.setCompoundDrawables(turnDrawable, null, null, null);
-						addressTextShadow.setCompoundDrawablePadding(4);
-						addressText.setCompoundDrawables(turnDrawable, null, null, null);
-						addressText.setCompoundDrawablePadding(4);
+						turnIcon.invalidateDrawable(turnDrawable);
+						turnIcon.setImageDrawable(turnDrawable);
+						AndroidUiHelper.updateVisibility(turnIcon, true);
 					} else if (showMarker) {
 						Drawable marker = map.getMyApplication().getUIUtilities().getIcon(R.drawable.ic_action_start_navigation, R.color.color_myloc_distance);
-						addressTextShadow.setCompoundDrawablesWithIntrinsicBounds(marker, null, null, null);
-						addressTextShadow.setCompoundDrawablePadding(4);
-						addressText.setCompoundDrawablesWithIntrinsicBounds(marker, null, null, null);
-						addressText.setCompoundDrawablePadding(4);
+						turnIcon.setImageDrawable(marker);
+						AndroidUiHelper.updateVisibility(turnIcon, true);
 					} else {
-						addressTextShadow.setCompoundDrawables(null, null, null, null);
-						addressText.setCompoundDrawables(null, null, null, null);
+						AndroidUiHelper.updateVisibility(turnIcon, false);
 					}
 				}
 				if (!text.equals(addressText.getText().toString())) {
@@ -1013,6 +1122,102 @@ public class MapInfoWidgetsFactory {
 					addressText.setText(text);
 					return true;
 				}
+			}
+			return false;
+		}
+
+		private boolean setRoadShield(ImageView view, RouteDataObject object) {
+
+			String nameTag = null;
+			String name = null;
+			StringBuilder additional = new StringBuilder();
+			for (int i = 0; i < object.nameIds.length; i++) {
+				String key = object.region.routeEncodingRules.get(object.nameIds[i]).getTag();
+				String val = object.names.get(object.nameIds[i]);
+				if (key.startsWith("road_ref")) {
+					nameTag = key;
+					name = val;
+				} else {
+					additional.append(key).append("=").append(val).append(";");
+				}
+			}
+//			LOG.debug("Additionals (names): " + additional.toString() );
+
+			Context context = topBar.getContext();
+			int[] tps = object.getTypes();
+			OsmandApplication app = ((OsmandApplication) context.getApplicationContext());
+			RenderingRulesStorage storage = app.getRendererRegistry().getCurrentSelectedRenderer();
+			boolean nightMode = app.getDaynightHelper().isNightMode();
+			RenderingRuleSearchRequest rreq = map.getMyApplication().getResourceManager()
+					.getRenderer().getSearchRequestWithAppliedCustomRules(storage, nightMode);
+
+			for (int i : tps) {
+				BinaryMapRouteReaderAdapter.RouteTypeRule tp = object.region.quickGetEncodingRule(i);
+				if (tp.getTag().equals("highway") || tp.getTag().equals("route")) {
+					rreq.setInitialTagValueZoom(tp.getTag(), tp.getValue(), 13, null);
+				} else {
+					additional.append(tp.getTag()).append("=").append(tp.getValue()).append(";");
+				}
+			}
+
+			rreq.setIntFilter(rreq.ALL.R_TEXT_LENGTH, name.length());
+			rreq.setStringFilter(rreq.ALL.R_NAME_TAG, nameTag);
+			rreq.setStringFilter(rreq.ALL.R_ADDITIONAL, additional.toString());
+			rreq.search(RenderingRulesStorage.TEXT_RULES);
+
+			OsmandRenderer.RenderingContext rc = new OsmandRenderer.RenderingContext(context);
+
+			TextRenderer textRenderer = new TextRenderer(context);
+			TextRenderer.TextDrawInfo text = new TextRenderer.TextDrawInfo(name);
+
+
+			Paint p = textRenderer.getPaintText();
+			p.setTypeface(Typeface.create("Droid Serif", Typeface.BOLD));
+
+			int shieldRes = -1;
+
+			if (rreq.isSpecified(rreq.ALL.R_TEXT_SHIELD)) {
+				text.setShieldResIcon(rreq.getStringPropertyValue(rreq.ALL.R_TEXT_SHIELD));
+				shieldRes = app.getResources().getIdentifier("h_"+text.getShieldResIcon(),
+						"drawable", app.getPackageName());
+			}
+
+			if (rreq.isSpecified(rreq.ALL.R_TEXT_COLOR)) {
+				p.setColor(rreq.getIntPropertyValue(rreq.ALL.R_TEXT_COLOR));
+			}
+
+			if (rreq.isSpecified(rreq.ALL.R_TEXT_SIZE)) {
+				float ts = rreq.getFloatPropertyValue(rreq.ALL.R_TEXT_SIZE);
+				textRenderer.getPaintText().setTextSize(
+						TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, ts,
+								app.getResources().getDisplayMetrics()));
+			}
+
+			if (shieldRes != -1) {
+				float xSize;
+				float ySize;
+				Bitmap shield;
+				shield = BitmapFactory.decodeResource(app.getResources(), shieldRes);
+				ySize = shield.getHeight();
+				xSize = shield.getWidth();
+				float xyRatio = xSize/ySize;
+				//setting view propotions (height is fixed by toolbar size - 48dp);
+				int viewHeightPx = AndroidUtils.dpToPx(context, 48);
+				int viewWidthPx = (int) (viewHeightPx * xyRatio);
+
+				ViewGroup.LayoutParams params = view.getLayoutParams();
+				params.width = viewWidthPx;
+				view.setLayoutParams(params);
+
+				//creating bitmap according to size of resource
+				Bitmap bitmap = Bitmap.createBitmap((int) xSize, (int) ySize, Bitmap.Config.ARGB_8888);
+				Canvas canvas = new Canvas(bitmap);
+				text.fillProperties(rc, rreq, xSize/2, ySize/2 - p.getFontMetrics().ascent/2f);
+				textRenderer.drawShieldIcon(rc, canvas, text, text.getShieldResIcon());
+				textRenderer.drawWrappedText(canvas, text, 20);
+
+				view.setImageBitmap(bitmap);
+				return true;
 			}
 			return false;
 		}
@@ -1043,7 +1248,7 @@ public class MapInfoWidgetsFactory {
 							Bundle args = new Bundle();
 							args.putInt(ShowAlongTheRouteBottomSheet.EXPAND_TYPE_KEY, pnt.type);
 							fragment.setArguments(args);
-							fragment.setUsedOnMap(false);
+							fragment.setUsedOnMap(true);
 							fragment.show(map.getSupportFragmentManager(), ShowAlongTheRouteBottomSheet.TAG);
 						}
 					});
@@ -1200,8 +1405,7 @@ public class MapInfoWidgetsFactory {
 							ctx.startActivity(Intent.createChooser(intent, ctx.getString(R.string.send_location)));
 						}
 					});
-			AndroidUtils.setSnackbarTextColor(snackbar, R.color.active_color_primary_dark);
-			AndroidUtils.setSnackbarTextMaxLines(snackbar, 5);
+			UiUtilities.setupSnackbar(snackbar, nightMode, 5);
 			snackbar.show();
 		}
 

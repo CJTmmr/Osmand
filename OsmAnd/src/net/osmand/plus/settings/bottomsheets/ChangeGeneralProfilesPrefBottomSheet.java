@@ -1,18 +1,15 @@
 package net.osmand.plus.settings.bottomsheets;
 
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.view.View;
 
-import net.osmand.AndroidUtils;
 import net.osmand.PlatformUtil;
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.OsmandSettings.CommonPreference;
-import net.osmand.plus.OsmandSettings.OsmandPreference;
 import net.osmand.plus.R;
 import net.osmand.plus.base.bottomsheetmenu.BaseBottomSheetItem;
 import net.osmand.plus.base.bottomsheetmenu.SimpleBottomSheetItem;
@@ -22,56 +19,33 @@ import net.osmand.plus.settings.BaseSettingsFragment;
 
 import org.apache.commons.logging.Log;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.io.Serializable;
 
 public class ChangeGeneralProfilesPrefBottomSheet extends BasePreferenceBottomSheet {
 
-	public static final String TAG = "ChangeGeneralProfilesPrefBottomSheet";
+	public static final String TAG = ChangeGeneralProfilesPrefBottomSheet.class.getSimpleName();
 
 	private static final Log LOG = PlatformUtil.getLog(ChangeGeneralProfilesPrefBottomSheet.class);
 
-	private Object newValue;
+	private static final String NEW_VALUE_KEY = "new_value_key";
+
+	private Serializable newValue;
 
 	@Override
 	public void createMenuItems(Bundle savedInstanceState) {
 		final OsmandApplication app = getMyApplication();
 		Bundle args = getArguments();
-		if (app == null || args == null || newValue == null || !args.containsKey(PREFERENCE_ID)) {
+		if (app == null || args == null) {
 			return;
 		}
-
 		final String prefId = args.getString(PREFERENCE_ID);
-		CommonPreference pref = getPreference(prefId);
-		OsmandPreference osmandPref = app.getSettings().getPreference(prefId);
-		if (pref == null || osmandPref == null) {
+		newValue = args.getSerializable(NEW_VALUE_KEY);
+		if (newValue == null || prefId == null) {
 			return;
 		}
 
 		items.add(new TitleItem(getString(R.string.change_default_settings)));
-
-		StringBuilder builder = new StringBuilder();
-		final List<ApplicationMode> values = ApplicationMode.values(app);
-		List<ApplicationMode> appModesDefaultValue = new ArrayList<>();
-
-		for (int i = 0; i < values.size(); i++) {
-			ApplicationMode mode = values.get(i);
-			if (!osmandPref.isSetForMode(mode)) {
-				appModesDefaultValue.add(mode);
-			}
-		}
-
-		Iterator<ApplicationMode> iterator = appModesDefaultValue.iterator();
-		while (iterator.hasNext()) {
-			builder.append(iterator.next().toHumanString(app));
-			builder.append(iterator.hasNext() ? ", " : '.');
-		}
-
-		if (builder.length() > 0) {
-			CharSequence description = AndroidUtils.getStyledString(app.getString(R.string.pref_selected_by_default_for_profiles), builder.toString(), Typeface.BOLD);
-			items.add(new LongDescriptionItem(description));
-		}
+		items.add(new LongDescriptionItem(getString(R.string.apply_preference_to_all_profiles)));
 
 		BaseBottomSheetItem applyToAllProfiles = new SimpleBottomSheetItem.Builder()
 				.setTitle(getString(R.string.apply_to_all_profiles))
@@ -80,33 +54,25 @@ public class ChangeGeneralProfilesPrefBottomSheet extends BasePreferenceBottomSh
 				.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
-						for (ApplicationMode mode : values) {
-							app.getSettings().setPreference(prefId, newValue, mode);
-						}
-						BaseSettingsFragment target = (BaseSettingsFragment) getTargetFragment();
-						if (target != null) {
-							target.updateAllSettings();
-						}
+						app.getSettings().setPreferenceForAllModes(prefId, newValue);
+						updateTargetSettings(false, true);
 						dismiss();
 					}
 				})
 				.create();
 		items.add(applyToAllProfiles);
 
-		ApplicationMode selectedAppMode = getMyApplication().getSettings().APPLICATION_MODE.get();
+		ApplicationMode selectedAppMode = getAppMode();
 
 		BaseBottomSheetItem applyToCurrentProfile = new SimpleBottomSheetItem.Builder()
-				.setTitle(getString(R.string.apply_to_current_profile, selectedAppMode.toHumanString(app)))
+				.setTitle(getString(R.string.apply_to_current_profile, selectedAppMode.toHumanString()))
 				.setIcon(getActiveIcon(selectedAppMode.getIconRes()))
 				.setLayoutId(R.layout.bottom_sheet_item_simple)
 				.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
-						app.getSettings().setPreference(prefId, newValue);
-						BaseSettingsFragment target = (BaseSettingsFragment) getTargetFragment();
-						if (target != null) {
-							target.updateAllSettings();
-						}
+						app.getSettings().setPreference(prefId, newValue, getAppMode());
+						updateTargetSettings(false, false);
 						dismiss();
 					}
 				})
@@ -120,6 +86,7 @@ public class ChangeGeneralProfilesPrefBottomSheet extends BasePreferenceBottomSh
 				.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
+						updateTargetSettings(true, false);
 						dismiss();
 					}
 				})
@@ -132,28 +99,47 @@ public class ChangeGeneralProfilesPrefBottomSheet extends BasePreferenceBottomSh
 		return true;
 	}
 
-	private CommonPreference getPreference(String prefId) {
-		OsmandApplication app = getMyApplication();
-		if (app != null) {
-			OsmandPreference pref = app.getSettings().getPreference(prefId);
-			if (pref instanceof CommonPreference) {
-				return (CommonPreference) pref;
-			}
-		}
-
-		return null;
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putSerializable(NEW_VALUE_KEY, newValue);
 	}
 
-	public static void showInstance(@NonNull FragmentManager fm, String prefId, Object newValue, Fragment target, boolean usedOnMap) {
+	private void updateTargetSettings(boolean discard, boolean appliedToAllProfiles) {
+		BaseSettingsFragment target = (BaseSettingsFragment) getTargetFragment();
+		if (target != null) {
+			if (!discard) {
+				target.onSettingApplied(getPrefId(), appliedToAllProfiles);
+			}
+			target.updateSetting(getPrefId());
+			if (!discard) {
+				if (target.shouldDismissOnChange()) {
+					target.dismiss();
+				}
+				FragmentManager manager = getFragmentManager();
+				if (manager != null) {
+					BasePreferenceBottomSheet preferenceBottomSheet =
+							BasePreferenceBottomSheet.findPreferenceBottomSheet(manager, getPrefId());
+					if (preferenceBottomSheet != null && preferenceBottomSheet.shouldDismissOnChange()) {
+						preferenceBottomSheet.dismiss();
+					}
+				}
+			}
+		}
+	}
+
+	public static void showInstance(@NonNull FragmentManager fm, String prefId, Serializable newValue, Fragment target,
+									boolean usedOnMap, @Nullable ApplicationMode appMode) {
 		try {
 			if (fm.findFragmentByTag(ChangeGeneralProfilesPrefBottomSheet.TAG) == null) {
 				Bundle args = new Bundle();
 				args.putString(PREFERENCE_ID, prefId);
+				args.putSerializable(NEW_VALUE_KEY, newValue);
 
 				ChangeGeneralProfilesPrefBottomSheet fragment = new ChangeGeneralProfilesPrefBottomSheet();
 				fragment.setArguments(args);
 				fragment.setUsedOnMap(usedOnMap);
-				fragment.newValue = newValue;
+				fragment.setAppMode(appMode);
 				fragment.setTargetFragment(target, 0);
 				fragment.show(fm, ChangeGeneralProfilesPrefBottomSheet.TAG);
 			}

@@ -342,7 +342,7 @@ public class RouteInfoWidgetsFactory {
 			@Override
 			public boolean updateInfo(DrawSettings drawSettings) {
 				long time = System.currentTimeMillis();
-				if(time - cachedLeftTime > 5000) {
+				if (isUpdateNeeded() || time - cachedLeftTime > 5000) {
 					cachedLeftTime = time;
 					if (DateFormat.is24HourFormat(ctx)) {
 						setText(DateFormat.format("k:mm", time).toString(), null); //$NON-NLS-1$
@@ -372,7 +372,7 @@ public class RouteInfoWidgetsFactory {
 			@Override
 			public boolean updateInfo(DrawSettings drawSettings) {
 				long time = System.currentTimeMillis();
-				if (time - cachedLeftTime > 1000) {
+				if (isUpdateNeeded() || time - cachedLeftTime > 1000) {
 					cachedLeftTime = time;
 					Intent batteryIntent = ctx.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 					int level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
@@ -418,7 +418,7 @@ public class RouteInfoWidgetsFactory {
 				} else {
 					mx = 0f;
 				}
-				if (cachedSpeed != mx) {
+				if (isUpdateNeeded() || cachedSpeed != mx) {
 					cachedSpeed = mx;
 					if (cachedSpeed == 0) {
 						setText(null, null);
@@ -436,6 +436,11 @@ public class RouteInfoWidgetsFactory {
 					return true;
 				}
 				return false;
+			}
+
+			@Override
+			public boolean isMetricSystemDepended() {
+				return true;
 			}
 		};
 		speedControl.setIcons(R.drawable.widget_max_speed_day, R.drawable.widget_max_speed_night);
@@ -463,7 +468,7 @@ public class RouteInfoWidgetsFactory {
 					if (cachedSpeed < 6) {
 						minDelta = .015f;
 					}
-					if (Math.abs(loc.getSpeed() - cachedSpeed) > minDelta) {
+					if (isUpdateNeeded() || Math.abs(loc.getSpeed() - cachedSpeed) > minDelta) {
 						cachedSpeed = loc.getSpeed();
 						String ds = OsmAndFormatter.getFormattedSpeed(cachedSpeed, app);
 						int ls = ds.lastIndexOf(' ');
@@ -480,6 +485,11 @@ public class RouteInfoWidgetsFactory {
 					return true;
 				}
 				return false;
+			}
+
+			@Override
+			public boolean isMetricSystemDepended() {
+				return true;
 			}
 		};
 		speedControl.setIcons(R.drawable.widget_speed_day, R.drawable.widget_speed_night);
@@ -521,7 +531,7 @@ public class RouteInfoWidgetsFactory {
 		@Override
 		public boolean updateInfo(DrawSettings drawSettings) {
 			int d = getDistance();
-			if (distChanged(cachedMeters, d)) {
+			if (isUpdateNeeded() || distChanged(cachedMeters, d)) {
 				cachedMeters = d;
 				if (cachedMeters <= 20) {
 					cachedMeters = 0;
@@ -538,6 +548,11 @@ public class RouteInfoWidgetsFactory {
 				return true;
 			}
 			return false;
+		}
+
+		@Override
+		public boolean isMetricSystemDepended() {
+			return true;
 		}
 
 		public abstract LatLon getPointToNavigate();
@@ -664,17 +679,6 @@ public class RouteInfoWidgetsFactory {
 		final TextInfoWidget bearingControl = new TextInfoWidget(map) {
 			private int cachedDegrees;
 			private float MIN_SPEED_FOR_HEADING = 1f;
-			private boolean angularUnitTypeChanged = false;
-			private StateChangedListener<OsmandSettings.AngularConstants> listener = new StateChangedListener<OsmandSettings.AngularConstants>() {
-				@Override
-				public void stateChanged(OsmandSettings.AngularConstants change) {
-					angularUnitTypeChanged = true;
-				}
-			};
-			
-			{
-				getOsmandApplication().getSettings().ANGULAR_UNITS.addListener(listener);
-			}
 
 			private LatLon getNextTargetPoint() {
 				List<TargetPoint> points = getOsmandApplication().getTargetPointsHelper().getIntermediatePointsWithTarget();
@@ -687,8 +691,7 @@ public class RouteInfoWidgetsFactory {
 				boolean modeChanged = setIcons(relative ? relativeBearingResId : bearingResId, relative ? relativeBearingNightResId : bearingNightResId);
 				setContentTitle(relative ? R.string.map_widget_bearing : R.string.map_widget_magnetic_bearing);
 				int b = getBearing(relative);
-				if (angularUnitTypeChanged || degreesChanged(cachedDegrees, b) || modeChanged) {
-					angularUnitTypeChanged = false;
+				if (isUpdateNeeded() || degreesChanged(cachedDegrees, b) || modeChanged) {
 					cachedDegrees = b;
 					if (b != -1000) {
 						setText(OsmAndFormatter.getFormattedAzimuth(b, getOsmandApplication()) + (relative ? "" : " M"), null);
@@ -698,6 +701,11 @@ public class RouteInfoWidgetsFactory {
 					return true;
 				}
 				return false;
+			}
+
+			@Override
+			public boolean isAngularUnitsDepended() {
+				return true;
 			}
 
 			public int getBearing(boolean relative) {
@@ -875,9 +883,11 @@ public class RouteInfoWidgetsFactory {
 	}
 	
 	
-	private static class LanesDrawable extends Drawable {
-		int[] lanes = null;
+	public static class LanesDrawable extends Drawable {
+		public int[] lanes = null;
 		boolean imminent = false;
+		public boolean isTurnByTurn = false;
+		public boolean isNightMode = false;
 		private Context ctx;
 		private Paint paintBlack;
 		private Paint paintRouteDirection;
@@ -892,7 +902,7 @@ public class RouteInfoWidgetsFactory {
 		private int imgMinDelta;
 		private int imgMargin;
 
-		LanesDrawable(MapActivity ctx, float scaleCoefficent) {
+		public LanesDrawable(MapActivity ctx, float scaleCoefficent) {
 			this.ctx = ctx;
 			OsmandSettings settings = ctx.getMyApplication().getSettings();
 			leftSide = settings.DRIVING_REGION.get().leftHandDriving;
@@ -916,7 +926,7 @@ public class RouteInfoWidgetsFactory {
 			paintSecondTurn.setColor(ctx.getResources().getColor(R.color.nav_arrow_distant));
 		}
 
-		void updateBounds() {
+		public void updateBounds() {
 			float w = 0;
 			float h = 0;
 			float delta = imgMinDelta;
@@ -1031,8 +1041,13 @@ public class RouteInfoWidgetsFactory {
 				// canvas.translate((int) (16 * scaleCoefficient), 0);
 				for (int i = 0; i < lanes.length; i++) {
 					if ((lanes[i] & 1) == 1) {
-						paintRouteDirection.setColor(imminent ? ctx.getResources().getColor(R.color.nav_arrow_imminent) :
-								ctx.getResources().getColor(R.color.nav_arrow));
+						if (isTurnByTurn){
+							paintRouteDirection.setColor(isNightMode ? ctx.getResources().getColor(R.color.active_color_primary_dark) :
+									ctx.getResources().getColor(R.color.active_color_primary_light));
+						} else {
+							paintRouteDirection.setColor(imminent ? ctx.getResources().getColor(R.color.nav_arrow_imminent) :
+									ctx.getResources().getColor(R.color.nav_arrow));
+						}
 					} else {
 						paintRouteDirection.setColor(ctx.getResources().getColor(R.color.nav_arrow_distant));
 					}
@@ -1258,12 +1273,13 @@ public class RouteInfoWidgetsFactory {
 					&& showRoutingAlarms && (trafficWarnings || cams)) {
 				AlarmInfo alarm;
 				if(rh.isFollowingMode() && !rh.isDeviatedFromRoute() && rh.getCurrentGPXRoute() == null) {
-					alarm = wh.getMostImportantAlarm(settings.METRIC_SYSTEM.get(), cams);
+					alarm = wh.getMostImportantAlarm(settings.SPEED_SYSTEM.get(), cams);
 				} else {
 					RouteDataObject ro = locationProvider.getLastKnownRouteSegment();
 					Location loc = locationProvider.getLastKnownLocation();
 					if(ro != null && loc != null) {
-						alarm = wh.calculateMostImportantAlarm(ro, loc, settings.METRIC_SYSTEM.get(), cams);
+						alarm = wh.calculateMostImportantAlarm(ro, loc, settings.METRIC_SYSTEM.get(),
+								settings.SPEED_SYSTEM.get(), cams);
 					} else {
 						alarm = null;
 					}

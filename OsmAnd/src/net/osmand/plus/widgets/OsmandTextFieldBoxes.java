@@ -1,13 +1,12 @@
 package net.osmand.plus.widgets;
 
 import android.content.Context;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+
+import net.osmand.plus.R;
 
 import studio.carbonylgroup.textfieldboxes.ExtendedEditText;
 import studio.carbonylgroup.textfieldboxes.TextFieldBoxes;
@@ -87,5 +86,24 @@ public class OsmandTextFieldBoxes extends TextFieldBoxes {
 
 	public ExtendedEditText getEditText() {
 		return editText;
+	}
+
+	@Override
+	protected void makeCursorBlink() {
+		CharSequence hintCache = this.editText.getHint();
+		this.editText.setHint(" ");
+		this.editText.setHint(hintCache);
+	}
+
+	@Override
+	public void setError(String errorText, boolean giveFocus) {
+		super.setError(errorText, giveFocus);
+		this.findViewById(R.id.text_field_boxes_bottom).setVisibility(View.VISIBLE);
+	}
+
+	@Override
+	public void removeError() {
+		super.removeError();
+		this.findViewById(R.id.text_field_boxes_bottom).setVisibility(View.GONE);
 	}
 }

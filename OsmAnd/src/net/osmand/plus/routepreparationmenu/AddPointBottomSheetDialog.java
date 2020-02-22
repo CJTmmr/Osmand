@@ -3,7 +3,6 @@ package net.osmand.plus.routepreparationmenu;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -249,12 +248,12 @@ public class AddPointBottomSheetDialog extends MenuBottomSheetDialogFragment {
 											targetPointsHelper.navigateToPoint(ll, true, targetPointsHelper.getIntermediatePoints().size());
 											break;
 										case HOME:
-											app.showShortToastMessage(R.string.add_intermediate_point);
-											targetPointsHelper.setHomePoint(ll, null);
+											app.showShortToastMessage(R.string.add_home);
+											app.getFavorites().setSpecialPoint(ll, FavouritePoint.SpecialPointType.HOME, null);
 											break;
 										case WORK:
-											app.showShortToastMessage(R.string.add_intermediate_point);
-											targetPointsHelper.setWorkPoint(ll, null);
+											app.showShortToastMessage(R.string.add_work);
+											app.getFavorites().setSpecialPoint(ll, FavouritePoint.SpecialPointType.WORK, null);
 											break;
 									}
 								} else if (pointType == PointType.START) {
@@ -320,13 +319,16 @@ public class AddPointBottomSheetDialog extends MenuBottomSheetDialogFragment {
 		final View switchStartAndEndView = View.inflate(new ContextThemeWrapper(getContext(), themeRes), R.layout.bottom_sheet_item_simple_56dp, null);
 		TextView title = (TextView) switchStartAndEndView.findViewById(R.id.title);
 
-		String titleS = getString(R.string.swap_start_and_destination);
+		String start = getString(R.string.route_start_point);
+		String destination = getString(R.string.route_descr_destination);
+		String titleS = getString(R.string.swap_two_places, start, destination);
 		SpannableString titleSpan = new SpannableString(titleS);
-		int firstIndex = titleS.indexOf(" ");
-		if (firstIndex != -1) {
+		int startIndex = titleS.indexOf(start);
+		int destinationIndex = titleS.indexOf(destination);
+		if (startIndex != -1 && destinationIndex != -1) {
 			Typeface typeface = FontCache.getRobotoMedium(getContext());
-			titleSpan.setSpan(new CustomTypefaceSpan(typeface), firstIndex, titleS.indexOf(" ", firstIndex + 1), 0);
-			titleSpan.setSpan(new CustomTypefaceSpan(typeface), titleS.lastIndexOf(" "), titleS.length(), 0);
+			titleSpan.setSpan(new CustomTypefaceSpan(typeface), startIndex, startIndex + start.length(), 0);
+			titleSpan.setSpan(new CustomTypefaceSpan(typeface), destinationIndex, destinationIndex + destination.length(), 0);
 		}
 		title.setText(titleSpan);
 
@@ -358,15 +360,10 @@ public class AddPointBottomSheetDialog extends MenuBottomSheetDialogFragment {
 		items.clear();
 		addMainScrollItems(items);
 		items.addAll(helper.getVisibleFavouritePoints());
-		if (items.isEmpty()) {
-			items.addAll(helper.getFavouritePoints());
-		}
 	}
 
 	private void addMainScrollItems(List<Object> items) {
 		items.add(FAVORITES);
-		items.add(PointType.HOME);
-		items.add(PointType.WORK);
 	}
 
 	private void createFavoritesScrollItem() {
@@ -381,13 +378,23 @@ public class AddPointBottomSheetDialog extends MenuBottomSheetDialogFragment {
 			} else {
 				addMainScrollItems(items);
 				helper.addListener(new FavouritesDbHelper.FavoritesListener() {
-					@Override
-					public void onFavoritesLoaded() {
+
+					private void reloadFavoritesItems() {
 						MapActivity mapActivity = (MapActivity) getActivity();
 						if (mapActivity != null) {
 							loadFavoritesItems(adapter.getItems(), helper);
 							adapter.notifyDataSetChanged();
 						}
+					}
+
+					@Override
+					public void onFavoritesLoaded() {
+						reloadFavoritesItems();
+					}
+
+					@Override
+					public void onFavoriteDataUpdated(@NonNull FavouritePoint favouritePoint) {
+						reloadFavoritesItems();
 					}
 				});
 			}
@@ -421,8 +428,8 @@ public class AddPointBottomSheetDialog extends MenuBottomSheetDialogFragment {
 					menu.selectMapMarker((MapMarker) item, pointType);
 					dismiss();
 				} else {
-					TargetPointsHelper helper = mapActivity.getMyApplication().getTargetPointsHelper();
-					Pair<LatLon, PointDescription> pair = getLocationAndDescrFromItem(item, helper);
+					TargetPointsHelper targetPointsHelper = mapActivity.getMyApplication().getTargetPointsHelper();
+					Pair<LatLon, PointDescription> pair = getLocationAndDescrFromItem(item);
 					LatLon ll = pair.first;
 					PointDescription name = pair.second;
 					if (ll == null) {
@@ -432,15 +439,26 @@ public class AddPointBottomSheetDialog extends MenuBottomSheetDialogFragment {
 							dismiss();
 						}
 					} else {
+						FavouritesDbHelper favorites = requiredMyApplication().getFavorites();
 						switch (pointType) {
 							case START:
-								helper.setStartPoint(ll, true, name);
+								targetPointsHelper.setStartPoint(ll, true, name);
 								break;
 							case TARGET:
-								helper.navigateToPoint(ll, true, -1, name);
+								targetPointsHelper.navigateToPoint(ll, true, -1, name);
+								OsmAndLocationProvider.requestFineLocationPermissionIfNeeded(mapActivity);
 								break;
 							case INTERMEDIATE:
-								helper.navigateToPoint(ll, true, helper.getIntermediatePoints().size(), name);
+								targetPointsHelper.navigateToPoint(ll, true, targetPointsHelper.getIntermediatePoints().size(), name);
+								break;
+							case HOME:
+								favorites.setSpecialPoint(ll, FavouritePoint.SpecialPointType.HOME, null);
+								break;
+							case WORK:
+								favorites.setSpecialPoint(ll, FavouritePoint.SpecialPointType.WORK, null);
+								break;
+							case PARKING:
+								favorites.setSpecialPoint(ll, FavouritePoint.SpecialPointType.PARKING, null);
 								break;
 						}
 						dismiss();
@@ -450,23 +468,29 @@ public class AddPointBottomSheetDialog extends MenuBottomSheetDialogFragment {
 		};
 	}
 
-	private Pair<LatLon, PointDescription> getLocationAndDescrFromItem(Object item, TargetPointsHelper helper) {
+	private Pair<LatLon, PointDescription> getLocationAndDescrFromItem(Object item) {
 		PointDescription name = null;
 		LatLon ll = null;
 		if (item instanceof FavouritePoint) {
 			FavouritePoint point = (FavouritePoint) item;
 			ll = new LatLon(point.getLatitude(), point.getLongitude());
-			name = point.getPointDescription();
+			name = point.getPointDescription(requireActivity());
 		} else if (item instanceof PointType) {
-			TargetPoint point = null;
-			if (item == PointType.HOME) {
-				point = helper.getHomePoint();
-			} else if (item == PointType.WORK) {
-				point = helper.getWorkPoint();
-			}
-			if (point != null) {
-				ll = new LatLon(point.getLatitude(), point.getLongitude());
-				name = point.getOriginalPointDescription();
+			MapActivity mapActivity = (MapActivity) getActivity();
+			if (mapActivity != null) {
+				FavouritesDbHelper favorites = mapActivity.getMyApplication().getFavorites();
+				FavouritePoint point = null;
+				if (item == PointType.HOME) {
+					point = favorites.getSpecialPoint(FavouritePoint.SpecialPointType.HOME);
+				} else if (item == PointType.WORK) {
+					point = favorites.getSpecialPoint(FavouritePoint.SpecialPointType.WORK);
+				} else if (item == PointType.PARKING) {
+					point = favorites.getSpecialPoint(FavouritePoint.SpecialPointType.PARKING);
+				}
+				if (point != null) {
+					ll = new LatLon(point.getLatitude(), point.getLongitude());
+					name = point.getPointDescription(mapActivity);
+				}
 			}
 		}
 		return new Pair<>(ll, name);
@@ -552,10 +576,10 @@ public class AddPointBottomSheetDialog extends MenuBottomSheetDialogFragment {
 			if (activity != null) {
 				RecyclerView.LayoutParams layoutParams = (RecyclerView.LayoutParams) view.getLayoutParams();
 				if (AndroidUiHelper.isOrientationPortrait(getActivity())) {
-					layoutParams.width = AndroidUtils.getScreenWidth(activity) / 2;
+					layoutParams.width = (int) (AndroidUtils.getScreenWidth(activity) / 2.5);
 				} else {
 					// 11.5dp is the shadow width
-					layoutParams.width = (getResources().getDimensionPixelSize(R.dimen.landscape_bottom_sheet_dialog_fragment_width) / 2) - AndroidUtils.dpToPx(activity, 11.5f);
+					layoutParams.width = (int) ((getResources().getDimensionPixelSize(R.dimen.landscape_bottom_sheet_dialog_fragment_width) / 2.5) - AndroidUtils.dpToPx(activity, 11.5f));
 				}
 				view.setLayoutParams(layoutParams);
 			}
@@ -574,7 +598,7 @@ public class AddPointBottomSheetDialog extends MenuBottomSheetDialogFragment {
 			return items.get(position);
 		}
 
-		public void setItemClickListener(OnClickListener listener) {
+		void setItemClickListener(OnClickListener listener) {
 			this.listener = listener;
 		}
 	}
@@ -583,6 +607,26 @@ public class AddPointBottomSheetDialog extends MenuBottomSheetDialogFragment {
 
 		FavoritesItemsAdapter(OsmandApplication app, List<Object> items) {
 			super(app, items);
+		}
+
+		@NonNull
+		@Override
+		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
+			RecyclerView.ViewHolder viewHolder = super.onCreateViewHolder(viewGroup, viewType);
+
+			TextView title = viewHolder.itemView.findViewById(R.id.title);
+			TextView description = viewHolder.itemView.findViewById(R.id.description);
+			if (title != null && description != null) {
+				int titleHeight = AndroidUtils.getTextHeight(title.getPaint());
+				int descriptionHeight = AndroidUtils.getTextHeight(description.getPaint());
+				int minTextHeight = titleHeight + descriptionHeight * 2;
+				int defaultItemHeight = viewGroup.getContext().getResources().getDimensionPixelSize(R.dimen.bottom_sheet_selected_item_title_height);
+				if (defaultItemHeight < minTextHeight) {
+					viewHolder.itemView.setMinimumHeight(minTextHeight);
+				}
+			}
+
+			return viewHolder;
 		}
 
 		@Override
@@ -596,32 +640,27 @@ public class AddPointBottomSheetDialog extends MenuBottomSheetDialogFragment {
 					favoriteViewHolder.icon.setImageDrawable(getContentIcon(R.drawable.ic_action_fav_dark));
 					favoriteViewHolder.description.setVisibility(View.GONE);
 				} else {
-					if (item instanceof PointType) {
-						final TargetPointsHelper helper = app.getTargetPointsHelper();
-						TargetPoint point = null;
-						if (item == PointType.HOME) {
-							point = helper.getHomePoint();
-							favoriteViewHolder.title.setText(getString(R.string.home_button));
-							favoriteViewHolder.icon.setImageDrawable(getContentIcon(R.drawable.ic_action_home_dark));
-						} else if (item == PointType.WORK) {
-							point = helper.getWorkPoint();
-							favoriteViewHolder.title.setText(getString(R.string.work_button));
-							favoriteViewHolder.icon.setImageDrawable(getContentIcon(R.drawable.ic_action_work));
-						}
-						favoriteViewHolder.description.setText(point != null ? point.getPointDescription(app).getSimpleName(app, false) : getString(R.string.shared_string_add));
-					} else if (item instanceof FavouritePoint) {
-						FavouritePoint point = (FavouritePoint) getItem(position);
-						favoriteViewHolder.title.setText(point.getName());
-						if (point.getCategory().equals("")) {
-							favoriteViewHolder.description.setText(R.string.shared_string_favorites);
+					if (item instanceof FavouritePoint) {
+						FavouritePoint point = (FavouritePoint) item;
+						favoriteViewHolder.title.setText(point.getDisplayName(app));
+						if (((FavouritePoint) item).getSpecialPointType() != null) {
+							int iconColor = app.getSettings().isLightContent()
+									? R.color.icon_color_default_light : R.color.icon_color_default_dark;
+							favoriteViewHolder.icon.setImageDrawable(app.getUIUtilities().getIcon(
+									((FavouritePoint) item).getSpecialPointType().getIconId(), iconColor));
+							favoriteViewHolder.description.setText(point.getDescription());
 						} else {
-							favoriteViewHolder.description.setText(point.getCategory());
+							if (point.getCategory().equals("")) {
+								favoriteViewHolder.description.setText(R.string.shared_string_favorites);
+							} else {
+								favoriteViewHolder.description.setText(point.getCategory());
+							}
+							int pointColor = point.getColor();
+							int color = pointColor == 0 || pointColor == Color.BLACK ? ContextCompat.getColor(app, R.color.color_favorite) : pointColor;
+							favoriteViewHolder.icon.setImageDrawable(app.getUIUtilities().getPaintedIcon(R.drawable.ic_action_fav_dark, color));
 						}
-						int pointColor = point.getColor();
-						int color = pointColor == 0 || pointColor == Color.BLACK ? ContextCompat.getColor(app, R.color.color_favorite) : pointColor;
-						favoriteViewHolder.icon.setImageDrawable(app.getUIUtilities().getPaintedIcon(R.drawable.ic_action_fav_dark, color));
+						favoriteViewHolder.description.setVisibility(View.VISIBLE);
 					}
-					favoriteViewHolder.description.setVisibility(View.VISIBLE);
 				}
 			}
 		}

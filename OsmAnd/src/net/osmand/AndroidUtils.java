@@ -1,10 +1,10 @@
 package net.osmand;
 
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -23,11 +23,11 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.StatFs;
 import android.support.annotation.AttrRes;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.text.TextUtilsCompat;
@@ -48,15 +48,18 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewParent;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
-import net.osmand.plus.download.DownloadActivity;
+import net.osmand.util.Algorithms;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -73,6 +76,9 @@ import static android.util.TypedValue.COMPLEX_UNIT_SP;
 public class AndroidUtils {
 
 	public static final String STRING_PLACEHOLDER = "%s";
+	public static final MessageFormat formatKb = new MessageFormat("{0, number,##.#}", Locale.US);
+	public static final MessageFormat formatGb = new MessageFormat("{0, number,#.##}", Locale.US);
+	public static final MessageFormat formatMb = new MessageFormat("{0, number,##.#}", Locale.US);
 	
 	/**
 	 * @param context
@@ -152,6 +158,10 @@ public class AndroidUtils {
 		}
 	}
 
+	public static boolean isIntentSafe(Context context, Intent intent) {
+		return intent.resolveActivity(context.getPackageManager()) != null;
+	}
+
 	public static Spannable replaceCharsWithIcon(String text, Drawable icon, String[] chars) {
 		Spannable spannable = new SpannableString(text);
 		for (String entry : chars) {
@@ -208,16 +218,26 @@ public class AndroidUtils {
 		return DateFormat.getTimeFormat(ctx).format(new Date(time));
 	}
 
-	public static String formatSize(long sizeBytes) {
+
+	public static String formatSize(Context ctx, long sizeBytes) {
 		int sizeKb = (int) ((sizeBytes + 512) >> 10);
 		if (sizeKb > 0) {
+
+			String size = "";
+			String numSuffix = "MB";
 			if (sizeKb > 1 << 20) {
-				return DownloadActivity.formatGb.format(new Object[]{(float) sizeKb / (1 << 20)});
+				size = formatGb.format(new Object[]{(float) sizeKb / (1 << 20)});
+				numSuffix = "GB";
 			} else if (sizeBytes > (100 * (1 << 10))) {
-				return DownloadActivity.formatMb.format(new Object[]{(float) sizeBytes / (1 << 20)});
+				size = formatMb.format(new Object[]{(float) sizeBytes / (1 << 20)});
 			} else {
-				return DownloadActivity.formatKb.format(new Object[]{(float) sizeBytes / (1 << 10)});
+				size = formatKb.format(new Object[]{(float) sizeBytes / (1 << 10)});
+				numSuffix = "kB";
 			}
+			if(ctx == null) {
+				return size + " " + numSuffix;
+			}
+			return ctx.getString(R.string.ltr_or_rtl_combine_via_space, size, numSuffix);
 		}
 		return "";
 	}
@@ -245,6 +265,17 @@ public class AndroidUtils {
 															 @ColorRes int darkNormal, @ColorRes int darkChecked) {
 		return createColorStateList(ctx, night, android.R.attr.state_checked,
 				lightNormal, lightChecked, darkNormal, darkChecked);
+	}
+
+	public static ColorStateList createEnabledColorStateList(Context ctx, @ColorRes int normal, @ColorRes int pressed) {
+		return createEnabledColorStateList(ctx, false, normal, pressed, 0, 0);
+	}
+
+	public static ColorStateList createEnabledColorStateList(Context ctx, boolean night,
+	                                                         @ColorRes int lightNormal, @ColorRes int lightPressed,
+	                                                         @ColorRes int darkNormal, @ColorRes int darkPressed) {
+		return createColorStateList(ctx, night, android.R.attr.state_enabled,
+				lightNormal, lightPressed, darkNormal, darkPressed);
 	}
 
 	public static ColorStateList createPressedColorStateList(Context ctx, @ColorRes int normal, @ColorRes int pressed) {
@@ -281,6 +312,10 @@ public class AndroidUtils {
 		return createStateListDrawable(normal, pressed, android.R.attr.state_pressed);
 	}
 
+	public static StateListDrawable createEnabledStateListDrawable(Drawable disabled, Drawable enabled) {
+		return createStateListDrawable(disabled, enabled, android.R.attr.state_enabled);
+	}
+
 	private static StateListDrawable createStateListDrawable(Drawable normal, Drawable stateDrawable, int state) {
 		StateListDrawable res = new StateListDrawable();
 		res.addState(new int[]{state}, stateDrawable);
@@ -304,18 +339,6 @@ public class AndroidUtils {
 		res.setId(1, android.R.id.progress);
 
 		return res;
-	}
-
-	public static void setSnackbarTextColor(Snackbar snackbar, @ColorRes int colorId) {
-		View view = snackbar.getView();
-		TextView tv = (TextView) view.findViewById(android.support.design.R.id.snackbar_action);
-		tv.setTextColor(ContextCompat.getColor(view.getContext(), colorId));
-	}
-
-	public static void setSnackbarTextMaxLines(Snackbar snackbar, int maxLines) {
-		View view = snackbar.getView();
-		TextView tv = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
-		tv.setMaxLines(maxLines);
 	}
 
 	public static void setBackground(Context ctx, View view, boolean night, int lightResId, int darkResId) {
@@ -388,13 +411,18 @@ public class AndroidUtils {
 				: ctx.getResources().getColor(R.color.text_color_secondary_light));
 	}
 
-
 	public static int getTextWidth(float textSize, String text) {
 		Paint paint = new Paint();
 		paint.setTextSize(textSize);
 		return (int) paint.measureText(text);
 	}
-	
+
+	public static int getTextHeight(Paint paint) {
+		Paint.FontMetrics fm = paint.getFontMetrics();
+		float height = fm.bottom - fm.top;
+		return (int) height;
+	}
+
 	public static int dpToPx(Context ctx, float dp) {
 		Resources r = ctx.getResources();
 		return (int) TypedValue.applyDimension(
@@ -424,6 +452,19 @@ public class AndroidUtils {
 		TypedValue outValue = new TypedValue();
 		ctx.getTheme().resolveAttribute(attribute, outValue, true);
 		return outValue.resourceId;
+	}
+
+	public static float getFloatValueFromRes(Context ctx, int resId) {
+		TypedValue outValue = new TypedValue();
+		ctx.getResources().getValue(resId, outValue, true);
+		return outValue.getFloat();
+	}
+
+	public static int getDrawableId(OsmandApplication app, String id) {
+		if (!Algorithms.isEmpty(id)) {
+			return app.getResources().getIdentifier(id, "drawable", app.getPackageName());
+		}
+		return 0;
 	}
 
 	public static int getStatusBarHeight(Context ctx) {
@@ -531,16 +572,37 @@ public class AndroidUtils {
 		return coordinates;
 	}
 
-	public static void enterToFullScreen(Activity activity) {
+	public static void enterToFullScreen(Activity activity, View view) {
 		if (Build.VERSION.SDK_INT >= 21) {
+			requestLayout(view);
 			activity.getWindow().getDecorView()
 					.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 		}
 	}
 
-	public static void exitFromFullScreen(Activity activity) {
+	public static void exitFromFullScreen(Activity activity, View view) {
 		if (Build.VERSION.SDK_INT >= 21) {
+			requestLayout(view);
 			activity.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+		}
+	}
+
+	private static void requestLayout(final View view) {
+		if (view != null) {
+			ViewTreeObserver vto = view.getViewTreeObserver();
+			vto.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+				@Override
+				public void onGlobalLayout() {
+					ViewTreeObserver obs = view.getViewTreeObserver();
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+						obs.removeOnGlobalLayoutListener(this);
+					} else {
+						obs.removeGlobalOnLayoutListener(this);
+					}
+					view.requestLayout();
+				}
+			});
 		}
 	}
 
@@ -581,6 +643,33 @@ public class AndroidUtils {
 			return baseString;
 		}
 	}
+	
+	public static int getLayoutDirection(@NonNull Context ctx) {
+		Locale currentLocale = ctx.getResources().getConfiguration().locale;
+		return TextUtilsCompat.getLayoutDirectionFromLocale(currentLocale);
+	}
+
+	public static float getFreeSpaceGb(File dir) {
+		if (dir.canRead()) {
+			StatFs fs = new StatFs(dir.getAbsolutePath());
+			return (float) (fs.getBlockSize()) * fs.getAvailableBlocks() / (1 << 30);
+		}
+		return -1;
+	}
+
+	public static float getTotalSpaceGb(File dir) {
+		if (dir.canRead()) {
+			return (float) (dir.getTotalSpace()) / (1 << 30);
+		}
+		return -1;
+	}
+
+	public static float getUsedSpaceGb(File dir) {
+		if (dir.canRead()) {
+			return getTotalSpaceGb(dir) - getFreeSpaceGb(dir);
+		}
+		return -1;
+	}
 
 	public static CharSequence getStyledString(CharSequence baseString, CharSequence stringToInsertAndStyle,
 											   CharacterStyle baseStyle, CharacterStyle replaceStyle) {
@@ -610,5 +699,37 @@ public class AndroidUtils {
 
 	public static boolean isRTL() {
 		return TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault()) == ViewCompat.LAYOUT_DIRECTION_RTL;
+	}
+	
+	public static String createNewFileName(String oldName) {
+		int firstDotIndex = oldName.indexOf('.');
+		String nameWithoutExt = oldName.substring(0, firstDotIndex);
+		String ext = oldName.substring(firstDotIndex);
+
+		StringBuilder numberSection = new StringBuilder();
+		int i = nameWithoutExt.length() - 1;
+		boolean hasNameNumberSection = false;
+		do {
+			char c = nameWithoutExt.charAt(i);
+			if (Character.isDigit(c)) {
+				numberSection.insert(0, c);
+			} else if(Character.isSpaceChar(c) && numberSection.length() > 0) {
+				hasNameNumberSection = true;
+				break;
+			} else {
+				break;
+			}
+			i--;
+		} while (i >= 0);
+		int newNumberValue = Integer.parseInt(hasNameNumberSection ? numberSection.toString() : "0") + 1;
+		
+		String newName;
+		if (newNumberValue == 1) {
+			newName = nameWithoutExt + " " + newNumberValue + ext;
+		} else {
+			newName = nameWithoutExt.substring(0, i) + " " + newNumberValue + ext;
+		}
+
+		return newName;
 	}
 }

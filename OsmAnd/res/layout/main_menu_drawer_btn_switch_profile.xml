@@ -15,6 +15,8 @@
 		android:layout_height="@dimen/context_menu_big_icon_size"
 		android:layout_marginLeft="@dimen/content_padding_half"
 		android:layout_marginRight="@dimen/favorites_icon_right_margin"
+		android:layout_marginStart="@dimen/content_padding_half"
+		android:layout_marginEnd="@dimen/favorites_icon_right_margin"
 		android:background="?attr/bg_circle">
 
 		<ImageView
@@ -69,7 +71,7 @@
 			</LinearLayout>
 
 			<android.support.v7.widget.AppCompatImageView
-				android:id="@+id/ic_open_list"
+				android:id="@+id/ic_expand_list"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_gravity="center"

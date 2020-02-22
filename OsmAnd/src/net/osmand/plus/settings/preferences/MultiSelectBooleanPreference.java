@@ -43,10 +43,13 @@ public class MultiSelectBooleanPreference extends MultiSelectListPreference {
 	}
 
 	public void setValues(Set<String> values) {
-		getValues().clear();
-		getValues().addAll(values);
+		if (!getValues().equals(values)) {
+			getValues().clear();
+			getValues().addAll(values);
 
-		persistBooleanPrefs();
+			persistBooleanPrefs();
+			notifyChanged();
+		}
 	}
 
 	public String getDescription() {

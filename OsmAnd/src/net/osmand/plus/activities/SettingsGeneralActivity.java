@@ -1,7 +1,6 @@
 package net.osmand.plus.activities;
 
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -91,7 +90,7 @@ public class SettingsGeneralActivity extends SettingsBaseActivity implements OnR
 		ApplicationMode[] appModes = ApplicationMode.values(app).toArray(new ApplicationMode[0]);
 		entries = new String[appModes.length];
 		for (int i = 0; i < entries.length; i++) {
-			entries[i] = appModes[i].toHumanString(app);
+			entries[i] = appModes[i].toHumanString();
 		}
 		registerListPreference(settings.DEFAULT_APPLICATION_MODE, screen, entries, appModes);
 
@@ -331,7 +330,7 @@ public class SettingsGeneralActivity extends SettingsBaseActivity implements OnR
 				ctx.getString(R.string.lang_cy) + incompleteSuffix,
 				ctx.getString(R.string.lang_da),
 				ctx.getString(R.string.lang_de),
-				ctx.getString(R.string.lang_el) + incompleteSuffix,
+				ctx.getString(R.string.lang_el),
 				ctx.getString(R.string.lang_en_gb),
 				ctx.getString(R.string.lang_eo),
 				ctx.getString(R.string.lang_es),
@@ -342,7 +341,7 @@ public class SettingsGeneralActivity extends SettingsBaseActivity implements OnR
 				ctx.getString(R.string.lang_fi) + incompleteSuffix,
 				ctx.getString(R.string.lang_fr),
 				ctx.getString(R.string.lang_gl),
-				ctx.getString(R.string.lang_he) + incompleteSuffix,
+				ctx.getString(R.string.lang_he),
 				ctx.getString(R.string.lang_hr) + incompleteSuffix,
 				ctx.getString(R.string.lang_hsb) + incompleteSuffix,
 				ctx.getString(R.string.lang_hu),
@@ -356,7 +355,7 @@ public class SettingsGeneralActivity extends SettingsBaseActivity implements OnR
 				ctx.getString(R.string.lang_ko),
 				ctx.getString(R.string.lang_lt),
 				ctx.getString(R.string.lang_lv),
-				ctx.getString(R.string.lang_ml) + incompleteSuffix,
+				ctx.getString(R.string.lang_ml),
 				ctx.getString(R.string.lang_mr) + incompleteSuffix,
 				ctx.getString(R.string.lang_nb),
 				ctx.getString(R.string.lang_nl),
@@ -370,7 +369,7 @@ public class SettingsGeneralActivity extends SettingsBaseActivity implements OnR
 				ctx.getString(R.string.lang_sc),
 				ctx.getString(R.string.lang_sk),
 				ctx.getString(R.string.lang_sl),
-				ctx.getString(R.string.lang_sr) + incompleteSuffix,
+				ctx.getString(R.string.lang_sr),
 				ctx.getString(R.string.lang_sr_latn) + incompleteSuffix,
 				ctx.getString(R.string.lang_sv),
 				ctx.getString(R.string.lang_tr),
@@ -545,7 +544,7 @@ public class SettingsGeneralActivity extends SettingsBaseActivity implements OnR
 		super.updateAllSettings();
 		updateApplicationDirTextAndSummary();
 		applicationModePreference.setTitle(getString(R.string.settings_preset) + "  ["
-				+ settings.APPLICATION_MODE.get().toHumanString(getMyApplication()) + "]");
+				+ settings.APPLICATION_MODE.get().toHumanString() + "]");
 		drivingRegionPreference.setTitle(getString(R.string.driving_region) + "  ["
 				+ getString(settings.DRIVING_REGION_AUTOMATIC.get() ? R.string.driving_region_automatic : settings.DRIVING_REGION.get().name) + "]");
 	}
@@ -569,8 +568,6 @@ public class SettingsGeneralActivity extends SettingsBaseActivity implements OnR
 			getMyApplication().restartApp(this);
 		} else if (id.equals(settings.OSMAND_THEME.getId())) {
 			getMyApplication().restartApp(this);
-		} else if (id.equals(settings.METRIC_SYSTEM.getId())) {
-			settings.METRIC_SYSTEM_CHANGED_MANUALLY.set(true);
 		} else if (id.equals(settings.DO_NOT_USE_ANIMATIONS.getId())) {
 			getMyApplication().restartApp(this);
 		} else {

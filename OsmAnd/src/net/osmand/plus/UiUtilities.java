@@ -3,6 +3,7 @@ package net.osmand.plus;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -13,14 +14,22 @@ import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.TintableCompoundButton;
 import android.support.v7.view.ContextThemeWrapper;
+import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import net.osmand.AndroidUtils;
@@ -28,6 +37,8 @@ import net.osmand.Location;
 import net.osmand.data.LatLon;
 import net.osmand.plus.views.DirectionDrawable;
 import net.osmand.plus.widgets.TextViewEx;
+
+import java.util.Locale;
 
 import gnu.trove.map.hash.TLongObjectHashMap;
 
@@ -39,11 +50,18 @@ public class UiUtilities {
 	private static final int ORIENTATION_90 = 3;
 	private static final int ORIENTATION_270 = 1;
 	private static final int ORIENTATION_180 = 2;
+	private static final int INVALID_ID = -1;
 
 	public enum DialogButtonType {
 		PRIMARY,
 		SECONDARY,
 		STROKED
+	}
+
+	public enum CompoundButtonType {
+		GLOBAL,
+		PROFILE_DEPENDENT,
+		TOOLBAR
 	}
 
 	public UiUtilities(OsmandApplication app) {
@@ -111,6 +129,10 @@ public class UiUtilities {
 		return getDrawable(id, light ? R.color.icon_color_default_light : R.color.icon_color_default_dark);
 	}
 
+	public Drawable getMapIcon(@DrawableRes int id, boolean light) {
+		return getDrawable(id, light ? R.color.icon_color_default_light : 0);
+	}
+
 	public static Drawable getSelectableDrawable(Context ctx) {
 		int bgResId = AndroidUtils.resolveAttribute(ctx, R.attr.selectableItemBackground);
 		if (bgResId != 0) {
@@ -130,6 +152,10 @@ public class UiUtilities {
 			drawable = AndroidUtils.createPressedStateListDrawable(new ColorDrawable(Color.TRANSPARENT), new ColorDrawable(getColorWithAlpha(color, alpha)));
 		}
 		return drawable;
+	}
+
+	public static Drawable createTintedDrawable(Context context, @DrawableRes int resId, int color) {
+		return tintDrawable(ContextCompat.getDrawable(context, resId), color);
 	}
 
 	public static Drawable tintDrawable(Drawable drawable, int color) {
@@ -318,48 +344,219 @@ public class UiUtilities {
 		}
 		return screenOrientation;
 	}
+	
+	public static void setupSnackbar(Snackbar snackbar, boolean nightMode) {
+		setupSnackbar(snackbar, nightMode, null, null, null, null);
+	}
+	
+	public static void setupSnackbar(Snackbar snackbar, boolean nightMode, Integer maxLines) {
+		setupSnackbar(snackbar, nightMode, null, null, null, maxLines);
+	}
+	
+	public static void setupSnackbar(Snackbar snackbar, boolean nightMode, @ColorRes Integer backgroundColor,
+	                                 @ColorRes Integer messageColor, @ColorRes Integer actionColor, Integer maxLines) {
+		if (snackbar == null) {
+			return;
+		}
+		View view = snackbar.getView();
+		Context ctx = view.getContext();
+		TextView tvMessage = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
+		TextView tvAction = (TextView) view.findViewById(android.support.design.R.id.snackbar_action);
+		if (messageColor == null) {
+			messageColor = nightMode ? R.color.text_color_primary_dark : R.color.text_color_primary_light;
+		}
+		tvMessage.setTextColor(ContextCompat.getColor(ctx, messageColor));
+		if (actionColor == null) {
+			actionColor = nightMode ? R.color.active_color_primary_dark : R.color.active_color_primary_light;
+		}
+		tvAction.setTextColor(ContextCompat.getColor(ctx, actionColor));
+		if (maxLines != null) {
+			tvMessage.setMaxLines(maxLines);
+		}
+		if (backgroundColor == null) {
+			backgroundColor = nightMode ? R.color.list_background_color_dark : R.color.list_background_color_light;
+		}
+		view.setBackgroundColor(ContextCompat.getColor(ctx, backgroundColor));
+	}
 
+	public static void rotateImageByLayoutDirection(ImageView image, int layoutDirection) {
+		if (image == null) {
+			return;
+		}
+		int rotation = layoutDirection == View.LAYOUT_DIRECTION_LTR ? 0 : 180;
+		image.setRotationY(rotation);
+	}
+	
+	public static void setupLayoutDirection(View layout) {
+		int direction = AndroidUtils.getLayoutDirection(layout.getContext());
+		ViewCompat.setLayoutDirection(layout, direction);
+	}
+
+	public static void setupCompoundButtonDrawable(Context ctx, boolean nightMode, @ColorInt int activeColor, Drawable drawable) {
+		int inactiveColor = ContextCompat.getColor(ctx, nightMode ? R.color.icon_color_default_dark : R.color.icon_color_default_light);
+		int[][] states = new int[][] {
+				new int[] {-android.R.attr.state_checked},
+				new int[] {android.R.attr.state_checked}
+		};
+		ColorStateList csl = new ColorStateList(states, new int[]{inactiveColor, activeColor});
+		DrawableCompat.setTintList(DrawableCompat.wrap(drawable), csl);
+	}
+
+	public static void setupCompoundButton(boolean nightMode, @ColorInt int activeColor, CompoundButton compoundButton) {
+	    if (compoundButton == null) {
+	        return;
+        }
+	    Context ctx = compoundButton.getContext();
+		int inactiveColorPrimary = ContextCompat.getColor(ctx, nightMode ? R.color.icon_color_default_dark : R.color.icon_color_secondary_light);
+		int inactiveColorSecondary = getColorWithAlpha(inactiveColorPrimary, 0.45f);
+		setupCompoundButton(compoundButton, activeColor, inactiveColorPrimary, inactiveColorSecondary);
+	}
+
+	public static void setupCompoundButton(CompoundButton compoundButton, boolean nightMode, CompoundButtonType type) {
+		if (compoundButton == null) {
+			return;
+		}
+		OsmandApplication app = (OsmandApplication) compoundButton.getContext().getApplicationContext();
+		@ColorInt int activeColor = ContextCompat.getColor(app, nightMode ? R.color.active_color_primary_dark : R.color.active_color_primary_light);
+		@ColorInt int inactiveColorPrimary = ContextCompat.getColor(app, nightMode ? R.color.icon_color_default_dark : R.color.icon_color_secondary_light);
+		@ColorInt int inactiveColorSecondary = getColorWithAlpha(inactiveColorPrimary, 0.45f);
+		switch (type) {
+			case PROFILE_DEPENDENT:
+				ApplicationMode appMode = app.getSettings().getApplicationMode();
+				activeColor = ContextCompat.getColor(app, appMode.getIconColorInfo().getColor(nightMode));
+				break;
+			case TOOLBAR:
+				activeColor = Color.WHITE;
+				inactiveColorPrimary = activeColor;
+				inactiveColorSecondary = UiUtilities.getColorWithAlpha(Color.BLACK, 0.25f);
+				break;
+		}
+		setupCompoundButton(compoundButton, activeColor, inactiveColorPrimary, inactiveColorSecondary);
+	}
+
+	public static void setupCompoundButton(CompoundButton compoundButton,
+										   @ColorInt int activeColor,
+										   @ColorInt int inactiveColorPrimary,
+										   @ColorInt int inactiveColorSecondary) {
+		if (compoundButton == null) {
+			return;
+		}
+		int[][] states = new int[][] {
+				new int[] {-android.R.attr.state_checked},
+				new int[] {android.R.attr.state_checked}
+		};
+		if (compoundButton instanceof SwitchCompat) {
+			SwitchCompat sc = (SwitchCompat) compoundButton;
+			int[] thumbColors = new int[] {
+					inactiveColorPrimary, activeColor
+			};
+
+			int[] trackColors = new int[] {
+					inactiveColorSecondary, inactiveColorSecondary
+			};
+			DrawableCompat.setTintList(DrawableCompat.wrap(sc.getThumbDrawable()), new ColorStateList(states, thumbColors));
+			DrawableCompat.setTintList(DrawableCompat.wrap(sc.getTrackDrawable()), new ColorStateList(states, trackColors));
+		} else if (compoundButton instanceof TintableCompoundButton) {
+			ColorStateList csl = new ColorStateList(states, new int[]{inactiveColorPrimary, activeColor});
+			((TintableCompoundButton) compoundButton).setSupportButtonTintList(csl);
+		}
+		compoundButton.setBackgroundColor(Color.TRANSPARENT);
+	}
+	
+	public static void setupSeekBar(@NonNull OsmandApplication app, @NonNull SeekBar seekBar, 
+	                                boolean nightMode, boolean profileDependent) {
+		int activeColor = ContextCompat.getColor(app, profileDependent ?
+				app.getSettings().APPLICATION_MODE.get().getIconColorInfo().getColor(nightMode) :
+				nightMode ? R.color.active_color_primary_dark : R.color.active_color_primary_light);
+		setupSeekBar(seekBar, activeColor, nightMode);
+	}
+
+	public static void setupSeekBar(@NonNull SeekBar seekBar, @ColorInt int activeColor, boolean nightMode) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+			int backgroundColor = ContextCompat.getColor(seekBar.getContext(), nightMode
+					? R.color.icon_color_secondary_dark : R.color.icon_color_default_light);
+			if (seekBar.getProgressDrawable() instanceof LayerDrawable) {
+				LayerDrawable progressDrawable = (LayerDrawable) seekBar.getProgressDrawable();
+				Drawable background = progressDrawable.findDrawableByLayerId(android.R.id.background);
+				if (background != null) {
+					background.setColorFilter(backgroundColor, PorterDuff.Mode.SRC_IN);
+				}
+				Drawable progress = progressDrawable.findDrawableByLayerId(android.R.id.progress);
+				if (progress != null) {
+					progress.setColorFilter(activeColor, PorterDuff.Mode.SRC_IN);
+				}
+			}
+			seekBar.getThumb().setColorFilter(activeColor, PorterDuff.Mode.SRC_IN);
+		}
+	}
+	
 	public static void setupDialogButton(boolean nightMode, View buttonView, DialogButtonType buttonType, @StringRes int buttonTextId) {
 		setupDialogButton(nightMode, buttonView, buttonType, buttonView.getContext().getString(buttonTextId));
 	}
 
 	public static void setupDialogButton(boolean nightMode, View buttonView, DialogButtonType buttonType, CharSequence buttonText) {
+		setupDialogButton(nightMode, buttonView, buttonType, buttonText, INVALID_ID);
+	}
+
+	public static void setupDialogButton(boolean nightMode, View buttonView, DialogButtonType buttonType, CharSequence buttonText, int iconResId) {
 		Context ctx = buttonView.getContext();
 		TextViewEx buttonTextView = (TextViewEx) buttonView.findViewById(R.id.button_text);
 		boolean v21 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
 		View buttonContainer = buttonView.findViewById(R.id.button_container);
+		int textAndIconColorResId = INVALID_ID;
 		switch (buttonType) {
 			case PRIMARY:
 				if (v21) {
 					AndroidUtils.setBackground(ctx, buttonContainer, nightMode, R.drawable.ripple_solid_light, R.drawable.ripple_solid_dark);
 				}
 				AndroidUtils.setBackground(ctx, buttonView, nightMode, R.drawable.dlg_btn_primary_light, R.drawable.dlg_btn_primary_dark);
-				buttonTextView.setTextColor(ContextCompat.getColorStateList(ctx, nightMode ? R.color.dlg_btn_primary_text_dark : R.color.dlg_btn_primary_text_light));
+				textAndIconColorResId = nightMode ? R.color.dlg_btn_primary_text_dark : R.color.dlg_btn_primary_text_light;
 				break;
 			case SECONDARY:
 				if (v21) {
 					AndroidUtils.setBackground(ctx, buttonContainer, nightMode, R.drawable.ripple_solid_light, R.drawable.ripple_solid_dark);
 				}
 				AndroidUtils.setBackground(ctx, buttonView, nightMode, R.drawable.dlg_btn_secondary_light, R.drawable.dlg_btn_secondary_dark);
-				buttonTextView.setTextColor(ContextCompat.getColorStateList(ctx, nightMode ? R.color.dlg_btn_secondary_text_dark : R.color.dlg_btn_secondary_text_light));
+				textAndIconColorResId = nightMode ? R.color.dlg_btn_secondary_text_dark : R.color.dlg_btn_secondary_text_light;
 				break;
 			case STROKED:
 				if (v21) {
 					AndroidUtils.setBackground(ctx, buttonContainer, nightMode, R.drawable.ripple_light, R.drawable.ripple_dark);
 				}
 				AndroidUtils.setBackground(ctx, buttonView, nightMode, R.drawable.dlg_btn_stroked_light, R.drawable.dlg_btn_stroked_dark);
-				buttonTextView.setTextColor(ContextCompat.getColorStateList(ctx, nightMode ? R.color.dlg_btn_secondary_text_dark : R.color.dlg_btn_secondary_text_light));
+				textAndIconColorResId = nightMode ? R.color.dlg_btn_secondary_text_dark : R.color.dlg_btn_secondary_text_light;
 				break;
 		}
-		buttonTextView.setText(buttonText);
-		buttonTextView.setEnabled(buttonView.isEnabled());
-	}
-
-	public static Context getThemedContext(Context context, boolean nightMode) {
-		return new ContextThemeWrapper(context, !nightMode ? R.style.OsmandLightTheme : R.style.OsmandDarkTheme);
+		if (textAndIconColorResId != INVALID_ID) {
+			ColorStateList colorStateList = ContextCompat.getColorStateList(ctx, textAndIconColorResId);
+			buttonTextView.setText(buttonText);
+			buttonTextView.setTextColor(colorStateList);
+			buttonTextView.setEnabled(buttonView.isEnabled());
+			if (iconResId != INVALID_ID) {
+				Drawable icon = tintDrawable(ContextCompat.getDrawable(ctx, iconResId), ContextCompat.getColor(ctx, textAndIconColorResId));
+				buttonTextView.setCompoundDrawablesWithIntrinsicBounds(icon, null, null, null);
+				buttonTextView.setCompoundDrawablePadding(AndroidUtils.dpToPx(ctx, ctx.getResources().getDimension(R.dimen.content_padding_half)));
+			}
+		}
 	}
 
 	public static LayoutInflater getInflater(Context ctx, boolean nightMode) {
 		return LayoutInflater.from(getThemedContext(ctx, nightMode));
+	}
+
+	public static Context getThemedContext(Context context, boolean nightMode) {
+		return getThemedContext(context, nightMode, R.style.OsmandLightTheme, R.style.OsmandDarkTheme);
+	}
+
+	public static Context getThemedContext(Context context, boolean nightMode, int lightStyle, int darkStyle) {
+		return new ContextThemeWrapper(context, nightMode ? darkStyle : lightStyle);
+	}
+
+	public static void setMargins(View v, int l, int t, int r, int b) {
+		if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+			ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+			p.setMargins(l, t, r, b);
+			v.requestLayout();
+		}
 	}
 }

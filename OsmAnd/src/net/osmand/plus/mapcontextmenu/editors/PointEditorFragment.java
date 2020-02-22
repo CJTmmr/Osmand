@@ -3,7 +3,6 @@ package net.osmand.plus.mapcontextmenu.editors;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,10 +27,14 @@ import android.widget.TextView;
 import net.osmand.AndroidUtils;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
+import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.base.BaseOsmAndFragment;
 import net.osmand.plus.widgets.AutoCompleteTextViewEx;
 import net.osmand.util.Algorithms;
+
+import static net.osmand.plus.FavouritesDbHelper.FavoriteGroup.PERSONAL_CATEGORY;
+import static net.osmand.plus.FavouritesDbHelper.FavoriteGroup.isPersonalCategoryDisplayName;
 
 public abstract class PointEditorFragment extends BaseOsmAndFragment {
 
@@ -44,7 +47,8 @@ public abstract class PointEditorFragment extends BaseOsmAndFragment {
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState) {
 
-		view = inflater.inflate(R.layout.point_editor_fragment, container, false);
+		boolean nightMode = !getMyApplication().getSettings().isLightContent();
+		view = UiUtilities.getInflater(getContext(), nightMode).inflate(R.layout.point_editor_fragment, container, false);
 
 		PointEditor editor = getEditor();
 		if (editor == null) {
@@ -163,6 +167,10 @@ public abstract class PointEditorFragment extends BaseOsmAndFragment {
 			descriptionEdit.setHint(R.string.access_hint_enter_description);
 		}
 
+		if (Build.VERSION.SDK_INT >= 21) {
+			AndroidUtils.addStatusBarPadding21v(app, view);
+		}
+
 		return view;
 	}
 
@@ -228,11 +236,6 @@ public abstract class PointEditorFragment extends BaseOsmAndFragment {
 	@Override
 	public int getStatusBarColorId() {
 		return R.color.status_bar_color_light;
-	}
-
-	@Override
-	protected boolean isFullScreenAllowed() {
-		return false;
 	}
 
 	private void hideKeyboard() {
@@ -353,7 +356,13 @@ public abstract class PointEditorFragment extends BaseOsmAndFragment {
 	public String getCategoryTextValue() {
 		AutoCompleteTextViewEx categoryEdit = (AutoCompleteTextViewEx) view.findViewById(R.id.category_edit);
 		String name = categoryEdit.getText().toString().trim();
-		return name.equals(getDefaultCategoryName()) ? "" : name;
+		if (isPersonalCategoryDisplayName(requireContext(), name)) {
+			return PERSONAL_CATEGORY;
+		}
+		if(name.equals(getDefaultCategoryName())) {
+			return "";
+		}
+		return name;
 	}
 
 	public String getDescriptionTextValue() {

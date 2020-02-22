@@ -16,7 +16,9 @@ import net.osmand.plus.OsmAndLocationSimulation;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandSettings;
 import net.osmand.plus.R;
+import net.osmand.plus.Version;
 import net.osmand.plus.activities.SettingsBaseActivity;
+import net.osmand.plus.render.NativeOsmandLibrary;
 import net.osmand.util.SunriseSunset;
 
 import java.text.SimpleDateFormat;
@@ -28,14 +30,25 @@ public class SettingsDevelopmentActivity extends SettingsBaseActivity {
 	@SuppressLint("SimpleDateFormat")
 	@Override
     public void onCreate(Bundle savedInstanceState) {
-		((OsmandApplication) getApplication()).applyTheme(this);
+		OsmandApplication app = getMyApplication();
+		app.applyTheme(this);
 		super.onCreate(savedInstanceState);
 		getToolbar().setTitle(R.string.debugging_and_development);
 		PreferenceScreen cat = getPreferenceScreen();
 		Preference pref;
 
 		cat.addPreference(createCheckBoxPreference(settings.USE_OPENGL_RENDER,
-				R.string.use_opengl_render,R.string.use_opengl_render_descr));
+				R.string.use_opengl_render, R.string.use_opengl_render_descr));
+
+		if (!Version.isBlackberry(app)) {
+			CheckBoxPreference nativeCheckbox = createCheckBoxPreference(settings.SAFE_MODE, R.string.safe_mode, R.string.safe_mode_description);
+			// disable the checkbox if the library cannot be used
+			if ((NativeOsmandLibrary.isLoaded() && !NativeOsmandLibrary.isSupported()) || settings.NATIVE_RENDERING_FAILED.get()) {
+				nativeCheckbox.setEnabled(false);
+				nativeCheckbox.setChecked(true);
+			}
+			cat.addPreference(nativeCheckbox);
+		}
 
 		PreferenceCategory navigation = new PreferenceCategory(this);
 		navigation.setTitle(R.string.routing_settings);
@@ -62,7 +75,7 @@ public class SettingsDevelopmentActivity extends SettingsBaseActivity {
 			@Override
 			public void run() {
 				simulate.setSummary(sim.isRouteAnimating() ?
-						R.string.simulate_your_location_stop_descr : R.string.simulate_your_location_descr);
+						R.string.simulate_your_location_stop_descr : R.string.simulate_your_location_gpx_descr);
 			}
 		};
 		pref.setTitle(R.string.simulate_your_location);
@@ -72,7 +85,7 @@ public class SettingsDevelopmentActivity extends SettingsBaseActivity {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
 				updateTitle.run();
-				sim.startStopRouteAnimation(SettingsDevelopmentActivity.this, updateTitle);
+				sim.startStopRouteAnimation(SettingsDevelopmentActivity.this, true, updateTitle);
 				return true;
 			}
 		});
@@ -99,7 +112,6 @@ public class SettingsDevelopmentActivity extends SettingsBaseActivity {
 				settings.FIRST_MAP_IS_DOWNLOADED.set(false);
 				settings.MAPILLARY_FIRST_DIALOG_SHOWN.set(false);
 				settings.WEBGL_SUPPORTED.set(true);
-				settings.METRIC_SYSTEM_CHANGED_MANUALLY.set(false);
 				settings.WIKI_ARTICLE_SHOW_IMAGES_ASKED.set(false);
 
 				getMyApplication().showToastMessage(R.string.shared_string_ok);
@@ -131,6 +143,7 @@ public class SettingsDevelopmentActivity extends SettingsBaseActivity {
 
 		pref = new Preference(this);
 		pref.setTitle(R.string.logcat_buffer);
+	    	pref.setSummary(R.string.logcat_buffer_descr);
 		pref.setKey("logcat_buffer");
 		pref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			@Override
