@@ -1,15 +1,16 @@
 package net.osmand.plus.views.mapwidgets;
 
 import android.content.Context;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.ContextMenuAdapter;
@@ -797,7 +798,7 @@ public class MapWidgetRegistry {
 	}
 
 	public ContextMenuAdapter getViewConfigureMenuAdapter(final MapActivity map) {
-		final ContextMenuAdapter cm = new ContextMenuAdapter();
+		final ContextMenuAdapter cm = new ContextMenuAdapter(app);
 		boolean nightMode = app.getDaynightHelper().isNightModeForMapControls();
 		cm.setProfileDependent(true);
 		cm.setNightMode(nightMode);

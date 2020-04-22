@@ -1,11 +1,13 @@
 package net.osmand.plus.mapmarkers.adapters;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
+
 import net.osmand.GPXUtilities.GPXTrackAnalysis;
+import net.osmand.IndexConstants;
 import net.osmand.plus.GPXDatabase.GpxDataItem;
 import net.osmand.plus.R;
 
@@ -32,7 +34,7 @@ public class TracksGroupsAdapter extends GroupsAdapter {
 			GpxDataItem gpx = getItem(position);
 			MapMarkersGroupViewHolder markersGroupViewHolder = (MapMarkersGroupViewHolder) holder;
 			markersGroupViewHolder.icon.setImageDrawable(iconsCache.getThemedIcon(R.drawable.ic_action_polygom_dark));
-			markersGroupViewHolder.name.setText(gpx.getFile().getName().replace(".gpx", "").replace("/", " ").replace("_", " "));
+			markersGroupViewHolder.name.setText(gpx.getFile().getName().replace(IndexConstants.GPX_FILE_EXT, "").replace("/", " ").replace("_", " "));
 			GPXTrackAnalysis analysis = gpx.getAnalysis();
 			markersGroupViewHolder.numberCount.setText(analysis != null ? String.valueOf(analysis.wptPoints) : "");
 			String description = getDescription(gpx);

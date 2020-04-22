@@ -9,13 +9,13 @@
     android:background="?attr/wikivoyage_bg_color"
     android:orientation="vertical">
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:elevation="0dp">
 
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="@dimen/dashboard_map_toolbar"
@@ -57,13 +57,15 @@
                     android:textColor="?attr/wikivoyage_active_color"
                     android:textSize="@dimen/text_button_text_size"
                     osmand:typeface="@string/font_roboto_medium"
-                    tools:ignore="UnusedAttribute"/>
+                    tools:ignore="UnusedAttribute"
+	                android:paddingStart="16dp"
+	                android:paddingEnd="16dp" />
 
             </LinearLayout>
 
-        </android.support.v7.widget.Toolbar>
+        </androidx.appcompat.widget.Toolbar>
 
-    </android.support.design.widget.AppBarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -84,7 +86,9 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/text_margin_small"
             android:layout_marginRight="@dimen/text_margin_small"
-            android:background="?attr/wikivoyage_travel_card_bg">
+            android:background="?attr/wikivoyage_travel_card_bg"
+	        android:layout_marginEnd="@dimen/text_margin_small"
+	        android:layout_marginStart="@dimen/text_margin_small">
 
             <LinearLayout
                 android:id="@+id/search_button"
@@ -114,14 +118,16 @@
                     android:layout_marginLeft="@dimen/content_padding_small"
                     android:layout_marginRight="@dimen/content_padding_small"
                     android:contentDescription="@string/shared_string_search"
-                    tools:src="@drawable/ic_action_search_dark"/>
+                    tools:src="@drawable/ic_action_search_dark"
+	                android:layout_marginEnd="@dimen/content_padding_small"
+	                android:layout_marginStart="@dimen/content_padding_small" />
 
             </LinearLayout>
 
         </FrameLayout>
 
         <!-- Coordinator layout is needed in order to display the snackbar above the bottom navigation -->
-        <android.support.design.widget.CoordinatorLayout
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -130,11 +136,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"/>
 
-        </android.support.design.widget.CoordinatorLayout>
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     </LinearLayout>
 
-    <android.support.design.widget.BottomNavigationView
+    <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

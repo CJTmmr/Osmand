@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.text.format.DateFormat;
 
+import net.osmand.IndexConstants;
 import net.osmand.PlatformUtil;
 import net.osmand.data.LatLon;
 import net.osmand.plus.GPXDatabase.GpxDataItem;
@@ -209,7 +210,7 @@ public class SavingTrackHelper extends SQLiteOpenHelper {
 				// save file
 				for (final String f : data.keySet()) {
 					log.debug("Filename: " + f);
-					File fout = new File(dir, f + ".gpx"); //$NON-NLS-1$
+					File fout = new File(dir, f + IndexConstants.GPX_FILE_EXT);
 					if (!data.get(f).isEmpty()) {
 						WptPt pt = data.get(f).findPointToShow();
 						String fileName = f + "_" + new SimpleDateFormat("HH-mm_EEE", Locale.US).format(new Date(pt.time)); //$NON-NLS-1$
@@ -227,10 +228,10 @@ public class SavingTrackHelper extends SQLiteOpenHelper {
 							}
 						}
 						filenames.add(fileName);
-						fout = new File(dir, fileName + ".gpx"); //$NON-NLS-1$
+						fout = new File(dir, fileName + IndexConstants.GPX_FILE_EXT);
 						int ind = 1;
 						while (fout.exists()) {
-							fout = new File(dir, fileName + "_" + (++ind) + ".gpx"); //$NON-NLS-1$ //$NON-NLS-2$
+							fout = new File(dir, fileName + "_" + (++ind) + IndexConstants.GPX_FILE_EXT); //$NON-NLS-1$
 						}
 					}
 
@@ -508,8 +509,14 @@ public class SavingTrackHelper extends SQLiteOpenHelper {
 		}
 		currentTrack.getModifiableGpxFile().modifiedTime = time;
 	}
-	
-	public WptPt insertPointData(double lat, double lon, long time, String description, String name, String category, int color) {
+
+	public WptPt insertPointData(double lat, double lon, long time, String description, String name, String category,
+	                             int color) {
+		return insertPointData(lat, lon, time, description, name, category, color, null, null);
+	}
+
+	public WptPt insertPointData(double lat, double lon, long time, String description, String name, String category,
+	                             int color, String iconName, String backgroundName) {
 		final WptPt pt = new WptPt(lat, lon, time, Double.NaN, 0, Double.NaN);
 		pt.name = name;
 		pt.category = category;
@@ -517,6 +524,8 @@ public class SavingTrackHelper extends SQLiteOpenHelper {
 		if (color != 0) {
 			pt.setColor(color);
 		}
+		pt.setIconName(iconName);
+		pt.setBackgroundType(backgroundName);
 		ctx.getSelectedGpxHelper().addPoint(pt, currentTrack.getModifiableGpxFile());
 		currentTrack.getModifiableGpxFile().modifiedTime = time;
 		points++;
@@ -525,6 +534,11 @@ public class SavingTrackHelper extends SQLiteOpenHelper {
 	}
 
 	public void updatePointData(WptPt pt, double lat, double lon, long time, String description, String name, String category, int color) {
+		updatePointData(pt, lat, lon, time, description, name, category, color, null, null);
+	}
+
+	public void updatePointData(WptPt pt, double lat, double lon, long time, String description, String name,
+	                            String category, int color, String iconName, String iconBackground) {
 		currentTrack.getModifiableGpxFile().modifiedTime = time;
 
 		List<Object> params = new ArrayList<>();
@@ -585,6 +599,12 @@ public class SavingTrackHelper extends SQLiteOpenHelper {
 		pt.category = category;
 		if (color != 0) {
 			pt.setColor(color);
+		}
+		if (iconName != null) {
+			pt.setIconName(iconName);
+		}
+		if (iconBackground != null) {
+			pt.setBackgroundType(iconBackground);
 		}
 	}
 

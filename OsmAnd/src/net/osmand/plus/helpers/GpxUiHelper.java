@@ -13,16 +13,8 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.ListPopupWindow;
-import android.support.v7.widget.SwitchCompat;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
-import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
@@ -37,6 +29,15 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.ListPopupWindow;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
 import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.charts.LineChart;
@@ -114,6 +115,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM;
+import static net.osmand.IndexConstants.GPX_FILE_EXT;
 import static net.osmand.binary.RouteDataObject.HEIGHT_UNDEFINED;
 import static net.osmand.plus.OsmAndFormatter.FEET_IN_ONE_METER;
 import static net.osmand.plus.OsmAndFormatter.METERS_IN_KILOMETER;
@@ -232,7 +234,7 @@ public class GpxUiHelper {
 		}
 		allGpxList.add(0, new GPXInfo(activity.getString(R.string.show_current_gpx_title), 0, 0));
 
-		final ContextMenuAdapter adapter = createGpxContextMenuAdapter(allGpxList, selectedGpxList, true);
+		final ContextMenuAdapter adapter = createGpxContextMenuAdapter(allGpxList, selectedGpxList, true, app);
 		return createDialog(activity, true, true, true, callbackWithObject, allGpxList, adapter, dialogThemeRes, nightMode);
 	}
 
@@ -251,14 +253,14 @@ public class GpxUiHelper {
 				list.add(0, new GPXInfo(activity.getString(R.string.show_current_gpx_title), 0, 0));
 			}
 
-			final ContextMenuAdapter adapter = createGpxContextMenuAdapter(list, null, showCurrentGpx);
+			final ContextMenuAdapter adapter = createGpxContextMenuAdapter(list, null, showCurrentGpx, app);
 			return createDialog(activity, showCurrentGpx, multipleChoice, false, callbackWithObject, list, adapter, dialogThemeRes, nightMode);
 		}
 		return null;
 	}
 
-	public static AlertDialog selectSingleGPXFile(final Activity activity, boolean showCurrentGpx,
-												  final CallbackWithObject<GPXFile[]> callbackWithObject) {
+	public static void selectSingleGPXFile(final FragmentActivity activity, boolean showCurrentGpx,
+	                                       final CallbackWithObject<GPXFile[]> callbackWithObject) {
 		OsmandApplication app = (OsmandApplication) activity.getApplication();
 		int gpxDirLength = app.getAppPath(IndexConstants.GPX_INDEX_DIR).getAbsolutePath().length();
 		List<SelectedGpxFile> selectedGpxFiles = app.getSelectedGpxHelper().getSelectedGPXFiles();
@@ -272,21 +274,20 @@ public class GpxUiHelper {
 			}
 
 			for (SelectedGpxFile selectedGpx : selectedGpxFiles) {
-				if (!selectedGpx.getGpxFile().showCurrentTrack) {
-					list.add(new GPXInfo(selectedGpx.getGpxFile().path.substring(gpxDirLength + 1), selectedGpx.getGpxFile().modifiedTime, 0));
+				GPXFile gpxFile = selectedGpx.getGpxFile();
+				if (!gpxFile.showCurrentTrack && gpxFile.path.length() > gpxDirLength + 1) {
+					list.add(new GPXInfo(gpxFile.path.substring(gpxDirLength + 1), gpxFile.modifiedTime, 0));
 				}
 			}
-
-			final ContextMenuAdapter adapter = createGpxContextMenuAdapter(list, null, showCurrentGpx);
-			return createSingleChoiceDialog(activity, showCurrentGpx, callbackWithObject, list, adapter);
+			SelectGpxTrackBottomSheet.showInstance(activity.getSupportFragmentManager(), showCurrentGpx, callbackWithObject, list);
 		}
-		return null;
 	}
 
 	private static ContextMenuAdapter createGpxContextMenuAdapter(List<GPXInfo> allGpxList,
-																  List<String> selectedGpxList,
-																  boolean showCurrentTrack) {
-		final ContextMenuAdapter adapter = new ContextMenuAdapter();
+	                                                              List<String> selectedGpxList,
+	                                                              boolean showCurrentTrack,
+	                                                              OsmandApplication app) {
+		final ContextMenuAdapter adapter = new ContextMenuAdapter(app);
 		//element position in adapter
 		int i = 0;
 		for (GPXInfo gpxInfo : allGpxList) {
@@ -307,8 +308,8 @@ public class GpxUiHelper {
 
 	public static String getGpxTitle(String fileName) {
 		String s = fileName;
-		if (s.toLowerCase().endsWith(".gpx")) {
-			s = s.substring(0, s.length() - ".gpx".length());
+		if (s.toLowerCase().endsWith(GPX_FILE_EXT)) {
+			s = s.substring(0, s.length() - GPX_FILE_EXT.length());
 		}
 		s = s.replace('_', ' ');
 		return s;
@@ -345,98 +346,6 @@ public class GpxUiHelper {
 				return true;
 			}
 		}, dir, null, filename);
-	}
-
-	private static AlertDialog createSingleChoiceDialog(final Activity activity,
-											final boolean showCurrentGpx,
-											final CallbackWithObject<GPXFile[]> callbackWithObject,
-											final List<GPXInfo> list,
-											final ContextMenuAdapter adapter) {
-		final OsmandApplication app = (OsmandApplication) activity.getApplication();
-		final UiUtilities iconsCache = app.getUIUtilities();
-		final File dir = app.getAppPath(IndexConstants.GPX_INDEX_DIR);
-		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-		final int layout = R.layout.list_menu_item_native_singlechoice;
-
-		final ArrayAdapter<String> listAdapter = new ArrayAdapter<String>(activity, layout, R.id.text1,
-				adapter.getItemNames()) {
-			@Override
-			public View getView(final int position, View convertView, ViewGroup parent) {
-				// User super class to create the View
-				View v = convertView;
-				if (v == null) {
-					v = activity.getLayoutInflater().inflate(layout, null);
-				}
-				final ContextMenuItem item = adapter.getItem(position);
-				TextView tv = (TextView) v.findViewById(R.id.text1);
-				Drawable icon;
-				if (showCurrentGpx && position == 0) {
-					icon = null;
-				} else {
-					icon = iconsCache.getThemedIcon(item.getIcon());
-				}
-				tv.setCompoundDrawablePadding(AndroidUtils.dpToPx(activity, 10f));
-				tv.setCompoundDrawablesWithIntrinsicBounds(icon, null, null, null);
-				tv.setText(item.getTitle());
-				tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-
-				return v;
-			}
-		};
-
-		int selectedIndex = 0;
-		String prevSelectedGpx = app.getSettings().LAST_SELECTED_GPX_TRACK_FOR_NEW_POINT.get();
-		if (prevSelectedGpx != null) {
-			selectedIndex = list.indexOf(prevSelectedGpx);
-		}
-		if (selectedIndex == -1) {
-			selectedIndex = 0;
-		}
-
-		final int[] selectedPosition = {selectedIndex};
-		builder.setSingleChoiceItems(listAdapter, selectedIndex, new OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int position) {
-				selectedPosition[0] = position;
-			}
-		});
-		builder.setTitle(R.string.select_gpx)
-				.setPositiveButton(R.string.shared_string_ok, new OnClickListener() {
-
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-
-						int position = selectedPosition[0];
-						if (position != -1 && position < list.size()) {
-							if (showCurrentGpx && position == 0) {
-								callbackWithObject.processResult(null);
-								app.getSettings().LAST_SELECTED_GPX_TRACK_FOR_NEW_POINT.set(null);
-							} else {
-								String fileName = list.get(position).getFileName();
-								app.getSettings().LAST_SELECTED_GPX_TRACK_FOR_NEW_POINT.set(fileName);
-								SelectedGpxFile selectedGpxFile =
-										app.getSelectedGpxHelper().getSelectedFileByName(fileName);
-								if (selectedGpxFile != null) {
-									callbackWithObject.processResult(new GPXFile[]{selectedGpxFile.getGpxFile()});
-								} else {
-									loadGPXFileInDifferentThread(activity, callbackWithObject, dir, null, fileName);
-								}
-							}
-						}
-					}
-				})
-				.setNegativeButton(R.string.shared_string_cancel, null);
-
-		final AlertDialog dlg = builder.create();
-		dlg.setCanceledOnTouchOutside(false);
-		dlg.show();
-		try {
-			dlg.getListView().setFastScrollEnabled(true);
-		} catch (Exception e) {
-			// java.lang.ClassCastException: com.android.internal.widget.RoundCornerListAdapter
-			// Unknown reason but on some devices fail
-		}
-		return dlg;
 	}
 
 	private static class DialogGpxDataItemCallback implements GpxDataItemCallback {
@@ -618,7 +527,7 @@ public class GpxUiHelper {
 							popup.setAnchorView(apprTitleView);
 							popup.setContentWidth(AndroidUtils.dpToPx(activity, 200f));
 							popup.setModal(true);
-							popup.setDropDownGravity(Gravity.RIGHT | Gravity.TOP);
+							popup.setDropDownGravity(Gravity.END | Gravity.TOP);
 							popup.setVerticalOffset(AndroidUtils.dpToPx(activity, -48f));
 							popup.setHorizontalOffset(AndroidUtils.dpToPx(activity, -6f));
 							final GpxAppearanceAdapter gpxApprAdapter = new GpxAppearanceAdapter(new ContextThemeWrapper(activity, themeRes),
@@ -993,7 +902,7 @@ public class GpxUiHelper {
 			File[] files = dir.listFiles();
 			if (files != null) {
 				for (File f : files) {
-					if (f.getName().toLowerCase().endsWith(".gpx")) { //$NON-NLS-1$
+					if (f.getName().toLowerCase().endsWith(GPX_FILE_EXT)) {
 						list.add(new GPXInfo(absolutePath ? f.getAbsolutePath() :
 								parent + f.getName(), f.lastModified(), f.length()));
 					} else if (f.isDirectory()) {
@@ -1005,8 +914,8 @@ public class GpxUiHelper {
 	}
 
 
-	private static void loadGPXFileInDifferentThread(final Activity activity, final CallbackWithObject<GPXFile[]> callbackWithObject,
-													 final File dir, final GPXFile currentFile, final String... filename) {
+	static void loadGPXFileInDifferentThread(final Activity activity, final CallbackWithObject<GPXFile[]> callbackWithObject,
+	                                         final File dir, final GPXFile currentFile, final String... filename) {
 		final ProgressDialog dlg = ProgressDialog.show(activity, activity.getString(R.string.loading_smth, ""),
 				activity.getString(R.string.loading_data));
 		new Thread(new Runnable() {

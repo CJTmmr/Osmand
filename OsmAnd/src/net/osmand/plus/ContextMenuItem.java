@@ -1,13 +1,14 @@
 package net.osmand.plus;
 
 import android.content.Context;
-import android.support.annotation.ColorInt;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
-import android.support.v4.content.ContextCompat;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.LayoutRes;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.core.content.ContextCompat;
 
 public class ContextMenuItem {
 	public static final int INVALID_ID = -1;
@@ -29,13 +30,15 @@ public class ContextMenuItem {
 	private final boolean category;
 	private final boolean clickable;
 	private final boolean skipPaintingWithoutColor;
+	private boolean hidden;
 	private final int pos;
-	private final int order;
+	private int order;
 	private String description;
 	private final ContextMenuAdapter.ItemClickListener itemClickListener;
 	private final ContextMenuAdapter.OnIntegerValueChangedListener integerListener;
 	private final ContextMenuAdapter.ProgressListener progressListener;
 	private final boolean hideDivider;
+	private final boolean hideCompoundButton;
 	private final int minHeight;
 	private final int tag;
 	private final String id;
@@ -59,6 +62,7 @@ public class ContextMenuItem {
 							ContextMenuAdapter.OnIntegerValueChangedListener integerListener,
 							ContextMenuAdapter.ProgressListener progressListener,
 							boolean hideDivider,
+							boolean hideCompoundButton,
 							int minHeight,
 							int tag,
 							String id) {
@@ -81,6 +85,7 @@ public class ContextMenuItem {
 		this.integerListener = integerListener;
 		this.progressListener = progressListener;
 		this.hideDivider = hideDivider;
+		this.hideCompoundButton = hideCompoundButton;
 		this.minHeight = minHeight;
 		this.tag = tag;
 		this.id = id;
@@ -149,6 +154,10 @@ public class ContextMenuItem {
 		return clickable;
 	}
 
+	public boolean isHidden() {
+		return hidden;
+	}
+
 	public int getPos() {
 		return pos;
 	}
@@ -181,6 +190,14 @@ public class ContextMenuItem {
 		return hideDivider;
 	}
 
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
+	}
+
+	public boolean shouldHideCompoundButton() {
+		return hideCompoundButton;
+	}
+
 	public void setTitle(String title) {
 		this.title = title;
 	}
@@ -203,6 +220,10 @@ public class ContextMenuItem {
 
 	public void setProgress(int progress) {
 		this.progress = progress;
+	}
+
+	public void setOrder(int order) {
+		this.order = order;
 	}
 
 	public void setLoading(boolean loading) {
@@ -254,6 +275,7 @@ public class ContextMenuItem {
 		private ContextMenuAdapter.ProgressListener mProgressListener = null;
 		private boolean mSkipPaintingWithoutColor;
 		private boolean mHideDivider;
+		private boolean mHideCompoundButton;
 		private int mMinHeight;
 		private int mTag;
 		private String mId;
@@ -357,6 +379,11 @@ public class ContextMenuItem {
 			return this;
 		}
 
+		public ItemBuilder hideCompoundButton(boolean hideCompoundButton) {
+			mHideCompoundButton = hideCompoundButton;
+			return this;
+		}
+
 		public ItemBuilder setMinHeight(int minHeight) {
 			this.mMinHeight = minHeight;
 			return this;
@@ -380,7 +407,7 @@ public class ContextMenuItem {
 			return new ContextMenuItem(mTitleId, mTitle, mIcon, mColorRes, mSecondaryIcon,
 					mSelected, mProgress, mLayout, mLoading, mIsCategory, mIsClickable, mSkipPaintingWithoutColor,
 					mPosition, mOrder, mDescription, mItemClickListener, mIntegerListener, mProgressListener,
-					mHideDivider, mMinHeight, mTag, mId);
+					mHideDivider, mHideCompoundButton, mMinHeight, mTag, mId);
 		}
 	}
 }

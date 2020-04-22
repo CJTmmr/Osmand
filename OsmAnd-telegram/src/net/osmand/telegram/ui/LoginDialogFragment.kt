@@ -8,10 +8,6 @@ import android.graphics.Rect
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.support.annotation.StringRes
-import android.support.v4.app.FragmentManager
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.AppCompatImageView
 import android.text.*
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
@@ -24,6 +20,9 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.annotation.StringRes
+import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.content.ContextCompat
 import net.osmand.PlatformUtil
 import net.osmand.telegram.R
 import net.osmand.telegram.utils.AndroidNetworkUtils
@@ -57,12 +56,12 @@ class LoginDialogFragment : BaseDialogFragment() {
 
 		private var countryPhoneCode: String = "+"
 
-		fun showWelcomeDialog(fragmentManager: FragmentManager) {
+		fun showWelcomeDialog(fragmentManager: androidx.fragment.app.FragmentManager) {
 			welcomeDialogShown = true
 			showDialog(fragmentManager, welcomeDialog = true)
 		}
 
-		fun showDialog(fragmentManager: FragmentManager, loginDialogType: LoginDialogType? = null, welcomeDialog: Boolean = false, privacyPolicyAgreed: Boolean = false) {
+		fun showDialog(fragmentManager: androidx.fragment.app.FragmentManager, loginDialogType: LoginDialogType? = null, welcomeDialog: Boolean = false, privacyPolicyAgreed: Boolean = false) {
 			try {
 
 				/*
@@ -95,13 +94,13 @@ class LoginDialogFragment : BaseDialogFragment() {
 			}
 		}
 
-		fun dismiss(fragmentManager: FragmentManager) {
+		fun dismiss(fragmentManager: androidx.fragment.app.FragmentManager) {
 			val loginDialogFragment = getFragment(fragmentManager)
 			loginDialogFragment?.dismissedManually = true
 			loginDialogFragment?.dismissAllowingStateLoss()
 		}
 
-		private fun getFragment(fragmentManager: FragmentManager): LoginDialogFragment? {
+		private fun getFragment(fragmentManager: androidx.fragment.app.FragmentManager): LoginDialogFragment? {
 			return fragmentManager.findFragmentByTag(TAG) as LoginDialogFragment?
 		}
 	}
@@ -194,7 +193,7 @@ class LoginDialogFragment : BaseDialogFragment() {
 		}
 	}
 
-	override fun onDismiss(dialog: DialogInterface?) {
+	override fun onDismiss(dialog: DialogInterface) {
 		super.onDismiss(dialog)
 		if (!dismissedManually) {
 			getMainActivity()?.closeTelegram()
@@ -301,7 +300,7 @@ class LoginDialogFragment : BaseDialogFragment() {
 							view.findViewById<ImageView>(R.id.no_telegram_button)?.setImageResource(R.drawable.ic_arrow_forward)
 
 							noTelegramViewContainer?.setOnClickListener {
-								val focusedView = dialog.currentFocus
+								val focusedView = dialog?.currentFocus
 								val mainActivity = activity
 								if (focusedView != null && mainActivity != null) {
 									AndroidUtils.hideSoftKeyboard(mainActivity, focusedView)
@@ -480,7 +479,7 @@ class LoginDialogFragment : BaseDialogFragment() {
 			when (loginDialogActiveType) {
 				LoginDialogType.ENTER_PHONE_NUMBER -> {
 					showWelcomeDialog = true
-					val focusedView = dialog.currentFocus
+					val focusedView = dialog?.currentFocus
 					val mainActivity = activity
 					if (focusedView != null && mainActivity != null) {
 						AndroidUtils.hideSoftKeyboard(mainActivity, focusedView)

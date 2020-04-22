@@ -6,9 +6,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.PopupMenu;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +15,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.view.ViewCompat;
 
 import net.osmand.map.WorldRegion;
 import net.osmand.plus.R;
@@ -180,8 +181,9 @@ public class ItemViewHolder {
 			descrTextView.setVisibility(View.VISIBLE);
 			if (indexItem.getType() == DownloadActivityType.DEPTH_CONTOUR_FILE && !depthContoursPurchased) {
 				descrTextView.setText(context.getString(R.string.depth_contour_descr));
-			} else if ((indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE ||
-					indexItem.getType() == DownloadActivityType.HILLSHADE_FILE) && srtmDisabled) {
+			} else if ((indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE
+					|| indexItem.getType() == DownloadActivityType.HILLSHADE_FILE
+					|| indexItem.getType() == DownloadActivityType.SLOPE_FILE) && srtmDisabled) {
 				if(showTypeInName) {
 					descrTextView.setText("");
 				} else {
@@ -306,8 +308,9 @@ public class ItemViewHolder {
 		if (indexItem.getBasename().toLowerCase().equals(DownloadResources.WORLD_SEAMARKS_KEY)
 				&& nauticalPluginDisabled) {
 			clickAction = RightButtonAction.ASK_FOR_SEAMARKS_PLUGIN;
-		} else if ((indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE ||
-				indexItem.getType() == DownloadActivityType.HILLSHADE_FILE) && srtmDisabled) {
+		} else if ((indexItem.getType() == DownloadActivityType.SRTM_COUNTRY_FILE
+				|| indexItem.getType() == DownloadActivityType.HILLSHADE_FILE
+				|| indexItem.getType() == DownloadActivityType.SLOPE_FILE) && srtmDisabled) {
 			if (srtmNeedsInstallation) {
 				clickAction = RightButtonAction.ASK_FOR_SRTM_PLUGIN_PURCHASE;
 			} else {
@@ -390,6 +393,8 @@ public class ItemViewHolder {
 				public boolean onMenuItemClick(MenuItem item) {
 					LocalIndexType tp = LocalIndexType.MAP_DATA;
 					if (indexItem.getType() == DownloadActivityType.HILLSHADE_FILE) {
+						tp = LocalIndexType.TILES_DATA;
+					} else if (indexItem.getType() == DownloadActivityType.SLOPE_FILE) {
 						tp = LocalIndexType.TILES_DATA;
 					} else if (indexItem.getType() == DownloadActivityType.ROADS_FILE) {
 						tp = LocalIndexType.MAP_DATA;

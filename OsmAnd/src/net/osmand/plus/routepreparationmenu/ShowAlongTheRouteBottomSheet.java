@@ -4,10 +4,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.Toolbar;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +15,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+
+import net.osmand.AndroidUtils;
 import net.osmand.ValueHolder;
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.DialogListItemAdapter;
@@ -41,6 +43,8 @@ import net.osmand.plus.routing.IRoutingDataUpdateListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+
+import static net.osmand.plus.poi.PoiFiltersHelper.PoiTemplateList;
 
 public class ShowAlongTheRouteBottomSheet extends MenuBottomSheetDialogFragment implements IRouteInformationListener, IRoutingDataUpdateListener {
 
@@ -84,7 +88,8 @@ public class ShowAlongTheRouteBottomSheet extends MenuBottomSheetDialogFragment 
 		textView.setText(R.string.show_along_the_route);
 
 		Toolbar toolbar = (Toolbar) titleView.findViewById(R.id.toolbar);
-		toolbar.setNavigationIcon(getContentIcon(R.drawable.ic_arrow_back));
+		Drawable icBack = getContentIcon(AndroidUtils.getNavigationIconResId(ctx));
+		toolbar.setNavigationIcon(icBack);
 		toolbar.setNavigationContentDescription(R.string.access_shared_string_navigate_up);
 		toolbar.setNavigationOnClickListener(new View.OnClickListener() {
 			@Override
@@ -430,7 +435,8 @@ public class ShowAlongTheRouteBottomSheet extends MenuBottomSheetDialogFragment 
 			View v;
 			if (type == WaypointHelper.POI) {
 				v = themedInflater.inflate(R.layout.along_the_route_radius_poi, null);
-				String descEx = !app.getPoiFilters().isShowingAnyPoi() ? getString(R.string.poi) : app.getPoiFilters().getSelectedPoiFiltersName();
+				String descEx = !app.getPoiFilters().isShowingAnyPoi(PoiTemplateList.POI) ?
+						getString(R.string.poi) : app.getPoiFilters().getSelectedPoiFiltersName(PoiTemplateList.POI);
 				((TextView) v.findViewById(R.id.title)).setText(getString(R.string.search_radius_proximity) + ":");
 				((TextView) v.findViewById(R.id.titleEx)).setText(getString(R.string.shared_string_type) + ":");
 				final TextView radiusEx = (TextView) v.findViewById(R.id.descriptionEx);
@@ -480,7 +486,7 @@ public class ShowAlongTheRouteBottomSheet extends MenuBottomSheetDialogFragment 
 					new MapActivityLayers.DismissListener() {
 						@Override
 						public void dismiss() {
-							if (app.getPoiFilters().isShowingAnyPoi()) {
+							if (app.getPoiFilters().isShowingAnyPoi(PoiTemplateList.POI)) {
 								enableType(type, enable);
 							}
 						}

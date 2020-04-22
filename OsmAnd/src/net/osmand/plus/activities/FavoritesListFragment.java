@@ -3,29 +3,8 @@
  */
 package net.osmand.plus.activities;
 
-import java.text.Collator;
-import java.util.Comparator;
-import java.util.List;
-
-import net.osmand.Location;
-import net.osmand.data.FavouritePoint;
-import net.osmand.data.LatLon;
-import net.osmand.data.PointDescription;
-import net.osmand.plus.OsmAndLocationProvider.OsmAndCompassListener;
-import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.OsmandSettings;
-import net.osmand.plus.R;
-import net.osmand.plus.UiUtilities.UpdateLocationViewCache;
-import net.osmand.plus.activities.search.SearchActivity;
-import net.osmand.plus.activities.search.SearchActivity.SearchActivityChild;
-import net.osmand.plus.base.FavoriteImageDrawable;
-import net.osmand.plus.base.OsmAndListFragment;
-import net.osmand.util.MapUtils;
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.ViewCompat;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -37,6 +16,29 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.core.view.ViewCompat;
+import androidx.fragment.app.FragmentActivity;
+
+import net.osmand.Location;
+import net.osmand.data.FavouritePoint;
+import net.osmand.data.LatLon;
+import net.osmand.data.PointDescription;
+import net.osmand.plus.OsmAndLocationProvider.OsmAndCompassListener;
+import net.osmand.plus.OsmandApplication;
+import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.R;
+import net.osmand.plus.UiUtilities;
+import net.osmand.plus.UiUtilities.UpdateLocationViewCache;
+import net.osmand.plus.activities.search.SearchActivity;
+import net.osmand.plus.activities.search.SearchActivity.SearchActivityChild;
+import net.osmand.plus.base.FavoriteImageDrawable;
+import net.osmand.plus.base.OsmAndListFragment;
+import net.osmand.util.MapUtils;
+
+import java.text.Collator;
+import java.util.Comparator;
+import java.util.List;
 
 public class FavoritesListFragment extends OsmAndListFragment implements SearchActivityChild, OsmAndCompassListener {
 
@@ -198,8 +200,8 @@ public class FavoritesListFragment extends OsmAndListFragment implements SearchA
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View row = convertView;
 			if (row == null) {
-				LayoutInflater inflater = activity.getLayoutInflater(); 
-				row = inflater.inflate(R.layout.favorites_list_item, parent, false);
+				boolean nightMode = app.getDaynightHelper().isNightModeForMapControls();
+				row = UiUtilities.getInflater(activity, nightMode).inflate(R.layout.favorites_list_item, parent, false);
 			}
 
 			TextView name = (TextView) row.findViewById(R.id.favourite_label);

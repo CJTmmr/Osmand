@@ -11,38 +11,52 @@ import android.graphics.drawable.RippleDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Build;
-import android.support.annotation.ColorInt;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.TintableCompoundButton;
-import android.support.v7.view.ContextThemeWrapper;
-import android.support.v7.widget.SwitchCompat;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.StyleSpan;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+import androidx.appcompat.view.ContextThemeWrapper;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.widget.TintableCompoundButton;
+
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.slider.Slider;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.snackbar.SnackbarContentLayout;
+
 import net.osmand.AndroidUtils;
 import net.osmand.Location;
+import net.osmand.PlatformUtil;
 import net.osmand.data.LatLon;
 import net.osmand.plus.views.DirectionDrawable;
 import net.osmand.plus.widgets.TextViewEx;
 
-import java.util.Locale;
+import org.apache.commons.logging.Log;
 
 import gnu.trove.map.hash.TLongObjectHashMap;
 
 public class UiUtilities {
+
+	private static final Log LOG = PlatformUtil.getLog(UiUtilities.class);
 
 	private TLongObjectHashMap<Drawable> drawableCache = new TLongObjectHashMap<>();
 	private OsmandApplication app;
@@ -360,8 +374,8 @@ public class UiUtilities {
 		}
 		View view = snackbar.getView();
 		Context ctx = view.getContext();
-		TextView tvMessage = (TextView) view.findViewById(android.support.design.R.id.snackbar_text);
-		TextView tvAction = (TextView) view.findViewById(android.support.design.R.id.snackbar_action);
+		TextView tvMessage = (TextView) view.findViewById(com.google.android.material.R.id.snackbar_text);
+		TextView tvAction = (TextView) view.findViewById(com.google.android.material.R.id.snackbar_action);
 		if (messageColor == null) {
 			messageColor = nightMode ? R.color.text_color_primary_dark : R.color.text_color_primary_light;
 		}
@@ -379,17 +393,37 @@ public class UiUtilities {
 		view.setBackgroundColor(ContextCompat.getColor(ctx, backgroundColor));
 	}
 
+	public static void setupSnackbarVerticalLayout(Snackbar snackbar) {
+		View view = snackbar.getView();
+		Context ctx = view.getContext();
+		TextView messageView = (TextView) view.findViewById(com.google.android.material.R.id.snackbar_text);
+		TextView actionView = (TextView) view.findViewById(com.google.android.material.R.id.snackbar_action);
+		ViewParent parent = actionView.getParent();
+		if (parent instanceof SnackbarContentLayout) {
+			((SnackbarContentLayout) parent).removeView(actionView);
+			((SnackbarContentLayout) parent).removeView(messageView);
+			LinearLayout container = new LinearLayout(ctx);
+			container.setOrientation(LinearLayout.VERTICAL);
+			container.addView(messageView);
+			container.addView(actionView);
+			((SnackbarContentLayout) parent).addView(container);
+			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+					ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT);
+			actionView.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
+			container.setLayoutParams(params);
+		}
+		try {
+			snackbar.setAnimationMode(BaseTransientBottomBar.ANIMATION_MODE_FADE);
+		} catch (Throwable e) { }
+	}
+
 	public static void rotateImageByLayoutDirection(ImageView image, int layoutDirection) {
 		if (image == null) {
 			return;
 		}
-		int rotation = layoutDirection == View.LAYOUT_DIRECTION_LTR ? 0 : 180;
+		int rotation = layoutDirection == ViewCompat.LAYOUT_DIRECTION_RTL ? 180 : 0;
 		image.setRotationY(rotation);
-	}
-	
-	public static void setupLayoutDirection(View layout) {
-		int direction = AndroidUtils.getLayoutDirection(layout.getContext());
-		ViewCompat.setLayoutDirection(layout, direction);
 	}
 
 	public static void setupCompoundButtonDrawable(Context ctx, boolean nightMode, @ColorInt int activeColor, Drawable drawable) {
@@ -462,32 +496,57 @@ public class UiUtilities {
 		}
 		compoundButton.setBackgroundColor(Color.TRANSPARENT);
 	}
-	
-	public static void setupSeekBar(@NonNull OsmandApplication app, @NonNull SeekBar seekBar, 
-	                                boolean nightMode, boolean profileDependent) {
-		int activeColor = ContextCompat.getColor(app, profileDependent ?
-				app.getSettings().APPLICATION_MODE.get().getIconColorInfo().getColor(nightMode) :
-				nightMode ? R.color.active_color_primary_dark : R.color.active_color_primary_light);
-		setupSeekBar(seekBar, activeColor, nightMode);
+
+	public static ViewGroup createSliderView(@NonNull Context ctx, boolean nightMode) {
+		return (ViewGroup) getInflater(ctx, nightMode).inflate(R.layout.slider, null, false);
 	}
 
-	public static void setupSeekBar(@NonNull SeekBar seekBar, @ColorInt int activeColor, boolean nightMode) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-			int backgroundColor = ContextCompat.getColor(seekBar.getContext(), nightMode
-					? R.color.icon_color_secondary_dark : R.color.icon_color_default_light);
-			if (seekBar.getProgressDrawable() instanceof LayerDrawable) {
-				LayerDrawable progressDrawable = (LayerDrawable) seekBar.getProgressDrawable();
-				Drawable background = progressDrawable.findDrawableByLayerId(android.R.id.background);
-				if (background != null) {
-					background.setColorFilter(backgroundColor, PorterDuff.Mode.SRC_IN);
-				}
-				Drawable progress = progressDrawable.findDrawableByLayerId(android.R.id.progress);
-				if (progress != null) {
-					progress.setColorFilter(activeColor, PorterDuff.Mode.SRC_IN);
-				}
-			}
-			seekBar.getThumb().setColorFilter(activeColor, PorterDuff.Mode.SRC_IN);
+	public static void setupSlider(Slider slider, boolean nightMode, @ColorInt Integer activeColor) {
+		setupSlider(slider, nightMode, activeColor, false);
+	}
+
+	public static void setupSlider(Slider slider, boolean nightMode,
+	                               @ColorInt Integer activeColor, boolean showTicks) {
+		Context ctx = slider.getContext();
+		if (ctx == null) {
+			return;
 		}
+		int themeId = nightMode ? R.style.OsmandDarkTheme : R.style.OsmandLightTheme;
+		ctx = new ContextThemeWrapper(ctx, themeId);
+
+		// colors
+		int[][] states = new int[][] {
+				new int[] {android.R.attr.state_enabled},
+				new int[] {-android.R.attr.state_enabled}
+		};
+		if (activeColor == null) {
+			activeColor = AndroidUtils.getColorFromAttr(ctx, R.attr.active_color_basic);
+		}
+		int activeDisableColor = getColorWithAlpha(activeColor, 0.25f);
+		ColorStateList activeCsl = new ColorStateList(states,
+				new int[] {activeColor, activeDisableColor});
+		int inactiveColor = AndroidUtils.getColorFromAttr(ctx, R.attr.default_icon_color);
+		ColorStateList inactiveCsl = new ColorStateList(states,
+				new int[] {inactiveColor, inactiveColor});
+		slider.setTrackColorActive(activeCsl);
+		slider.setTrackColorInactive(inactiveCsl);
+		slider.setHaloColor(activeCsl);
+		slider.setThumbColor(activeCsl);
+		int ticksColor = showTicks ? ContextCompat.getColor(ctx,
+				nightMode ? R.color.color_black : R.color.color_white) :
+				Color.TRANSPARENT;
+		slider.setTickColor(new ColorStateList(states, new int[] {ticksColor, ticksColor}));
+
+		// sizes
+		int thumbRadius = ctx.getResources().getDimensionPixelSize(R.dimen.slider_thumb_size);
+		int haloRadius = ctx.getResources().getDimensionPixelSize(R.dimen.slider_thumb_halo_size);
+		int trackHeight = ctx.getResources().getDimensionPixelSize(R.dimen.slider_track_height);
+		slider.setThumbRadius(thumbRadius);
+		slider.setHaloRadius(haloRadius);
+		slider.setTrackHeight(trackHeight);
+
+		// label behavior
+		slider.setLabelBehavior(Slider.LABEL_GONE);
 	}
 	
 	public static void setupDialogButton(boolean nightMode, View buttonView, DialogButtonType buttonType, @StringRes int buttonTextId) {
@@ -540,6 +599,14 @@ public class UiUtilities {
 		}
 	}
 
+	public static LayoutInflater getMaterialInflater(Context ctx, boolean nightMode) {
+		return LayoutInflater.from(getThemedMaterialContext(ctx, nightMode));
+	}
+
+	private static Context getThemedMaterialContext(Context context, boolean nightMode) {
+		return getThemedContext(context, nightMode, R.style.OsmandMaterialLightTheme, R.style.OsmandMaterialDarkTheme);
+	}
+
 	public static LayoutInflater getInflater(Context ctx, boolean nightMode) {
 		return LayoutInflater.from(getThemedContext(ctx, nightMode));
 	}
@@ -557,6 +624,22 @@ public class UiUtilities {
 			ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
 			p.setMargins(l, t, r, b);
 			v.requestLayout();
+		}
+	}
+
+	public static SpannableString createSpannableString(@NonNull String text, @NonNull String textToStyle, @NonNull StyleSpan styleSpan) {
+		SpannableString spannable = new SpannableString(text);
+		try {
+			int startIndex = text.indexOf(textToStyle);
+			spannable.setSpan(
+					styleSpan,
+					startIndex,
+					startIndex + textToStyle.length(),
+					Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+			return spannable;
+		} catch (RuntimeException e) {
+			LOG.error("Error trying to find index of " + textToStyle + " " + e);
+			return spannable;
 		}
 	}
 }

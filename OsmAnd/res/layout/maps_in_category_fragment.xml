@@ -5,11 +5,11 @@
               android:layout_height="match_parent"
               android:orientation="vertical">
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="fill_parent"
             android:layout_height="@dimen/dashboard_map_toolbar"
@@ -19,7 +19,7 @@
             app:contentInsetLeft="72dp"
             app:contentInsetStart="72dp"
             />
-    </android.support.design.widget.AppBarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <include
         layout="@layout/free_version_banner"
@@ -38,5 +38,7 @@
         android:layout_weight="1"
         android:dividerHeight="0.5dp"
         android:divider="?attr/ctx_menu_info_divider"
-        android:groupIndicator="@android:color/transparent"/>
+        android:groupIndicator="@android:color/transparent"
+	    android:layout_marginStart="0dp"
+	    android:layout_marginEnd="0dp" />
 </LinearLayout>

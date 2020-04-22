@@ -1,10 +1,12 @@
 package net.osmand.plus;
 
+import android.app.Activity;
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 
 import net.osmand.GPXUtilities;
 import net.osmand.GPXUtilities.GPXFile;
@@ -81,7 +83,7 @@ public class FavouritesDbHelper {
 			return PERSONAL_CATEGORY.equals(name);
 		}
 
-		public static boolean isPersonalCategoryDisplayName(Context ctx, String name){
+		public static boolean isPersonalCategoryDisplayName(Context ctx, String name) {
 			return name.equals(ctx.getString(R.string.personal_category_name));
 		}
 
@@ -100,7 +102,11 @@ public class FavouritesDbHelper {
 		}
 
 		public int getColor() {
-			return color;
+			if ((color & 0xFF000000) != 0) {
+				return color;
+			} else {
+				return color | 0xFF000000;
+			}
 		}
 
 		public boolean isVisible() {
@@ -116,7 +122,7 @@ public class FavouritesDbHelper {
 		}
 
 		public static String convertDisplayNameToGroupIdName(Context context, String name) {
-			if (isPersonalCategoryDisplayName(context,name)) {
+			if (isPersonalCategoryDisplayName(context, name)) {
 				return PERSONAL_CATEGORY;
 			}
 			if (name.equals(context.getString(R.string.shared_string_favorites))) {
@@ -301,7 +307,9 @@ public class FavouritesDbHelper {
 			if (FavouritePoint.SpecialPointType.PARKING.equals(p.getSpecialPointType())) {
 				p.setColor(ContextCompat.getColor(context, R.color.map_widget_blue));
 			} else {
-				p.setColor(group.color);
+				if (p.getColor() == 0) {
+					p.setColor(group.color);
+				}
 			}
 			group.points.add(p);
 			cachedFavoritePoints.add(p);
@@ -351,7 +359,7 @@ public class FavouritesDbHelper {
 		}
 	}
 
-	public static AlertDialog.Builder checkDuplicates(FavouritePoint p, FavouritesDbHelper fdb, Context uiContext) {
+	public static AlertDialog.Builder checkDuplicates(FavouritePoint p, FavouritesDbHelper fdb, Activity activity) {
 		boolean emoticons = false;
 		String index = "";
 		int number = 0;
@@ -380,12 +388,15 @@ public class FavouritesDbHelper {
 			}
 		}
 		if ((index.length() > 0 || emoticons)) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(uiContext);
+			OsmandApplication app = (OsmandApplication) activity.getApplication();
+			boolean nightMode = app.getDaynightHelper().isNightModeForMapControls();
+			Context themedContext = UiUtilities.getThemedContext(activity, nightMode);
+			AlertDialog.Builder builder = new AlertDialog.Builder(themedContext);
 			builder.setTitle(R.string.fav_point_dublicate);
 			if (emoticons) {
-				builder.setMessage(uiContext.getString(R.string.fav_point_emoticons_message, name));
+				builder.setMessage(activity.getString(R.string.fav_point_emoticons_message, name));
 			} else {
-				builder.setMessage(uiContext.getString(R.string.fav_point_dublicate_message, name));
+				builder.setMessage(activity.getString(R.string.fav_point_dublicate_message, name));
 			}
 			p.setName(name);
 			return builder;
@@ -439,7 +450,9 @@ public class FavouritesDbHelper {
 			if (FavouritePoint.SpecialPointType.PARKING.equals(p.getSpecialPointType())) {
 				p.setColor(ContextCompat.getColor(context, R.color.map_widget_blue));
 			} else {
-				p.setColor(pg.color);
+				if (p.getColor() == 0) {
+					p.setColor(pg.color);
+				}
 			}
 			pg.points.add(p);
 		}
@@ -589,7 +602,7 @@ public class FavouritesDbHelper {
 	}
 
 	public void addEmptyCategory(String name, int color) {
-			addEmptyCategory(name, color, true);
+		addEmptyCategory(name, color, true);
 	}
 
 	public void addEmptyCategory(String name, int color, boolean visible) {
@@ -598,7 +611,7 @@ public class FavouritesDbHelper {
 		group.color = color;
 		group.visible = visible;
 		favoriteGroups.add(group);
-		flatGroups.put(name, group);
+		flatGroups.put(group.name, group);
 	}
 
 	public List<FavouritePoint> getFavouritePoints() {
@@ -639,14 +652,16 @@ public class FavouritesDbHelper {
 		return false;
 	}
 
+	@Nullable
 	public FavoriteGroup getGroup(FavouritePoint p) {
-		if (flatGroups.containsKey(p.getCategory())) {
+		if (p != null && flatGroups.containsKey(p.getCategory())) {
 			return flatGroups.get(p.getCategory());
 		} else {
 			return null;
 		}
 	}
 
+	@Nullable
 	public FavoriteGroup getGroup(String nameId) {
 		if (flatGroups.containsKey(nameId)) {
 			return flatGroups.get(nameId);
@@ -655,6 +670,7 @@ public class FavouritesDbHelper {
 		}
 	}
 
+	@Nullable
 	private FavouritePoint findFavoriteByAllProperties(String category, String name, double lat, double lon) {
 		if (flatGroups.containsKey(category)) {
 			FavoriteGroup fg = flatGroups.get(category);

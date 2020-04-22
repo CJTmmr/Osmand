@@ -4,14 +4,15 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentActivity;
 
 import net.osmand.data.FavouritePoint;
 import net.osmand.data.LatLon;
@@ -92,16 +93,7 @@ public class FavoritePointEditorFragment extends PointEditorFragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
 		if (autoFill) {
-
-//			String name = favorite.getName() != null && !favorite.getName().isEmpty() ?
-//					favorite.getName() : getString(R.string.favorite_empty_place_name);
-//
-//			String tostText = name + getString(R.string.favorite_autofill_toast_text) + group.name;
-//
-//			Toast.makeText(getContext(), tostText, Toast.LENGTH_SHORT).show();
-
 			save(true);
 		}
 	}
@@ -147,9 +139,9 @@ public class FavoritePointEditorFragment extends PointEditorFragment {
 	public void setCategory(String name, int color) {
 		FavouritesDbHelper helper = getHelper();
 		if (helper != null) {
-			FavoriteGroup group = helper.getGroup(FavouritesDbHelper.FavoriteGroup.convertDisplayNameToGroupIdName(requireContext(), name));
+			FavoriteGroup group = helper.getGroup(FavoriteGroup.convertDisplayNameToGroupIdName(requireContext(), name));
 			this.group = group;
-			super.setCategory(name, group.getColor());
+			super.setCategory(name, group != null ? group.getColor() : 0);
 		}
 	}
 

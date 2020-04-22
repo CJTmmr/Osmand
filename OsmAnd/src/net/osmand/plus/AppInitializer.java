@@ -13,8 +13,10 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.support.v7.app.AlertDialog;
 
+import androidx.appcompat.app.AlertDialog;
+
+import net.osmand.AndroidUtils;
 import net.osmand.IProgress;
 import net.osmand.IndexConstants;
 import net.osmand.PlatformUtil;
@@ -203,10 +205,18 @@ public class AppInitializer implements IProgress {
 			if (prevAppVersion < VERSION_3_5 || Version.getAppVersion(app).equals("3.5.3")
 					|| Version.getAppVersion(app).equals("3.5.4")) {
 				app.getSettings().migratePreferences();
-				startPrefs.edit().putInt(VERSION_INSTALLED_NUMBER, VERSION_3_5).commit();
-			}
-			if (prevAppVersion < VERSION_3_5 || Version.getAppVersion(app).equals("3.5.3")) {
-				app.getSettings().migrateHomeWorkParkingToFavorites();
+				addListener(new AppInitializeListener() {
+					@Override
+					public void onProgress(AppInitializer init, InitEvents event) {
+						if (event.equals(InitEvents.FAVORITES_INITIALIZED)) {
+							app.getSettings().migrateHomeWorkParkingToFavorites();
+						}
+					}
+
+					@Override
+					public void onFinish(AppInitializer init) {
+					}
+				});
 				startPrefs.edit().putInt(VERSION_INSTALLED_NUMBER, VERSION_3_5).commit();
 			}
 			if (prevAppVersion < VERSION_3_6) {
@@ -752,7 +762,7 @@ public class AppInitializer implements IProgress {
 			appInitializing = false;
 			notifyFinish();
 			if (warnings != null && !warnings.isEmpty()) {
-				app.showToastMessage(formatWarnings(warnings).toString());
+				app.showToastMessage(AndroidUtils.formatWarnings(warnings).toString());
 			}
 		}
 	}
@@ -870,22 +880,6 @@ public class AppInitializer implements IProgress {
 			app.getResourceManager().initMapBoundariesCacheNative();
 		}
 	}
-
-
-	private StringBuilder formatWarnings(List<String> warnings) {
-		final StringBuilder b = new StringBuilder();
-		boolean f = true;
-		for (String w : warnings) {
-			if (f) {
-				f = false;
-			} else {
-				b.append('\n');
-			}
-			b.append(w);
-		}
-		return b;
-	}
-
 
 	public void notifyFinish() {
 		app.uiHandler.post(new Runnable() {

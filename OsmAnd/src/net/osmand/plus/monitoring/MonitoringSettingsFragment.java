@@ -4,10 +4,11 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.preference.Preference;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+
+import androidx.fragment.app.FragmentManager;
+import androidx.preference.Preference;
 
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.OsmAndAppCustomization;
@@ -20,7 +21,6 @@ import net.osmand.plus.myplaces.FavoritesActivity;
 import net.osmand.plus.profiles.SelectCopyAppModeBottomSheet;
 import net.osmand.plus.profiles.SelectCopyAppModeBottomSheet.CopyAppModePrefsListener;
 import net.osmand.plus.settings.BaseSettingsFragment;
-import net.osmand.plus.settings.bottomsheets.ChangeGeneralProfilesPrefBottomSheet;
 import net.osmand.plus.settings.bottomsheets.ResetProfilePrefsBottomSheet;
 import net.osmand.plus.settings.bottomsheets.ResetProfilePrefsBottomSheet.ResetAppModePrefsListener;
 import net.osmand.plus.settings.bottomsheets.SingleSelectPreferenceBottomSheet;
@@ -28,7 +28,6 @@ import net.osmand.plus.settings.preferences.ListPreferenceEx;
 import net.osmand.plus.settings.preferences.SwitchPreferenceEx;
 import net.osmand.plus.widgets.style.CustomTypefaceSpan;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -287,25 +286,19 @@ public class MonitoringSettingsFragment extends BaseSettingsFragment
 	}
 
 	@Override
-	public boolean onPreferenceChange(Preference preference, Object newValue) {
-		String prefId = preference.getKey();
-
-		OsmandSettings.OsmandPreference pref = settings.getPreference(prefId);
+	public void onApplyPreferenceChange(String prefId, boolean applyToAllProfiles, Object newValue) {
 		if (SAVE_GLOBAL_TRACK_INTERVAL.equals(prefId)) {
+			OsmandSettings.OsmandPreference pref = settings.getPreference(prefId);
 			if (newValue instanceof Boolean) {
-				prefId = settings.SAVE_GLOBAL_TRACK_REMEMBER.getId();
-				newValue = Boolean.FALSE;
+				applyPreference(settings.SAVE_GLOBAL_TRACK_REMEMBER.getId(), applyToAllProfiles, false);
+			} else if (pref instanceof OsmandSettings.CommonPreference
+					&& !((OsmandSettings.CommonPreference) pref).hasDefaultValueForMode(getSelectedAppMode())) {
+				applyPreference(SAVE_GLOBAL_TRACK_INTERVAL, applyToAllProfiles, newValue);
+				applyPreference(settings.SAVE_GLOBAL_TRACK_REMEMBER.getId(), applyToAllProfiles, true);
 			}
-			if (pref instanceof OsmandSettings.CommonPreference && !((OsmandSettings.CommonPreference) pref).hasDefaultValueForMode(getSelectedAppMode())) {
-				FragmentManager fragmentManager = getFragmentManager();
-				if (fragmentManager != null && newValue instanceof Serializable) {
-					ChangeGeneralProfilesPrefBottomSheet.showInstance(fragmentManager, prefId,
-							(Serializable) newValue, this, false, getSelectedAppMode());
-				}
-				return false;
-			}
+		} else {
+			super.onApplyPreferenceChange(prefId, applyToAllProfiles, newValue);
 		}
-		return true;
 	}
 
 	@Override
@@ -340,18 +333,6 @@ public class MonitoringSettingsFragment extends BaseSettingsFragment
 			app.getSettings().resetProfilePreferences(appMode, plugin.getPreferences());
 			app.showToastMessage(R.string.plugin_prefs_reset_successful);
 			updateAllSettings();
-		}
-	}
-
-	@Override
-	public void onSettingApplied(String prefId, boolean appliedToAllProfiles) {
-		if (settings.SAVE_GLOBAL_TRACK_INTERVAL.getId().equals(prefId)) {
-			if (appliedToAllProfiles) {
-				app.getSettings().setPreferenceForAllModes(settings.SAVE_GLOBAL_TRACK_REMEMBER.getId(), true);
-			} else {
-				app.getSettings().setPreference(settings.SAVE_GLOBAL_TRACK_REMEMBER.getId(), true, getSelectedAppMode());
-			}
-
 		}
 	}
 }

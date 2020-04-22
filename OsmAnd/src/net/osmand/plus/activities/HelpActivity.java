@@ -5,16 +5,17 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.IdRes;
-import android.support.annotation.StringRes;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.IdRes;
+import androidx.annotation.StringRes;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
 
 import net.osmand.AndroidUtils;
 import net.osmand.plus.ContextMenuAdapter;
@@ -41,7 +42,7 @@ public class HelpActivity extends OsmandActionBarActivity implements AdapterView
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.fragment_help_screen);
 
-		ContextMenuAdapter contextMenuAdapter = new ContextMenuAdapter();
+		ContextMenuAdapter contextMenuAdapter = new ContextMenuAdapter(getMyApplication());
 		contextMenuAdapter.setDefaultLayoutId(R.layout.two_line_with_images_list_item);
 
 		createBeginWithOsmandItems(contextMenuAdapter);

@@ -8,7 +8,9 @@
     android:minHeight="@dimen/list_item_height"
     android:orientation="horizontal"
     android:paddingLeft="@dimen/list_content_padding"
-    android:paddingRight="@dimen/list_content_padding">
+    android:paddingRight="@dimen/list_content_padding"
+	android:paddingStart="@dimen/list_content_padding"
+	android:paddingEnd="@dimen/list_content_padding">
 
     <ImageView
         android:id="@+id/change_color_icon"
@@ -30,7 +32,7 @@
         android:text="@string/change_color"
         android:textAppearance="@style/TextAppearance.ListItemTitle" />
 
-    <android.support.v7.widget.AppCompatImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/colorImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

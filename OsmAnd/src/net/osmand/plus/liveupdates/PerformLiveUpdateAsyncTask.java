@@ -4,7 +4,8 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import net.osmand.PlatformUtil;
 import net.osmand.plus.OsmandApplication;
@@ -68,7 +69,6 @@ public class PerformLiveUpdateAsyncTask
 
 	@Override
 	protected void onPostExecute(IncrementalChangesManager.IncrementalUpdateList result) {
-		LOG.debug("onPostExecute");
 		if (context instanceof AbstractDownloadActivity) {
 			AbstractDownloadActivity activity = (AbstractDownloadActivity) context;
 			activity.setSupportProgressBarIndeterminateVisibility(false);

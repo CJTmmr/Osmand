@@ -1,11 +1,12 @@
 package net.osmand.plus.osmedit;
 
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.widget.ArrayAdapter;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 
 import net.osmand.plus.ContextMenuAdapter;
 import net.osmand.plus.ContextMenuItem;
@@ -25,7 +26,7 @@ public class OsmNotesMenu {
 	private static Integer[] zoomIntValues = {8, 9, 10, 11, 12, 13, 14, 15, 16};
 
 	public static ContextMenuAdapter createListAdapter(final MapActivity mapActivity) {
-		ContextMenuAdapter adapter = new ContextMenuAdapter();
+		ContextMenuAdapter adapter = new ContextMenuAdapter(mapActivity.getMyApplication());
 		boolean nightMode = mapActivity.getMyApplication().getDaynightHelper().isNightModeForMapControls();
 		adapter.setDefaultLayoutId(R.layout.list_item_icon_and_menu);
 		adapter.setProfileDependent(true);

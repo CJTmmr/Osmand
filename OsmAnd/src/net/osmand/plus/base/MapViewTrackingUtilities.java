@@ -2,8 +2,9 @@ package net.osmand.plus.base;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v4.util.Pair;
 import android.view.WindowManager;
+
+import androidx.core.util.Pair;
 
 import net.osmand.Location;
 import net.osmand.StateChangedListener;
@@ -27,7 +28,6 @@ import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.views.AnimateDraggingMapThread;
 import net.osmand.plus.views.OsmandMapTileView;
 import net.osmand.util.MapUtils;
-
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -406,23 +406,23 @@ public class MapViewTrackingUtilities implements OsmAndLocationListener, IMapLoc
 	}
 
 	public void switchRotateMapMode(){
-		String rotMode = app.getString(R.string.rotate_map_none_opt);
-		if (settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_NONE && mapView.getRotate() != 0) {
-			// reset manual rotation
-		} else {
-			int vl = (settings.ROTATE_MAP.get() + 1) % 3;
-			settings.ROTATE_MAP.set(vl);
+		if (mapView != null) {
+			String rotMode = app.getString(R.string.rotate_map_none_opt);
+			if (settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_NONE && mapView.getRotate() != 0) {
+				// reset manual rotation
+			} else {
+				int vl = (settings.ROTATE_MAP.get() + 1) % 3;
+				settings.ROTATE_MAP.set(vl);
 
-			if (settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_BEARING) {
-				rotMode = app.getString(R.string.rotate_map_bearing_opt);
-			} else if (settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_COMPASS) {
-				rotMode = app.getString(R.string.rotate_map_compass_opt);
+				if (settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_BEARING) {
+					rotMode = app.getString(R.string.rotate_map_bearing_opt);
+				} else if (settings.ROTATE_MAP.get() == OsmandSettings.ROTATE_MAP_COMPASS) {
+					rotMode = app.getString(R.string.rotate_map_compass_opt);
+				}
 			}
-		}
-		rotMode = app.getString(R.string.rotate_map_to_bearing) + ":\n" + rotMode;
-		app.showShortToastMessage(rotMode);
-		updateSettings();
-		if(mapView != null) {
+			rotMode = app.getString(R.string.rotate_map_to_bearing) + ":\n" + rotMode;
+			app.showShortToastMessage(rotMode);
+			updateSettings();
 			mapView.refreshMap();
 		}
 	}

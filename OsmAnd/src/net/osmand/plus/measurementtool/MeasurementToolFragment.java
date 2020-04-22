@@ -8,18 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.TextViewCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SwitchCompat;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.TypedValue;
@@ -33,6 +21,19 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.TextViewCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import net.osmand.AndroidUtils;
 import net.osmand.CallbackWithObject;
@@ -80,7 +81,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import static net.osmand.plus.helpers.ImportHelper.GPX_SUFFIX;
+import static net.osmand.IndexConstants.GPX_FILE_EXT;
+
 
 public class MeasurementToolFragment extends BaseOsmAndFragment {
 
@@ -1170,11 +1172,11 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 
 			final String suggestedName = new SimpleDateFormat("yyyy-MM-dd_HH-mm_EEE", Locale.US).format(new Date());
 			String displayedName = suggestedName;
-			File fout = new File(dir, suggestedName + GPX_SUFFIX);
+			File fout = new File(dir, suggestedName + GPX_FILE_EXT);
 			int ind = 1;
 			while (fout.exists()) {
 				displayedName = suggestedName + "_" + (++ind);
-				fout = new File(dir, displayedName + GPX_SUFFIX);
+				fout = new File(dir, displayedName + GPX_FILE_EXT);
 			}
 			nameEt.setText(displayedName);
 			nameEt.setSelection(displayedName.length());
@@ -1187,12 +1189,12 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							final String name = nameEt.getText().toString();
-							String fileName = name + GPX_SUFFIX;
+							String fileName = name + GPX_FILE_EXT;
 							if (textChanged[0]) {
 								File fout = new File(dir, fileName);
 								int ind = 1;
 								while (fout.exists()) {
-									fileName = name + "_" + (++ind) + GPX_SUFFIX;
+									fileName = name + "_" + (++ind) + GPX_FILE_EXT;
 									fout = new File(dir, fileName);
 								}
 							}
@@ -1216,7 +1218,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 
 				@Override
 				public void afterTextChanged(Editable editable) {
-					if (new File(dir, editable.toString() + GPX_SUFFIX).exists()) {
+					if (new File(dir, editable.toString() + GPX_FILE_EXT).exists()) {
 						warningTextView.setVisibility(View.VISIBLE);
 						warningTextView.setText(R.string.file_with_name_already_exists);
 						dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
@@ -1276,7 +1278,7 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 				TrkSegment after = editingCtx.getAfterTrkSegmentLine();
 				if (gpx == null) {
 					toSave = new File(dir, fileName);
-					String trackName = fileName.substring(0, fileName.length() - GPX_SUFFIX.length());
+					String trackName = fileName.substring(0, fileName.length() - GPX_FILE_EXT.length());
 					GPXFile gpx = new GPXFile(Version.getFullVersion(activity.getMyApplication()));
 					if (measurementLayer != null) {
 						if (saveType == SaveType.LINE) {
@@ -1533,11 +1535,11 @@ public class MeasurementToolFragment extends BaseOsmAndFragment {
 					public void onClick(DialogInterface dialog, int which) {
 						if (showOnMapToggle.isChecked()) {
 							final String name = new SimpleDateFormat("yyyy-MM-dd_HH-mm_EEE", Locale.US).format(new Date());
-							String fileName = name + GPX_SUFFIX;
+							String fileName = name + GPX_FILE_EXT;
 							File fout = new File(dir, fileName);
 							int ind = 1;
 							while (fout.exists()) {
-								fileName = name + "_" + (++ind) + GPX_SUFFIX;
+								fileName = name + "_" + (++ind) + GPX_FILE_EXT;
 								fout = new File(dir, fileName);
 							}
 							saveNewGpx(dir, fileName, true, SaveType.LINE, true);

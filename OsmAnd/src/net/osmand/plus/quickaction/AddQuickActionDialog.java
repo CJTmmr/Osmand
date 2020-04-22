@@ -2,11 +2,6 @@ package net.osmand.plus.quickaction;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +9,12 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
@@ -47,14 +48,12 @@ public class AddQuickActionDialog extends DialogFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-
-        List<QuickAction> active = ((MapActivity) getActivity())
-                .getMyApplication()
-                .getQuickActionRegistry()
-                .getQuickActions();
+		QuickActionRegistry quickActionRegistry = ((MapActivity) getActivity())
+				.getMyApplication()
+				.getQuickActionRegistry();
 
         View root = UiUtilities.getInflater(getActivity(), !isLightContent).inflate(R.layout.quick_action_add_dialog, container, false);
-        Adapter adapter = new Adapter(QuickActionFactory.produceTypeActionsListWithHeaders(active));
+        Adapter adapter = new Adapter(quickActionRegistry.produceTypeActionsListWithHeaders());
 
         TextView tvTitle = root.findViewById(R.id.tvTitle);
         RecyclerView recyclerView = (RecyclerView) root.findViewById(R.id.recycler_view);
@@ -85,7 +84,7 @@ public class AddQuickActionDialog extends DialogFragment {
         private static final int HEADER = 1;
         private static final int ITEM = 2;
 
-        private List<QuickAction> data;
+        private List<QuickActionType> data;
 
         public class ItemViewHolder extends RecyclerView.ViewHolder {
 
@@ -113,7 +112,7 @@ public class AddQuickActionDialog extends DialogFragment {
             }
         }
 
-        public Adapter(List<QuickAction> data) {
+        public Adapter(List<QuickActionType> data) {
             this.data = data;
         }
 
@@ -137,7 +136,7 @@ public class AddQuickActionDialog extends DialogFragment {
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
-            final QuickAction action = data.get(position);
+            final QuickActionType action = data.get(position);
 
             if (getItemViewType(position) == HEADER) {
 
@@ -160,7 +159,7 @@ public class AddQuickActionDialog extends DialogFragment {
                     @Override
                     public void onClick(View view) {
 
-                        CreateEditActionDialog dialog = CreateEditActionDialog.newInstance(action.type);
+                        CreateEditActionDialog dialog = CreateEditActionDialog.newInstance(action.getId());
                         dialog.show(getFragmentManager(), CreateEditActionDialog.TAG);
 
                         dismiss();
@@ -178,7 +177,7 @@ public class AddQuickActionDialog extends DialogFragment {
         @Override
         public int getItemViewType(int position) {
 
-            if (data.get(position).type == 0)
+            if (data.get(position).getId() == 0)
                 return HEADER;
 
             return ITEM;

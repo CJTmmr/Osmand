@@ -5,15 +5,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.AppCompatCheckedTextView;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.AppCompatCheckedTextView;
+import androidx.core.content.ContextCompat;
 
 import net.osmand.CallbackWithObject;
 import net.osmand.GPXUtilities;
@@ -112,7 +113,7 @@ public class RoutingOptionsHelper {
 	}
 
 	public void selectVoiceGuidance(final MapActivity mapActivity, final CallbackWithObject<String> callback, ApplicationMode applicationMode) {
-		final ContextMenuAdapter adapter = new ContextMenuAdapter();
+		final ContextMenuAdapter adapter = new ContextMenuAdapter(app);
 
 		String[] entries;
 		final String[] entrieValues;
@@ -309,7 +310,7 @@ public class RoutingOptionsHelper {
 
 	public void showLocalRoutingParameterGroupDialog(final LocalRoutingParameterGroup group, final MapActivity mapActivity, final OnClickListener listener) {
 		OsmandSettings settings = app.getSettings();
-		final ContextMenuAdapter adapter = new ContextMenuAdapter();
+		final ContextMenuAdapter adapter = new ContextMenuAdapter(app);
 		int i = 0;
 		int selectedIndex = -1;
 		for (LocalRoutingParameter p : group.getRoutingParameters()) {
@@ -461,10 +462,11 @@ public class RoutingOptionsHelper {
 	}
 
 	public List<LocalRoutingParameter> getGpxRouterParameters(ApplicationMode am) {
+		RoutingHelper routingHelper = app.getRoutingHelper();
 		List<LocalRoutingParameter> list = new ArrayList<LocalRoutingParameter>();
-		RouteProvider.GPXRouteParamsBuilder rparams = app.getRoutingHelper().getCurrentGPXRoute();
+		RouteProvider.GPXRouteParamsBuilder rparams = routingHelper.getCurrentGPXRoute();
 		boolean osmandRouter = am.getRouteService() == RouteProvider.RouteService.OSMAND;
-		if (rparams != null && osmandRouter) {
+		if (rparams != null && !routingHelper.isCurrentGPXRouteV2() && osmandRouter) {
 			GPXUtilities.GPXFile fl = rparams.getFile();
 			if (fl.hasRtePt()) {
 				list.add(new OtherLocalRoutingParameter(R.string.use_points_as_intermediates,

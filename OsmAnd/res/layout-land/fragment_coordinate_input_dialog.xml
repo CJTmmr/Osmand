@@ -7,14 +7,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         tools:background="@color/route_info_bottom_view_bg_dark">
 
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/coordinate_input_toolbar"
             android:layout_width="match_parent"
             android:layout_height="48dp"
@@ -64,13 +64,15 @@
                     android:textAllCaps="true"
                     android:textColor="@color/color_white"
                     android:textSize="@dimen/default_list_text_size"
-                    osmand:typeface="@string/font_roboto_medium"/>
+                    osmand:typeface="@string/font_roboto_medium"
+	                android:paddingStart="16dp"
+	                android:paddingEnd="16dp" />
 
             </LinearLayout>
 
-        </android.support.v7.widget.Toolbar>
+        </androidx.appcompat.widget.Toolbar>
 
-    </android.support.design.widget.AppBarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <LinearLayout
         android:id="@+id/hand_container"

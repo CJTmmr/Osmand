@@ -119,7 +119,7 @@ public class BinaryRoutePlanner {
 				printMemoryConsumption("Memory occupied before exception : ");
 			}
 			if (ctx.memoryOverhead > ctx.config.memoryLimitation * 0.95) {
-				throw new IllegalStateException("There is no enough memory " + ctx.config.memoryLimitation / (1 << 20) + " Mb");
+				throw new IllegalStateException("There is not enough memory " + ctx.config.memoryLimitation / (1 << 20) + " Mb");
 			}
 			ctx.visitedSegments ++;
 			if (forwardSearch) {
@@ -788,8 +788,8 @@ public class BinaryRoutePlanner {
 			TLongObjectHashMap<RouteSegment> visitedSegments, float distFromStart, float distanceToEnd,  RouteSegment segment,
 			int segmentPoint, RouteSegment next) {
 		if (next != null) {
-			float obstaclesTime = (float) ctx.getRouter().calculateTurnTime(next, next.isPositive()? 
-					next.getRoad().getPointsLength() - 1 : 0,  
+			float obstaclesTime = (float) ctx.getRouter().calculateTurnTime(next, 
+					next.isPositive() ? next.getRoad().getPointsLength() - 1 : 0,    
 					segment, segmentPoint);
 			distFromStart += obstaclesTime;
 			if (TEST_SPECIFIC && next.road.getId() >> 6 == TEST_ID) {

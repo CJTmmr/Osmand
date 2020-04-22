@@ -3,20 +3,22 @@ package net.osmand.plus.settings;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.annotation.ColorRes;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceCategory;
-import android.support.v7.preference.PreferenceViewHolder;
 import android.view.View;
+
+import androidx.annotation.ColorRes;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceCategory;
+import androidx.preference.PreferenceViewHolder;
 
 import net.osmand.AndroidUtils;
 import net.osmand.CallbackWithObject;
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
-import net.osmand.plus.SettingsHelper.*;
+import net.osmand.plus.SettingsHelper.SettingsItem;
+import net.osmand.plus.SettingsHelper.SettingsItemType;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.helpers.AndroidUiHelper;
@@ -127,8 +129,8 @@ public class MainSettingsFragment extends BaseSettingsFragment {
 		} else if (IMPORT_PROFILE.equals(prefId)) {
 			final MapActivity mapActivity = getMapActivity();
 			if (mapActivity != null) {
-				mapActivity.getImportHelper().chooseFileToImport(SETTINGS, false, new CallbackWithObject<List<SettingsItem>>() {
-					
+				mapActivity.getImportHelper().chooseFileToImport(SETTINGS, new CallbackWithObject<List<SettingsItem>>() {
+
 					@Override
 					public boolean processResult(List<SettingsItem> result) {
 						for (SettingsItem item : result) {
@@ -182,13 +184,14 @@ public class MainSettingsFragment extends BaseSettingsFragment {
 			SwitchPreferenceEx pref = new SwitchPreferenceEx(app);
 			pref.setPersistent(false);
 			pref.setKey(applicationMode.getStringKey());
+			preferenceCategory.addPreference(pref);
+
 			pref.setIcon(getAppProfilesIcon(applicationMode, isAppProfileEnabled));
 			pref.setTitle(applicationMode.toHumanString());
 			pref.setSummary(getAppModeDescription(getContext(), applicationMode));
 			pref.setChecked(isAppProfileEnabled);
 			pref.setLayoutResource(R.layout.preference_with_descr_dialog_and_switch);
 			pref.setFragment(ConfigureProfileFragment.class.getName());
-			preferenceCategory.addPreference(pref);
 		}
 	}
 

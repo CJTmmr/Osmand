@@ -1,7 +1,5 @@
 package net.osmand.search.core;
 
-import com.jwetherell.openmap.common.LatLonPoint;
-import com.jwetherell.openmap.common.UTMPoint;
 
 import net.osmand.CollatorStringMatcher.StringMatcherMode;
 import net.osmand.ResultMatcher;
@@ -146,7 +144,7 @@ public class SearchCoreFactory {
 											 SearchResultMatcher resultMatcher, SearchResult res, SearchBaseAPI api)
 				throws IOException {
 			phrase.countUnknownWordsMatch(res);
-			int cnt = resultMatcher.getCount();
+//			int cnt = resultMatcher.getCount();
 			List<String> ws = phrase.getUnknownSearchWords(res.otherWordsMatch);
 			if(!res.firstUnknownWordMatches) {
 				ws.add(phrase.getUnknownSearchWord());
@@ -641,7 +639,7 @@ public class SearchCoreFactory {
 		private List<CustomSearchPoiFilter> customPoiFilters = new ArrayList<>();
 		private TIntArrayList customPoiFiltersPriorites = new TIntArrayList();
 		private MapPoiTypes types;
-		private Map<String, Integer> filterOrders = new HashMap<>();
+		private List<String> filterOrders = new ArrayList<>();
 
 		public SearchAmenityTypesAPI(MapPoiTypes types) {
 			super(ObjectType.POI_TYPE);
@@ -658,7 +656,7 @@ public class SearchCoreFactory {
 			this.customPoiFiltersPriorites.add(priority);
 		}
 
-		public void setFilterOrders(Map<String, Integer> filterOrders) {
+		public void setFilterOrders(List<String> filterOrders) {
 			this.filterOrders = filterOrders;
 		}
 
@@ -739,8 +737,8 @@ public class SearchCoreFactory {
 					res.firstUnknownWordMatches = startMatch.matches(res.localeName);
 					if (showTopFiltersOnly) {
 						String stdFilterId = getStandardFilterId(pt);
-						if (filterOrders.containsKey(stdFilterId)) {
-							res.priority = SEARCH_AMENITY_TYPE_PRIORITY + filterOrders.get(stdFilterId);
+						if (filterOrders.contains(stdFilterId)) {
+							res.priority = SEARCH_AMENITY_TYPE_PRIORITY + filterOrders.indexOf(stdFilterId);
 							resultMatcher.publish(res);
 						}
 					} else {
@@ -756,8 +754,8 @@ public class SearchCoreFactory {
 						res.object = csf;
 						res.objectType = ObjectType.POI_TYPE;
 						if (showTopFiltersOnly) {
-							if (filterOrders.containsKey(csf.getFilterId())) {
-								res.priority = SEARCH_AMENITY_TYPE_PRIORITY + filterOrders.get(csf.getFilterId());
+							if (filterOrders.contains(csf.getFilterId())) {
+								res.priority = SEARCH_AMENITY_TYPE_PRIORITY + filterOrders.indexOf(csf.getFilterId());
 								resultMatcher.publish(res);
 							}
 						} else {
@@ -938,7 +936,12 @@ public class SearchCoreFactory {
 					}
 					if (phrase.isUnknownSearchWordPresent()
 							&& !(ns.matches(res.localeName) || ns.matches(res.otherNames))) {
-						return false;
+						String ref = object.getTagContent(Amenity.REF, null);
+						if(ref == null || !ns.matches(ref)) {
+							return false;
+						} else {
+							res.localeName += " " + ref;
+						}
 					}
 
 					res.object = object;
@@ -1266,20 +1269,6 @@ public class SearchCoreFactory {
 			return false;
 		}
 
-		//		newFormat = PointDescription.FORMAT_DEGREES;
-//		newFormat = PointDescription.FORMAT_MINUTES;
-//		newFormat = PointDescription.FORMAT_SECONDS;
-		public void testUTM() {
-			double northing = 0;
-			double easting = 0;
-			String zone = "";
-			char c = zone.charAt(zone.length() -1);
-			int z = Integer.parseInt(zone.substring(0, zone.length() - 1));
-			UTMPoint upoint = new UTMPoint(northing, easting, z, c);
-			LatLonPoint ll = upoint.toLatLonPoint();
-			LatLon loc = new LatLon(ll.getLatitude(), ll.getLongitude());
-		}
-
 		@Override
 		public boolean search(SearchPhrase phrase, SearchResultMatcher resultMatcher) throws IOException {
 			if (!phrase.isUnknownSearchWordPresent()) {
@@ -1292,17 +1281,6 @@ public class SearchCoreFactory {
 			return super.search(phrase, resultMatcher);
 		}
 
-		private boolean isKindOfNumber(String s) {
-			for (int i = 0; i < s.length(); i ++) {
-				char c = s.charAt(i);
-				if (c >= '0' && c <= '9') {
-				} else if (c == ':' || c == '.' || c == '#' || c == ',' || c == '-' || c == '\'' || c == '"') {
-				} else {
-					return false;
-				}
-			}
-			return true;
-		}
 
 		LatLon parsePartialLocation(String s) {
 			s = s.trim();
@@ -1342,8 +1320,7 @@ public class SearchCoreFactory {
 										searchLocation = sr.location;
 									}
 									break;
-								case CITY:
-								case VILLAGE:
+								default:
 									searchLocation = sr.location;
 									break;
 							}

@@ -3,10 +3,6 @@ package net.osmand.plus.activities;
 
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.view.ContextThemeWrapper;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -14,15 +10,20 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.view.ContextThemeWrapper;
+import androidx.core.content.ContextCompat;
+
 import net.osmand.CallbackWithObject;
+import net.osmand.GPXUtilities.GPXFile;
+import net.osmand.GPXUtilities.WptPt;
 import net.osmand.ResultMatcher;
 import net.osmand.StateChangedListener;
 import net.osmand.map.ITileSource;
 import net.osmand.map.TileSourceManager.TileSourceTemplate;
 import net.osmand.plus.ContextMenuAdapter;
 import net.osmand.plus.ContextMenuItem;
-import net.osmand.GPXUtilities.GPXFile;
-import net.osmand.GPXUtilities.WptPt;
 import net.osmand.plus.DialogListItemAdapter;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
@@ -63,6 +64,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+
+import static net.osmand.plus.poi.PoiFiltersHelper.PoiTemplateList;
 
 /**
  * Object is responsible to maintain layers using by map activity
@@ -267,7 +270,7 @@ public class MapActivityLayers {
 	public void showMultichoicePoiFilterDialog(final OsmandMapTileView mapView, final DismissListener listener) {
 		final OsmandApplication app = getApplication();
 		final PoiFiltersHelper poiFilters = app.getPoiFilters();
-		final ContextMenuAdapter adapter = new ContextMenuAdapter();
+		final ContextMenuAdapter adapter = new ContextMenuAdapter(app);
 		final List<PoiUIFilter> list = new ArrayList<>();
 		for (PoiUIFilter f : poiFilters.getSortedPoiFilters(true)) {
 			addFilterToList(adapter, list, f, true);
@@ -303,9 +306,9 @@ public class MapActivityLayers {
 								if (filter.isStandardFilter()) {
 									filter.removeUnsavedFilterByName();
 								}
-								getApplication().getPoiFilters().addSelectedPoiFilter(filter);
+								poiFilters.addSelectedPoiFilter(PoiTemplateList.POI, filter);
 							} else {
-								getApplication().getPoiFilters().removeSelectedPoiFilter(filter);
+								poiFilters.removeSelectedPoiFilter(PoiTemplateList.POI, filter);
 							}
 						}
 						mapView.refreshMap();
@@ -341,7 +344,7 @@ public class MapActivityLayers {
 	public void showSingleChoicePoiFilterDialog(final OsmandMapTileView mapView, final DismissListener listener) {
 		final OsmandApplication app = getApplication();
 		final PoiFiltersHelper poiFilters = app.getPoiFilters();
-		final ContextMenuAdapter adapter = new ContextMenuAdapter();
+		final ContextMenuAdapter adapter = new ContextMenuAdapter(app);
 		adapter.addItem(new ContextMenuItem.ItemBuilder()
 				.setTitleId(R.string.shared_string_search, app)
 				.setIcon(R.drawable.ic_action_search_dark).createItem());
@@ -367,8 +370,8 @@ public class MapActivityLayers {
 					if (pf.isStandardFilter()) {
 						pf.removeUnsavedFilterByName();
 					}
-					getApplication().getPoiFilters().clearSelectedPoiFilters();
-					getApplication().getPoiFilters().addSelectedPoiFilter(pf);
+					poiFilters.clearSelectedPoiFilters(PoiTemplateList.POI);
+					poiFilters.addSelectedPoiFilter(PoiTemplateList.POI, pf);
 					mapView.refreshMap();
 				}
 			}

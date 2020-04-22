@@ -3,8 +3,6 @@ package net.osmand.plus.quickaction.actions;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +13,9 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.recyclerview.widget.RecyclerView;
+
 import net.osmand.plus.ContextMenuAdapter;
 import net.osmand.plus.ContextMenuItem;
 import net.osmand.plus.OsmandApplication;
@@ -24,6 +25,7 @@ import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.poi.PoiFiltersHelper;
 import net.osmand.plus.poi.PoiUIFilter;
 import net.osmand.plus.quickaction.QuickAction;
+import net.osmand.plus.quickaction.QuickActionType;
 import net.osmand.plus.render.RenderingIcons;
 
 import java.util.ArrayList;
@@ -31,9 +33,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static net.osmand.plus.poi.PoiFiltersHelper.PoiTemplateList;
+
 public class ShowHidePoiAction extends QuickAction {
 
-	public static final int TYPE = 5;
+
+	public static final QuickActionType TYPE = new QuickActionType(5,
+			"poi.showhide", ShowHidePoiAction.class).
+			nameRes(R.string.quick_action_showhide_poi_title).iconRes(R.drawable.ic_action_gabout_dark).nonEditable().
+			category(QuickActionType.CONFIGURE_MAP);
+
 
 	public static final String KEY_FILTERS = "filters";
 
@@ -105,18 +114,18 @@ public class ShowHidePoiAction extends QuickAction {
 		PoiFiltersHelper pf = activity.getMyApplication().getPoiFilters();
 		List<PoiUIFilter> poiFilters = loadPoiFilters(activity.getMyApplication().getPoiFilters());
 
-		if (!isCurrentFilters(pf.getSelectedPoiFilters(), poiFilters)) {
+		if (!isCurrentFilters(pf.getSelectedPoiFilters(PoiTemplateList.POI), poiFilters)) {
 
-			pf.clearSelectedPoiFilters();
+			pf.clearSelectedPoiFilters(PoiTemplateList.POI);
 
 			for (PoiUIFilter filter : poiFilters) {
 				if (filter.isStandardFilter()) {
 					filter.removeUnsavedFilterByName();
 				}
-				pf.addSelectedPoiFilter(filter);
+				pf.addSelectedPoiFilter(PoiTemplateList.POI, filter);
 			}
 
-		} else pf.clearSelectedPoiFilters();
+		} else pf.clearSelectedPoiFilters(PoiTemplateList.POI);
 
 		activity.getMapLayers().updateLayers(activity.getMapView());
 	}
@@ -126,7 +135,7 @@ public class ShowHidePoiAction extends QuickAction {
 		PoiFiltersHelper pf = application.getPoiFilters();
 		List<PoiUIFilter> poiFilters = loadPoiFilters(application.getPoiFilters());
 
-		return isCurrentFilters(pf.getSelectedPoiFilters(), poiFilters);
+		return isCurrentFilters(pf.getSelectedPoiFilters(PoiTemplateList.POI), poiFilters);
 	}
 
 	private boolean isCurrentFilters(Set<PoiUIFilter> currentPoiFilters, List<PoiUIFilter> poiFilters) {
@@ -279,7 +288,7 @@ public class ShowHidePoiAction extends QuickAction {
 	private void showSingleChoicePoiFilterDialog(final OsmandApplication app, final MapActivity activity, final Adapter filtersAdapter) {
 
 		final PoiFiltersHelper poiFilters = app.getPoiFilters();
-		final ContextMenuAdapter adapter = new ContextMenuAdapter();
+		final ContextMenuAdapter adapter = new ContextMenuAdapter(app);
 
 		final List<PoiUIFilter> list = new ArrayList<>();
 

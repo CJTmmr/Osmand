@@ -7,16 +7,17 @@ import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceViewHolder;
-import android.support.v7.preference.SwitchPreferenceCompat;
-import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceViewHolder;
+import androidx.preference.SwitchPreferenceCompat;
 
 import net.osmand.AndroidUtils;
 import net.osmand.plus.ApplicationMode;
@@ -49,7 +50,8 @@ public class VoiceAnnouncesFragment extends BaseSettingsFragment {
 			public void onClick(View view) {
 				ApplicationMode selectedMode = getSelectedAppMode();
 				boolean checked = !settings.VOICE_MUTE.getModeValue(selectedMode);
-				settings.VOICE_MUTE.setModeValue(selectedMode, checked);
+				onConfirmPreferenceChange(
+						settings.VOICE_MUTE.getId(), checked, ApplyQueryType.SNACK_BAR);
 				updateToolbarSwitch();
 				enableDisablePreferences(!checked);
 				updateMenu();
@@ -198,7 +200,7 @@ public class VoiceAnnouncesFragment extends BaseSettingsFragment {
 		};
 		//AudioManager.USE_DEFAULT_STREAM_TYPE};
 
-		ListPreferenceEx audioStreamGuidance = createListPreferenceEx(settings.AUDIO_STREAM_GUIDANCE.getId(), streamTypes, streamIntTypes, R.string.choose_audio_stream, R.layout.preference_with_descr);
+		ListPreferenceEx audioStreamGuidance = createListPreferenceEx(settings.AUDIO_MANAGER_STREAM.getId(), streamTypes, streamIntTypes, R.string.choose_audio_stream, R.layout.preference_with_descr);
 		getPreferenceScreen().addPreference(audioStreamGuidance);
 	}
 
@@ -212,13 +214,14 @@ public class VoiceAnnouncesFragment extends BaseSettingsFragment {
 		if (ctx == null) {
 			return;
 		}
-		AlertDialog.Builder bld = new AlertDialog.Builder(ctx);
+		AlertDialog.Builder bld = new AlertDialog.Builder(UiUtilities.getThemedContext(ctx, isNightMode()));
 		bld.setMessage(R.string.confirm_usage_speed_cameras);
 		bld.setPositiveButton(R.string.shared_string_yes, new DialogInterface.OnClickListener() {
 
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				settings.SPEAK_SPEED_CAMERA.setModeValue(getSelectedAppMode(), true);
+				onConfirmPreferenceChange(
+						settings.SPEAK_SPEED_CAMERA.getId(), true, ApplyQueryType.SNACK_BAR);
 				SwitchPreferenceCompat speakSpeedCamera = (SwitchPreferenceCompat) findPreference(settings.SPEAK_SPEED_CAMERA.getId());
 				if (speakSpeedCamera != null) {
 					speakSpeedCamera.setChecked(true);
@@ -266,13 +269,7 @@ public class VoiceAnnouncesFragment extends BaseSettingsFragment {
 				startActivity(intent);
 				return false;
 			} else if (newValue instanceof String) {
-				if (VOICE_PROVIDER_NOT_USE.equals(newValue)) {
-					settings.VOICE_MUTE.setModeValue(selectedMode, true);
-					updateToolbar();
-					setupPreferences();
-				}
-				settings.VOICE_PROVIDER.setModeValue(selectedMode, (String) newValue);
-				app.initVoiceCommandPlayer(getActivity(), selectedMode, false, null, true, false, false);
+				onConfirmPreferenceChange(settings.VOICE_PROVIDER.getId(), newValue, ApplyQueryType.SNACK_BAR);
 			}
 			return true;
 		}
@@ -281,22 +278,39 @@ public class VoiceAnnouncesFragment extends BaseSettingsFragment {
 				confirmSpeedCamerasDlg();
 				return false;
 			} else {
-				return true;
+				return onConfirmPreferenceChange(
+						settings.SPEAK_SPEED_CAMERA.getId(), false, ApplyQueryType.SNACK_BAR);
 			}
 		}
-		if (prefId.equals(settings.AUDIO_STREAM_GUIDANCE.getId())) {
-			// Sync DEFAULT value with CAR value, as we have other way to set it for now
-
-			if (getSelectedAppMode().equals(ApplicationMode.CAR) && newValue instanceof Integer) {
-				settings.AUDIO_STREAM_GUIDANCE.setModeValue(ApplicationMode.DEFAULT, (Integer) newValue);
-			} else {
-				settings.AUDIO_STREAM_GUIDANCE.setModeValue(ApplicationMode.DEFAULT, settings.AUDIO_STREAM_GUIDANCE.getModeValue(ApplicationMode.CAR));
-			}
-			settings.AUDIO_USAGE.setModeValue(ApplicationMode.DEFAULT, settings.AUDIO_USAGE.getModeValue(ApplicationMode.CAR));
-
-			return true;
+		if (prefId.equals(settings.AUDIO_MANAGER_STREAM.getId())) {
+			return onConfirmPreferenceChange(
+					settings.AUDIO_MANAGER_STREAM.getId(), newValue, ApplyQueryType.SNACK_BAR);
 		}
 
 		return super.onPreferenceChange(preference, newValue);
+	}
+
+	@Override
+	public void onApplyPreferenceChange(String prefId, boolean applyToAllProfiles, Object newValue) {
+		if (prefId.equals(settings.VOICE_PROVIDER.getId()) && newValue instanceof String) {
+			if (VOICE_PROVIDER_NOT_USE.equals(newValue)) {
+				applyPreference(settings.VOICE_MUTE.getId(), applyToAllProfiles, true);
+				updateToolbar();
+			}
+			applyPreference(settings.VOICE_PROVIDER.getId(), applyToAllProfiles, newValue);
+			app.initVoiceCommandPlayer(getActivity(), getSelectedAppMode(),
+					false, null, true, false, applyToAllProfiles);
+		} else if (prefId.equals(settings.AUDIO_MANAGER_STREAM.getId())) {
+			// Sync DEFAULT value with CAR value, as we have other way to set it for now
+
+			if (getSelectedAppMode().equals(ApplicationMode.CAR) && newValue instanceof Integer) {
+				settings.AUDIO_MANAGER_STREAM.setModeValue(ApplicationMode.DEFAULT, (Integer) newValue);
+			} else {
+				settings.AUDIO_MANAGER_STREAM.setModeValue(ApplicationMode.DEFAULT, settings.AUDIO_MANAGER_STREAM.getModeValue(ApplicationMode.CAR));
+			}
+			settings.AUDIO_USAGE.setModeValue(ApplicationMode.DEFAULT, settings.AUDIO_USAGE.getModeValue(ApplicationMode.CAR));
+		} else {
+			super.onApplyPreferenceChange(prefId, applyToAllProfiles, newValue);
+		}
 	}
 }

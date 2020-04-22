@@ -8,7 +8,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/plan_route_toolbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dashboard_map_toolbar"
@@ -44,16 +44,18 @@
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="1"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
+                android:paddingLeft="@dimen/content_padding"
+                android:paddingRight="@dimen/content_padding"
                 android:text="@string/shared_string_options"
                 android:textAllCaps="true"
                 android:textColor="?attr/color_dialog_buttons"
                 android:textSize="@dimen/default_list_text_size"
-                osmand:typeface="@string/font_roboto_medium"/>
+                osmand:typeface="@string/font_roboto_medium"
+	            android:paddingStart="@dimen/content_padding"
+	            android:paddingEnd="@dimen/content_padding" />
         </LinearLayout>
 
-    </android.support.v7.widget.Toolbar>
+    </androidx.appcompat.widget.Toolbar>
 
     <View
         android:id="@+id/toolbar_divider"

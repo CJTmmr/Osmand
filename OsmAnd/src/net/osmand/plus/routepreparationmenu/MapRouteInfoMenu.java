@@ -9,18 +9,6 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.ColorRes;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.transition.AutoTransition;
-import android.support.transition.Scene;
-import android.support.transition.Transition;
-import android.support.transition.TransitionListenerAdapter;
-import android.support.transition.TransitionManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -31,6 +19,19 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.transition.AutoTransition;
+import androidx.transition.Scene;
+import androidx.transition.Transition;
+import androidx.transition.TransitionListenerAdapter;
+import androidx.transition.TransitionManager;
 
 import net.osmand.AndroidUtils;
 import net.osmand.GPXUtilities.GPXFile;
@@ -64,9 +65,9 @@ import net.osmand.plus.activities.actions.AppModeDialog;
 import net.osmand.plus.activities.actions.OsmAndDialogs;
 import net.osmand.plus.base.ContextMenuFragment.MenuState;
 import net.osmand.plus.helpers.AndroidUiHelper;
+import net.osmand.plus.helpers.AvoidSpecificRoads.AvoidRoadInfo;
 import net.osmand.plus.helpers.GpxUiHelper;
 import net.osmand.plus.helpers.WaypointHelper;
-import net.osmand.plus.helpers.AvoidSpecificRoads.AvoidRoadInfo;
 import net.osmand.plus.mapcontextmenu.other.TrackDetailsMenuFragment;
 import net.osmand.plus.mapmarkers.MapMarkerSelectionFragment;
 import net.osmand.plus.poi.PoiUIFilter;
@@ -117,6 +118,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+
+import static net.osmand.plus.poi.PoiFiltersHelper.PoiTemplateList;
 
 public class MapRouteInfoMenu implements IRouteInformationListener, CardListener, FavoritesListener {
 
@@ -953,7 +956,6 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 			}
 		};
 		ll.getViewTreeObserver().addOnGlobalLayoutListener(globalListener);
-		
 	}
 
 	private void updateOptionsButtons() {
@@ -1149,7 +1151,7 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 	private void createShowAlongTheRouteItems(MapActivity mapActivity, LinearLayout optionsContainer) {
 		OsmandApplication app = mapActivity.getMyApplication();
 		final ApplicationMode applicationMode = app.getRoutingHelper().getAppMode();
-		final Set<PoiUIFilter> poiFilters = app.getPoiFilters().getSelectedPoiFilters();
+		final Set<PoiUIFilter> poiFilters = app.getPoiFilters().getSelectedPoiFilters(PoiTemplateList.POI);
 		final boolean traffic = app.getSettings().SHOW_TRAFFIC_WARNINGS.getModeValue(applicationMode);
 		final boolean fav = app.getSettings().SHOW_NEARBY_FAVORITES.getModeValue(applicationMode);
 		if (!poiFilters.isEmpty()) {
@@ -1175,7 +1177,7 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 					public void onClick(View v) {
 						MapActivity mapActivity = getMapActivity();
 						if (mapActivity != null) {
-							mapActivity.getMyApplication().getPoiFilters().removeSelectedPoiFilter(poiUIFilter);
+							mapActivity.getMyApplication().getPoiFilters().removeSelectedPoiFilter(PoiTemplateList.POI, poiUIFilter);
 							mapActivity.getMapView().refreshMap();
 							updateOptionsButtons();
 						}

@@ -2,10 +2,11 @@ package net.osmand.plus;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.annotation.IntDef;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import net.osmand.AndroidUtils;
 import net.osmand.GPXUtilities;
@@ -1008,10 +1009,10 @@ public class MapMarkersHelper {
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
-		File fout = new File(dir, fileName + ".gpx");
+		File fout = new File(dir, fileName + IndexConstants.GPX_FILE_EXT);
 		int ind = 1;
 		while (fout.exists()) {
-			fout = new File(dir, fileName + "_" + (++ind) + ".gpx");
+			fout = new File(dir, fileName + "_" + (++ind) + IndexConstants.GPX_FILE_EXT);
 		}
 		GPXFile file = new GPXFile(Version.getFullVersion(ctx));
 		for (MapMarker marker : mapMarkers) {

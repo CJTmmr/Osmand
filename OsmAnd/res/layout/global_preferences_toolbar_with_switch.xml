@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.appcompat.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:id="@+id/toolbar"
@@ -39,7 +39,9 @@
 				android:textColor="?attr/app_bar_primary_item_color"
 				android:textSize="@dimen/dialog_header_text_size"
 				app:typeface="@string/font_roboto_medium"
-				tools:text="@string/routing_settings_2" />
+				tools:text="@string/routing_settings_2"
+				android:paddingEnd="@dimen/content_padding"
+				android:paddingStart="@dimen/content_padding" />
 
 		</LinearLayout>
 
@@ -47,4 +49,4 @@
 
 	</LinearLayout>
 
-</android.support.v7.widget.Toolbar>
+</androidx.appcompat.widget.Toolbar>

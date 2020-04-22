@@ -9,7 +9,6 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -19,8 +18,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+
 import net.osmand.AndroidUtils;
-import net.osmand.Location;
 import net.osmand.data.FavouritePoint;
 import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
@@ -28,14 +29,12 @@ import net.osmand.plus.FavouritesDbHelper;
 import net.osmand.plus.FavouritesDbHelper.FavoriteGroup;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
+import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.FavoritesListFragment.FavouritesAdapter;
 import net.osmand.plus.activities.MapActivity;
-import net.osmand.util.MapUtils;
 
-import java.text.Collator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class FavoriteDialogs {
@@ -43,6 +42,8 @@ public class FavoriteDialogs {
 	
 	public static Dialog createReplaceFavouriteDialog(final Activity activity, final Bundle args) {
 		OsmandApplication app = (OsmandApplication) activity.getApplication();
+		boolean nightMode = app.getDaynightHelper().isNightModeForMapControls();
+		Context themedContext = UiUtilities.getThemedContext(activity, nightMode);
 		final FavouritesDbHelper helper = app.getFavorites();
 		final List<FavouritePoint> points = new ArrayList<FavouritePoint>(helper.getFavouritePoints());
 		final FavouritesAdapter favouritesAdapter = new FavouritesAdapter(activity, points,false);
@@ -58,15 +59,18 @@ public class FavoriteDialogs {
 		favouritesAdapter.sortByDefault(true);
 		
 		if(points.size() == 0){
-			Toast.makeText(activity, activity.getString(R.string.fav_points_not_exist), Toast.LENGTH_SHORT).show();
+			Toast.makeText(themedContext, activity.getString(R.string.fav_points_not_exist), Toast.LENGTH_SHORT).show();
 			return null;
 		}
-		return showFavoritesDialog(activity, favouritesAdapter, click, null, dlgHolder, true);
+		return showFavoritesDialog(themedContext, favouritesAdapter, click, null, dlgHolder, true);
 	}
 	
 	private static void confirmReplace(final Activity activity, final Bundle args, final FavouritesDbHelper helper,
 			final FavouritesAdapter favouritesAdapter, final Dialog[] dlgHolder, int position) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+		OsmandApplication app = (OsmandApplication) activity.getApplication();
+		boolean nightMode = app.getDaynightHelper().isNightModeForMapControls();
+		Context themedContext = UiUtilities.getThemedContext(activity, nightMode);
+		AlertDialog.Builder builder = new AlertDialog.Builder(themedContext);
 		builder.setTitle(R.string.update_existing);
 		final FavouritePoint fp = favouritesAdapter.getItem(position);
 		builder.setMessage(activity.getString(R.string.replace_favorite_confirmation, fp.getName()));
@@ -80,6 +84,7 @@ public class FavoriteDialogs {
 				}
 				FavouritePoint point = (FavouritePoint) args.getSerializable(KEY_FAVORITE);
 				if (helper.editFavourite(fp, point.getLatitude(), point.getLongitude())) {
+					helper.deleteFavourite(point);
 					if (activity instanceof MapActivity) {
 						((MapActivity) activity).getContextMenu()
 								.show(new LatLon(point.getLatitude(), point.getLongitude()), fp.getPointDescription(activity), fp);
@@ -112,10 +117,13 @@ public class FavoriteDialogs {
 	}
 	
 	public  static Dialog createAddFavouriteDialog(final Activity activity, final Bundle args) {
-    	AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+		final OsmandApplication app = (OsmandApplication) activity.getApplication();
+		boolean nightMode = app.getDaynightHelper().isNightModeForMapControls();
+		final Context themedContext = UiUtilities.getThemedContext(activity, nightMode);
+		AlertDialog.Builder builder = new AlertDialog.Builder(themedContext);
 		builder.setTitle(R.string.favourites_context_menu_edit);
-		final View v = activity.getLayoutInflater().inflate(R.layout.favorite_edit_dialog, null, false);
-		final FavouritesDbHelper helper = ((OsmandApplication) activity.getApplication()).getFavorites();
+		final View v = UiUtilities.getInflater(activity, nightMode).inflate(R.layout.favorite_edit_dialog, null, false);
+		final FavouritesDbHelper helper = app.getFavorites();
 		builder.setView(v);
 		final EditText editText =  (EditText) v.findViewById(R.id.Name);
 		final EditText description = (EditText) v.findViewById(R.id.description);
@@ -126,15 +134,14 @@ public class FavoriteDialogs {
 			list[i] = gs.get(i).getName();
 		}
 		cat.setAdapter(new ArrayAdapter<String>(activity, R.layout.list_textview, list));
-		
-		if (((OsmandApplication)activity.getApplication()).accessibilityEnabled()) {
+		if (app.accessibilityEnabled()) {
 			final TextView textButton = (TextView)v.findViewById(R.id.TextButton);
 			textButton.setClickable(true);
 			textButton.setFocusable(true);
 			textButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					AlertDialog.Builder b = new AlertDialog.Builder(activity);
+					AlertDialog.Builder b = new AlertDialog.Builder(themedContext);
 					b.setTitle(R.string.access_category_choice);
 					b.setItems(list, new DialogInterface.OnClickListener() {
 						@Override
@@ -166,7 +173,6 @@ public class FavoriteDialogs {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				final FavouritePoint point = (FavouritePoint) args.getSerializable(KEY_FAVORITE);
-				OsmandApplication app = (OsmandApplication) activity.getApplication();
 				String categoryStr = cat.getText().toString().trim();
 				final FavouritesDbHelper helper = app.getFavorites();
 				app.getSettings().LAST_FAV_CATEGORY_ENTERED.set(categoryStr);

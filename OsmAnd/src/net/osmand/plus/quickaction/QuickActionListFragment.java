@@ -1,22 +1,11 @@
 package net.osmand.plus.quickaction;
 
+import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MotionEventCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,20 +14,33 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.MotionEventCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import net.osmand.AndroidUtils;
+import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.base.BaseOsmAndFragment;
 import net.osmand.plus.views.controls.ReorderItemTouchHelperCallback;
-import net.osmand.plus.views.controls.ReorderItemTouchHelperCallback.UnmovableItem;
 import net.osmand.plus.views.controls.ReorderItemTouchHelperCallback.OnItemMoveCallback;
+import net.osmand.plus.views.controls.ReorderItemTouchHelperCallback.UnmovableItem;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static android.util.TypedValue.COMPLEX_UNIT_DIP;
+import static net.osmand.AndroidUtils.dpToPx;
 
 /**
  * Created by okorsun on 20.12.16.
@@ -120,9 +122,10 @@ public class QuickActionListFragment extends BaseOsmAndFragment implements Quick
 
     private void setUpToolbar(View view) {
         Toolbar toolbar = (Toolbar) view.findViewById(R.id.custom_toolbar);
-        Drawable back = getMyApplication().getUIUtilities().getIcon(R.drawable.ic_arrow_back,
+        OsmandApplication app = requireMyApplication();
+        Drawable icBack = app.getUIUtilities().getIcon(AndroidUtils.getNavigationIconResId(app),
                 isLightContent ? R.color.active_buttons_and_links_text_light : R.color.active_buttons_and_links_text_dark);
-        toolbar.setNavigationIcon(back);
+        toolbar.setNavigationIcon(icBack);
         toolbar.setNavigationContentDescription(R.string.access_shared_string_navigate_up);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -216,15 +219,14 @@ public class QuickActionListFragment extends BaseOsmAndFragment implements Quick
         @Override
         public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
             int viewType = getItemViewType(position);
-            final QuickAction item = QuickActionFactory.produceAction(itemsList.get(position));
+            final QuickAction item = QuickActionRegistry.produceAction(itemsList.get(position));
 
             if (viewType == SCREEN_ITEM_TYPE) {
                 final QuickActionItemVH itemVH = (QuickActionItemVH) holder;
-
-                itemVH.title.setText(item.getName(getContext()));
+                Context ctx = getContext();
+                itemVH.title.setText(item.getName(ctx));
                 itemVH.subTitle.setText(getResources().getString(R.string.quick_action_item_action, getActionPosition(position)));
-
-                itemVH.icon.setImageDrawable(getMyApplication().getUIUtilities().getThemedIcon(item.getIconRes(getContext())));
+                itemVH.icon.setImageDrawable(getMyApplication().getUIUtilities().getThemedIcon(item.getIconRes(ctx)));
                 itemVH.handleView.setOnTouchListener(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
@@ -252,7 +254,7 @@ public class QuickActionListFragment extends BaseOsmAndFragment implements Quick
 
                 LinearLayout.LayoutParams dividerParams = (LinearLayout.LayoutParams) itemVH.divider.getLayoutParams();
                 //noinspection ResourceType
-                dividerParams.setMargins(!isLongDivider(position) ? dpToPx(56f) : 0, 0, 0, 0);
+                dividerParams.setMargins(!isLongDivider(position) ? dpToPx(ctx, 56f) : 0, 0, 0, 0);
                 itemVH.divider.setLayoutParams(dividerParams);
             } else {
                 QuickActionHeaderVH headerVH = (QuickActionHeaderVH) holder;
@@ -267,7 +269,7 @@ public class QuickActionListFragment extends BaseOsmAndFragment implements Quick
 
         @Override
         public int getItemViewType(int position) {
-            return itemsList.get(position).type == 0 ? SCREEN_HEADER_TYPE : SCREEN_ITEM_TYPE;
+            return itemsList.get(position).getType() == 0 ? SCREEN_HEADER_TYPE : SCREEN_ITEM_TYPE;
         }
 
         public void deleteItem(int position) {
@@ -355,15 +357,6 @@ public class QuickActionListFragment extends BaseOsmAndFragment implements Quick
 
         private boolean isLongDivider(int globalPosition) {
             return getActionPosition(globalPosition) == ITEMS_IN_GROUP || globalPosition == getItemCount() - 1;
-        }
-
-        private int dpToPx(float dp) {
-            Resources r = getActivity().getResources();
-            return (int) TypedValue.applyDimension(
-                    COMPLEX_UNIT_DIP,
-                    dp,
-                    r.getDisplayMetrics()
-            );
         }
 
         @Override

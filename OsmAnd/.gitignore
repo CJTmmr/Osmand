@@ -27,6 +27,12 @@ res/drawable-large/widget_*
 res/drawable-large-hdpi/widget_*
 res/drawable-large-xhdpi/widget_* 
 
+# rendering-styles/style-icons/
+h_*
+g_*
+mm_*
+mx_*
+
 valgrind/
 bin/
 dist/
@@ -50,6 +56,7 @@ use/
 osmand.properties
 osmand.xml
 assets/style.css
+assets/poi_categories.json
 assets/help/*.html
 assets/help/images
 assets/help/screens

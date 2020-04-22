@@ -7,10 +7,6 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,6 +21,11 @@ import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.MenuItemCompat;
+import androidx.fragment.app.DialogFragment;
+
 import net.osmand.AndroidNetworkUtils;
 import net.osmand.AndroidUtils;
 import net.osmand.plus.OsmandApplication;
@@ -32,6 +33,7 @@ import net.osmand.plus.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.OsmandBaseExpandableListAdapter;
+import net.osmand.plus.download.CustomIndexItem;
 import net.osmand.plus.download.DownloadActivity;
 import net.osmand.plus.download.DownloadActivity.BannerAndDownloadFreeVersion;
 import net.osmand.plus.download.DownloadActivityType;
@@ -59,8 +61,10 @@ public class DownloadResourceGroupFragment extends DialogFragment implements Dow
 		InAppPurchaseListener, OnChildClickListener {
 	public static final int RELOAD_ID = 0;
 	public static final int SEARCH_ID = 1;
+
 	public static final String TAG = "RegionDialogFragment";
-	private static final String REGION_ID_DLG_KEY = "world_region_dialog_key";
+	public static final String REGION_ID_DLG_KEY = "world_region_dialog_key";
+
 	private String groupId;
 	private View view;
 	private BannerAndDownloadFreeVersion banner;
@@ -104,7 +108,8 @@ public class DownloadResourceGroupFragment extends DialogFragment implements Dow
 		activity.getAccessibilityAssistant().registerPage(view, DownloadActivity.DOWNLOAD_TAB_NUMBER);
 
 		toolbar = (Toolbar) view.findViewById(R.id.toolbar);
-		toolbar.setNavigationIcon(getMyApplication().getUIUtilities().getIcon(R.drawable.ic_arrow_back));
+		Drawable icBack = getMyApplication().getUIUtilities().getIcon(AndroidUtils.getNavigationIconResId(activity));
+		toolbar.setNavigationIcon(icBack);
 		toolbar.setNavigationContentDescription(R.string.access_shared_string_navigate_up);
 		toolbar.setNavigationOnClickListener(new View.OnClickListener() {
 			@Override
@@ -449,6 +454,11 @@ public class DownloadResourceGroupFragment extends DialogFragment implements Dow
 					.createInstance(uniqueId);
 			((DownloadActivity) getActivity()).showDialog(getActivity(), regionDialogFragment);
 			return true;
+		} else if (child instanceof CustomIndexItem) {
+			String regionId = group.getGroupByIndex(groupPosition).getUniqueId();
+
+			DownloadItemFragment downloadItemFragment = DownloadItemFragment.createInstance(regionId, childPosition);
+			((DownloadActivity) getActivity()).showDialog(getActivity(), downloadItemFragment);
 		} else if (child instanceof IndexItem) {
 			IndexItem indexItem = (IndexItem) child;
 			ItemViewHolder vh = (ItemViewHolder) v.getTag();
@@ -533,20 +543,20 @@ public class DownloadResourceGroupFragment extends DialogFragment implements Dow
 		}
 
 		private Drawable getIconForGroup(DownloadResourceGroup group) {
-			Drawable iconLeft;
+			Drawable iconStart;
 			if (group.getType() == DownloadResourceGroupType.VOICE_REC
 					|| group.getType() == DownloadResourceGroupType.VOICE_TTS) {
-				iconLeft = ctx.getMyApplication().getUIUtilities().getThemedIcon(R.drawable.ic_action_volume_up);
+				iconStart = ctx.getMyApplication().getUIUtilities().getThemedIcon(R.drawable.ic_action_volume_up);
 			} else if (group.getType() == DownloadResourceGroupType.FONTS) {
-				iconLeft = ctx.getMyApplication().getUIUtilities().getThemedIcon(R.drawable.ic_action_map_language);
+				iconStart = ctx.getMyApplication().getUIUtilities().getThemedIcon(R.drawable.ic_action_map_language);
 			} else {
 				UiUtilities cache = ctx.getMyApplication().getUIUtilities();
 				if (isParentWorld(group) || isParentWorld(group.getParentGroup())) {
-					iconLeft = cache.getThemedIcon(R.drawable.ic_world_globe_dark);
+					iconStart = cache.getThemedIcon(R.drawable.ic_world_globe_dark);
 				} else {
 					DownloadResourceGroup ggr = group
 							.getSubGroupById(DownloadResourceGroupType.REGION_MAPS.getDefaultId());
-					iconLeft = cache.getThemedIcon(R.drawable.ic_map);
+					iconStart = cache.getThemedIcon(R.drawable.ic_map);
 					if (ggr != null && ggr.getIndividualResources() != null) {
 						IndexItem item = null;
 						for (IndexItem ii : ggr.getIndividualResources()) {
@@ -560,22 +570,22 @@ public class DownloadResourceGroupFragment extends DialogFragment implements Dow
 						}
 						if (item != null) {
 							if (item.isOutdated()) {
-								iconLeft = cache.getIcon(R.drawable.ic_map, R.color.color_distance);
+								iconStart = cache.getIcon(R.drawable.ic_map, R.color.color_distance);
 							} else {
-								iconLeft = cache.getIcon(R.drawable.ic_map, R.color.color_ok);
+								iconStart = cache.getIcon(R.drawable.ic_map, R.color.color_ok);
 							}
 						}
 					}
 				}
 			}
-			return iconLeft;
+			return iconStart;
 		}
 
 		public void bindItem(DownloadResourceGroup group) {
-			Drawable iconLeft = getIconForGroup(group);
-			textView.setCompoundDrawablesWithIntrinsicBounds(iconLeft, null, null, null);
 			String name = group.getName(ctx);
 			textView.setText(name);
+			Drawable iconStart = getIconForGroup(group);
+			AndroidUtils.setCompoundDrawablesWithIntrinsicBounds(textView, iconStart, null, null, null);
 		}
 	}
 
@@ -629,11 +639,12 @@ public class DownloadResourceGroupFragment extends DialogFragment implements Dow
 					viewHolder.setShowRemoteDate(true);
 					convertView.setTag(viewHolder);
 				}
-				if(mainGroup.getType() == DownloadResourceGroupType.REGION && 
-						group != null && group.getType() == DownloadResourceGroupType.REGION_MAPS) {
+				if (mainGroup.getType() == DownloadResourceGroupType.REGION &&
+						group != null && group.getType() == DownloadResourceGroupType.REGION_MAPS
+						&& !(item instanceof CustomIndexItem)) {
 					viewHolder.setShowTypeInName(true);
 					viewHolder.setShowTypeInDesc(false);
-				} else if(group != null && (group.getType() == DownloadResourceGroupType.SRTM_HEADER
+				} else if (group != null && (group.getType() == DownloadResourceGroupType.SRTM_HEADER
 						|| group.getType() == DownloadResourceGroupType.HILLSHADE_HEADER)) {
 					viewHolder.setShowTypeInName(false);
 					viewHolder.setShowTypeInDesc(false);

@@ -9,16 +9,17 @@ import android.graphics.Canvas;
 import android.graphics.PointF;
 import android.os.Build;
 import android.os.Vibrator;
-import android.support.annotation.DimenRes;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+
+import androidx.annotation.DimenRes;
+import androidx.core.content.ContextCompat;
+import androidx.core.util.Pair;
+import androidx.fragment.app.Fragment;
 
 import com.getkeepsafe.taptargetview.TapTarget;
 import com.getkeepsafe.taptargetview.TapTargetView;
@@ -37,7 +38,6 @@ import net.osmand.plus.mapcontextmenu.MapContextMenuFragment;
 import net.osmand.plus.mapcontextmenu.other.MapMultiSelectionMenu;
 import net.osmand.plus.measurementtool.MeasurementToolLayer;
 import net.osmand.plus.quickaction.QuickAction;
-import net.osmand.plus.quickaction.QuickActionFactory;
 import net.osmand.plus.quickaction.QuickActionRegistry;
 import net.osmand.plus.quickaction.QuickActionsWidget;
 import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
@@ -430,7 +430,7 @@ public class MapQuickActionLayer extends OsmandMapLayer implements QuickActionRe
 
     @Override
     public void onActionSelected(QuickAction action) {
-        QuickActionFactory.produceAction(action).execute(mapActivity);
+        QuickActionRegistry.produceAction(action).execute(mapActivity);
         setLayerState(false);
     }
 

@@ -2071,7 +2071,7 @@
     <string name="gpx_no_tracks_title">您尚未有任何的 GPX 檔案</string>
     <string name="gpx_no_tracks_title_folder">您也可以增加 GPX 檔案到資料夾</string>
     <string name="gpx_add_track">增加更多…</string>
-    <string name="gpx_appearance">外表</string>
+    <string name="shared_string_appearance">外觀</string>
     <string name="trip_rec_notification_settings">啟用快速錄製</string>
     <string name="trip_rec_notification_settings_desc">顯示允許行程錄製的系統通知。</string>
     <string name="rendering_value_fine_name">精細</string>
@@ -3150,9 +3150,9 @@
 \n • 其他臭蟲修復
 \n
 \n</string>
-    <string name="app_mode_personal_transporter">個人運輸</string>
+    <string name="app_mode_personal_transporter">個人運輸工具</string>
     <string name="app_mode_monowheel">單輪</string>
-    <string name="app_mode_scooter">摩托車</string>
+    <string name="app_mode_scooter">速克達</string>
     <string name="precision_hdop_and_vdop">水平精度：%1$s，垂直：%2$s</string>
     <string name="precision_hdop">水平精度：%s</string>
     <string name="app_mode_offroad">越野</string>
@@ -3201,7 +3201,7 @@
     <string name="new_route_calculated_dist_dbg">路徑：距離 %s，路徑時間 %s
 \n計算：%.1f 秒，%d 路，%d 圖磚)</string>
     <string name="lang_oc">Occitan</string>
-    <string name="app_mode_wagon">休旅車</string>
+    <string name="app_mode_wagon">旅行車</string>
     <string name="app_mode_pickup_truck">皮卡車</string>
     <string name="day">天</string>
     <string name="days_2_4">天</string>
@@ -3395,7 +3395,7 @@
     <string name="save_heading">包含標題</string>
     <string name="save_heading_descr">在記錄時將標題儲存到每個追蹤點。</string>
     <string name="ltr_or_rtl_combine_via_bold_point">%1$s • %2$s</string>
-    <string name="street_city">%1$s, %2$s</string>
+    <string name="ltr_or_rtl_combine_via_comma">%1$s, %2$s</string>
     <string name="personal_category_name">個人</string>
     <string name="shared_string_downloading_formatted">正在下載 %s</string>
     <string name="rendering_value_thick_name">密集</string>
@@ -3471,7 +3471,7 @@
     <string name="multimedia_photo_play_sound">相機快門聲</string>
     <string name="osm_authorization_success">驗證成功</string>
     <string name="rearrange_categories">重新排列分類</string>
-    <string name="create_custom_categories_list_promo">您可以新增自訂的分類，隱藏您不需要的分類並變更清單順序。清單可與設定檔一起匯入與匯出。</string>
+    <string name="create_custom_categories_list_promo">變更清單順序，隱藏不需要的分類。你可以匯入或匯出所有包含變更的設定檔。</string>
     <string name="add_new_custom_category_button_promo">您可以透過選取一個或多個需要的分類來新增自訂的分類。</string>
     <string name="shared_string_available">可用</string>
     <string name="add_custom_category">新增自訂分類</string>
@@ -3488,28 +3488,28 @@
 \n
 \n若啟用，OsmAnd 將會使用系統逾時設定。</string>
     <string name="clear_recorded_data">清除已紀錄的資料</string>
-    <string name="release_3_6">• 設定檔：現在您可以變更順序、設定地圖圖示、變更基本設定檔的所有設定以及將它們復原
-\n
-\n • 在導航中新增了出口編號
-\n
-\n • 改善外掛程式設定
-\n
-\n • 改善後的設定畫面可快速存取所有設定檔
-\n
-\n • 新曾了可從其他設定複製設定的選項
-\n
-\n • 新增了在搜尋中變更順序或隱藏 POI 分類的功能
-\n
-\n • 在地圖上正確地對齊 POI 圖示
-\n
-\n • 新增日落／日出資料到設定地圖中
-\n
-\n • 在地圖上新增家／工作地點的圖示
-\n
-\n • 在設定中新增了對多行描述的支援
-\n
-\n • 在日本地圖中加入了正確的音譯
-\n
+    <string name="release_3_6">• 設定檔：現在您可以變更順序、設定地圖圖示、變更基本設定檔的所有設定以及將它們復原 
+\n 
+\n • 在導航中新增了出口編號 
+\n 
+\n • 改善外掛程式設定 
+\n 
+\n • 改善後的設定畫面可快速存取所有設定檔 
+\n 
+\n • 新增了可從其他設定複製設定的選項 
+\n 
+\n • 新增了在搜尋中變更順序或隱藏 POI 分類的功能 
+\n 
+\n • 在地圖上正確地對齊 POI 圖示 
+\n 
+\n • 新增日落／日出資料到設定地圖中 
+\n 
+\n • 在地圖上新增家／工作地點的圖示 
+\n 
+\n • 在設定中新增了對多行描述的支援 
+\n 
+\n • 在日本地圖中加入了正確的音譯 
+\n 
 \n • 新增了南極洲的地圖
 \n
 \n</string>
@@ -3525,7 +3525,6 @@
     <string name="shared_string_menu">選單</string>
     <string name="ltr_or_rtl_triple_combine_via_dash">%1$s — %2$s — %3$s</string>
     <string name="shared_string_routing">路徑</string>
-    <string name="shared_string_custom_rendering_style">自訂彩現樣式</string>
     <string name="shared_string_include_data">包含額外資料</string>
     <string name="import_profile_dialog_description">已匯入的設定檔包含了額外資料。點擊匯入僅匯入設定檔資料或選取額外的資料以匯入。</string>
     <string name="export_profile_dialog_description">您可以選取額外的資料以與設定檔一起匯出。</string>
@@ -3554,4 +3553,111 @@
 \n選取動作。</string>
     <string name="import_duplicates_title">一些項目已存在</string>
     <string name="select_data_to_import">選取要匯入的資料。</string>
+    <string name="shared_string_rendering_style">算繪樣式</string>
+    <string name="import_rendering_file">匯入算繪檔案</string>
+    <string name="restore_all_profile_settings_descr">建立／匯入此設定檔後，所有設定檔將會被復原為其原始狀態。</string>
+    <string name="restore_all_profile_settings">復原所有設定檔？</string>
+    <string name="saving_new_profile">正在儲存新設定檔</string>
+    <string name="profile_backup_failed">無法備份設定檔。</string>
+    <string name="clear_recorded_data_warning">您確定您要清除已記錄的資料嗎？</string>
+    <string name="importing_from">正在從 %1$s 匯入資料</string>
+    <string name="shared_string_importing">正在匯入</string>
+    <string name="checking_for_duplicate_description">OsmAnd 檢查 %1$s 在應用程式中是否有重覆的既有項目。
+\n
+\n這可能需要一點時間。</string>
+    <string name="items_added">已新增項目</string>
+    <string name="shared_string_import_complete">匯入完成</string>
+    <string name="import_complete_description">所有從 %1$s 而來的資料都已匯入，您可以使用下方的按鈕以開啟應用程式中需要的部份來管理它。</string>
+    <string name="recalculate_route_distance_promo">如果從路徑到目前位置的距離大於選定的值，將會重新計算路徑。</string>
+    <string name="select_distance_route_will_recalc">選取要重新計算路徑的距離。</string>
+    <string name="recalculate_route_in_deviation">發生偏離時重新計算路線</string>
+    <string name="shared_string_min">分鐘</string>
+    <string name="n_items_of_z">%2$s 的 %1$s</string>
+    <string name="shared_string_terrain">地形</string>
+    <string name="hillshade_description">地形陰影地圖用黑色的陰影來顯示坡度、山峰與低地。</string>
+    <string name="slope_description">坡度是在地形上的彩色可視化效果。</string>
+    <string name="terrain_slider_description">設定顯示圖層的最小與最大縮放等級。</string>
+    <string name="hillshade_download_description">需要其他地圖才能在地圖上檢視地形陰影。</string>
+    <string name="slope_download_description">需要其他地圖才能在地圖上檢視坡度。</string>
+    <string name="slope_read_more">您可以在 %1$s 閱讀關於更多坡度的資訊。</string>
+    <string name="shared_string_transparency">透明度</string>
+    <string name="shared_string_zoom_levels">縮放等級</string>
+    <string name="shared_string_legend">圖例</string>
+    <string name="terrain_empty_state_text">啟用以檢視地形陰影或坡度圖。您可以在我們的網站上閱讀更多關於此地圖類型的資訊</string>
+    <string name="shared_string_hillshade">地形陰影</string>
+    <string name="download_slope_maps">坡度</string>
+    <string name="quick_action_show_hide_terrain">顯示／隱藏地形</string>
+    <string name="quick_action_terrain_hide">隱藏地形</string>
+    <string name="quick_action_terrain_show">顯示地形</string>
+    <string name="quick_action_terrain_descr">用於顯示或隱藏地圖上地形圖層的按鈕。</string>
+    <string name="delete_description">刪除描述</string>
+    <string name="add_description">新增描述</string>
+    <string name="select_group">選取群組</string>
+    <string name="select_shape">選取形狀</string>
+    <string name="shared_string_circle">圓形</string>
+    <string name="shared_string_rhomb">菱形</string>
+    <string name="shared_string_square">方形</string>
+    <string name="shared_string_octagon">八邊形</string>
+    <string name="app_mode_ski_touring">滑雪旅遊</string>
+    <string name="app_mode_ski_snowmobile">雪地摩托車</string>
+    <string name="custom_osmand_plugin">自訂 OsmAnd 外掛程式</string>
+    <string name="replace_point_descr">以此取代另一點</string>
+    <string name="changes_applied_to_profile">變更已套用至 %1$s 設定檔。</string>
+    <string name="settings_item_read_error">無法讀取 %1$s。</string>
+    <string name="settings_item_write_error">無法寫入 %1$s。</string>
+    <string name="settings_item_import_error">無法匯入 %1$s。</string>
+    <string name="select_track_file">選取軌跡檔案</string>
+    <string name="shared_string_languages">語言</string>
+    <string name="shared_string_language">語言</string>
+    <string name="shared_string_all_languages">所有語言</string>
+    <string name="wiki_menu_download_descr">需要額外的地圖才能在地圖上檢視維基百科的 POI。</string>
+    <string name="ui_customization_description">在「抽屜」、「設定地圖」與情境選單中自訂項目數量。
+\n
+\n您可以停用未使用的外掛程式，以從應用程式 %1$s 中隱藏其控制元件。</string>
+    <string name="ui_customization_short_descr">抽屜項目，情境選單</string>
+    <string name="ui_customization">自訂使用者介面</string>
+    <string name="shared_string_drawer">抽屜</string>
+    <string name="context_menu_actions">情境選單動作</string>
+    <string name="reorder_or_hide_from">重新排列或從 %1$s 隱藏項目。</string>
+    <string name="shared_string_divider">分隔符</string>
+    <string name="divider_descr">低於此點的元素將由分隔符分離。</string>
+    <string name="shared_string_hidden">已隱藏</string>
+    <string name="hidden_items_descr">這些項目已從選單隱藏，但對應的選項或外掛程式將會繼續運作。</string>
+    <string name="reset_items_descr">隱藏後，設定將會重設回原始狀態。</string>
+    <string name="main_actions_descr">主要動作僅包含 4 個按鈕。</string>
+    <string name="main_actions">主要動作</string>
+    <string name="additional_actions_descr">您可以透過輕點「動作」按鈕來存取這些動作。</string>
+    <string name="move_inside_category">您只能在此分類中移動項目。</string>
+    <string name="developer_plugin">開發者外掛程式</string>
+    <string name="shared_string_items">項目</string>
+    <string name="select_wikipedia_article_langs">選取維基百科的文章在地圖上顯示時的語言。您可以在閱讀文章時在所有可用的語言間切換。</string>
+    <string name="some_articles_may_not_available_in_lang">某些維基百科的文章可能無法以您的語言提供。</string>
+    <string name="lang_zhyue">粵語</string>
+    <string name="lang_zhminnan">閩南語</string>
+    <string name="lang_yo">約魯巴語</string>
+    <string name="lang_war">瓦瑞語</string>
+    <string name="lang_uz">烏茲別克語</string>
+    <string name="lang_ur">烏爾都語</string>
+    <string name="lang_tt">韃靼語</string>
+    <string name="lang_tg">塔吉克語</string>
+    <string name="lang_sco">低地蘇格蘭語</string>
+    <string name="lang_scn">西西里語</string>
+    <string name="lang_pnb">旁遮普語</string>
+    <string name="lang_ne">尼泊爾語</string>
+    <string name="lang_nap">那不勒斯語</string>
+    <string name="lang_my">緬甸語</string>
+    <string name="lang_mn">蒙古語</string>
+    <string name="lang_min">米南佳保語</string>
+    <string name="lang_mg">馬達加斯加語</string>
+    <string name="lang_ky">吉爾吉斯語</string>
+    <string name="lang_kk">哈薩克語</string>
+    <string name="lang_jv">爪哇語</string>
+    <string name="lang_gu">古吉拉特語</string>
+    <string name="lang_cv">楚瓦什語</string>
+    <string name="lang_ce">車臣語</string>
+    <string name="lang_bar">巴伐利亞語</string>
+    <string name="lang_ba">巴什基爾語</string>
+    <string name="lang_an">亞拉岡語</string>
+    <string name="lang_lmo">倫巴底語</string>
+    <string name="custom_color">自訂顏色</string>
 </resources>

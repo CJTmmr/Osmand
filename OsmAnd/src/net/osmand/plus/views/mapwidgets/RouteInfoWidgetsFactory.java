@@ -15,17 +15,17 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.hardware.GeomagneticField;
 import android.os.BatteryManager;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+
 import net.osmand.AndroidUtils;
 import net.osmand.Location;
-import net.osmand.StateChangedListener;
 import net.osmand.binary.RouteDataObject;
 import net.osmand.data.LatLon;
 import net.osmand.data.RotatedTileBox;
@@ -407,7 +407,7 @@ public class RouteInfoWidgetsFactory {
 			@Override
 			public boolean updateInfo(DrawSettings drawSettings) {
 				float mx = 0; 
-				if ((rh == null || !rh.isFollowingMode() || rh.isDeviatedFromRoute() || rh.getCurrentGPXRoute() != null)
+				if ((rh == null || !rh.isFollowingMode() || rh.isDeviatedFromRoute() || (rh.getCurrentGPXRoute() != null && !rh.isCurrentGPXRouteV2()))
 						&& trackingUtilities.isMapLinkedToLocation()) {
 					RouteDataObject ro = locationProvider.getLastKnownRouteSegment();
 					if(ro != null) {
@@ -811,7 +811,7 @@ public class RouteInfoWidgetsFactory {
 			int[] loclanes = null;
 			int dist = 0;
 			// TurnType primary = null;
-			if ((rh == null || !rh.isFollowingMode() || rh.isDeviatedFromRoute() || rh.getCurrentGPXRoute() != null)
+			if ((rh == null || !rh.isFollowingMode() || rh.isDeviatedFromRoute() || (rh.getCurrentGPXRoute() != null && !rh.isCurrentGPXRouteV2()))
 					&& trackingUtilities.isMapLinkedToLocation() && settings.SHOW_LANES.get()) {
 				RouteDataObject ro = locationProvider.getLastKnownRouteSegment();
 				Location lp = locationProvider.getLastKnownLocation();
@@ -1272,7 +1272,7 @@ public class RouteInfoWidgetsFactory {
 			if ((rh.isFollowingMode() || trackingUtilities.isMapLinkedToLocation())
 					&& showRoutingAlarms && (trafficWarnings || cams)) {
 				AlarmInfo alarm;
-				if(rh.isFollowingMode() && !rh.isDeviatedFromRoute() && rh.getCurrentGPXRoute() == null) {
+				if(rh.isFollowingMode() && !rh.isDeviatedFromRoute() && (rh.getCurrentGPXRoute() == null || rh.isCurrentGPXRouteV2())) {
 					alarm = wh.getMostImportantAlarm(settings.SPEED_SYSTEM.get(), cams);
 				} else {
 					RouteDataObject ro = locationProvider.getLastKnownRouteSegment();

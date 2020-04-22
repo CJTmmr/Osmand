@@ -2,13 +2,14 @@ package net.osmand.plus.settings;
 
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.preference.Preference;
-import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.preference.Preference;
 
 import net.osmand.AndroidUtils;
 import net.osmand.plus.ApplicationMode;
@@ -48,7 +49,7 @@ public class LiveMonitoringFragment extends BaseSettingsFragment {
 			public void onClick(View view) {
 				ApplicationMode appMode = getSelectedAppMode();
 				boolean checked = !settings.LIVE_MONITORING.getModeValue(appMode);
-				settings.LIVE_MONITORING.setModeValue(appMode, checked);
+				onConfirmPreferenceChange(settings.LIVE_MONITORING.getId(), checked, ApplyQueryType.SNACK_BAR);
 				updateToolbarSwitch();
 				enableDisablePreferences(checked);
 			}
@@ -140,22 +141,5 @@ public class LiveMonitoringFragment extends BaseSettingsFragment {
 		liveMonitoringBuffer.setEntryValues(entryValues);
 		liveMonitoringBuffer.setIcon(getPersistentPrefIcon(R.drawable.ic_action_time_span));
 		liveMonitoringBuffer.setDescription(R.string.live_monitoring_max_interval_to_send_desrc);
-	}
-
-	@Override
-	public boolean onPreferenceChange(Preference preference, Object newValue) {
-		String prefId = preference.getKey();
-
-		OsmandSettings.OsmandPreference pref = settings.getPreference(prefId);
-		if (pref instanceof OsmandSettings.CommonPreference && !((OsmandSettings.CommonPreference) pref).hasDefaultValueForMode(getSelectedAppMode())) {
-			FragmentManager fragmentManager = getFragmentManager();
-			if (fragmentManager != null && newValue instanceof Serializable) {
-				ChangeGeneralProfilesPrefBottomSheet.showInstance(fragmentManager, prefId,
-						(Serializable) newValue, this, false, getSelectedAppMode());
-			}
-			return false;
-		}
-
-		return true;
 	}
 }

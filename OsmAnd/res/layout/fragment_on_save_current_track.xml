@@ -51,7 +51,7 @@
 			android:textColor="?android:textColorPrimary"
 			android:textSize="@dimen/default_list_text_size" />
 
-		<android.support.v7.widget.SwitchCompat
+		<androidx.appcompat.widget.SwitchCompat
 			android:id="@+id/btn_show_on_map"
 			android:layout_width="wrap_content"
 			android:layout_height="match_parent"
@@ -67,7 +67,9 @@
 		android:paddingLeft="@dimen/content_padding"
 		android:paddingTop="@dimen/content_padding_small"
 		android:paddingRight="@dimen/content_padding"
-		android:paddingBottom="@dimen/content_padding_small">
+		android:paddingBottom="@dimen/content_padding_small"
+		android:paddingEnd="@dimen/content_padding"
+		android:paddingStart="@dimen/content_padding">
 
 		<include
 			android:id="@+id/open_track_button"

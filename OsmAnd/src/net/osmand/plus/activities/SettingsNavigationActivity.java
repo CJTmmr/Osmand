@@ -16,18 +16,19 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.material.slider.Slider;
 
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.ContextMenuAdapter;
@@ -263,7 +264,7 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
 					AudioManager.STREAM_NOTIFICATION, AudioManager.STREAM_VOICE_CALL};
 					//AudioManager.USE_DEFAULT_STREAM_TYPE};
 			ListPreference lp = createListPreference(
-					settings.AUDIO_STREAM_GUIDANCE, streamTypes, streamIntTypes , R.string.choose_audio_stream,
+					settings.AUDIO_MANAGER_STREAM, streamTypes, streamIntTypes , R.string.choose_audio_stream,
 					R.string.choose_audio_stream_descr);
 			final Preference.OnPreferenceChangeListener prev = lp.getOnPreferenceChangeListener();
 			lp.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
@@ -273,11 +274,11 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
 					prev.onPreferenceChange(preference, newValue);
 					CommandPlayer player = getMyApplication().getPlayer();
 					if (player != null) {
-						player.updateAudioStream(settings.AUDIO_STREAM_GUIDANCE.get());
+						player.updateAudioStream(settings.AUDIO_MANAGER_STREAM.get());
 					}
 					// Sync corresponding AUDIO_USAGE value
 					ApplicationMode mode = getMyApplication().getSettings().getApplicationMode();
-					int stream = settings.AUDIO_STREAM_GUIDANCE.getModeValue(mode);
+					int stream = settings.AUDIO_MANAGER_STREAM.getModeValue(mode);
 					if (stream == AudioManager.STREAM_MUSIC) {
 						settings.AUDIO_USAGE.setModeValue(mode, AudioAttributes.USAGE_ASSISTANCE_NAVIGATION_GUIDANCE);
 					} else if (stream == AudioManager.STREAM_NOTIFICATION) {
@@ -287,7 +288,7 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
 					}
 
 					// Sync DEFAULT value with CAR value, as we have other way to set it for now
-					settings.AUDIO_STREAM_GUIDANCE.setModeValue(ApplicationMode.DEFAULT, settings.AUDIO_STREAM_GUIDANCE.getModeValue(ApplicationMode.CAR));
+					settings.AUDIO_MANAGER_STREAM.setModeValue(ApplicationMode.DEFAULT, settings.AUDIO_MANAGER_STREAM.getModeValue(ApplicationMode.CAR));
 					settings.AUDIO_USAGE.setModeValue(ApplicationMode.DEFAULT, settings.AUDIO_USAGE.getModeValue(ApplicationMode.CAR));
 					return true;
 				}
@@ -474,7 +475,7 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
 			return true;
 		} else if (preference == autoZoom) {
 			final ApplicationMode am = settings.getApplicationMode();
-			final ContextMenuAdapter adapter = new ContextMenuAdapter();
+			final ContextMenuAdapter adapter = new ContextMenuAdapter(getMyApplication());
 			int i = 0;
 			int selectedIndex = -1;
 			adapter.addItem(ContextMenuItem.createBuilder(getString(R.string.auto_zoom_none))
@@ -545,7 +546,7 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
 			return true;
 		} else if (preference == reliefFactorRouting) {
 			final ApplicationMode am = settings.getApplicationMode();
-			final ContextMenuAdapter adapter = new ContextMenuAdapter();
+			final ContextMenuAdapter adapter = new ContextMenuAdapter(getMyApplication());
 			int i = 0;
 			int selectedIndex = -1;
 			for (RoutingParameter p : reliefFactorParameters) {
@@ -828,70 +829,71 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
 										 final int[] minValue, final int[] defaultValue, final int[] maxValue,
 										 final int min, final int max, View seekbarView, final boolean nightMode,
 	                                     final int activeColor) {
-		View seekbarLayout;
+		View sliderLayout;
 		int titleId;
 		final int[] speedValue;
 		switch (type) {
 			case DEFAULT_SPEED_ONLY:
 				speedValue = defaultValue;
-				seekbarLayout = seekbarView.findViewById(R.id.min_speed_layout);
+				sliderLayout = seekbarView.findViewById(R.id.min_speed_layout);
 				titleId = R.string.default_speed_setting_title;
 				break;
 			case MIN_SPEED:
 				speedValue = minValue;
-				seekbarLayout = seekbarView.findViewById(R.id.min_speed_layout);
+				sliderLayout = seekbarView.findViewById(R.id.min_speed_layout);
 				titleId = R.string.shared_string_min_speed;
 				break;
 			case MAX_SPEED:
 				speedValue = maxValue;
-				seekbarLayout = seekbarView.findViewById(R.id.max_speed_layout);
+				sliderLayout = seekbarView.findViewById(R.id.max_speed_layout);
 				titleId = R.string.shared_string_max_speed;
 				break;
 			default:
 				speedValue = defaultValue;
-				seekbarLayout = seekbarView.findViewById(R.id.default_speed_layout);
+				sliderLayout = seekbarView.findViewById(R.id.default_speed_layout);
 				titleId = R.string.default_speed_setting_title;
 				break;
 		}
-		final SeekBar speedSeekBar = seekbarLayout.findViewById(R.id.speed_seekbar);
-		final TextView speedTitleTv = seekbarLayout.findViewById(R.id.speed_title);
-		final TextView speedMinTv = seekbarLayout.findViewById(R.id.speed_seekbar_min_text);
-		final TextView speedMaxTv = seekbarLayout.findViewById(R.id.speed_seekbar_max_text);
-		final TextView speedUnitsTv = seekbarLayout.findViewById(R.id.speed_units);
-		final TextView speedTv = seekbarLayout.findViewById(R.id.speed_text);
+		final Slider slider = sliderLayout.findViewById(R.id.speed_slider);
+		final TextView speedTitleTv = sliderLayout.findViewById(R.id.speed_title);
+		final TextView speedMinTv = sliderLayout.findViewById(R.id.speed_seekbar_min_text);
+		final TextView speedMaxTv = sliderLayout.findViewById(R.id.speed_seekbar_max_text);
+		final TextView speedUnitsTv = sliderLayout.findViewById(R.id.speed_units);
+		final TextView speedTv = sliderLayout.findViewById(R.id.speed_text);
 
 		speedTitleTv.setText(titleId);
 		speedMinTv.setText(String.valueOf(min));
 		speedMaxTv.setText(String.valueOf(max));
 		speedTv.setText(String.valueOf(speedValue[0]));
 		speedUnitsTv.setText(speedUnits);
-		speedSeekBar.setMax(max - min);
-		speedSeekBar.setProgress(Math.max(speedValue[0] - min, 0));
-		speedSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+		slider.setValueTo(max - min);
+		slider.setValue(Math.max(speedValue[0] - min, 0));
+		slider.addOnChangeListener(new Slider.OnChangeListener() {
 			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			public void onValueChange(@NonNull Slider slider, float val, boolean fromUser) {
+				int progress = (int) val;
 				int value = progress + min;
 				switch (type) {
 					case DEFAULT_SPEED:
 					case DEFAULT_SPEED_ONLY:
 						if (value > maxValue[0]) {
 							value = maxValue[0];
-							speedSeekBar.setProgress(Math.max(value - min, 0));
+							slider.setValue(Math.max(value - min, 0));
 						} else if (value < minValue[0]) {
 							value = minValue[0];
-							speedSeekBar.setProgress(Math.max(value - min, 0));
+							slider.setValue(Math.max(value - min, 0));
 						}
 						break;
 					case MIN_SPEED:
 						if (value > defaultValue[0]) {
 							value = defaultValue[0];
-							speedSeekBar.setProgress(Math.max(value - min, 0));
+							slider.setValue(Math.max(value - min, 0));
 						}
 						break;
 					case MAX_SPEED:
 						if (value < defaultValue[0]) {
 							value = defaultValue[0];
-							speedSeekBar.setProgress(Math.max(value - min, 0));
+							slider.setValue(Math.max(value - min, 0));
 						}
 						break;
 					default:
@@ -900,15 +902,7 @@ public class SettingsNavigationActivity extends SettingsBaseActivity {
 				speedValue[0] = value;
 				speedTv.setText(String.valueOf(value));
 			}
-
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
-
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-			}
 		});
-		UiUtilities.setupSeekBar(speedSeekBar, activeColor, nightMode);
+		UiUtilities.setupSlider(slider, nightMode, activeColor);
 	}
 }

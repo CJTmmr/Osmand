@@ -45,7 +45,9 @@ public class IndexConstants {
 	public static final String ROUTING_FILE_EXT = ".xml";
 
 	public static final String RENDERER_INDEX_EXT = ".render.xml"; //$NON-NLS-1$
-	
+
+	public static final String GPX_FILE_EXT = ".gpx"; //$NON-NLS-1$
+
 	public final static String POI_TABLE = "poi"; //$NON-NLS-1$
 	
 	public static final String INDEX_DOWNLOAD_DOMAIN = "download.osmand.net";
@@ -73,4 +75,5 @@ public class IndexConstants {
 	public static final String SETTINGS_DIR = "settings/"; //$NON-NLS-1$
 	public static final String TEMP_DIR = "temp/";
 	public static final String ROUTING_PROFILES_DIR = "routing/";
+	public static final String PLUGINS_DIR = "plugins/";
 }

@@ -6,11 +6,11 @@
               android:layout_height="match_parent"
               android:orientation="vertical">
 
-    <android.support.design.widget.AppBarLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <android.support.v7.widget.Toolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="fill_parent"
             android:layout_height="@dimen/dashboard_map_toolbar"
@@ -47,13 +47,15 @@
                     android:layout_marginRight="8dp"
                     android:layout_marginLeft="8dp"
                     android:indeterminate="true"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+	                android:layout_marginStart="8dp"
+	                android:layout_marginEnd="8dp" />
 
             </LinearLayout>
 
-        </android.support.v7.widget.Toolbar>
+        </androidx.appcompat.widget.Toolbar>
 
-    </android.support.design.widget.AppBarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -90,10 +92,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <android.support.design.widget.TextInputLayout
+                        <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginRight="16dp">
+                            android:layout_marginRight="16dp"
+	                        android:layout_marginEnd="16dp">
 
                             <EditText
                                 android:id="@+id/latitudeEditText"
@@ -103,17 +106,18 @@
                                 android:imeOptions="actionNext"
                                 tools:text="22.12345"/>
 
-                        </android.support.design.widget.TextInputLayout>
+                        </com.google.android.material.textfield.TextInputLayout>
 
                         <ImageButton
                             android:id="@+id/latitudeClearButton"
                             style="@style/Widget.AppCompat.ActionButton"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:layout_gravity="right"
+                            android:layout_gravity="end"
                             android:layout_marginRight="4dp"
                             android:contentDescription="@string/shared_string_clear"
-                            android:src="@drawable/ic_action_remove_dark"/>
+                            android:src="@drawable/ic_action_remove_dark"
+	                        android:layout_marginEnd="4dp" />
 
                     </FrameLayout>
 
@@ -136,10 +140,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <android.support.design.widget.TextInputLayout
+                        <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginRight="16dp">
+                            android:layout_marginRight="16dp"
+	                        android:layout_marginEnd="16dp">
 
                             <EditText
                                 android:id="@+id/longitudeEditText"
@@ -149,17 +154,18 @@
                                 android:imeOptions="actionDone"
                                 tools:text="22.12345"/>
 
-                        </android.support.design.widget.TextInputLayout>
+                        </com.google.android.material.textfield.TextInputLayout>
 
                         <ImageButton
                             android:id="@+id/longitudeClearButton"
                             style="@style/Widget.AppCompat.ActionButton"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:layout_gravity="right"
+                            android:layout_gravity="end"
                             android:layout_marginRight="4dp"
                             android:contentDescription="@string/shared_string_clear"
-                            android:src="@drawable/ic_action_remove_dark"/>
+                            android:src="@drawable/ic_action_remove_dark"
+	                        android:layout_marginEnd="4dp" />
 
                     </FrameLayout>
 
@@ -183,10 +189,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <android.support.design.widget.TextInputLayout
+                        <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginRight="16dp">
+                            android:layout_marginRight="16dp"
+	                        android:layout_marginEnd="16dp">
 
                             <EditText
                                 android:id="@+id/northingEditText"
@@ -197,17 +204,18 @@
                                 android:inputType="textCapCharacters|textNoSuggestions"
                                 tools:text="22.12345"/>
 
-                        </android.support.design.widget.TextInputLayout>
+                        </com.google.android.material.textfield.TextInputLayout>
 
                         <ImageButton
                             android:id="@+id/northingClearButton"
                             style="@style/Widget.AppCompat.ActionButton"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:layout_gravity="right"
+                            android:layout_gravity="end"
                             android:layout_marginRight="4dp"
                             android:contentDescription="@string/shared_string_clear"
-                            android:src="@drawable/ic_action_remove_dark"/>
+                            android:src="@drawable/ic_action_remove_dark"
+	                        android:layout_marginEnd="4dp" />
 
                     </FrameLayout>
 
@@ -231,10 +239,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <android.support.design.widget.TextInputLayout
+                        <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginRight="16dp">
+                            android:layout_marginRight="16dp"
+	                        android:layout_marginEnd="16dp">
 
                             <EditText
                                 android:id="@+id/eastingEditText"
@@ -245,17 +254,18 @@
                                 android:inputType="textCapCharacters|textNoSuggestions"
                                 tools:text="22.12345"/>
 
-                        </android.support.design.widget.TextInputLayout>
+                        </com.google.android.material.textfield.TextInputLayout>
 
                         <ImageButton
                             android:id="@+id/eastingClearButton"
                             style="@style/Widget.AppCompat.ActionButton"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:layout_gravity="right"
+                            android:layout_gravity="end"
                             android:layout_marginRight="4dp"
                             android:contentDescription="@string/shared_string_clear"
-                            android:src="@drawable/ic_action_remove_dark"/>
+                            android:src="@drawable/ic_action_remove_dark"
+	                        android:layout_marginEnd="4dp" />
 
                     </FrameLayout>
 
@@ -273,11 +283,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <android.support.design.widget.TextInputLayout
+                        <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="54dp"
-                            android:layout_marginRight="16dp">
+                            android:layout_marginRight="16dp"
+	                        android:layout_marginStart="54dp"
+	                        android:layout_marginEnd="16dp">
 
                             <EditText
                                 android:id="@+id/zoneEditText"
@@ -288,17 +300,18 @@
                                 android:inputType="textCapCharacters|textNoSuggestions"
                                 tools:text="22.12345"/>
 
-                        </android.support.design.widget.TextInputLayout>
+                        </com.google.android.material.textfield.TextInputLayout>
 
                         <ImageButton
                             android:id="@+id/zoneClearButton"
                             style="@style/Widget.AppCompat.ActionButton"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:layout_gravity="right"
+                            android:layout_gravity="end"
                             android:layout_marginRight="4dp"
                             android:contentDescription="@string/shared_string_clear"
-                            android:src="@drawable/ic_action_remove_dark"/>
+                            android:src="@drawable/ic_action_remove_dark"
+	                        android:layout_marginEnd="4dp" />
 
                     </FrameLayout>
 
@@ -316,11 +329,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <android.support.design.widget.TextInputLayout
+                        <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="54dp"
-                            android:layout_marginRight="16dp">
+                            android:layout_marginRight="16dp"
+	                        android:layout_marginStart="54dp"
+	                        android:layout_marginEnd="16dp">
 
                             <EditText
                                 android:id="@+id/olcEditText"
@@ -331,17 +346,18 @@
                                 android:inputType="textCapCharacters|textNoSuggestions"
                                 tools:text="6PH57VP3+PQ"/>
 
-                        </android.support.design.widget.TextInputLayout>
+                        </com.google.android.material.textfield.TextInputLayout>
 
                         <ImageButton
                             android:id="@+id/olcClearButton"
                             style="@style/Widget.AppCompat.ActionButton"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:layout_gravity="right"
+                            android:layout_gravity="end"
                             android:layout_marginRight="4dp"
                             android:contentDescription="@string/shared_string_clear"
-                            android:src="@drawable/ic_action_remove_dark"/>
+                            android:src="@drawable/ic_action_remove_dark"
+	                        android:layout_marginEnd="4dp" />
 
                     </FrameLayout>
 
@@ -359,7 +375,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="54dp"
-                        android:layout_marginRight="16dp">
+                        android:layout_marginRight="16dp"
+	                    android:layout_marginStart="54dp"
+	                    android:layout_marginEnd="16dp">
 
                         <TextView
                             android:id="@+id/olcInfoTextView"
@@ -384,11 +402,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
 
-                        <android.support.design.widget.TextInputLayout
+                        <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="54dp"
-                            android:layout_marginRight="16dp">
+                            android:layout_marginRight="16dp"
+	                        android:layout_marginStart="54dp"
+	                        android:layout_marginEnd="16dp">
 
                             <EditText
                                 android:id="@+id/formatEditText"
@@ -399,17 +419,18 @@
                                 android:imeOptions="actionNext"
                                 tools:text="DD.DDDDD"/>
 
-                        </android.support.design.widget.TextInputLayout>
+                        </com.google.android.material.textfield.TextInputLayout>
 
                         <ImageButton
                             android:id="@+id/formatSelectButton"
                             style="@style/Widget.AppCompat.ActionButton"
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:layout_gravity="right"
+                            android:layout_gravity="end"
                             android:layout_marginRight="4dp"
                             android:contentDescription="@string/coords_format"
-                            android:src="@drawable/ic_action_arrow_drop_down"/>
+                            android:src="@drawable/ic_action_arrow_drop_down"
+	                        android:layout_marginEnd="4dp" />
 
                     </FrameLayout>
 
@@ -434,7 +455,9 @@
                     android:paddingBottom="8dp"
                     android:paddingLeft="16dp"
                     android:paddingRight="16dp"
-                    android:paddingTop="8dp">
+                    android:paddingTop="8dp"
+	                android:paddingStart="16dp"
+	                android:paddingEnd="16dp">
 
                     <TextView
                         android:id="@+id/title"

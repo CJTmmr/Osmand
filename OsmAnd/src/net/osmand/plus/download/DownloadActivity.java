@@ -9,17 +9,6 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StatFs;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.annotation.UiThread;
-import android.support.v4.app.ActivityCompat.OnRequestPermissionsResultCallback;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
-import android.support.v4.widget.Space;
-import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -33,6 +22,18 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.legacy.widget.Space;
+import androidx.viewpager.widget.ViewPager;
 
 import net.osmand.AndroidUtils;
 import net.osmand.IProgress;
@@ -71,11 +72,9 @@ import org.apache.commons.logging.Log;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -585,17 +584,7 @@ public class DownloadActivity extends AbstractDownloadActivity implements Downlo
 			protected void onPostExecute(List<String> warnings) {
 				setSupportProgressBarIndeterminateVisibility(false);
 				if (!warnings.isEmpty()) {
-					final StringBuilder b = new StringBuilder();
-					boolean f = true;
-					for (String w : warnings) {
-						if (f) {
-							f = false;
-						} else {
-							b.append('\n');
-						}
-						b.append(w);
-					}
-					Toast.makeText(DownloadActivity.this, b.toString(), Toast.LENGTH_LONG).show();
+					Toast.makeText(DownloadActivity.this, AndroidUtils.formatWarnings(warnings).toString(), Toast.LENGTH_LONG).show();
 				}
 				newDownloadIndexes();
 			}
@@ -833,15 +822,18 @@ public class DownloadActivity extends AbstractDownloadActivity implements Downlo
 					.setOnClickListener(new OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							OsmandApplication app = (OsmandApplication) getActivity().getApplication();
-							app.getSettings().setMapLocationToShow(
-									regionCenter.getLatitude(),
-									regionCenter.getLongitude(),
-									5,
-									new PointDescription(PointDescription.POINT_TYPE_WORLD_REGION_SHOW_ON_MAP, ""));
+							FragmentActivity activity = getActivity();
+							if (activity != null && regionCenter != null) {
+								OsmandApplication app = (OsmandApplication) activity.getApplication();
+								app.getSettings().setMapLocationToShow(
+										regionCenter.getLatitude(),
+										regionCenter.getLongitude(),
+										5,
+										new PointDescription(PointDescription.POINT_TYPE_WORLD_REGION_SHOW_ON_MAP, ""));
 
-							dismiss();
-							MapActivity.launchMapActivityMoveToTop(getActivity());
+								dismiss();
+								MapActivity.launchMapActivityMoveToTop(activity);
+							}
 						}
 					});
 

@@ -29,7 +29,7 @@ public class RoutingConfiguration {
 	
 	// 1.1 tile load parameters (should not affect routing)
 	public int ZOOM_TO_LOAD_TILES = 16;
-	public int memoryLimitation;
+	public long memoryLimitation;
 
 	// 1.2 Build A* graph in backward/forward direction (can affect results)
 	// 0 - 2 ways, 1 - direct way, -1 - reverse way
@@ -98,12 +98,12 @@ public class RoutingConfiguration {
 			i.ZOOM_TO_LOAD_TILES = parseSilentInt(getAttribute(i.router, "zoomToLoadTiles"), i.ZOOM_TO_LOAD_TILES);
 			int desirable = parseSilentInt(getAttribute(i.router, "memoryLimitInMB"), 0);
 			if(desirable != 0) {
-				i.memoryLimitation = desirable * (1 << 20); 
+				i.memoryLimitation = desirable * (1l << 20);
 			} else {
 				if(memoryLimitMB == 0) {
 					memoryLimitMB = DEFAULT_MEMORY_LIMIT;
 				}
-				i.memoryLimitation = memoryLimitMB * (1 << 20);
+				i.memoryLimitation = memoryLimitMB * (1l << 20);
 			}
 			i.planRoadDirection = parseSilentInt(getAttribute(i.router, "planRoadDirection"), i.planRoadDirection);
 //			i.planRoadDirection = 1;
@@ -236,9 +236,9 @@ public class RoutingConfiguration {
 		String id = parser.getAttributeValue("", "id");
 		String type = parser.getAttributeValue("", "type");
 		boolean defaultValue = Boolean.parseBoolean(parser.getAttributeValue("", "default"));
-		if (type.equalsIgnoreCase("boolean")) {
+		if ("boolean".equalsIgnoreCase(type)) {
 			currentRouter.registerBooleanParameter(id, Algorithms.isEmpty(group) ? null : group, name, description, defaultValue);
-		} else if(type.equalsIgnoreCase("numeric")) {
+		} else if ("numeric".equalsIgnoreCase(type)) {
 			String values = parser.getAttributeValue("", "values");
 			String valueDescriptions = parser.getAttributeValue("", "valueDescriptions");
 			String[] strValues = values.split(",");
@@ -292,7 +292,7 @@ public class RoutingConfiguration {
 				for (int i = 0; i < stack.size(); i++) {
 					addSubclause(stack.get(i), ctx);
 				}
-			} else if(stack.size() > 0 && stack.peek().tagName.equals("select")) {
+			} else if (stack.size() > 0 && "select".equals(stack.peek().tagName)) {
 				addSubclause(rr, ctx);
 			}
 			stack.push(rr);
@@ -312,11 +312,11 @@ public class RoutingConfiguration {
 		if (!Algorithms.isEmpty(rr.t)) {
 			ctx.getLastRule().registerAndTagValueCondition(rr.t, Algorithms.isEmpty(rr.v) ? null : rr.v, not);
 		}
-		if (rr.tagName.equals("gt")) {
+		if ("gt".equals(rr.tagName)) {
 			ctx.getLastRule().registerGreatCondition(rr.value1, rr.value2, rr.type);
-		} else if (rr.tagName.equals("le")) {
+		} else if ("le".equals(rr.tagName)) {
 			ctx.getLastRule().registerLessCondition(rr.value1, rr.value2, rr.type);
-		} else if (rr.tagName.equals("eq")) {
+		} else if ("eq".equals(rr.tagName)) {
 			ctx.getLastRule().registerEqualCondition(rr.value1, rr.value2, rr.type);
 		}
 	}

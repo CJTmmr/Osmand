@@ -19,13 +19,14 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
-import android.support.multidex.MultiDex;
-import android.support.multidex.MultiDexApplication;
-import android.support.v7.app.AlertDialog;
 import android.text.format.DateFormat;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.multidex.MultiDex;
+import androidx.multidex.MultiDexApplication;
 
 import net.osmand.AndroidUtils;
 import net.osmand.IndexConstants;
@@ -34,6 +35,7 @@ import net.osmand.access.AccessibilityPlugin;
 import net.osmand.aidl.OsmandAidlApi;
 import net.osmand.data.LatLon;
 import net.osmand.map.OsmandRegions;
+import net.osmand.map.TileSourceManager;
 import net.osmand.map.WorldRegion;
 import net.osmand.osm.MapPoiTypes;
 import net.osmand.osm.io.NetworkUtils;
@@ -186,7 +188,15 @@ public class OsmandApplication extends MultiDexApplication {
 			externalStorageDirectory = osmandSettings.getInternalAppPath();
 		}
 
-		Algorithms.removeAllFiles(this.getAppPath(IndexConstants.TEMP_DIR));
+		Algorithms.removeAllFiles(getAppPath(IndexConstants.TEMP_DIR));
+		if (appInitializer.isAppVersionChanged()) {
+			// Reset mapillary tile sources
+			File tilesPath = getAppPath(IndexConstants.TILES_INDEX_DIR);
+			File mapillaryRasterTilesPath = new File(tilesPath, TileSourceManager.getMapillaryRasterSource().getName());
+			File mapillaryVectorTilesPath = new File(tilesPath, TileSourceManager.getMapillaryVectorSource().getName());
+			Algorithms.removeAllFiles(mapillaryRasterTilesPath);
+			Algorithms.removeAllFiles(mapillaryVectorTilesPath);
+		}
 
 		checkPreferredLocale();
 		appInitializer.onCreateApplication();
@@ -378,6 +388,7 @@ public class OsmandApplication extends MultiDexApplication {
 		}
 	}
 
+
 	public void checkPreferredLocale() {
 		Configuration config = getBaseContext().getResources().getConfiguration();
 
@@ -407,6 +418,8 @@ public class OsmandApplication extends MultiDexApplication {
 		if (selectedLocale != null) {
 			Locale.setDefault(selectedLocale);
 			config.locale = selectedLocale;
+			config.setLayoutDirection(selectedLocale);
+
 			getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
 			if (android.os.Build.VERSION.SDK_INT >= 17) {
 				Configuration conf = new Configuration(config);

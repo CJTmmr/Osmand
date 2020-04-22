@@ -6,19 +6,21 @@ import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceScreen;
-import android.support.v7.preference.PreferenceViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
-import net.osmand.GPXUtilities;
-import net.osmand.Location;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceScreen;
+import androidx.preference.PreferenceViewHolder;
+
+import com.google.android.material.slider.Slider;
+
 import net.osmand.StateChangedListener;
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.OsmAndFormatter;
@@ -31,6 +33,7 @@ import net.osmand.plus.activities.SettingsBaseActivity;
 import net.osmand.plus.activities.SettingsNavigationActivity;
 import net.osmand.plus.routing.RouteProvider;
 import net.osmand.plus.routing.RoutingHelper;
+import net.osmand.plus.settings.bottomsheets.RecalculateRouteInDeviationBottomSheet;
 import net.osmand.plus.settings.preferences.ListPreferenceEx;
 import net.osmand.plus.settings.preferences.MultiSelectBooleanPreference;
 import net.osmand.plus.settings.preferences.SwitchPreferenceEx;
@@ -56,6 +59,11 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 	private static final String ROUTE_PARAMETERS_INFO = "route_parameters_info";
 	private static final String ROUTE_PARAMETERS_IMAGE = "route_parameters_image";
 	private static final String RELIEF_SMOOTHNESS_FACTOR = "relief_smoothness_factor";
+	private static final String ROUTING_SHORT_WAY = "prouting_short_way";
+	private static final String ROUTING_RECALC_DISTANCE= "routing_recalc_distance";
+
+	public static final float DISABLE_MODE = -1.0f;
+	public static final float DEFAULT_MODE = 0.0f;
 
 	private List<RoutingParameter> avoidParameters = new ArrayList<RoutingParameter>();
 	private List<RoutingParameter> preferParameters = new ArrayList<RoutingParameter>();
@@ -148,9 +156,7 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 		fastRoute.setSummaryOn(R.string.shared_string_on);
 		fastRoute.setSummaryOff(R.string.shared_string_off);
 
-		float defaultAllowedDeviation = RoutingHelper.getDefaultAllowedDeviation(settings, am,
-				RoutingHelper.getPosTolerance(0));
-		setupSelectRouteRecalcDistance(screen, defaultAllowedDeviation);
+		setupSelectRouteRecalcDistance(screen);
 
 		if (am.getRouteService() == RouteProvider.RouteService.OSMAND){
 			GeneralRouter router = app.getRouter(am);
@@ -262,6 +268,18 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 		return super.onPreferenceClick(preference);
 	}
 
+	@Override
+	public void onDisplayPreferenceDialog(Preference preference) {
+		if (preference.getKey().equals(settings.ROUTE_RECALCULATION_DISTANCE.getId())) {
+			FragmentManager fragmentManager = getFragmentManager();
+			if (fragmentManager != null) {
+				RecalculateRouteInDeviationBottomSheet.showInstance(getFragmentManager(), preference.getKey(), this, false, getSelectedAppMode());
+			}
+		} else {
+			super.onDisplayPreferenceDialog(preference);
+		}
+	}
+
 	private void showSeekbarSettingsDialog(Activity activity, final ApplicationMode mode) {
 		if (activity == null || mode == null) {
 			return;
@@ -271,8 +289,9 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 		boolean nightMode = !app.getSettings().isLightContentForMode(mode);
 		Context themedContext = UiUtilities.getThemedContext(activity, nightMode);
 		AlertDialog.Builder builder = new AlertDialog.Builder(themedContext);
-		View seekbarView = LayoutInflater.from(themedContext).inflate(R.layout.recalculation_angle_dialog, null, false);
-		builder.setView(seekbarView);
+		View sliderView = LayoutInflater.from(themedContext).inflate(
+				R.layout.recalculation_angle_dialog, null, false);
+		builder.setView(sliderView);
 		builder.setPositiveButton(R.string.shared_string_ok, new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -287,67 +306,54 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 		builder.setNegativeButton(R.string.shared_string_cancel, null);
 
 		int selectedModeColor = ContextCompat.getColor(app, mode.getIconColorInfo().getColor(nightMode));
-		setupAngleSlider(angleValue, seekbarView, nightMode, selectedModeColor);
+		setupAngleSlider(angleValue, sliderView, nightMode, selectedModeColor);
 		builder.show();
 	}
 
 	private static void setupAngleSlider(final float[] angleValue,
-	                                     View seekbarView,
+	                                     View sliderView,
 	                                     final boolean nightMode,
 	                                     final int activeColor) {
 
-		final SeekBar angleBar = seekbarView.findViewById(R.id.angle_seekbar);
-		final TextView angleTv = seekbarView.findViewById(R.id.angle_text);
+		final Slider angleBar = sliderView.findViewById(R.id.angle_slider);
+		final TextView angleTv = sliderView.findViewById(R.id.angle_text);
 
 		angleTv.setText(String.valueOf(angleValue[0]));
-		angleBar.setProgress((int) angleValue[0]);
-		angleBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
+		angleBar.setValue((int) angleValue[0]);
+		angleBar.addOnChangeListener(new Slider.OnChangeListener() {
 			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				int value = progress - (progress % 5);
+			public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
 				angleValue[0] = value;
 				angleTv.setText(String.valueOf(value));
 			}
-
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {}
-
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {}
 		});
-		UiUtilities.setupSeekBar(angleBar, activeColor, nightMode);
+		UiUtilities.setupSlider(angleBar, nightMode, activeColor, true);
 	}
 
-	private void setupSelectRouteRecalcDistance(PreferenceScreen screen, float defaultAllowedDeviation) {
-		Float[] entryValues;
-		OsmandSettings settings = app.getSettings();
-		OsmandSettings.MetricsConstants mc = settings.METRIC_SYSTEM.get();
-		if (mc == OsmandSettings.MetricsConstants.KILOMETERS_AND_METERS) {
-			entryValues = new Float[] {-1.0f, 0.f, 10.f, 20.0f, 30.0f, 50.0f, 100.0f, 200.0f, 500.0f, 1000.0f, 1500.0f};
-		} else {
-			entryValues = new Float[] {-1.0f, 0.f, 9.1f, 18.3f, 30.5f, 45.7f, 91.5f, 183.0f, 482.0f, 965.0f, 1609.0f};
+	private void setupSelectRouteRecalcDistance(PreferenceScreen screen) {
+		final SwitchPreferenceEx switchPref = createSwitchPreferenceEx(ROUTING_RECALC_DISTANCE,
+				R.string.route_recalculation_dist_title, R.layout.preference_with_descr_dialog_and_switch);
+		switchPref.setIcon(getRoutingPrefIcon(ROUTING_RECALC_DISTANCE));
+		screen.addPreference(switchPref);
+		updateRouteRecalcDistancePref();
+	}
+
+	private void updateRouteRecalcDistancePref() {
+		SwitchPreferenceEx switchPref = (SwitchPreferenceEx) findPreference(ROUTING_RECALC_DISTANCE);
+		if (switchPref == null) {
+			return;
 		}
-
-		String[] entries = new String[entryValues.length];
-		entries[0] = getString(R.string.no_recalculation_setting);
-		String defaultDistance =  defaultAllowedDeviation < 0 ? getString(R.string.no_recalculation_setting) :
-				OsmAndFormatter.getFormattedDistance(defaultAllowedDeviation , app, false);
-		entries[1] = String.format(getString(R.string.shared_string_app_default_w_val), defaultDistance);
-
-		for (int i = 2; i < entryValues.length; i++) {
-			entries[i] = OsmAndFormatter.getFormattedDistance(entryValues[i], app, false);
+		ApplicationMode appMode = getSelectedAppMode();
+		float allowedValue = settings.ROUTE_RECALCULATION_DISTANCE.getModeValue(appMode);
+		boolean enabled = allowedValue != DISABLE_MODE;
+		if (allowedValue <= 0) {
+			allowedValue = RoutingHelper.getDefaultAllowedDeviation(settings, appMode, RoutingHelper.getPosTolerance(0));
 		}
-
-		ListPreferenceEx routeRecalculationDist = createListPreferenceEx(settings.ROUTE_RECALCULATION_DISTANCE.getId(),
-				entries, entryValues, R.string.route_recalculation_dist_title, R.layout.preference_with_descr);
-		routeRecalculationDist.setEntries(entries);
-		routeRecalculationDist.setEntryValues(entryValues);
-		routeRecalculationDist.setDescription(getString(R.string.route_recalculation_dist_descr));
-		routeRecalculationDist.setIcon(getRoutingPrefIcon("routing_recalc_distance"));
-
-
-		screen.addPreference(routeRecalculationDist);
+		String summary = String.format(getString(R.string.ltr_or_rtl_combine_via_bold_point),
+				enabled ? getString(R.string.shared_string_enabled) : getString(R.string.shared_string_disabled),
+				OsmAndFormatter.getFormattedDistance(allowedValue, app, false));
+		switchPref.setSummary(summary);
+		switchPref.setChecked(enabled);
 	}
 
 	@Override
@@ -400,30 +406,34 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 	}
 
 	@Override
-	public boolean onPreferenceChange(Preference preference, Object newValue) {
-		String key = preference.getKey();
-
-		if ((RELIEF_SMOOTHNESS_FACTOR.equals(key) || DRIVING_STYLE.equals(key)) && newValue instanceof String) {
+	public void onApplyPreferenceChange(String prefId, boolean applyToAllProfiles, Object newValue) {
+		if ((RELIEF_SMOOTHNESS_FACTOR.equals(prefId) || DRIVING_STYLE.equals(prefId)) && newValue instanceof String) {
 			ApplicationMode appMode = getSelectedAppMode();
 			String selectedParameterId = (String) newValue;
-			List<RoutingParameter> routingParameters = DRIVING_STYLE.equals(key) ? drivingStyleParameters : reliefFactorParameters;
+			List<RoutingParameter> routingParameters = DRIVING_STYLE.equals(prefId) ? drivingStyleParameters : reliefFactorParameters;
 			for (RoutingParameter p : routingParameters) {
 				String parameterId = p.getId();
 				SettingsNavigationActivity.setRoutingParameterSelected(settings, appMode, parameterId, p.getDefaultBoolean(), parameterId.equals(selectedParameterId));
 			}
 			recalculateRoute();
-			return true;
-		} else if ("prouting_short_way".equals(key) && newValue instanceof Boolean) {
-			return app.getSettings().FAST_ROUTE_MODE.setModeValue(getSelectedAppMode(), !(Boolean) newValue);
-		} else if (settings.ROUTE_RECALCULATION_DISTANCE.getId().equals(key) && newValue instanceof Float) {
-			if ((float) newValue == -1.f) {
-				settings.DISABLE_OFFROUTE_RECALC.setModeValue(getSelectedAppMode(), true);
-			} else {
-				settings.DISABLE_OFFROUTE_RECALC.setModeValue(getSelectedAppMode(), false);
+		} else if (ROUTING_SHORT_WAY.equals(prefId) && newValue instanceof Boolean) {
+			applyPreference(settings.FAST_ROUTE_MODE.getId(), applyToAllProfiles, !(Boolean) newValue);
+		} else if (ROUTING_RECALC_DISTANCE.equals(prefId)) {
+			boolean enabled = false;
+			float valueToSave = DISABLE_MODE;
+			if (newValue instanceof Boolean) {
+				enabled = (boolean) newValue;
+				valueToSave = enabled ? DEFAULT_MODE : DISABLE_MODE;
+			} else if (newValue instanceof Float) {
+				valueToSave = (float) newValue;
+				enabled = valueToSave != DISABLE_MODE;
 			}
+			applyPreference(ROUTING_RECALC_DISTANCE, applyToAllProfiles, valueToSave);
+			applyPreference(settings.DISABLE_OFFROUTE_RECALC.getId(), applyToAllProfiles, !enabled);
+			updateRouteRecalcDistancePref();
+		} else {
+			super.onApplyPreferenceChange(prefId, applyToAllProfiles, newValue);
 		}
-
-		return super.onPreferenceChange(preference, newValue);
 	}
 
 	@Override
@@ -530,7 +540,7 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 				return getPersistentPrefIcon(R.drawable.ic_action_fastest_route);
 			case "enable_time_conditional_routing":
 				return getPersistentPrefIcon(R.drawable.ic_action_road_works_dark);
-			case "routing_recalc_distance":
+			case ROUTING_RECALC_DISTANCE:
 				return getPersistentPrefIcon(R.drawable.ic_action_minimal_distance);
 
 			default:

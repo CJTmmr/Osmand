@@ -13,13 +13,14 @@ import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StatFs;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceViewHolder;
 import android.text.SpannableString;
 import android.view.View;
+
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceViewHolder;
 
 import net.osmand.AndroidUtils;
 import net.osmand.PlatformUtil;
@@ -135,6 +136,10 @@ public class MultimediaNotesFragment extends BaseSettingsFragment implements Cop
 		// Photo picture size
 		// get supported sizes
 		List<Camera.Size> psps = parameters.getSupportedPictureSizes();
+		if (psps == null) {
+			cameraPictureSize.setVisible(false);
+			return;
+		}
 		// list of megapixels of each resolution
 		List<Integer> mpix = new ArrayList<Integer>();
 		// list of index each resolution in list, returned by getSupportedPictureSizes()
@@ -208,6 +213,10 @@ public class MultimediaNotesFragment extends BaseSettingsFragment implements Cop
 		// focus mode settings
 		// show in menu only suppoted modes
 		List<String> sfm = parameters.getSupportedFocusModes();
+		if (sfm == null) {
+			cameraFocusType.setVisible(false);
+			return;
+		}
 		List<String> items = new ArrayList<String>();
 		List<Integer> itemsValues = new ArrayList<Integer>();
 		// filtering known types for translate and set index

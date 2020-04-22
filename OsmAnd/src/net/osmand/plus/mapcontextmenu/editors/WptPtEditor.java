@@ -1,11 +1,11 @@
 package net.osmand.plus.mapcontextmenu.editors;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
-import net.osmand.data.LatLon;
-import net.osmand.plus.FavouritesDbHelper;
 import net.osmand.GPXUtilities.GPXFile;
 import net.osmand.GPXUtilities.WptPt;
+import net.osmand.data.LatLon;
+import net.osmand.plus.FavouritesDbHelper;
 import net.osmand.plus.GpxSelectionHelper.SelectedGpxFile;
 import net.osmand.plus.activities.MapActivity;
 
@@ -134,14 +134,14 @@ public class WptPtEditor extends PointEditor {
 	public void showEditorFragment() {
 		MapActivity mapActivity = getMapActivity();
 		if (mapActivity != null) {
-			WptPtEditorFragment.showInstance(mapActivity);
+			WptPtEditorFragmentNew.showInstance(mapActivity);
 		}
 	}
 
 	public void showEditorFragment(boolean skipDialog) {
 		MapActivity mapActivity = getMapActivity();
 		if (mapActivity != null) {
-			WptPtEditorFragment.showInstance(mapActivity, skipDialog);
+			WptPtEditorFragmentNew.showInstance(mapActivity, skipDialog);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 package net.osmand.plus.settings;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -7,20 +8,22 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ExpandableListView;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import net.osmand.AndroidUtils;
 import net.osmand.IndexConstants;
 import net.osmand.PlatformUtil;
+import net.osmand.data.LatLon;
 import net.osmand.map.ITileSource;
 import net.osmand.map.TileSourceManager;
 import net.osmand.plus.ApplicationMode;
@@ -28,15 +31,18 @@ import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
 import net.osmand.plus.SQLiteTileSource;
 import net.osmand.plus.SettingsHelper;
+import net.osmand.plus.SettingsHelper.FileSettingsItem;
+import net.osmand.plus.SettingsHelper.SettingsItem;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.base.bottomsheetmenu.BaseBottomSheetItem;
 import net.osmand.plus.base.bottomsheetmenu.BottomSheetItemWithCompoundButton;
 import net.osmand.plus.base.bottomsheetmenu.SimpleBottomSheetItem;
 import net.osmand.plus.base.bottomsheetmenu.simpleitems.TitleItem;
+import net.osmand.plus.helpers.AvoidSpecificRoads.AvoidRoadInfo;
 import net.osmand.plus.poi.PoiUIFilter;
-import net.osmand.plus.profiles.AdditionalDataWrapper;
 import net.osmand.plus.quickaction.QuickAction;
-import net.osmand.plus.quickaction.QuickActionFactory;
+import net.osmand.plus.quickaction.QuickActionRegistry;
+import net.osmand.plus.settings.ExportImportSettingsAdapter.Type;
 import net.osmand.plus.settings.bottomsheets.BasePreferenceBottomSheet;
 
 import org.apache.commons.logging.Log;
@@ -44,35 +50,48 @@ import org.apache.commons.logging.Log;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ExportProfileBottomSheet extends BasePreferenceBottomSheet {
 
-	private static final Log LOG = PlatformUtil.getLog(ExportProfileBottomSheet.class);
 	public static final String TAG = ExportProfileBottomSheet.class.getSimpleName();
+
+	private static final Log LOG = PlatformUtil.getLog(ExportProfileBottomSheet.class);
+
 	private static final String INCLUDE_ADDITIONAL_DATA_KEY = "INCLUDE_ADDITIONAL_DATA_KEY";
-	private boolean includeAdditionalData = false;
+	private static final String EXPORTING_PROFILE_KEY = "exporting_profile_key";
+
 	private OsmandApplication app;
 	private ApplicationMode profile;
-	private List<AdditionalDataWrapper> dataList = new ArrayList<>();
+	private Map<Type, List<?>> dataList = new HashMap<>();
 	private ExportImportSettingsAdapter adapter;
+
+	private SettingsHelper.SettingsExportListener exportListener;
+	private ProgressDialog progress;
+
+	private boolean includeAdditionalData = false;
+	private boolean exportingProfile = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		if (savedInstanceState != null) {
-			includeAdditionalData = savedInstanceState.getBoolean(INCLUDE_ADDITIONAL_DATA_KEY);
-		}
 		super.onCreate(savedInstanceState);
 		app = requiredMyApplication();
+		profile = getAppMode();
 		dataList = getAdditionalData();
+		if (savedInstanceState != null) {
+			includeAdditionalData = savedInstanceState.getBoolean(INCLUDE_ADDITIONAL_DATA_KEY);
+			exportingProfile = savedInstanceState.getBoolean(EXPORTING_PROFILE_KEY);
+		}
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putBoolean(INCLUDE_ADDITIONAL_DATA_KEY, includeAdditionalData);
+		outState.putBoolean(EXPORTING_PROFILE_KEY, exportingProfile);
 	}
 
 	@Override
@@ -82,8 +101,6 @@ public class ExportProfileBottomSheet extends BasePreferenceBottomSheet {
 			return;
 		}
 		LayoutInflater inflater = UiUtilities.getInflater(app, nightMode);
-
-		profile = getAppMode();
 
 		int profileColor = profile.getIconColorInfo().getColor(nightMode);
 		int colorNoAlpha = ContextCompat.getColor(context, profileColor);
@@ -108,7 +125,7 @@ public class ExportProfileBottomSheet extends BasePreferenceBottomSheet {
 		if (!dataList.isEmpty()) {
 			final View additionalDataView = inflater.inflate(R.layout.bottom_sheet_item_additional_data, null);
 			ExpandableListView listView = additionalDataView.findViewById(R.id.list);
-			adapter = new ExportImportSettingsAdapter(app, nightMode);
+			adapter = new ExportImportSettingsAdapter(app, nightMode, false);
 			View listHeader = inflater.inflate(R.layout.item_header_export_expand_list, null);
 			final View topSwitchDivider = listHeader.findViewById(R.id.topSwitchDivider);
 			final View bottomSwitchDivider = listHeader.findViewById(R.id.bottomSwitchDivider);
@@ -185,28 +202,40 @@ public class ExportProfileBottomSheet extends BasePreferenceBottomSheet {
 		return true;
 	}
 
-	private List<AdditionalDataWrapper> getAdditionalData() {
-		List<AdditionalDataWrapper> dataList = new ArrayList<>();
+	@Override
+	public void onResume() {
+		super.onResume();
+		checkExportingFile();
+	}
 
-		QuickActionFactory factory = new QuickActionFactory();
-		List<QuickAction> actionsList = factory.parseActiveActionsList(app.getSettings().QUICK_ACTION_LIST.get());
+	@Override
+	public void onPause() {
+		super.onPause();
+		if (exportingProfile) {
+			File file = getExportFile();
+			app.getSettingsHelper().updateExportListener(file, null);
+		}
+	}
+
+	private Map<Type, List<?>> getAdditionalData() {
+		Map<Type, List<?>> dataList = new HashMap<>();
+
+
+		QuickActionRegistry registry = app.getQuickActionRegistry();
+		List<QuickAction> actionsList = registry.getQuickActions();
 		if (!actionsList.isEmpty()) {
-			dataList.add(new AdditionalDataWrapper(
-					AdditionalDataWrapper.Type.QUICK_ACTIONS, actionsList));
+			dataList.put(Type.QUICK_ACTIONS, actionsList);
 		}
 
 		List<PoiUIFilter> poiList = app.getPoiFilters().getUserDefinedPoiFilters(false);
 		if (!poiList.isEmpty()) {
-			dataList.add(new AdditionalDataWrapper(
-					AdditionalDataWrapper.Type.POI_TYPES,
-					poiList
-			));
+			dataList.put(Type.POI_TYPES, poiList);
 		}
 
 		List<ITileSource> iTileSources = new ArrayList<>();
-		final LinkedHashMap<String, String> tileSourceEntries = new LinkedHashMap<>(app.getSettings().getTileSourceEntries(true));
-		for (Map.Entry<String, String> entry : tileSourceEntries.entrySet()) {
-			File f = app.getAppPath(IndexConstants.TILES_INDEX_DIR + entry.getKey());
+		Set<String> tileSourceNames = app.getSettings().getTileSourceEntries(true).keySet();
+		for (String name : tileSourceNames) {
+			File f = app.getAppPath(IndexConstants.TILES_INDEX_DIR + name);
 			if (f != null) {
 				ITileSource template;
 				if (f.getName().endsWith(SQLiteTileSource.EXT)) {
@@ -214,42 +243,37 @@ public class ExportProfileBottomSheet extends BasePreferenceBottomSheet {
 				} else {
 					template = TileSourceManager.createTileSourceTemplate(f);
 				}
-				if (template != null && template.getUrlTemplate() != null) {
+				if (template.getUrlTemplate() != null) {
 					iTileSources.add(template);
 				}
 			}
 		}
 		if (!iTileSources.isEmpty()) {
-			dataList.add(new AdditionalDataWrapper(
-					AdditionalDataWrapper.Type.MAP_SOURCES,
-					iTileSources
-			));
+			dataList.put(Type.MAP_SOURCES, iTileSources);
 		}
 
 		Map<String, File> externalRenderers = app.getRendererRegistry().getExternalRenderers();
 		if (!externalRenderers.isEmpty()) {
-			dataList.add(new AdditionalDataWrapper(
-					AdditionalDataWrapper.Type.CUSTOM_RENDER_STYLE,
-					new ArrayList<>(externalRenderers.values())
-			));
+			dataList.put(Type.CUSTOM_RENDER_STYLE, new ArrayList<>(externalRenderers.values()));
 		}
 
 		File routingProfilesFolder = app.getAppPath(IndexConstants.ROUTING_PROFILES_DIR);
 		if (routingProfilesFolder.exists() && routingProfilesFolder.isDirectory()) {
 			File[] fl = routingProfilesFolder.listFiles();
 			if (fl != null && fl.length > 0) {
-				dataList.add(new AdditionalDataWrapper(
-						AdditionalDataWrapper.Type.CUSTOM_ROUTING,
-						Arrays.asList(fl)
-				));
+				dataList.put(Type.CUSTOM_ROUTING, Arrays.asList(fl));
 			}
 		}
 
+		Map<LatLon, AvoidRoadInfo> impassableRoads = app.getAvoidSpecificRoads().getImpassableRoads();
+		if (!impassableRoads.isEmpty()) {
+			dataList.put(Type.AVOID_ROADS, new ArrayList<>(impassableRoads.values()));
+		}
 		return dataList;
 	}
 
-	private List<SettingsHelper.SettingsItem> prepareSettingsItemsForExport() {
-		List<SettingsHelper.SettingsItem> settingsItems = new ArrayList<>();
+	private List<SettingsItem> prepareSettingsItemsForExport() {
+		List<SettingsItem> settingsItems = new ArrayList<>();
 		settingsItems.add(new SettingsHelper.ProfileSettingsItem(app, profile));
 		if (includeAdditionalData) {
 			settingsItems.addAll(prepareAdditionalSettingsItems());
@@ -257,11 +281,12 @@ public class ExportProfileBottomSheet extends BasePreferenceBottomSheet {
 		return settingsItems;
 	}
 
-	private List<SettingsHelper.SettingsItem> prepareAdditionalSettingsItems() {
-		List<SettingsHelper.SettingsItem> settingsItems = new ArrayList<>();
+	private List<SettingsItem> prepareAdditionalSettingsItems() {
+		List<SettingsItem> settingsItems = new ArrayList<>();
 		List<QuickAction> quickActions = new ArrayList<>();
 		List<PoiUIFilter> poiUIFilters = new ArrayList<>();
 		List<ITileSource> tileSourceTemplates = new ArrayList<>();
+		List<AvoidRoadInfo> avoidRoads = new ArrayList<>();
 		for (Object object : adapter.getDataToOperate()) {
 			if (object instanceof QuickAction) {
 				quickActions.add((QuickAction) object);
@@ -271,11 +296,17 @@ public class ExportProfileBottomSheet extends BasePreferenceBottomSheet {
 					|| object instanceof SQLiteTileSource) {
 				tileSourceTemplates.add((ITileSource) object);
 			} else if (object instanceof File) {
-				settingsItems.add(new SettingsHelper.FileSettingsItem(app, (File) object));
+				try {
+					settingsItems.add(new FileSettingsItem(app, (File) object));
+				} catch (IllegalArgumentException e) {
+					LOG.warn("Trying to export unsuported file type", e);
+				}
+			} else if (object instanceof AvoidRoadInfo) {
+				avoidRoads.add((AvoidRoadInfo) object);
 			}
 		}
 		if (!quickActions.isEmpty()) {
-			settingsItems.add(new SettingsHelper.QuickActionSettingsItem(app, quickActions));
+			settingsItems.add(new SettingsHelper.QuickActionsSettingsItem(app, quickActions));
 		}
 		if (!poiUIFilters.isEmpty()) {
 			settingsItems.add(new SettingsHelper.PoiUiFilterSettingsItem(app, poiUIFilters));
@@ -283,27 +314,89 @@ public class ExportProfileBottomSheet extends BasePreferenceBottomSheet {
 		if (!tileSourceTemplates.isEmpty()) {
 			settingsItems.add(new SettingsHelper.MapSourcesSettingsItem(app, tileSourceTemplates));
 		}
+		if (!avoidRoads.isEmpty()) {
+			settingsItems.add(new SettingsHelper.AvoidRoadsSettingsItem(app, avoidRoads));
+		}
 		return settingsItems;
 	}
 
 	private void prepareFile() {
 		if (app != null) {
-			File tempDir = app.getAppPath(IndexConstants.TEMP_DIR);
-			if (!tempDir.exists()) {
-				tempDir.mkdirs();
-			}
+			exportingProfile = true;
+			showExportProgressDialog();
+			File tempDir = getTempDir();
 			String fileName = profile.toHumanString();
-			app.getSettingsHelper().exportSettings(tempDir, fileName, new SettingsHelper.SettingsExportListener() {
+			app.getSettingsHelper().exportSettings(tempDir, fileName, getSettingsExportListener(), prepareSettingsItemsForExport(), true);
+		}
+	}
+
+	private void showExportProgressDialog() {
+		Context context = getContext();
+		if (context == null) {
+			return;
+		}
+		if (progress != null) {
+			progress.dismiss();
+		}
+		progress = new ProgressDialog(context);
+		progress.setTitle(app.getString(R.string.export_profile));
+		progress.setMessage(app.getString(R.string.shared_string_preparing));
+		progress.setCancelable(false);
+		progress.show();
+	}
+
+	private SettingsHelper.SettingsExportListener getSettingsExportListener() {
+		if (exportListener == null) {
+			exportListener = new SettingsHelper.SettingsExportListener() {
+
 				@Override
 				public void onSettingsExportFinished(@NonNull File file, boolean succeed) {
+					dismissExportProgressDialog();
+					exportingProfile = false;
 					if (succeed) {
 						shareProfile(file, profile);
 					} else {
 						app.showToastMessage(R.string.export_profile_failed);
 					}
 				}
-			}, prepareSettingsItemsForExport());
+			};
 		}
+		return exportListener;
+	}
+
+	private void checkExportingFile() {
+		if (exportingProfile) {
+			File file = getExportFile();
+			boolean fileExporting = app.getSettingsHelper().isFileExporting(file);
+			if (fileExporting) {
+				showExportProgressDialog();
+				app.getSettingsHelper().updateExportListener(file, getSettingsExportListener());
+			} else if (file.exists()) {
+				dismissExportProgressDialog();
+				shareProfile(file, profile);
+			}
+		}
+	}
+
+	private void dismissExportProgressDialog() {
+		FragmentActivity activity = getActivity();
+		if (progress != null && activity != null && AndroidUtils.isActivityNotDestroyed(activity)) {
+			progress.dismiss();
+		}
+	}
+
+	private File getExportFile() {
+		File tempDir = getTempDir();
+		String fileName = profile.toHumanString();
+		return new File(tempDir, fileName + IndexConstants.OSMAND_SETTINGS_FILE_EXT);
+	}
+
+	private File getTempDir() {
+		File tempDir = app.getAppPath(IndexConstants.TEMP_DIR);
+		if (!tempDir.exists()) {
+			tempDir.mkdirs();
+		}
+		return tempDir;
 	}
 
 	private void shareProfile(@NonNull File file, @NonNull ApplicationMode profile) {

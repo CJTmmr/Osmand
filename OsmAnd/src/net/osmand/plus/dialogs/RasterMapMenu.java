@@ -1,9 +1,10 @@
 package net.osmand.plus.dialogs;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
 import android.view.View;
 import android.widget.ArrayAdapter;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 
 import net.osmand.plus.ContextMenuAdapter;
 import net.osmand.plus.ContextMenuItem;
@@ -23,7 +24,7 @@ public class RasterMapMenu {
 	public static ContextMenuAdapter createListAdapter(final MapActivity mapActivity,
 													   final RasterMapType type) {
 		boolean nightMode = mapActivity.getMyApplication().getDaynightHelper().isNightModeForMapControls();
-		ContextMenuAdapter adapter = new ContextMenuAdapter();
+		ContextMenuAdapter adapter = new ContextMenuAdapter(mapActivity.getMyApplication());
 		adapter.setDefaultLayoutId(R.layout.list_item_icon_and_menu);
 		adapter.setProfileDependent(true);
 		adapter.setNightMode(nightMode);

@@ -1,8 +1,10 @@
 package net.osmand.plus.render;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.osmand.IProgress;
 import net.osmand.IndexConstants;
 import net.osmand.PlatformUtil;
@@ -23,10 +25,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -239,23 +239,7 @@ public class RendererRegistry {
 	}
 	
 	public void initRenderers(IProgress progress) {
-		File file = app.getAppPath(IndexConstants.RENDERERS_DIR);
-		file.mkdirs();
-		Map<String, File> externalRenderers = new LinkedHashMap<String, File>(); 
-		if (file.exists() && file.canRead()) {
-			File[] lf = file.listFiles();
-			if (lf != null) {
-				for (File f : lf) {
-					if (f != null && f.getName().endsWith(IndexConstants.RENDERER_INDEX_EXT)) {
-						if(!internalRenderers.containsValue(f.getName())) {
-							String name = f.getName().substring(0, f.getName().length() - IndexConstants.RENDERER_INDEX_EXT.length());
-							externalRenderers.put(name.replace('_', ' ').replace('-', ' '), f);
-						}
-					}
-				}
-			}
-		}
-		this.externalRenderers = externalRenderers;
+		updateExternalRenderers();
 		String r = app.getSettings().RENDERER.get();
 		if(r != null){
 			RenderingRulesStorage obj = getRenderer(r);
@@ -264,13 +248,43 @@ public class RendererRegistry {
 			}
 		}
 	}
-	
-	public Collection<String> getRendererNames(){
-		LinkedHashSet<String> names = new LinkedHashSet<String>();
-		names.add(DEFAULT_RENDER);
-		names.addAll(internalRenderers.keySet());
-		names.addAll(externalRenderers.keySet());
-		return names;
+
+	public void updateExternalRenderers() {
+		File file = app.getAppPath(IndexConstants.RENDERERS_DIR);
+		file.mkdirs();
+		Map<String, File> externalRenderers = new LinkedHashMap<String, File>();
+		if (file.exists() && file.canRead()) {
+			File[] lf = file.listFiles();
+			if (lf != null) {
+				for (File f : lf) {
+					if (f != null && f.getName().endsWith(IndexConstants.RENDERER_INDEX_EXT)) {
+						if (!internalRenderers.containsValue(f.getName())) {
+							String name = formatRendererFileName(f.getName());
+							externalRenderers.put(name, f);
+						}
+					}
+				}
+			}
+		}
+		this.externalRenderers = externalRenderers;
+	}
+
+	public static String formatRendererFileName(String fileName) {
+		String name = fileName.substring(0, fileName.length() - IndexConstants.RENDERER_INDEX_EXT.length());
+		name = name.replace('_', ' ').replace('-', ' ');
+		return Algorithms.capitalizeFirstLetter(name);
+	}
+
+	@NonNull
+	public Map<String, String> getRenderers() {
+		Map<String, String> renderers = new LinkedHashMap<String, String>();
+		renderers.put(DEFAULT_RENDER, DEFAULT_RENDER_FILE_PATH);
+		renderers.putAll(internalRenderers);
+
+		for (Map.Entry<String, File> entry : externalRenderers.entrySet()) {
+			renderers.put(entry.getKey(), entry.getValue().getName());
+		}
+		return renderers;
 	}
 
 	@Nullable

@@ -19,6 +19,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
 import gnu.trove.list.array.TIntArrayList;
@@ -37,6 +39,7 @@ public class Amenity extends MapObject {
 	public static final String CONTENT = "content";
 	public static final String CUISINE = "cuisine";
 	public static final String DISH = "dish";
+	public static final String REF = "ref";
 	public static final String OSM_DELETE_VALUE = "delete";
 	public static final String OSM_DELETE_TAG = "osmand_change";
 
@@ -215,6 +218,13 @@ public class Amenity extends MapObject {
 			}
 		}
 		return lng;
+	}
+
+	public Set<String> getSupportedContentLocales() {
+		Set<String> supported = new TreeSet<>();
+		supported.addAll(getNames("content", "en"));
+		supported.addAll(getNames("description", "en"));
+		return supported;
 	}
 
 	public List<String> getNames(String tag, String defTag) {

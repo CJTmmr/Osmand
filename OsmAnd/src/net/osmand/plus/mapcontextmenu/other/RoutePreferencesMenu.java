@@ -2,9 +2,6 @@ package net.osmand.plus.mapcontextmenu.other;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.PopupMenu;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,12 +14,16 @@ import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.PopupMenu;
+
 import net.osmand.AndroidUtils;
 import net.osmand.CallbackWithObject;
+import net.osmand.GPXUtilities;
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.ContextMenuAdapter;
 import net.osmand.plus.ContextMenuItem;
-import net.osmand.GPXUtilities;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandSettings;
 import net.osmand.plus.R;
@@ -83,7 +84,7 @@ public class RoutePreferencesMenu {
 				Object obj = listAdapter.getItem(item);
 				if (obj instanceof LocalRoutingParameterGroup) {
 					final LocalRoutingParameterGroup group = (LocalRoutingParameterGroup) obj;
-					final ContextMenuAdapter adapter = new ContextMenuAdapter();
+					final ContextMenuAdapter adapter = new ContextMenuAdapter(app);
 					int i = 0;
 					int selectedIndex = -1;
 					for (LocalRoutingParameter p : group.getRoutingParameters()) {

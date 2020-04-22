@@ -14,12 +14,14 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AlertDialog.Builder;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog.Builder;
+
+import net.osmand.AndroidUtils;
 import net.osmand.PlatformUtil;
 import net.osmand.plus.ApplicationMode;
 import net.osmand.plus.OsmandApplication;
@@ -29,7 +31,6 @@ import net.osmand.plus.OsmandSettings.OsmandPreference;
 import net.osmand.plus.R;
 import net.osmand.plus.profiles.AppProfileArrayAdapter;
 import net.osmand.plus.profiles.ProfileDataObject;
-import net.osmand.plus.views.SeekBarPreference;
 
 import org.apache.commons.logging.Log;
 
@@ -59,7 +60,6 @@ public abstract class SettingsBaseActivity extends ActionBarPreferenceActivity
 	private Map<String, OsmandPreference<Boolean>> booleanPreferences = new LinkedHashMap<String, OsmandPreference<Boolean>>();
 	private Map<String, OsmandPreference<?>> listPreferences = new LinkedHashMap<String, OsmandPreference<?>>();
 	private Map<String, OsmandPreference<String>> editTextPreferences = new LinkedHashMap<String, OsmandPreference<String>>();
-	private Map<String, OsmandPreference<Integer>> seekBarPreferences = new LinkedHashMap<String, OsmandPreference<Integer>>();
 
 	private Map<String, Map<String, ?>> listPrefValues = new LinkedHashMap<String, Map<String, ?>>();
 
@@ -111,13 +111,6 @@ public abstract class SettingsBaseActivity extends ActionBarPreferenceActivity
 		screenPreferences.put(b.getId(), p);
 		booleanPreferences.put(b.getId(), b);
 		return p;
-	}
-
-	public void registerSeekBarPreference(OsmandPreference<Integer> b, PreferenceScreen screen) {
-		SeekBarPreference p = (SeekBarPreference) screen.findPreference(b.getId());
-		p.setOnPreferenceChangeListener(this);
-		screenPreferences.put(b.getId(), p);
-		seekBarPreferences.put(b.getId(), b);
 	}
 	
 	public static String getRoutingStringPropertyName(Context ctx, String propertyName, String defValue) {
@@ -205,18 +198,6 @@ public abstract class SettingsBaseActivity extends ActionBarPreferenceActivity
 			System.err.println(e.getMessage());
 		}
 		return propertyValue;
-	}
-
-	public SeekBarPreference createSeekBarPreference(OsmandPreference<Integer> b, int title, int summary, int dialogTextId, int defValue,
-			int maxValue) {
-		SeekBarPreference p = new SeekBarPreference(this, dialogTextId, defValue, maxValue);
-		p.setTitle(title);
-		p.setKey(b.getId());
-		p.setSummary(summary);
-		p.setOnPreferenceChangeListener(this);
-		screenPreferences.put(b.getId(), p);
-		seekBarPreferences.put(b.getId(), b);
-		return p;
 	}
 
 	public <T> void registerListPreference(OsmandPreference<T> b, PreferenceGroup screen, String[] names, T[] values) {
@@ -529,11 +510,6 @@ public abstract class SettingsBaseActivity extends ActionBarPreferenceActivity
 			pref.setChecked(b.get());
 		}
 
-		for (OsmandPreference<Integer> b : seekBarPreferences.values()) {
-			SeekBarPreference pref = (SeekBarPreference) screenPreferences.get(b.getId());
-			pref.setValue(b.get());
-		}
-
 		for (OsmandPreference<?> p : listPreferences.values()) {
 			ListPreference listPref = (ListPreference) screenPreferences.get(p.getId());
 			Map<String, ?> prefValues = listPrefValues.get(p.getId());
@@ -561,13 +537,10 @@ public abstract class SettingsBaseActivity extends ActionBarPreferenceActivity
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
 		// handle boolean preferences
 		OsmandPreference<Boolean> boolPref = booleanPreferences.get(preference.getKey());
-		OsmandPreference<Integer> seekPref = seekBarPreferences.get(preference.getKey());
 		OsmandPreference<Object> listPref = (OsmandPreference<Object>) listPreferences.get(preference.getKey());
 		OsmandPreference<String> editPref = editTextPreferences.get(preference.getKey());
 		if (boolPref != null) {
 			boolPref.set((Boolean) newValue);
-		} else if (seekPref != null) {
-			seekPref.set((Integer) newValue);
 		} else if (editPref != null) {
 			editPref.set((String) newValue);
 		} else if (listPref != null) {
@@ -598,16 +571,7 @@ public abstract class SettingsBaseActivity extends ActionBarPreferenceActivity
 
 	public static void showWarnings(final OsmandApplication app, List<String> warnings) {
 		if (!warnings.isEmpty()) {
-			final StringBuilder b = new StringBuilder();
-			boolean f = true;
-			for (String w : warnings) {
-				if (f) {
-					f = false;
-				} else {
-					b.append('\n');
-				}
-				b.append(w);
-			}
+			final StringBuilder b = AndroidUtils.formatWarnings(warnings);
 			app.runInUIThread(new Runnable() {
 				@Override
 				public void run() {

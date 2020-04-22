@@ -1,8 +1,5 @@
 package net.osmand.plus.activities;
 
-import static net.osmand.plus.myplaces.FavoritesActivity.FAV_TAB;
-import static net.osmand.plus.myplaces.FavoritesActivity.TAB_ID;
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,11 +10,6 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.view.ActionMode;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,6 +25,12 @@ import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.view.ActionMode;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuItemCompat;
 
 import net.osmand.AndroidUtils;
 import net.osmand.data.FavouritePoint;
@@ -66,6 +64,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static net.osmand.plus.myplaces.FavoritesActivity.FAV_TAB;
+import static net.osmand.plus.myplaces.FavoritesActivity.TAB_ID;
 
 
 public class FavoritesTreeFragment extends OsmandExpandableListFragment implements
@@ -173,8 +174,8 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 			View searchView = inflater.inflate(R.layout.search_fav_list_item, null);
 			searchView.setBackgroundResource(light ? R.color.list_background_color_light : R.color.list_background_color_dark);
 			TextView title = (TextView) searchView.findViewById(R.id.title);
-			title.setCompoundDrawablesWithIntrinsicBounds(getMyApplication().getUIUtilities().getThemedIcon(R.drawable.ic_action_search_dark), null, null, null);
-			title.setHint(R.string.shared_string_search);
+			Drawable searchIcon = getMyApplication().getUIUtilities().getThemedIcon(R.drawable.ic_action_search_dark);
+			AndroidUtils.setCompoundDrawablesWithIntrinsicBounds(title, searchIcon, null, null, null);
 			searchView.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -448,9 +449,9 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 			List<LatLon> points = new ArrayList<>();
 			List<PointDescription> names = new ArrayList<>();
 			for (Map.Entry<String, Set<FavouritePoint>> entry : favoritesSelected.entrySet()) {
-				FavoriteGroup favGr = helper.getGroup(entry.getKey());
-				if (entry.getValue().size() == favGr.getPoints().size()) {
-					markersHelper.addOrEnableGroup(favGr);
+				FavoriteGroup group = helper.getGroup(entry.getKey());
+				if (group != null && entry.getValue().size() == group.getPoints().size()) {
+					markersHelper.addOrEnableGroup(group);
 				} else {
 					for (FavouritePoint fp : entry.getValue()) {
 						points.add(new LatLon(fp.getLatitude(), fp.getLongitude()));
@@ -839,7 +840,7 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 			int color = model.getColor() == 0 || model.getColor() == Color.BLACK ? getResources().getColor(R.color.color_favorite) : model.getColor();
 			if (!model.isPersonal()) {
 				setCategoryIcon(app, app.getUIUtilities().getPaintedIcon(
-						R.drawable.ic_action_fav_dark, visible ? (color | 0xff000000) : getResources().getColor(disabledColor)),
+						R.drawable.ic_action_folder, visible ? color : getResources().getColor(disabledColor)),
 						groupPosition, isExpanded, row, light);
 			}
 			adjustIndicator(app, groupPosition, isExpanded, row, light);
@@ -954,7 +955,7 @@ public class FavoritesTreeFragment extends OsmandExpandableListFragment implemen
 			name.setTextColor(getResources().getColor(visible ? enabledColor : disabledColor));
 			distanceText.setText(distance);
 			if (model.isAddressSpecified()) {
-				distanceText.setText(String.format(getString(R.string.ltr_or_rtl_combine_via_bold_point), distance.trim(), model.getAddress()));
+				distanceText.setText(String.format(getString(R.string.ltr_or_rtl_combine_via_comma), distance.trim(), model.getAddress()));
 			}
 			icon.setImageDrawable(FavoriteImageDrawable.getOrCreate(getActivity(),
 					visible ? model.getColor() : getResources().getColor(disabledIconColor), false, model));

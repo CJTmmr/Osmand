@@ -2,14 +2,16 @@ package net.osmand.plus.mapcontextmenu.builders;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.ColorInt;
-import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+
 import net.osmand.GPXUtilities;
 import net.osmand.GPXUtilities.WptPt;
+import net.osmand.IndexConstants;
 import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
 import net.osmand.plus.GpxSelectionHelper;
@@ -112,7 +114,7 @@ public class WptPtMenuBuilder extends MenuBuilder {
 			if (points.size() > 0) {
 				String title = view.getContext().getString(R.string.context_menu_points_of_group);
 				File file = new File(gpx.path);
-				String gpxName = file.getName().replace(".gpx", "").replace("/", " ").replace("_", " ");
+				String gpxName = file.getName().replace(IndexConstants.GPX_FILE_EXT, "").replace("/", " ").replace("_", " ");
 				int color = getPointColor(wpt, getFileColor(selectedGpxFile));
 				buildRow(view, app.getUIUtilities().getPaintedIcon(R.drawable.ic_type_waypoints_group, color), null, title, 0, gpxName,
 						true, getCollapsableWaypointsView(view.getContext(), true, gpx, wpt),

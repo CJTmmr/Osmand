@@ -14,22 +14,24 @@
 		android:layout_marginTop="@dimen/list_header_top_margin"
 		android:layout_marginEnd="@dimen/list_content_padding"
 		android:layout_marginRight="@dimen/list_content_padding"
-		android:layout_marginBottom="8dp">
+		android:layout_marginBottom="@dimen/content_padding_half">
 
 		<ImageView
 			android:id="@+id/type_down_arrow"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_gravity="center_vertical|right"
+			android:layout_gravity="center_vertical|end"
 			android:paddingRight="@dimen/content_padding"
 			android:src="@drawable/ic_action_arrow_drop_down"
-			android:tint="@color/settings_divider" />
+			android:tint="@color/settings_divider"
+			android:paddingEnd="@dimen/content_padding" />
 
 		<net.osmand.plus.widgets.OsmandTextFieldBoxes
 			android:id="@+id/master_profile_otfb"
 			android:layout_width="match_parent"
-			android:layout_height="60dp"
-			app:labelText="@string/master_profile"
+			android:layout_height="wrap_content"
+			android:minHeight="60dp"
+			app:labelText="@string/profile_type_base_string"
 			app:primaryColor="@color/active_color_primary_dark"
 			app:secondaryColor="?android:textColorSecondary">
 
@@ -39,6 +41,7 @@
 				android:layout_height="wrap_content"
 				android:focusable="false"
 				android:maxLines="1"
+				android:scrollbars="none"
 				tools:text="Car" />
 
 		</net.osmand.plus.widgets.OsmandTextFieldBoxes>

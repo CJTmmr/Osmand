@@ -9,7 +9,7 @@
     android:background="?attr/activity_background_color"
     android:orientation="vertical">
 
-    <android.support.v7.widget.Toolbar
+    <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dashboard_map_toolbar"
@@ -49,10 +49,11 @@
                 android:textColor="@color/color_white"
                 android:textSize="@dimen/default_desc_text_size"
                 tools:drawableRight="@drawable/ic_action_car_dark"
-                tools:text="car"/>
+                tools:text="car"
+	            tools:drawableEnd="@drawable/ic_action_car_dark" />
         </LinearLayout>
 
-    </android.support.v7.widget.Toolbar>
+    </androidx.appcompat.widget.Toolbar>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -81,7 +82,9 @@
                         android:layout_gravity="center_horizontal"
                         android:layout_marginLeft="@dimen/action_bar_image_side_margin"
                         android:layout_marginRight="@dimen/action_bar_image_side_margin"
-                        tools:src="@drawable/img_help_markers_direction_device_night"/>
+                        tools:src="@drawable/img_help_markers_direction_device_night"
+	                    android:layout_marginEnd="@dimen/action_bar_image_side_margin"
+	                    android:layout_marginStart="@dimen/action_bar_image_side_margin" />
                 </FrameLayout>
 
                 <LinearLayout
@@ -118,7 +121,8 @@
                             android:textColor="?attr/contextMenuButtonColor"
                             android:textSize="@dimen/default_list_text_size"
                             tools:drawableRight="@drawable/ic_action_arrow_drop_down"
-                            tools:text="Two"/>
+                            tools:text="Two"
+	                        tools:drawableEnd="@drawable/ic_action_arrow_drop_down" />
                     </LinearLayout>
 
                     <View
@@ -154,7 +158,9 @@
                         android:layout_height="@dimen/bottom_sheet_title_height"
                         android:background="?attr/selectableItemBackground"
                         android:paddingLeft="@dimen/content_padding"
-                        android:paddingRight="@dimen/content_padding">
+                        android:paddingRight="@dimen/content_padding"
+	                    android:paddingStart="@dimen/content_padding"
+	                    android:paddingEnd="@dimen/content_padding">
 
                         <TextView
                             android:layout_width="0dp"
@@ -166,7 +172,7 @@
                             android:text="@string/show_direction"
                             android:textAppearance="@style/TextAppearance.ListItemTitle"/>
 
-                        <android.support.v7.widget.SwitchCompat
+                        <androidx.appcompat.widget.SwitchCompat
                             android:id="@+id/distance_indication_switch"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -195,7 +201,9 @@
                         android:paddingTop="@dimen/content_padding_small"
                         android:text="@string/distance_indication_descr"
                         android:textColor="?android:textColorSecondary"
-                        android:textSize="@dimen/default_desc_text_size"/>
+                        android:textSize="@dimen/default_desc_text_size"
+	                    android:layout_marginEnd="@dimen/content_padding"
+	                    android:layout_marginStart="@dimen/content_padding" />
 
                     <LinearLayout
                         android:id="@+id/top_bar_row"
@@ -293,7 +301,9 @@
                         android:layout_height="@dimen/bottom_sheet_title_height"
                         android:background="?attr/selectableItemBackground"
                         android:paddingLeft="@dimen/content_padding"
-                        android:paddingRight="@dimen/content_padding">
+                        android:paddingRight="@dimen/content_padding"
+	                    android:paddingStart="@dimen/content_padding"
+	                    android:paddingEnd="@dimen/content_padding">
 
                         <TextView
                             android:layout_width="0dp"
@@ -305,7 +315,7 @@
                             android:text="@string/show_arrows_on_the_map"
                             android:textAppearance="@style/TextAppearance.ListItemTitle"/>
 
-                        <android.support.v7.widget.SwitchCompat
+                        <androidx.appcompat.widget.SwitchCompat
                             android:id="@+id/show_arrows_switch"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -334,7 +344,9 @@
                         android:paddingTop="@dimen/content_padding_small"
                         android:text="@string/show_arrows_descr"
                         android:textColor="?android:textColorSecondary"
-                        android:textSize="@dimen/default_desc_text_size"/>
+                        android:textSize="@dimen/default_desc_text_size"
+	                    android:layout_marginStart="@dimen/content_padding"
+	                    android:layout_marginEnd="@dimen/content_padding" />
 
                 </LinearLayout>
 
@@ -352,7 +364,9 @@
                         android:layout_height="@dimen/bottom_sheet_title_height"
                         android:background="?attr/selectableItemBackground"
                         android:paddingLeft="@dimen/content_padding"
-                        android:paddingRight="@dimen/content_padding">
+                        android:paddingRight="@dimen/content_padding"
+	                    android:paddingEnd="@dimen/content_padding"
+	                    android:paddingStart="@dimen/content_padding">
 
                         <TextView
                             android:layout_width="0dp"
@@ -364,7 +378,7 @@
                             android:text="@string/show_guide_line"
                             android:textAppearance="@style/TextAppearance.ListItemTitle"/>
 
-                        <android.support.v7.widget.SwitchCompat
+                        <androidx.appcompat.widget.SwitchCompat
                             android:id="@+id/show_guide_line_switch"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -393,7 +407,9 @@
                         android:paddingTop="@dimen/content_padding_small"
                         android:text="@string/show_guide_line_descr"
                         android:textColor="?android:textColorSecondary"
-                        android:textSize="@dimen/default_desc_text_size"/>
+                        android:textSize="@dimen/default_desc_text_size"
+	                    android:layout_marginStart="@dimen/content_padding"
+	                    android:layout_marginEnd="@dimen/content_padding" />
 
                 </LinearLayout>
 
@@ -411,7 +427,9 @@
                         android:layout_height="@dimen/bottom_sheet_title_height"
                         android:background="?attr/selectableItemBackground"
                         android:paddingLeft="@dimen/content_padding"
-                        android:paddingRight="@dimen/content_padding">
+                        android:paddingRight="@dimen/content_padding"
+	                    android:paddingStart="@dimen/content_padding"
+	                    android:paddingEnd="@dimen/content_padding">
 
                         <TextView
                             android:layout_width="0dp"
@@ -423,7 +441,7 @@
                             android:text="@string/one_tap_active"
                             android:textAppearance="@style/TextAppearance.ListItemTitle"/>
 
-                        <android.support.v7.widget.SwitchCompat
+                        <androidx.appcompat.widget.SwitchCompat
                             android:id="@+id/one_tap_active_switch"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -452,7 +470,9 @@
                         android:paddingTop="@dimen/content_padding_small"
                         android:text="@string/one_tap_active_descr"
                         android:textColor="?android:textColorSecondary"
-                        android:textSize="@dimen/default_desc_text_size"/>
+                        android:textSize="@dimen/default_desc_text_size"
+	                    android:layout_marginEnd="@dimen/content_padding"
+	                    android:layout_marginStart="@dimen/content_padding" />
 
                 </LinearLayout>
 
@@ -470,7 +490,9 @@
                         android:layout_height="@dimen/bottom_sheet_title_height"
                         android:background="?attr/selectableItemBackground"
                         android:paddingLeft="@dimen/content_padding"
-                        android:paddingRight="@dimen/content_padding">
+                        android:paddingRight="@dimen/content_padding"
+	                    android:paddingEnd="@dimen/content_padding"
+	                    android:paddingStart="@dimen/content_padding">
 
                         <TextView
                             android:layout_width="0dp"
@@ -482,7 +504,7 @@
                             android:text="@string/keep_passed_markers"
                             android:textAppearance="@style/TextAppearance.ListItemTitle"/>
 
-                        <android.support.v7.widget.SwitchCompat
+                        <androidx.appcompat.widget.SwitchCompat
                             android:id="@+id/keep_passed_switch"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -511,7 +533,9 @@
                         android:paddingTop="@dimen/content_padding_small"
                         android:text="@string/keep_passed_markers_descr"
                         android:textColor="?android:textColorSecondary"
-                        android:textSize="@dimen/default_desc_text_size"/>
+                        android:textSize="@dimen/default_desc_text_size"
+	                    android:layout_marginEnd="@dimen/content_padding"
+	                    android:layout_marginStart="@dimen/content_padding" />
 
                 </LinearLayout>
 

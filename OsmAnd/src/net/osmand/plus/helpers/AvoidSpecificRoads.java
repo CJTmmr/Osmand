@@ -3,10 +3,6 @@ package net.osmand.plus.helpers;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +12,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 
 import net.osmand.CallbackWithObject;
 import net.osmand.Location;
@@ -37,6 +38,7 @@ import net.osmand.plus.routing.RoutingHelper.RouteSegmentSearchResult;
 import net.osmand.plus.views.ContextMenuLayer;
 import net.osmand.router.RouteSegmentResult;
 import net.osmand.router.RoutingConfiguration;
+import net.osmand.util.Algorithms;
 import net.osmand.util.MapUtils;
 
 import java.util.ArrayList;
@@ -54,6 +56,10 @@ public class AvoidSpecificRoads {
 
 	public AvoidSpecificRoads(final OsmandApplication app) {
 		this.app = app;
+		loadImpassableRoads();
+	}
+
+	public void loadImpassableRoads(){
 		for (AvoidRoadInfo avoidRoadInfo : app.getSettings().getImpassableRoadPoints()) {
 			impassableRoads.put(new LatLon(avoidRoadInfo.latitude, avoidRoadInfo.longitude), avoidRoadInfo);
 		}
@@ -398,5 +404,20 @@ public class AvoidSpecificRoads {
 		public double longitude;
 		public String name;
 		public String appModeKey;
+
+		@Override
+		public boolean equals(@Nullable Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+
+			AvoidRoadInfo other = (AvoidRoadInfo) obj;
+			return Math.abs(latitude - other.latitude) < 0.00001
+					&& Math.abs(longitude - other.longitude) < 0.00001
+					&& Algorithms.objectEquals(name, other.name);
+		}
 	}
 }

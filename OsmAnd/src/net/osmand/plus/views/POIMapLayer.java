@@ -2,7 +2,6 @@ package net.osmand.plus.views;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -12,8 +11,6 @@ import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.Toolbar;
 import android.text.util.Linkify;
 import android.util.TypedValue;
 import android.view.View;
@@ -23,6 +20,10 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
+
+import net.osmand.AndroidUtils;
 import net.osmand.PlatformUtil;
 import net.osmand.ResultMatcher;
 import net.osmand.ValueHolder;
@@ -51,7 +52,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static android.util.TypedValue.COMPLEX_UNIT_DIP;
+import static net.osmand.AndroidUtils.dpToPx;
 
 public class POIMapLayer extends OsmandMapLayer implements ContextMenuLayer.IContextMenuProvider,
 		MapTextProvider<Amenity>, IRouteInformationListener {
@@ -312,8 +313,8 @@ public class POIMapLayer extends OsmandMapLayer implements ContextMenuLayer.ICon
 
 		final Toolbar topBar = new Toolbar(ctx);
 		topBar.setClickable(true);
-		Drawable back = app.getUIUtilities().getIcon(R.drawable.ic_arrow_back);
-		topBar.setNavigationIcon(back);
+		Drawable icBack = app.getUIUtilities().getIcon(AndroidUtils.getNavigationIconResId(ctx));
+		topBar.setNavigationIcon(icBack);
 		topBar.setNavigationContentDescription(R.string.access_shared_string_navigate_up);
 		topBar.setTitle(title);
 		topBar.setBackgroundColor(ContextCompat.getColor(ctx, getResIdFromAttribute(ctx, R.attr.pstsTabBackground)));
@@ -444,15 +445,4 @@ public class POIMapLayer extends OsmandMapLayer implements ContextMenuLayer.ICon
 	@Override
 	public void routeWasFinished() {
 	}
-
-	public static int dpToPx(Context ctx, float dp) {
-		Resources r = ctx.getResources();
-		return (int) TypedValue.applyDimension(
-				COMPLEX_UNIT_DIP,
-				dp,
-				r.getDisplayMetrics()
-		);
-	}
-
-
 }

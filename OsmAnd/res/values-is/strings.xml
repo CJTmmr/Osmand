@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="search_map_hint">Borg eða hérað</string>
-    <string name="gpx_appearance">Útlit</string>
+    <string name="shared_string_appearance">Útlit</string>
     <string name="gpx_add_track">Bæta við fleiru…</string>
     <string name="shared_string_notifications">Tilkynningar</string>
     <string name="shared_string_continue">Halda áfram</string>
@@ -1899,7 +1899,7 @@ Punktar</string>
     <string name="routing_attr_height_obstacles_name">Nota hæðargögn</string>
     <string name="move_marker_bottom_sheet_title">Færa kortið til að breyta staðsetningu kortamerkis</string>
     <string name="osm_user_stat">Breytingar %1$s, vægi %2$s, heildarfjöldi breytinga %3$s</string>
-    <string name="osm_editors_ranking">Vægisröðun OSM-ritsjóra</string>
+    <string name="osm_editors_ranking">Vægisröðun OSM-ritstjóra</string>
     <string name="download_files_error_not_enough_space">Ekki nægilegt geymslupláss!
 \n {3} MB þarf tímabundið, {1} MB varanlega. (Tiltækt pláss er einungis {2} MB.)</string>
     <string name="download_files_question_space_with_temp">Sækja {0} skrá(r)\?
@@ -3053,7 +3053,7 @@ Stendur fyrir svæði: %1$s x %2$s</string>
     <string name="nav_type_hint">Gerð leiðsagnar</string>
     <string name="app_mode_taxi">Leigubíll</string>
     <string name="app_mode_subway">Neðanjarðarlest</string>
-    <string name="app_mode_horse">Hestar</string>
+    <string name="app_mode_horse">Ríðandi</string>
     <string name="app_mode_helicopter">Þyrla</string>
     <string name="app_mode_skiing">Skíði</string>
     <string name="base_profile_descr_ski">Skíði</string>
@@ -3413,7 +3413,7 @@ Stendur fyrir svæði: %1$s x %2$s</string>
     <string name="save_heading">Hafa með stefnu</string>
     <string name="save_heading_descr">Vista stefnu í hvern ferilpunkt á meðan upptöku stendur.</string>
     <string name="ltr_or_rtl_combine_via_bold_point">%1$s • %2$s</string>
-    <string name="street_city">%1$s, %2$s</string>
+    <string name="ltr_or_rtl_combine_via_comma">%1$s, %2$s</string>
     <string name="personal_category_name">Persónulegt</string>
     <string name="shared_string_downloading_formatted">Sæki %s</string>
     <string name="rendering_value_thick_name">Svert</string>
@@ -3490,7 +3490,7 @@ Stendur fyrir svæði: %1$s x %2$s</string>
     <string name="monitoring_min_distance_descr_side_effect">Aukaverkanir: Tímabil í hvíld eru alls ekki skráð eða þá með aðeins einum punkti. Litlar (raunverulegar) hreyfingar (t.d. til hliðar, til að merkja mögulega hliðarleiðir leiðar) gætu síast í burtu. Skráin þín inniheldur minni upplýsingar til eftirvinnslu, og er með verri tölfræði þar sem umframpunktar eru síaðir út á meðan skráningu stendur, á meðan mögulega er verið að geyma skemmdar upplýsingar vegna lélegrar móttöku eða truflana í GPS kubbasetti.</string>
     <string name="monitoring_min_distance_descr_recommendation">Ábending: Stilling upp á 5 metra gæti virkað vel ef þú hefur ekki þörf fyrir meiri nákvæmni og ef þú vilt koma í veg fyrir að verið sé að skrá gögn á meðan staldrað er við.</string>
     <string name="rearrange_categories">Endurraða flokkum</string>
-    <string name="create_custom_categories_list_promo">Þú getur bætt við sérsniðnum flokkum, falið flokka sem þér finnast ekki nauðsynlegir og breytt röðun listans. Listann má flytja inn og út með forsniðum.</string>
+    <string name="create_custom_categories_list_promo">Þú getur falið flokka sem þér finnast ekki nauðsynlegir og breytt röðun listans. Listann má flytja inn og út með forsniðum.</string>
     <string name="add_new_custom_category_button_promo">Þú getur bætt við nýjum sérsniðnum flokki með því að velja einn eða nokkra nauðsynlega flokka.</string>
     <string name="shared_string_available">Tiltækt</string>
     <string name="add_custom_category">Bæta við sérsniðnum flokki</string>
@@ -3513,7 +3513,6 @@ Stendur fyrir svæði: %1$s x %2$s</string>
     <string name="shared_string_menu">Valmynd</string>
     <string name="ltr_or_rtl_triple_combine_via_dash">%1$s — %2$s — %3$s</string>
     <string name="shared_string_routing">Leiðagerð</string>
-    <string name="shared_string_custom_rendering_style">Sérsniðinn myndgerðaðrstíll</string>
     <string name="shared_string_include_data">Taka með viðbótargögn</string>
     <string name="index_name_antarctica">Suðurskautslandið</string>
     <string name="use_system_screen_timeout_promo">Þetta er sjálfgefið óvirkt, ef OsmAnd keyrir í forgrunni rennur skjárinn ekki út á tíma.
@@ -3558,4 +3557,129 @@ Stendur fyrir svæði: %1$s x %2$s</string>
     <string name="shared_string_angle">Horn</string>
     <string name="recalc_angle_dialog_descr">Aukalegur beinn bútur á milli staðsetningar minnar og reiknaðrar leiðar verður sýndur þar til leiðin hefur verið endurreiknuð</string>
     <string name="recalc_angle_dialog_title">Lágmarkshorn milli staðsetningar og leiðar</string>
+    <string name="shared_string_preparing">Undirbý</string>
+    <string name="shared_string_poi_types">Gerðir POI-merkisstaða</string>
+    <string name="shared_string_nothing_selected">Ekkert valið</string>
+    <string name="shared_string_quick_actions">Flýtiaðgerðir</string>
+    <string name="shared_string_profiles">Notandasnið</string>
+    <string name="listed_exist">Taldi upp %1$s, er þegar til staðar í OsmAnd.</string>
+    <string name="replace_all_desc">Fyrirliggjandi atriðum verður skipt út með atriðum úr skránni</string>
+    <string name="replace_all">Skipta öllu út</string>
+    <string name="keep_both">Halda báðum</string>
+    <string name="keep_both_desc">Forskeyti verður bætt við innflutt atriði</string>
+    <string name="import_duplicates_description">OsmAnd er með atriði með sömu nöfnum og þau sem voru flutt inn.
+\n
+\nVeldu aðgerð.</string>
+    <string name="import_duplicates_title">Sum atriðin eru þegar til staðar</string>
+    <string name="select_data_to_import">Veldu þau gögn sem á að flytja inn.</string>
+    <string name="shared_string_rendering_style">Myndgerðarstíll</string>
+    <string name="import_rendering_file">Flytja inn myndgerðarskrá</string>
+    <string name="restore_all_profile_settings_descr">Allar stillingar sniðsins verða endurstilltar í upprunalega stöðu eftir að sniðið er búið til eða flutt inn.</string>
+    <string name="restore_all_profile_settings">Endurstilla allar stillingar sniðsins\?</string>
+    <string name="saving_new_profile">Vista nýtt snið</string>
+    <string name="profile_backup_failed">Gat ekki öryggisafritað sniðið.</string>
+    <string name="clear_recorded_data_warning">Ertu viss um að þú viljir hreinsa skráð gögn\?</string>
+    <string name="importing_from">Flyt inn gögn frá %1$s</string>
+    <string name="shared_string_importing">Innflutningur í gangi</string>
+    <string name="checking_for_duplicate_description">OsmAnd athugar hvort %1$s sé með tvítök miðað við fyrirliggjandi atriði í forritinu.
+\n
+\nÞetta getur tekið nokkurn tíma.</string>
+    <string name="items_added">Atriðum bætt við</string>
+    <string name="shared_string_import_complete">Innflutningi lokið</string>
+    <string name="import_complete_description">Öll gögn úr %1$s voru flutt inn, þú getur notað hnappana hér fyrir neðan til að opna nauðsynlega hluta forritsins til að sýsla með gögnin.</string>
+    <string name="n_items_of_z">%1$s af %2$s</string>
+    <string name="shared_string_terrain">Yfirborð</string>
+    <string name="hillshade_description">Hæðaskyggingakort styðst við dökka skugga til að sýna brekkur, tinda og láglendi.</string>
+    <string name="slope_description">Til að sýna brekkur eru notuð litasjónhrif á yfirborðið.</string>
+    <string name="terrain_slider_description">Stilltu lágmarks og hámarks aðdráttarstig þess að lagið verður birt.</string>
+    <string name="hillshade_download_description">Viðbótarkort þarf til að skoða hæðaskyggingar á kortinu.</string>
+    <string name="slope_download_description">Viðbótarkort þarf til að skoða brekkur á kortinu.</string>
+    <string name="slope_read_more">Þú getur lesið meira um brekkur á %1$s.</string>
+    <string name="shared_string_transparency">Gegnsæi</string>
+    <string name="shared_string_zoom_levels">Aðdráttarstig</string>
+    <string name="shared_string_legend">Skýring</string>
+    <string name="terrain_empty_state_text">Virkja til að sjá hæðaskyggingar eða brekkur á korti. Þú getur lesið meira um þessa eiginleika á vefnum okkar</string>
+    <string name="shared_string_hillshade">Hæðaskygging</string>
+    <string name="download_slope_maps">Brekkur</string>
+    <string name="quick_action_show_hide_terrain">Birta/fela yfirborð</string>
+    <string name="quick_action_terrain_hide">Fela yfirborð</string>
+    <string name="quick_action_terrain_show">Sýna yfirborð</string>
+    <string name="quick_action_terrain_descr">Hnappur til að birta eða fela yfirborðslag á kortinu.</string>
+    <string name="recalculate_route_in_deviation">Endurreikna leið ef farið er út af fyrirfram gefinni leið</string>
+    <string name="select_distance_route_will_recalc">Veldu þá vegalengd sem þarf til að leiðin verði endurreiknuð.</string>
+    <string name="recalculate_route_distance_promo">Leiðin verður endurreiknuð ef vegalengd frá leiðinni að núverandi staðsetningu er lengri en uppgefið gildi.</string>
+    <string name="delete_description">Eyða lýsingu</string>
+    <string name="add_description">Bæta við lýsingu</string>
+    <string name="select_group">Veldu hóp</string>
+    <string name="select_shape">Veldu lögun</string>
+    <string name="shared_string_circle">Hringur</string>
+    <string name="shared_string_rhomb">Tígull</string>
+    <string name="shared_string_square">Ferningur</string>
+    <string name="replace_point_descr">Skipta út öðrum punkti með þessum</string>
+    <string name="changes_applied_to_profile">Breytingum beitt á %1$s sniðið.</string>
+    <string name="settings_item_read_error">Gat ekki lesið %1$s.</string>
+    <string name="settings_item_write_error">Gat ekki skrifað %1$s.</string>
+    <string name="settings_item_import_error">Gat ekki flutt inn %1.</string>
+    <string name="app_mode_ski_touring">Ferðaskíði</string>
+    <string name="app_mode_ski_snowmobile">Vélsleðar</string>
+    <string name="custom_osmand_plugin">Sérsniðin OsmAnd-viðbót</string>
+    <string name="shared_string_octagon">Átthyrningur</string>
+    <string name="shared_string_min">Lágm</string>
+    <string name="select_track_file">Veldu ferilskrá</string>
+    <string name="shared_string_languages">Tungumál</string>
+    <string name="shared_string_language">Tungumál</string>
+    <string name="shared_string_all_languages">Öll tungumál</string>
+    <string name="move_inside_category">Þú getur aðeins fært atriði innan þessa flokks.</string>
+    <string name="hidden_items_descr">Þessi atriði eru falin á valmyndinni, en valkostirnir eða viðbæturnar sem þau standa fyrir munu virka áfram.</string>
+    <string name="wikipedia_poi_languages_promo">Sumar Wikipedia-greinar gætu verið ekki tiltækar í þínu nafni, veldu það tungumál sem Wikipedia-greinarnar ættu að birtast á á kortinu.
+\nÞú munt geta skipt á milli allra tiltækra tungumála á meðan þú lest greinar.</string>
+    <string name="ui_customization_description">Sérsníddu fjölda atriða í sleðanum, í uppsetningu landakorts og í samhengisvalmynd.
+\n
+\nÞú getur gert ónotaðar forritsviðbætur óvirkar til að fela stýringar þeirra í %1$s forritinu.</string>
+    <string name="ui_customization_short_descr">Atriði á sleða, samhengisvalmynd</string>
+    <string name="ui_customization">Sérsnið viðmóts</string>
+    <string name="shared_string_drawer">Sleði</string>
+    <string name="context_menu_actions">Aðgerðir samhengisvalmyndar</string>
+    <string name="reorder_or_hide_from">Endurraða eða fela atriði frá %1$s.</string>
+    <string name="shared_string_divider">Aðgreinir</string>
+    <string name="divider_descr">Einindi fyrir neðan þessa staðsetningu aðskilin með aðgreini.</string>
+    <string name="shared_string_hidden">Falið</string>
+    <string name="reset_items_descr">Stillingar verða settar á upphaflega stöðu eftir að hafa verið faldar.</string>
+    <string name="main_actions_descr">Aðalaðgerðir innifela aðeins 4 hnappa.</string>
+    <string name="main_actions">Aðalaðgerðir</string>
+    <string name="additional_actions_descr">Þú getur komist í þessar aðgerðir með því að ýta á \"Aðgerðir\"-hnappinn.</string>
+    <string name="developer_plugin">Forritsviðbót fyrir forritun</string>
+    <string name="shared_string_items">Atriði</string>
+    <string name="wiki_menu_download_descr">Viðbótarkort þarf til að skoða Wikipedia-merkisstaði á kortinu.</string>
+    <string name="extra_maps_menu_group">Aukakort</string>
+    <string name="select_wikipedia_article_langs">Veldu þau tungumál sem Wikipedia-greinarnar ættu að birtast á á kortinu. Þú munt geta skipt á milli allra tiltækra tungumála á meðan þú lest greinar.</string>
+    <string name="some_articles_may_not_available_in_lang">Sumar Wikipedia-greinar gætu verið ekki tiltækar á þínu tungumáli.</string>
+    <string name="lang_zhyue">Kantónska</string>
+    <string name="lang_zhminnan">Suður-mín</string>
+    <string name="lang_yo">Yórúba</string>
+    <string name="lang_war">Waray</string>
+    <string name="lang_uz">Úsbekíska</string>
+    <string name="lang_ur">Úrdú</string>
+    <string name="lang_tt">Tatarska</string>
+    <string name="lang_tg">Tadzjikíska</string>
+    <string name="lang_sco">Skoska</string>
+    <string name="lang_scn">Sikileyska</string>
+    <string name="lang_pnb">Punjabíska</string>
+    <string name="lang_ne">Nepalska</string>
+    <string name="lang_nap">Neapólíska</string>
+    <string name="lang_my">Búrmíska</string>
+    <string name="lang_mn">Mongólska</string>
+    <string name="lang_min">Minangkabau</string>
+    <string name="lang_mg">Malagasíska</string>
+    <string name="lang_ky">Kyrgsíska</string>
+    <string name="lang_kk">Kasakíska</string>
+    <string name="lang_jv">Javanska</string>
+    <string name="lang_gu">Gujaratíska</string>
+    <string name="lang_cv">Chuvash</string>
+    <string name="lang_ce">Tétjenska</string>
+    <string name="lang_bar">Bæverska</string>
+    <string name="lang_ba">Bashkir</string>
+    <string name="lang_an">Aragónska</string>
+    <string name="lang_lmo">Lombardíska</string>
+    <string name="custom_color">Sérsniðinn litur</string>
 </resources>

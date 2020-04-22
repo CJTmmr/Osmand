@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,7 +14,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
+            android:padding="@dimen/content_padding"
             android:layout_gravity="center"
             android:text="@string/quick_action_interim_dialog"
             android:textColor="?android:textColorPrimary"
@@ -23,13 +22,15 @@
             android:layout_weight="1"
             android:id="@+id/textView3" />
 
-        <android.support.v7.widget.SwitchCompat
+        <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/dialogSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginRight="16dp"
-            android:layout_marginLeft="16dp"/>
+            android:layout_marginRight="@dimen/content_padding"
+            android:layout_marginLeft="@dimen/content_padding"
+	        android:layout_marginEnd="@dimen/content_padding"
+	        android:layout_marginStart="@dimen/content_padding" />
 
     </LinearLayout>
 
@@ -58,7 +59,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/content_padding"
             android:baselineAligned="false"
             android:orientation="horizontal">
 
@@ -73,22 +74,26 @@
                     android:id="@+id/name_caption"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginRight="16dp"
+                    android:layout_marginLeft="@dimen/content_padding"
+                    android:layout_marginRight="@dimen/content_padding"
                     android:text="@string/quick_action_bug_message"
                     android:textColor="?android:textColorSecondary"
-                    android:textSize="@dimen/default_sub_text_size"/>
+                    android:textSize="@dimen/default_sub_text_size"
+	                android:layout_marginEnd="@dimen/content_padding"
+	                android:layout_marginStart="@dimen/content_padding" />
 
                 <EditText
                     android:id="@+id/message_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="12dp"
-                    android:layout_marginRight="16dp"
+                    android:layout_marginLeft="@dimen/content_padding_small"
+                    android:layout_marginRight="@dimen/content_padding"
                     android:imeOptions="actionDone"
                     android:inputType="text"
                     android:textColor="?android:textColorPrimary"
-                    android:textColorHint="?android:textColorSecondary"/>
+                    android:textColorHint="?android:textColorSecondary"
+	                android:layout_marginEnd="@dimen/content_padding"
+	                android:layout_marginStart="@dimen/content_padding_small" />
 
             </LinearLayout>
 
@@ -97,12 +102,14 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
+            android:layout_marginLeft="@dimen/content_padding"
+            android:layout_marginRight="@dimen/content_padding"
             android:text="@string/quick_action_bug_descr"
             android:textColor="?android:textColorSecondary"
             android:textSize="@dimen/default_sub_text_size"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="@dimen/content_padding"
+	        android:layout_marginStart="@dimen/content_padding"
+	        android:layout_marginEnd="@dimen/content_padding" />
 
     </LinearLayout>
 
