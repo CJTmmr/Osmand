@@ -16,6 +16,7 @@ import net.osmand.PlatformUtil;
 import net.osmand.data.LatLon;
 import net.osmand.map.ITileSource;
 import net.osmand.map.TileSourceManager;
+import net.osmand.map.TileSourceManager.TileSourceTemplate;
 import net.osmand.map.WorldRegion;
 import net.osmand.osm.MapPoiTypes;
 import net.osmand.osm.PoiCategory;
@@ -603,7 +604,7 @@ public class SettingsHelper {
 					return;
 				}
 				JSONArray jsonArray = json.getJSONArray("items");
-				items.addAll(CustomOsmandPlugin.collectRegionsFromJson(jsonArray));
+				items.addAll(CustomOsmandPlugin.collectRegionsFromJson(app, jsonArray));
 			} catch (JSONException e) {
 				warnings.add(app.getString(R.string.settings_item_read_error, String.valueOf(getType())));
 				throw new IllegalArgumentException("Json parse error", e);
@@ -784,6 +785,10 @@ public class SettingsHelper {
 			} catch (JSONException e) {
 				throw new IllegalArgumentException("Json parse error", e);
 			}
+			readPreferencesFromJson(json);
+		}
+
+		void readPreferencesFromJson(final JSONObject json) {
 			settings.getContext().runInUIThread(new Runnable() {
 				@Override
 				public void run() {
@@ -900,13 +905,13 @@ public class SettingsHelper {
 		private ApplicationMode appMode;
 		private ApplicationModeBuilder builder;
 		private ApplicationModeBean modeBean;
+
+		private JSONObject additionalPrefsJson;
 		private Set<String> appModeBeanPrefsIds;
-		private Map<String, String> drawerLogoParams;
 
 		public ProfileSettingsItem(@NonNull OsmandApplication app, @NonNull ApplicationMode appMode) {
 			super(app.getSettings());
 			this.appMode = appMode;
-			appModeBeanPrefsIds = new HashSet<>(Arrays.asList(app.getSettings().appModeBeanPrefsIds));
 		}
 
 		public ProfileSettingsItem(@NonNull OsmandApplication app, @NonNull ApplicationModeBean modeBean) {
@@ -914,18 +919,16 @@ public class SettingsHelper {
 			this.modeBean = modeBean;
 			builder = ApplicationMode.fromModeBean(app, modeBean);
 			appMode = builder.getApplicationMode();
-			appModeBeanPrefsIds = new HashSet<>(Arrays.asList(app.getSettings().appModeBeanPrefsIds));
 		}
 
 		public ProfileSettingsItem(@NonNull OsmandApplication app, @NonNull JSONObject json) throws JSONException {
 			super(SettingsItemType.PROFILE, app.getSettings(), json);
-			appModeBeanPrefsIds = new HashSet<>(Arrays.asList(app.getSettings().appModeBeanPrefsIds));
 		}
 
 		@Override
 		protected void init() {
 			super.init();
-			drawerLogoParams = new HashMap<>();
+			appModeBeanPrefsIds = new HashSet<>(Arrays.asList(app.getSettings().appModeBeanPrefsIds));
 		}
 
 		@NonNull
@@ -981,23 +984,7 @@ public class SettingsHelper {
 
 		@Override
 		void readItemsFromJson(@NonNull JSONObject json) throws IllegalArgumentException {
-			try {
-				JSONObject drawerLogoJson = json.has("drawerLogo") ? json.getJSONObject("drawerLogo") : null;
-				if (drawerLogoJson != null) {
-					for (Iterator<String> it = drawerLogoJson.keys(); it.hasNext(); ) {
-						String localeKey = it.next();
-						String name = drawerLogoJson.getString(localeKey);
-						drawerLogoParams.put(localeKey, name);
-					}
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-
-		@NonNull
-		public Map<String, String> getDrawerLogoParams() {
-			return drawerLogoParams;
+			additionalPrefsJson = json.optJSONObject("prefs");
 		}
 
 		@Override
@@ -1060,6 +1047,59 @@ public class SettingsHelper {
 				appMode = ApplicationMode.saveProfile(builder, app);
 			}
 			ApplicationMode.changeProfileAvailability(appMode, true, app);
+		}
+
+		public void applyAdditionalPrefs() {
+			if (additionalPrefsJson != null) {
+				updatePluginResPrefs();
+
+				SettingsItemReader reader = getReader();
+				if (reader instanceof OsmandSettingsItemReader) {
+					((OsmandSettingsItemReader) reader).readPreferencesFromJson(additionalPrefsJson);
+				}
+			}
+		}
+
+		private void updatePluginResPrefs() {
+			String pluginId = getPluginId();
+			if (Algorithms.isEmpty(pluginId)) {
+				return;
+			}
+			OsmandPlugin plugin = OsmandPlugin.getPlugin(pluginId);
+			if (plugin instanceof CustomOsmandPlugin) {
+				CustomOsmandPlugin customPlugin = (CustomOsmandPlugin) plugin;
+				String resDirPath = IndexConstants.PLUGINS_DIR + pluginId + "/" + customPlugin.getResourceDirName();
+
+				for (Iterator<String> it = additionalPrefsJson.keys(); it.hasNext(); ) {
+					try {
+						String prefId = it.next();
+						Object value = additionalPrefsJson.get(prefId);
+						if (value instanceof JSONObject) {
+							JSONObject jsonObject = (JSONObject) value;
+							for (Iterator<String> iterator = jsonObject.keys(); iterator.hasNext(); ) {
+								String key = iterator.next();
+								Object val = jsonObject.get(key);
+								if (val instanceof String) {
+									val = checkPluginResPath((String) val, resDirPath);
+								}
+								jsonObject.put(key, val);
+							}
+						} else if (value instanceof String) {
+							value = checkPluginResPath((String) value, resDirPath);
+							additionalPrefsJson.put(prefId, value);
+						}
+					} catch (JSONException e) {
+						LOG.error(e);
+					}
+				}
+			}
+		}
+
+		private String checkPluginResPath(String path, String resDirPath) {
+			if (path.startsWith("@")) {
+				return resDirPath + "/" + path.substring(1);
+			}
+			return path;
 		}
 
 		@Override
@@ -1966,8 +2006,8 @@ public class SettingsHelper {
 					boolean ellipsoid = object.optBoolean("ellipsoid", false);
 					boolean invertedY = object.optBoolean("inverted_y", false);
 					String referer = object.optString("referer");
-					boolean timesupported = object.optBoolean("timesupported", false);
-					long expire = object.optLong("expire");
+					boolean timeSupported = object.optBoolean("timesupported", false);
+					long expire = object.optLong("expire", -1);
 					boolean inversiveZoom = object.optBoolean("inversiveZoom", false);
 					String ext = object.optString("ext");
 					int tileSize = object.optInt("tileSize");
@@ -1975,11 +2015,23 @@ public class SettingsHelper {
 					int avgSize = object.optInt("avgSize");
 					String rule = object.optString("rule");
 
+					if (expire > 0 && expire < 3600000) {
+						expire = expire * 60 * 1000L;
+					}
+
 					ITileSource template;
 					if (!sql) {
-						template = new TileSourceManager.TileSourceTemplate(name, url, ext, maxZoom, minZoom, tileSize, bitDensity, avgSize);
+						TileSourceTemplate tileSourceTemplate = new TileSourceTemplate(name, url, ext, maxZoom, minZoom, tileSize, bitDensity, avgSize);
+						tileSourceTemplate.setRule(rule);
+						tileSourceTemplate.setRandoms(randoms);
+						tileSourceTemplate.setReferer(referer);
+						tileSourceTemplate.setEllipticYTile(ellipsoid);
+						tileSourceTemplate.setInvertedYTile(invertedY);
+						tileSourceTemplate.setExpirationTimeMillis(timeSupported ? expire : -1);
+
+						template = tileSourceTemplate;
 					} else {
-						template = new SQLiteTileSource(app, name, minZoom, maxZoom, url, randoms, ellipsoid, invertedY, referer, timesupported, expire, inversiveZoom);
+						template = new SQLiteTileSource(app, name, minZoom, maxZoom, url, randoms, ellipsoid, invertedY, referer, timeSupported, expire, inversiveZoom, rule);
 					}
 					items.add(template);
 				}
@@ -2007,7 +2059,7 @@ public class SettingsHelper {
 						jsonObject.put("inverted_y", template.isInvertedYTile());
 						jsonObject.put("referer", template.getReferer());
 						jsonObject.put("timesupported", template.isTimeSupported());
-						jsonObject.put("expire", template.getExpirationTimeMillis());
+						jsonObject.put("expire", template.getExpirationTimeMinutes());
 						jsonObject.put("inversiveZoom", template.getInversiveZoom());
 						jsonObject.put("ext", template.getTileFormat());
 						jsonObject.put("tileSize", template.getTileSize());

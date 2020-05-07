@@ -1,8 +1,10 @@
 package net.osmand.plus;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.Html;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,7 +14,6 @@ import net.osmand.JsonUtils;
 import net.osmand.PlatformUtil;
 import net.osmand.data.LatLon;
 import net.osmand.map.ITileSource;
-import net.osmand.map.TileSourceManager;
 import net.osmand.map.WorldRegion;
 import net.osmand.plus.SettingsHelper.AvoidRoadsSettingsItem;
 import net.osmand.plus.SettingsHelper.MapSourcesSettingsItem;
@@ -43,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -86,8 +88,9 @@ public class CustomOsmandPlugin extends OsmandPlugin {
 	}
 
 	@Override
-	public String getDescription() {
-		return JsonUtils.getLocalizedResFromMap(app, descriptions, null);
+	public CharSequence getDescription() {
+		String description = JsonUtils.getLocalizedResFromMap(app, descriptions, null);
+		return description != null ? Html.fromHtml(description) : null;
 	}
 
 	public String getResourceDirName() {
@@ -262,17 +265,20 @@ public class CustomOsmandPlugin extends OsmandPlugin {
 							List<ITileSource> mapSources = mapSourcesSettingsItem.getItems();
 
 							for (ITileSource tileSource : mapSources) {
-								if (tileSource instanceof TileSourceManager.TileSourceTemplate) {
-									TileSourceManager.TileSourceTemplate sourceTemplate = (TileSourceManager.TileSourceTemplate) tileSource;
-									File tPath = app.getAppPath(IndexConstants.TILES_INDEX_DIR);
-									File dir = new File(tPath, sourceTemplate.getName());
-									Algorithms.removeAllFiles(dir);
-								} else if (tileSource instanceof SQLiteTileSource) {
-									SQLiteTileSource sqLiteTileSource = ((SQLiteTileSource) tileSource);
-									sqLiteTileSource.closeDB();
+								String tileSourceName = tileSource.getName();
+								if (tileSource instanceof SQLiteTileSource) {
+									tileSourceName += SQLITE_EXT;
+								}
+
+								ITileSource savedTileSource = app.getSettings().getTileSourceByName(tileSourceName, false);
+								if (savedTileSource != null) {
+									if (savedTileSource instanceof SQLiteTileSource) {
+										SQLiteTileSource sqLiteTileSource = ((SQLiteTileSource) savedTileSource);
+										sqLiteTileSource.closeDB();
+									}
 
 									File tPath = app.getAppPath(IndexConstants.TILES_INDEX_DIR);
-									File dir = new File(tPath, sqLiteTileSource.getName() + SQLITE_EXT);
+									File dir = new File(tPath, tileSourceName);
 									Algorithms.removeAllFiles(dir);
 								}
 							}
@@ -316,7 +322,7 @@ public class CustomOsmandPlugin extends OsmandPlugin {
 
 		JSONArray regionsJson = json.optJSONArray("regionsJson");
 		if (regionsJson != null) {
-			customRegions.addAll(collectRegionsFromJson(regionsJson));
+			customRegions.addAll(collectRegionsFromJson(app, regionsJson));
 		}
 	}
 
@@ -363,12 +369,12 @@ public class CustomOsmandPlugin extends OsmandPlugin {
 		json.put("pluginResDir", resourceDirName);
 	}
 
-	public static List<CustomRegion> collectRegionsFromJson(JSONArray jsonArray) throws JSONException {
+	public static List<CustomRegion> collectRegionsFromJson(@NonNull Context ctx, JSONArray jsonArray) throws JSONException {
 		List<CustomRegion> customRegions = new ArrayList<>();
-		Map<String, CustomRegion> flatRegions = new HashMap<>();
+		Map<String, CustomRegion> flatRegions = new LinkedHashMap<>();
 		for (int i = 0; i < jsonArray.length(); i++) {
 			JSONObject regionJson = jsonArray.getJSONObject(i);
-			CustomRegion region = CustomRegion.fromJson(regionJson);
+			CustomRegion region = CustomRegion.fromJson(ctx, regionJson);
 			flatRegions.put(region.getPath(), region);
 		}
 		for (CustomRegion region : flatRegions.values()) {
@@ -411,6 +417,18 @@ public class CustomOsmandPlugin extends OsmandPlugin {
 					image = getIconForFile(path, imageNames);
 				}
 			}
+		}
+		for (WorldRegion region : customRegions) {
+			loadSubregionIndexItems(region);
+		}
+	}
+
+	private void loadSubregionIndexItems(WorldRegion region) {
+		if (region instanceof CustomRegion) {
+			((CustomRegion) region).loadDynamicIndexItems(app);
+		}
+		for (WorldRegion subregion : region.getSubregions()) {
+			loadSubregionIndexItems(subregion);
 		}
 	}
 

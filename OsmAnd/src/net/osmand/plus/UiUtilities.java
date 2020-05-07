@@ -23,7 +23,6 @@ import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
@@ -377,7 +376,8 @@ public class UiUtilities {
 		TextView tvMessage = (TextView) view.findViewById(com.google.android.material.R.id.snackbar_text);
 		TextView tvAction = (TextView) view.findViewById(com.google.android.material.R.id.snackbar_action);
 		if (messageColor == null) {
-			messageColor = nightMode ? R.color.text_color_primary_dark : R.color.text_color_primary_light;
+			messageColor = nightMode ? R.color.active_buttons_and_links_text_dark
+					: R.color.active_buttons_and_links_text_light;
 		}
 		tvMessage.setTextColor(ContextCompat.getColor(ctx, messageColor));
 		if (actionColor == null) {
@@ -388,7 +388,7 @@ public class UiUtilities {
 			tvMessage.setMaxLines(maxLines);
 		}
 		if (backgroundColor == null) {
-			backgroundColor = nightMode ? R.color.list_background_color_dark : R.color.list_background_color_light;
+			backgroundColor = nightMode ? R.color.list_background_color_dark : R.color.color_black;
 		}
 		view.setBackgroundColor(ContextCompat.getColor(ctx, backgroundColor));
 	}
@@ -619,10 +619,10 @@ public class UiUtilities {
 		return new ContextThemeWrapper(context, nightMode ? darkStyle : lightStyle);
 	}
 
-	public static void setMargins(View v, int l, int t, int r, int b) {
+	public static void setMargins(View v, int s, int t, int e, int b) {
 		if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
 			ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-			p.setMargins(l, t, r, b);
+			AndroidUtils.setMargins(p, s, t, e, b);
 			v.requestLayout();
 		}
 	}

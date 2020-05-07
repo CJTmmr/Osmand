@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
@@ -30,6 +31,7 @@ import net.osmand.GPXUtilities.WptPt;
 import net.osmand.IndexConstants;
 import net.osmand.Location;
 import net.osmand.PlatformUtil;
+import net.osmand.data.FavouritePoint;
 import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
 import net.osmand.data.QuadRect;
@@ -55,6 +57,7 @@ import net.osmand.plus.dialogs.FavoriteDialogs;
 import net.osmand.plus.download.IndexItem;
 import net.osmand.plus.liveupdates.OsmLiveActivity;
 import net.osmand.plus.mapcontextmenu.AdditionalActionsBottomSheetDialogFragment;
+import net.osmand.plus.mapcontextmenu.AdditionalActionsBottomSheetDialogFragment.ContextMenuItemClickListener;
 import net.osmand.plus.mapmarkers.MapMarkersDialogFragment;
 import net.osmand.plus.mapmarkers.MarkersPlanRouteContext;
 import net.osmand.plus.measurementtool.MeasurementToolFragment;
@@ -64,11 +67,11 @@ import net.osmand.plus.routepreparationmenu.WaypointsFragment;
 import net.osmand.plus.routing.RouteProvider.GPXRouteParamsBuilder;
 import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.settings.BaseSettingsFragment;
-import net.osmand.plus.mapcontextmenu.AdditionalActionsBottomSheetDialogFragment.ContextMenuItemClickListener;
 import net.osmand.plus.views.BaseMapLayer;
 import net.osmand.plus.views.MapControlsLayer;
 import net.osmand.plus.views.MapTileLayer;
 import net.osmand.plus.views.OsmandMapTileView;
+import net.osmand.plus.wikipedia.WikipediaDialogFragment;
 import net.osmand.plus.wikivoyage.WikivoyageWelcomeDialogFragment;
 import net.osmand.plus.wikivoyage.data.TravelDbHelper;
 import net.osmand.plus.wikivoyage.explore.WikivoyageExploreActivity;
@@ -344,28 +347,28 @@ public class MapActivityActions implements DialogProvider {
 		ItemBuilder itemBuilder = new ItemBuilder();
 
 		adapter.addItem(itemBuilder
-				.setTitleId(R.string.shared_string_add, mapActivity)
+				.setTitleId(selectedObj instanceof FavouritePoint ? R.string.favourites_context_menu_edit : R.string.shared_string_add, mapActivity)
 				.setId(MAP_CONTEXT_MENU_ADD_ID)
-				.setIcon(R.drawable.map_action_fav_dark)
-				.setOrder(0)
+				.setIcon(R.drawable.ic_action_fav_dark)
+				.setOrder(10)
 				.createItem());
 		adapter.addItem(itemBuilder
 				.setTitleId(R.string.shared_string_marker, mapActivity)
 				.setId(MAP_CONTEXT_MENU_MARKER_ID)
-				.setIcon(R.drawable.map_action_flag_dark)
-				.setOrder(1)
+				.setOrder(20)
+				.setIcon(R.drawable.ic_action_flag_dark)
 				.createItem());
 		adapter.addItem(itemBuilder
 				.setTitleId(R.string.shared_string_share, mapActivity)
 				.setId(MAP_CONTEXT_MENU_SHARE_ID)
-				.setIcon(R.drawable.map_action_gshare_dark)
-				.setOrder(2)
+				.setOrder(30)
+				.setIcon(R.drawable.ic_action_gshare_dark)
 				.createItem());
 		adapter.addItem(itemBuilder
 				.setTitleId(R.string.shared_string_actions, mapActivity)
 				.setId(MAP_CONTEXT_MENU_MORE_ID)
 				.setIcon(R.drawable.map_overflow_menu_white)
-				.setOrder(3)
+				.setOrder(40)
 				.createItem());
 
 		adapter.addItem(itemBuilder
@@ -432,8 +435,6 @@ public class MapActivityActions implements DialogProvider {
 				.setIcon(R.drawable.ic_action_alert)
 				.setOrder(AVOID_ROAD_ITEM_ORDER)
 				.createItem());
-
-		adapter.sortItemsByOrder();
 	}
 
 	public void contextMenuPoint(final double latitude, final double longitude, final ContextMenuAdapter iadapter, Object selectedObj) {
@@ -475,7 +476,7 @@ public class MapActivityActions implements DialogProvider {
 					MeasurementToolFragment.showInstance(mapActivity.getSupportFragmentManager(), new LatLon(latitude, longitude));
 				} else if (standardId == R.string.avoid_road) {
 					getMyApplication().getAvoidSpecificRoads().addImpassableRoad(mapActivity, new LatLon(latitude, longitude), true, false, null);
-				} else if (standardId == R.string.shared_string_add) {
+				} else if (standardId == R.string.shared_string_add || standardId == R.string.favourites_context_menu_edit) {
 					mapActivity.getContextMenu().buttonFavoritePressed();
 				} else if (standardId == R.string.shared_string_marker) {
 					mapActivity.getContextMenu().buttonWaypointPressed();
@@ -938,6 +939,10 @@ public class MapActivityActions implements DialogProvider {
 
 		app.getAidlApi().registerNavDrawerItems(mapActivity, optionsMenuHelper);
 
+		optionsMenuHelper.addItem(new ItemBuilder().setLayout(R.layout.drawer_divider)
+				.setId(DRAWER_DIVIDER_ID)
+				.createItem());
+
 		optionsMenuHelper.addItem(new ItemBuilder().setTitleId(R.string.layer_map_appearance, mapActivity)
 				.setId(DRAWER_CONFIGURE_SCREEN_ID)
 				.setIcon(R.drawable.ic_configure_screen_dark)
@@ -1023,20 +1028,6 @@ public class MapActivityActions implements DialogProvider {
 
 		//////////// Others
 		OsmandPlugin.registerOptionsMenu(mapActivity, optionsMenuHelper);
-
-		// Place divider between functionality and configuration related menu items
-		int dividerItemIndex = -1;
-		for (int i = 0; i < optionsMenuHelper.length(); i++) {
-			if (optionsMenuHelper.getItem(i).getTitleId() == R.string.layer_map_appearance) {
-				dividerItemIndex = i;
-				break;
-			}
-		}
-
-		ItemBuilder divider = new ItemBuilder().setLayout(R.layout.drawer_divider);
-		divider.setId(DRAWER_DIVIDER_ID);
-		divider.setPosition(dividerItemIndex >= 0 ? dividerItemIndex : 8);
-		optionsMenuHelper.addItem(divider.createItem());
 
 		return optionsMenuHelper;
 	}
@@ -1144,28 +1135,8 @@ public class MapActivityActions implements DialogProvider {
 		menu.show();
 	}
 
-	public void restoreOrReturnDialog(final String packageName) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mapActivity);
-        builder.setTitle("Restore OsmAnd");
-        builder.setMessage("Do you want to Restore OsmAnd or get back to the Client App?");
-        builder.setPositiveButton("Restore", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                restoreOsmand();
-            }
-        });
-        builder.setNeutralButton("Return", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                executeHeadersIntent(packageName);
-            }
-        });
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
-
 	protected void updateDrawerMenu() {
-		boolean nightMode = getMyApplication().getDaynightHelper().isNightModeForMapControls();
+		final boolean nightMode = getMyApplication().getDaynightHelper().isNightModeForMapControls();
 		final ListView menuItemsListView = (ListView) mapActivity.findViewById(R.id.menuItems);
 		if (nightMode) {
 			menuItemsListView.setBackgroundColor(ContextCompat.getColor(mapActivity, R.color.list_background_color_dark));
@@ -1174,7 +1145,6 @@ public class MapActivityActions implements DialogProvider {
 		}
 		menuItemsListView.removeHeaderView(drawerLogoHeader);
 		Bitmap navDrawerLogo = getMyApplication().getAppCustomization().getNavDrawerLogo();
-		final ArrayList<String> navDrawerLogoParams = getMyApplication().getAppCustomization().getNavDrawerLogoParams();
 
 		if (navDrawerLogo != null) {
 			drawerLogoHeader.setImageBitmap(navDrawerLogo);
@@ -1193,8 +1163,9 @@ public class MapActivityActions implements DialogProvider {
 				boolean hasHeader = menuItemsListView.getHeaderViewsCount() > 0;
 				boolean hasFooter = menuItemsListView.getFooterViewsCount() > 0;
 				if (hasHeader && position == 0 || (hasFooter && position == menuItemsListView.getCount() - 1)) {
-					if (navDrawerLogoParams != null) {
-						executeHeadersIntent(navDrawerLogoParams.get(0));
+					String drawerLogoParams = getMyApplication().getAppCustomization().getNavDrawerLogoUrl();
+					if (!Algorithms.isEmpty(drawerLogoParams)) {
+						WikipediaDialogFragment.showFullArticle(mapActivity, Uri.parse(drawerLogoParams), nightMode);
 					}
 				} else {
 					position -= menuItemsListView.getHeaderViewsCount();
@@ -1208,21 +1179,5 @@ public class MapActivityActions implements DialogProvider {
 			}
 
 		});
-	}
-
-	private void executeHeadersIntent(String packageName) {
-		Intent launchIntent = mapActivity.getPackageManager().getLaunchIntentForPackage(packageName);
-		if(launchIntent!=null) mapActivity.startActivity(launchIntent);
-		mapActivity.closeDrawer();
-	}
-
-	private void showReturnConfirmationDialog(String packageName) {
-		restoreOrReturnDialog(packageName);
-	    mapActivity.closeDrawer();
-	}
-
-	private void restoreOsmand(){
-		getMyApplication().getAppCustomization().restoreOsmand();
-		mapActivity.closeDrawer();
 	}
 }

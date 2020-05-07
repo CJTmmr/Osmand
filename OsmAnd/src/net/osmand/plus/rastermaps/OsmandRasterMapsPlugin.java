@@ -60,6 +60,7 @@ import static net.osmand.aidlapi.OsmAndCustomizationConstants.MAP_CONTEXT_MENU_D
 import static net.osmand.aidlapi.OsmAndCustomizationConstants.MAP_CONTEXT_MENU_UPDATE_MAP;
 import static net.osmand.aidlapi.OsmAndCustomizationConstants.OVERLAY_MAP;
 import static net.osmand.aidlapi.OsmAndCustomizationConstants.UNDERLAY_MAP;
+import static net.osmand.plus.ContextMenuAdapter.makeDeleteAction;
 import static net.osmand.plus.UiUtilities.CompoundButtonType.PROFILE_DEPENDENT;
 
 public class OsmandRasterMapsPlugin extends OsmandPlugin {
@@ -358,7 +359,7 @@ public class OsmandRasterMapsPlugin extends OsmandPlugin {
 				.setIcon(R.drawable.ic_layer_top)
 				.setSecondaryIcon(R.drawable.ic_action_additional_option)
 				.setListener(listener)
-				.setPosition(14)
+				.setItemDeleteAction(makeDeleteAction(settings.MAP_OVERLAY, settings.MAP_OVERLAY_PREVIOUS, settings.MAP_OVERLAY_TRANSPARENCY))
 				.createItem());
 		String underlayMapDescr = settings.MAP_UNDERLAY.get();
 		if (underlayMapDescr!=null && underlayMapDescr.contains(".sqlitedb")) {
@@ -374,7 +375,7 @@ public class OsmandRasterMapsPlugin extends OsmandPlugin {
 				.setIcon(R.drawable.ic_layer_bottom)
 				.setSecondaryIcon(R.drawable.ic_action_additional_option)
 				.setListener(listener)
-				.setPosition(15)
+				.setItemDeleteAction(makeDeleteAction(settings.MAP_UNDERLAY, settings.MAP_UNDERLAY_PREVIOUS))
 				.createItem());
 	}
 
@@ -496,8 +497,6 @@ public class OsmandRasterMapsPlugin extends OsmandPlugin {
 		AlertDialog.Builder bld = new AlertDialog.Builder(new ContextThemeWrapper(activity, getThemeRes(activity, app)));
 		View view = UiUtilities.getInflater(activity, isNightMode(activity, app)).inflate(R.layout.editing_tile_source, null);
 		final EditText name = (EditText) view.findViewById(R.id.Name);
-		name.setFocusable(false);
-		name.setFocusableInTouchMode(false);
 		final Spinner existing = (Spinner) view.findViewById(R.id.TileSourceSpinner);
 		final TextView existingHint = (TextView) view.findViewById(R.id.TileSourceHint);
 		final EditText urlToLoad = (EditText) view.findViewById(R.id.URLToLoad);
@@ -521,6 +520,8 @@ public class OsmandRasterMapsPlugin extends OsmandPlugin {
 		existing.setAdapter(adapter);
 		TileSourceTemplate template;
 		if (editedLayerName != null) {
+			name.setFocusable(false);
+			name.setFocusableInTouchMode(false);
 			if (!editedLayerName.endsWith(IndexConstants.SQLITE_EXT)) {
 				File f = ((OsmandApplication) activity.getApplication()).getAppPath(
 						IndexConstants.TILES_INDEX_DIR + editedLayerName);

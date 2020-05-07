@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 import net.osmand.AndroidUtils;
 import net.osmand.IProgress;
 import net.osmand.IndexConstants;
+import net.osmand.JsonUtils;
 import net.osmand.PlatformUtil;
 import net.osmand.aidl.ConnectedApp;
 import net.osmand.data.LocationPoint;
@@ -66,8 +67,6 @@ public class OsmAndAppCustomization {
 	protected OsmandSettings osmandSettings;
 
 	private Map<String, Bitmap> navDrawerLogos = new HashMap<>();
-
-	private ArrayList<String> navDrawerParams;
 
 	private String navDrawerFooterIntent;
 	private String navDrawerFooterAppName;
@@ -254,8 +253,16 @@ public class OsmAndAppCustomization {
 	}
 
 	@Nullable
-	public ArrayList<String> getNavDrawerLogoParams() {
-		return navDrawerParams;
+	public String getNavDrawerLogoUrl() {
+		String url = app.getSettings().NAV_DRAWER_URL.get();
+		try {
+			JSONObject json = new JSONObject(url);
+			Map<String, String> localizedMap = JsonUtils.getLocalizedMapFromJson(json);
+			url = JsonUtils.getLocalizedResFromMap(app, localizedMap, url);
+		} catch (JSONException e) {
+			LOG.error(e);
+		}
+		return url;
 	}
 
 	public boolean setNavDrawerLogo(String uri, @Nullable String packageName, @Nullable String intent) {
@@ -300,10 +307,8 @@ public class OsmAndAppCustomization {
 			} catch (IOException e) {
 				LOG.error("Failed to write file", e);
 			}
-			if (packageName != null && intent != null) {
-				navDrawerParams = new ArrayList<>();
-				navDrawerParams.add(packageName);
-				navDrawerParams.add(intent);
+			if (!Algorithms.isEmpty(intent)) {
+				app.getSettings().NAV_DRAWER_LOGO.set(intent);
 			}
 		}
 		return true;
