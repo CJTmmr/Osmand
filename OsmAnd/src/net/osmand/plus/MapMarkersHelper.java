@@ -478,7 +478,7 @@ public class MapMarkersHelper {
 		int type = group.getType();
 		if (type != -1) {
 			header.iconRes = type == MapMarkersGroup.FAVORITES_TYPE
-					? R.drawable.ic_action_fav_dark : R.drawable.ic_action_polygom_dark;
+					? R.drawable.ic_action_favorite : R.drawable.ic_action_polygom_dark;
 			categoriesSubHeader.iconRes = R.drawable.ic_action_filter;
 		}
 		header.group = group;
@@ -1161,7 +1161,6 @@ public class MapMarkersHelper {
 					removeGroupActiveMarkers(group, true);
 					return;
 				}
-
 				for (FavouritePoint fp : favGroup.getPoints()) {
 					addNewMarkerIfNeeded(group, groupMarkers, new LatLon(fp.getLatitude(), fp.getLongitude()), fp.getName(), fp, null);
 				}

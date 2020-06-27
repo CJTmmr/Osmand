@@ -46,6 +46,8 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuItemCompat;
 
 import net.osmand.AndroidUtils;
+import net.osmand.FileUtils;
+import net.osmand.FileUtils.RenameCallback;
 import net.osmand.GPXUtilities;
 import net.osmand.GPXUtilities.GPXFile;
 import net.osmand.GPXUtilities.GPXTrackAnalysis;
@@ -66,7 +68,6 @@ import net.osmand.plus.OsmAndConstants;
 import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
-import net.osmand.plus.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
@@ -75,13 +76,12 @@ import net.osmand.plus.activities.SavingTrackHelper;
 import net.osmand.plus.activities.TrackActivity;
 import net.osmand.plus.base.OsmandExpandableListFragment;
 import net.osmand.plus.dialogs.DirectionsDialogs;
-import net.osmand.plus.download.ui.LocalIndexesFragment;
-import net.osmand.plus.download.ui.LocalIndexesFragment.RenameCallback;
 import net.osmand.plus.helpers.AndroidUiHelper;
 import net.osmand.plus.helpers.GpxUiHelper.GPXDataSetType;
 import net.osmand.plus.mapmarkers.CoordinateInputDialogFragment;
 import net.osmand.plus.monitoring.OsmandMonitoringPlugin;
 import net.osmand.plus.osmedit.OsmEditingPlugin;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.util.Algorithms;
 
 import java.io.File;
@@ -784,7 +784,7 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment implement
 			i++;
 		}
 		menuAdapter.addItem(itemBuilder.setTitleId(R.string.add_new_folder, app)
-				.setIcon(R.drawable.map_zoom_in).setTag(-1).createItem());
+				.setIcon(R.drawable.ic_zoom_in).setTag(-1).createItem());
 		final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		final ArrayAdapter<ContextMenuItem> listAdapter =
 				menuAdapter.createListAdapter(getActivity(), app.getSettings().isLightContent());
@@ -1482,18 +1482,24 @@ public class AvailableGPXFragment extends OsmandExpandableListFragment implement
 		item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
 			@Override
 			public boolean onMenuItemClick(MenuItem item) {
-				LocalIndexesFragment.renameFile(getActivity(), gpxInfo.file, new RenameCallback() {
+				final SelectedGpxFile selectedGpxFile = selectedGpxHelper.getSelectedFileByPath(gpxInfo.file.getPath());
+				FileUtils.renameFile(getActivity(), gpxInfo.file, new RenameCallback() {
 					@Override
 					public void renamedTo(File file) {
 						asyncLoader = new LoadGpxTask();
 						asyncLoader.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, getActivity());
+						if (selectedGpxFile != null && selectedGpxFile.getGpxFile() != null) {
+							selectedGpxFile.getGpxFile().path = file.getPath();
+							selectedGpxHelper.updateSelectedGpxFile(selectedGpxFile);
+						}
 					}
 				});
 				return true;
 			}
 		});
+		Drawable shareIcon = iconsCache.getThemedIcon((R.drawable.ic_action_gshare_dark));
 		item = optionsMenu.getMenu().add(R.string.shared_string_share)
-				.setIcon(iconsCache.getThemedIcon(R.drawable.ic_action_gshare_dark));
+				.setIcon(AndroidUtils.getDrawableForDirection(app, shareIcon));
 		item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
 			@Override
 			public boolean onMenuItemClick(MenuItem item) {

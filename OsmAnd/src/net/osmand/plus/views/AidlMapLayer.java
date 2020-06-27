@@ -24,7 +24,7 @@ import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
 import net.osmand.data.RotatedTileBox;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.OsmandSettings.CommonPreference;
+import net.osmand.plus.settings.backend.OsmandSettings.CommonPreference;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.mapcontextmenu.MapContextMenu;
@@ -118,7 +118,7 @@ public class AidlMapLayer extends OsmandMapLayer implements IContextMenuProvider
 		bitmapPaint.setDither(true);
 		bitmapPaint.setFilterBitmap(true);
 
-		circle = BitmapFactory.decodeResource(res, R.drawable.map_white_shield_small);
+		circle = BitmapFactory.decodeResource(res, R.drawable.ic_white_shield_small);
 		smallIconBg = BitmapFactory.decodeResource(res, night
 				? R.drawable.map_pin_user_location_small_night : R.drawable.map_pin_user_location_small_day);
 		bigIconBg = BitmapFactory.decodeResource(res, night

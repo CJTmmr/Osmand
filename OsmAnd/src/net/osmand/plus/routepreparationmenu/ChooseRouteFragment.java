@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import androidx.annotation.DrawableRes;
@@ -43,7 +44,7 @@ import net.osmand.plus.LockableViewPager;
 import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.OsmAndLocationProvider;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.activities.MapActivityActions;
@@ -352,9 +353,9 @@ public class ChooseRouteFragment extends BaseOsmAndFragment implements ContextMe
 		ImageButton zoomOutButtonView = (ImageButton) view.findViewById(R.id.map_zoom_out_button);
 		ImageButton myLocButtonView = (ImageButton) view.findViewById(R.id.map_my_location_button);
 		this.myLocButtonView = myLocButtonView;
-		AndroidUtils.updateImageButton(app, zoomInButtonView, R.drawable.map_zoom_in, R.drawable.map_zoom_in_night,
+		AndroidUtils.updateImageButton(app, zoomInButtonView, R.drawable.ic_zoom_in, R.drawable.ic_zoom_in,
 				R.drawable.btn_circle_trans, R.drawable.btn_circle_night, nightMode);
-		AndroidUtils.updateImageButton(app, zoomOutButtonView, R.drawable.map_zoom_out, R.drawable.map_zoom_out_night,
+		AndroidUtils.updateImageButton(app, zoomOutButtonView, R.drawable.ic_zoom_out, R.drawable.ic_zoom_out,
 				R.drawable.btn_circle_trans, R.drawable.btn_circle_night, nightMode);
 		zoomInButtonView.setOnClickListener(new OnClickListener() {
 			@Override
@@ -402,14 +403,14 @@ public class ChooseRouteFragment extends BaseOsmAndFragment implements ContextMe
 		ImageButton myLocButtonView = this.myLocButtonView;
 		if (myLocButtonView != null) {
 			if (!enabled) {
-				myLocButtonView.setImageDrawable(getIcon(R.drawable.map_my_location, R.color.icon_color_default_light));
+				myLocButtonView.setImageDrawable(getIcon(R.drawable.ic_my_location, R.color.icon_color_default_light));
 				AndroidUtils.setBackground(app, myLocButtonView, nightMode, R.drawable.btn_circle, R.drawable.btn_circle_night);
 				myLocButtonView.setContentDescription(mapActivity.getString(R.string.unknown_location));
 			} else if (tracked) {
-				myLocButtonView.setImageDrawable(getIcon(R.drawable.map_my_location, R.color.color_myloc_distance));
+				myLocButtonView.setImageDrawable(getIcon(R.drawable.ic_my_location, R.color.color_myloc_distance));
 				AndroidUtils.setBackground(app, myLocButtonView, nightMode, R.drawable.btn_circle, R.drawable.btn_circle_night);
 			} else {
-				myLocButtonView.setImageResource(R.drawable.map_my_location);
+				myLocButtonView.setImageResource(R.drawable.ic_my_location);
 				AndroidUtils.setBackground(app, myLocButtonView, nightMode, R.drawable.btn_circle_blue, R.drawable.btn_circle_blue);
 				myLocButtonView.setContentDescription(mapActivity.getString(R.string.map_widget_back_to_loc));
 			}
@@ -485,6 +486,7 @@ public class ChooseRouteFragment extends BaseOsmAndFragment implements ContextMe
 	}
 
 	private void buildMenuButtons(@NonNull View view) {
+		OsmandApplication app = getMyApplication();
 		AppCompatImageView backButton = (AppCompatImageView) view.findViewById(R.id.back_button);
 		AppCompatImageButton backButtonFlow = (AppCompatImageButton) view.findViewById(R.id.back_button_flow);
 		OnClickListener backOnClick = new OnClickListener() {
@@ -525,8 +527,13 @@ public class ChooseRouteFragment extends BaseOsmAndFragment implements ContextMe
 		saveRoute.setOnClickListener(saveOnClick);
 		saveRouteFlow.setOnClickListener(saveOnClick);
 
-		View shareRoute = view.findViewById(R.id.share_as_gpx);
-		View shareRouteFlow = view.findViewById(R.id.share_as_gpx_flow);
+		ImageView shareRoute = (ImageView) view.findViewById(R.id.share_as_gpx);
+		ImageView shareRouteFlow = (ImageView) view.findViewById(R.id.share_as_gpx_flow);
+		Drawable shareIcon = getIcon(R.drawable.ic_action_gshare_dark, nightMode ?
+				R.color.text_color_secondary_dark : R.color.text_color_secondary_light);
+		shareIcon = AndroidUtils.getDrawableForDirection(app, shareIcon);
+		shareRoute.setImageDrawable(shareIcon);
+		shareRouteFlow.setImageDrawable(shareIcon);
 		OnClickListener shareOnClick = new OnClickListener() {
 			@Override
 			public void onClick(View v) {

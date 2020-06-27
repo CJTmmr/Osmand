@@ -173,6 +173,31 @@ public class FavouritesDbHelper {
 			saveCurrentPointsIntoFile();
 		}
 		favoritesLoaded = true;
+		notifyListeners();
+	}
+
+	void fixBlackBackground() {
+		flatGroups.clear();
+		favoriteGroups.clear();
+		for (FavouritePoint fp : cachedFavoritePoints) {
+			if (fp.getColor() == 0xFF000000 || fp.getColor() == ContextCompat.getColor(context, R.color.color_favorite)) {
+				fp.setColor(0);
+			}
+			if (fp.getBackgroundType() == FavouritePoint.DEFAULT_BACKGROUND_TYPE){
+				fp.setBackgroundType(null);
+			}
+			if(fp.getIconId()== FavouritePoint.DEFAULT_UI_ICON_ID){
+				fp.setIconId(0);
+			}
+			FavoriteGroup group = getOrCreateGroup(fp, 0);
+			group.points.add(fp);
+		}
+		sortAll();
+		saveCurrentPointsIntoFile();
+		notifyListeners();
+	}
+
+	private void notifyListeners() {
 		context.runInUIThread(new Runnable() {
 			@Override
 			public void run() {
@@ -290,12 +315,12 @@ public class FavouritesDbHelper {
 	public void setSpecialPoint(@NonNull LatLon latLon, FavouritePoint.SpecialPointType specialType, @Nullable String address) {
 		FavouritePoint point = getSpecialPoint(specialType);
 		if (point != null) {
-			point.setIconId(specialType.getIconId());
+			point.setIconId(specialType.getIconId(context));
 			editFavourite(point, latLon.getLatitude(), latLon.getLongitude(), address);
 		} else {
 			point = new FavouritePoint(latLon.getLatitude(), latLon.getLongitude(), specialType.getName(), specialType.getCategory());
 			point.setAddress(address);
-			point.setIconId(specialType.getIconId());
+			point.setIconId(specialType.getIconId(context));
 			addFavourite(point);
 		}
 	}
@@ -317,7 +342,7 @@ public class FavouritesDbHelper {
 		if (!p.getName().equals("")) {
 			p.setVisible(group.visible);
 			if (FavouritePoint.SpecialPointType.PARKING.equals(p.getSpecialPointType())) {
-				p.setColor(ContextCompat.getColor(context, R.color.map_widget_blue));
+				p.setColor(ContextCompat.getColor(context, R.color.parking_icon_background));
 			} else {
 				if (p.getColor() == 0) {
 					p.setColor(group.color);
@@ -460,7 +485,7 @@ public class FavouritesDbHelper {
 			FavoriteGroup pg = getOrCreateGroup(p, 0);
 			p.setVisible(pg.visible);
 			if (FavouritePoint.SpecialPointType.PARKING.equals(p.getSpecialPointType())) {
-				p.setColor(ContextCompat.getColor(context, R.color.map_widget_blue));
+				p.setColor(ContextCompat.getColor(context, R.color.parking_icon_background));
 			} else {
 				if (p.getColor() == 0) {
 					p.setColor(pg.color);

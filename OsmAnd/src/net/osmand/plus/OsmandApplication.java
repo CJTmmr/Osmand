@@ -69,6 +69,10 @@ import net.osmand.plus.routepreparationmenu.RoutingOptionsHelper;
 import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.routing.TransportRoutingHelper;
 import net.osmand.plus.search.QuickSearchHelper;
+import net.osmand.plus.settings.backend.ApplicationMode;
+import net.osmand.plus.settings.backend.OsmAndAppCustomization;
+import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.backend.SettingsHelper;
 import net.osmand.plus.voice.CommandPlayer;
 import net.osmand.plus.wikivoyage.data.TravelDbHelper;
 import net.osmand.router.GeneralRouter;
@@ -179,7 +183,7 @@ public class OsmandApplication extends MultiDexApplication {
 		appCustomization.setup(this);
 		osmandSettings = appCustomization.getOsmandSettings();
 		appInitializer.initVariables();
-		if (appInitializer.isAppVersionChanged() && appInitializer.getPrevAppVersion() < AppInitializer.VERSION_2_3) {
+		if (appInitializer.isAppVersionChanged() && appInitializer.getPrevAppVersion() < AppVersionUpgradeOnInit.VERSION_2_3) {
 			osmandSettings.freezeExternalStorageDirectory();
 		} else if (appInitializer.isFirstTime()) {
 			osmandSettings.initExternalStorageDirectory();
@@ -332,7 +336,6 @@ public class OsmandApplication extends MultiDexApplication {
 	public PoiFiltersHelper getPoiFilters() {
 		return poiFilters;
 	}
-
 
 	public GpxSelectionHelper getSelectedGpxHelper() {
 		return selectedGpxHelper;
@@ -982,15 +985,14 @@ public class OsmandApplication extends MultiDexApplication {
 	public void setupDrivingRegion(WorldRegion reg) {
 		OsmandSettings.DrivingRegion drg = null;
 		WorldRegion.RegionParams params = reg.getParams();
-		boolean americanSigns = "american".equals(params.getRegionRoadSigns());
+//		boolean americanSigns = "american".equals(params.getRegionRoadSigns());
 		boolean leftHand = "yes".equals(params.getRegionLeftHandDriving());
 		OsmandSettings.MetricsConstants mc1 = "miles".equals(params.getRegionMetric()) ?
 				OsmandSettings.MetricsConstants.MILES_AND_FEET : OsmandSettings.MetricsConstants.KILOMETERS_AND_METERS;
 		OsmandSettings.MetricsConstants mc2 = "miles".equals(params.getRegionMetric()) ?
 				OsmandSettings.MetricsConstants.MILES_AND_METERS : OsmandSettings.MetricsConstants.KILOMETERS_AND_METERS;
 		for (OsmandSettings.DrivingRegion r : OsmandSettings.DrivingRegion.values()) {
-			if (r.americanSigns == americanSigns && r.leftHandDriving == leftHand &&
-					(r.defMetrics == mc1 || r.defMetrics == mc2)) {
+			if (r.leftHandDriving == leftHand && (r.defMetrics == mc1 || r.defMetrics == mc2)) {
 				drg = r;
 				break;
 			}

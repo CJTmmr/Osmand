@@ -1,6 +1,9 @@
 package net.osmand.data;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -8,7 +11,11 @@ import androidx.annotation.StringRes;
 
 import net.osmand.GPXUtilities.WptPt;
 import net.osmand.plus.FavouritesDbHelper;
+import net.osmand.plus.OsmandApplication;
+import net.osmand.plus.settings.backend.OsmandSettings.BooleanPreference;
+import net.osmand.plus.settings.backend.OsmandSettings.OsmandPreference;
 import net.osmand.plus.R;
+import net.osmand.plus.parkingpoint.ParkingPositionPlugin;
 import net.osmand.util.Algorithms;
 
 import java.io.Serializable;
@@ -19,6 +26,8 @@ public class FavouritePoint implements Serializable, LocationPoint {
 
 	private static final String HIDDEN = "hidden";
 	private static final String ADDRESS_EXTENSION = "address";
+	public static final BackgroundType DEFAULT_BACKGROUND_TYPE = BackgroundType.CIRCLE;
+	public static final int DEFAULT_UI_ICON_ID = R.drawable.mx_special_star;
 
 	protected String name = "";
 	protected String description;
@@ -93,11 +102,11 @@ public class FavouritePoint implements Serializable, LocationPoint {
 	}
 
 	public int getIconId() {
-		return iconId == 0 ? R.drawable.mx_special_star : iconId;
+		return iconId == 0 ? DEFAULT_UI_ICON_ID : iconId;
 	}
 
 	public String getIconEntryName(Context ctx) {
-		return ctx.getResources().getResourceEntryName(getOverlayIconId());
+		return ctx.getResources().getResourceEntryName(getOverlayIconId(ctx));
 	}
 
 	public void setIconId(int iconId) {
@@ -137,9 +146,9 @@ public class FavouritePoint implements Serializable, LocationPoint {
 		this.originObjectName = originObjectName;
 	}
 
-	public int getOverlayIconId() {
+	public int getOverlayIconId(Context ctx) {
 		if (isSpecialPoint()) {
-			return specialPointType.getIconId();
+			return specialPointType.getIconId(ctx);
 		}
 		return getIconId();
 	}
@@ -198,7 +207,7 @@ public class FavouritePoint implements Serializable, LocationPoint {
 	}
 
 	public BackgroundType getBackgroundType() {
-		return backgroundType == null ? BackgroundType.CIRCLE : backgroundType;
+		return backgroundType == null ? DEFAULT_BACKGROUND_TYPE : backgroundType;
 	}
 
 	public void setBackgroundType(BackgroundType backgroundType) {
@@ -284,7 +293,15 @@ public class FavouritePoint implements Serializable, LocationPoint {
 			return typeName;
 		}
 
-		public int getIconId() {
+		public int getIconId(@NonNull Context ctx) {
+			if (this == PARKING) {
+				OsmandApplication app = (OsmandApplication) ctx.getApplicationContext();
+				OsmandPreference parkingType = app.getSettings().getPreference(ParkingPositionPlugin.PARKING_TYPE);
+				if (parkingType instanceof BooleanPreference && ((BooleanPreference) parkingType).get()) {
+					return R.drawable.mx_special_parking_time_limited;
+				}
+				return iconId;
+			}
 			return iconId;
 		}
 
@@ -296,8 +313,8 @@ public class FavouritePoint implements Serializable, LocationPoint {
 	public enum BackgroundType {
 		CIRCLE("circle", R.string.shared_string_circle, R.drawable.bg_point_circle),
 		OCTAGON("octagon", R.string.shared_string_octagon, R.drawable.bg_point_octagon),
-		SQUARE("square", R.string.shared_string_square, R.drawable.bg_point_square);
-
+		SQUARE("square", R.string.shared_string_square, R.drawable.bg_point_square),
+		COMMENT("comment", R.string.poi_dialog_comment, R.drawable.bg_point_comment);
 		private String typeName;
 		@StringRes
 		private int nameId;
@@ -330,6 +347,27 @@ public class FavouritePoint implements Serializable, LocationPoint {
 			}
 			return defaultValue;
 		}
+
+		public boolean isSelected() {
+			return this != COMMENT;
+		}
+
+		public int getOffsetY(Context ctx, float textScale) {
+			return this == COMMENT ? Math.round(ctx.getResources()
+					.getDimensionPixelSize(R.dimen.point_background_comment_offset_y) * textScale) : 0;
+		}
+
+		public Bitmap getTouchBackground(Context ctx, boolean isSmall) {
+			return getMapBackgroundIconId(ctx, "center", isSmall);
+		}
+
+		public Bitmap getMapBackgroundIconId(Context ctx, String layer, boolean isSmall) {
+			Resources res = ctx.getResources();
+			String iconName = res.getResourceEntryName(getIconId());
+			String suffix = isSmall ? "_small" : "";
+			return BitmapFactory.decodeResource(res, res.getIdentifier("ic_" + iconName + "_" + layer + suffix,
+					"drawable", ctx.getPackageName()));
+		}
 	}
 
 	public static FavouritePoint fromWpt(@NonNull WptPt pt, @NonNull Context ctx) {
@@ -351,7 +389,7 @@ public class FavouritePoint implements Serializable, LocationPoint {
 		if (iconName != null) {
 			fp.setIconIdFromName(ctx, iconName);
 		}
-		BackgroundType backgroundType = BackgroundType.getByTypeName(pt.getBackgroundType(), BackgroundType.CIRCLE);
+		BackgroundType backgroundType = BackgroundType.getByTypeName(pt.getBackgroundType(), null);
 		fp.setBackgroundType(backgroundType);
 		return fp;
 	}
@@ -369,7 +407,7 @@ public class FavouritePoint implements Serializable, LocationPoint {
 		if (iconId != 0) {
 			pt.setIconName(getIconEntryName(ctx).substring(3));
 		}
-		if(backgroundType != null) {
+		if (backgroundType != null) {
 			pt.setBackgroundType(backgroundType.typeName);
 		}
 		if (getColor() != 0) {

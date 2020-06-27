@@ -18,7 +18,6 @@ import android.widget.ImageView;
 
 import androidx.annotation.DimenRes;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.content.ContextCompat;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
@@ -30,7 +29,6 @@ import net.osmand.data.LatLon;
 import net.osmand.data.RotatedTileBox;
 import net.osmand.plus.OsmAndLocationProvider;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.helpers.AndroidUiHelper;
@@ -42,6 +40,7 @@ import net.osmand.plus.quickaction.QuickAction;
 import net.osmand.plus.quickaction.QuickActionRegistry;
 import net.osmand.plus.quickaction.QuickActionsWidget;
 import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
+import net.osmand.plus.settings.backend.OsmandSettings;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -75,7 +74,7 @@ public class MapQuickActionLayer extends OsmandMapLayer implements QuickActionRe
     private boolean isLayerOn;
 
     private boolean nightMode;
-    private boolean currentWidgetState;
+    private Boolean currentWidgetState;
 
     public MapQuickActionLayer(MapActivity activity, ContextMenuLayer contextMenuLayer) {
         this.mapActivity = activity;
@@ -210,15 +209,17 @@ public class MapQuickActionLayer extends OsmandMapLayer implements QuickActionRe
 	 * @return true, if state was changed
 	 */
 	public boolean setLayerState(boolean showWidget) {
+		// check if state change is needed
+		if (currentWidgetState != null && currentWidgetState == showWidget || isWidgetVisible() == showWidget) {
+			return false;
+		}
 		currentWidgetState = showWidget;
-		if (isWidgetVisible() == showWidget)    // check if state change is needed
-		    return false;
 
 		updateQuickActionButton(showWidget);
 		if (settings.DO_NOT_USE_ANIMATIONS.get()) {
-		    quickActionsWidget.setVisibility(!showWidget ? View.GONE : View.VISIBLE);
+			quickActionsWidget.setVisibility(!showWidget ? View.GONE : View.VISIBLE);
 		} else {
-		    animateWidget(showWidget);
+			animateWidget(showWidget);
 		}
 		mapActivity.updateStatusBarColor();
 
@@ -282,10 +283,9 @@ public class MapQuickActionLayer extends OsmandMapLayer implements QuickActionRe
     }
 
 	private void updateQuickActionButton(boolean widgetVisible) {
-		quickActionButton.setImageDrawable(app.getUIUtilities().getMapIcon(
-                !widgetVisible ? R.drawable.map_quick_action : R.drawable.ic_action_close, !nightMode));
-		quickActionButton.setBackgroundResource(
-				nightMode ? R.drawable.btn_circle_night : R.drawable.btn_circle_trans);
+		quickActionButton.setBackgroundResource(nightMode ? R.drawable.btn_circle_night : R.drawable.btn_circle_trans);
+		setMapButtonIcon(quickActionButton, app.getUIUtilities().getMapIcon(
+				!widgetVisible ? R.drawable.ic_quick_action : R.drawable.ic_action_close, !nightMode));
 		quickActionButton.setContentDescription(mapActivity.getString(!widgetVisible ? R.string.configure_screen_quick_action : R.string.shared_string_cancel));
 	}
 
@@ -342,7 +342,10 @@ public class MapQuickActionLayer extends OsmandMapLayer implements QuickActionRe
             double lon = tileBox.getLonFromPixel(rb.getCenterPixelX(), rb.getCenterPixelY());
             view.setLatLon(lat, lon);
         }
-        view.setMapPosition(previousMapPosition);
+        int currentPosition = view.getMapPosition();
+        if (currentPosition == OsmandSettings.MIDDLE_BOTTOM_CONSTANT) {
+            view.setMapPosition(previousMapPosition);
+        }
 
         inMovingMarkerMode = false;
         mark(View.VISIBLE, R.id.map_ruler_layout,
@@ -385,9 +388,13 @@ public class MapQuickActionLayer extends OsmandMapLayer implements QuickActionRe
 			contextMarker.draw(canvas);
 		}
 		if (this.nightMode != nightMode) {
-			this.nightMode = nightMode;
-			updateQuickActionButton(currentWidgetState);
-		}
+            this.nightMode = nightMode;
+            boolean widgetVisible = false;
+            if (currentWidgetState != null) {
+                widgetVisible = currentWidgetState;
+            }
+            updateQuickActionButton(widgetVisible);
+        }
 		setupQuickActionBtnVisibility();
 	}
 

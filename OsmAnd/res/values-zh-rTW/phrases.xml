@@ -1225,7 +1225,7 @@
     <string name="poi_toll_no">不收費</string>
     <string name="poi_toll_hgv_yes">收大貨車費用</string>
     <string name="poi_traffic_signals_sound_yes">有聲音</string>
-    <string name="poi_traffic_signals_sound_no">沒有聲音</string>
+    <string name="poi_traffic_signals_sound_no">聲音：無</string>
     <string name="poi_traffic_signals_sound_walk">當有聲响時允許行走</string>
     <string name="poi_rescue_station">救護站</string>
     <string name="poi_services">服務區</string>
@@ -1518,13 +1518,13 @@
     <string name="poi_service_electrical">電動車維修</string>
     <string name="poi_motorcycle_repair">機車維修</string>
     <string name="poi_self_service_yes">自助服務</string>
-    <string name="poi_self_service_no">無自助服務</string>
+    <string name="poi_self_service_no">無</string>
     <string name="poi_automated_yes">自動化</string>
     <string name="poi_automated_no">無自動化</string>
     <string name="poi_full_service_yes">全方位服務</string>
     <string name="poi_brushless_yes">無刷</string>
     <string name="poi_brushless_no">無刷：無</string>
-    <string name="poi_car_wash_no">洗車：無</string>
+    <string name="poi_car_wash_no">無</string>
     <string name="poi_aeroway_fuel">飛機燃油站</string>
     <string name="poi_public_bath">公共浴室</string>
     <string name="poi_male_yes">男性</string>
@@ -2222,7 +2222,7 @@
     <string name="poi_health_specialty_psychiatry_yes">醫療專業：精神科</string>
     <string name="poi_health_specialty_neurology_yes">醫療專業：神經科</string>
     <string name="poi_seamark_dyke">防波堤</string>
-    <string name="poi_historic_period_villager">"歷史時期：村民 (新時代 I, II, 西元前 1580 年  – 西元 133 年)"</string>
+    <string name="poi_historic_period_villager">"歷史時期：村民（新時代 I, II, 西元前1580年  – 西元133年）"</string>
     <string name="poi_historic_period_urban">歷史時期：城市（新時代 III，西元 133 年 - 西元 374 年）</string>
     <string name="poi_fuel_type">燃料類型</string>
     <string name="poi_fuel_avia_type">燃料類型 (avia)</string>
@@ -3822,4 +3822,10 @@
     <string name="poi_fire_hydrant_style_water_source_groundwater">地下水</string>
     <string name="poi_fire_hydrant_type_pipe">管線</string>
     <string name="poi_fire_hydrant_pressure_filter">壓力</string>
+    <string name="poi_pump_status_missing_beam">幫浦狀態：無桿</string>
+    <string name="poi_traffic_signals_arrow_yes">是</string>
+    <string name="poi_traffic_signals_vibration_yes">是</string>
+    <string name="poi_traffic_signals_vibration_no">震動：無</string>
+    <string name="poi_traffic_signals_arrow">箭頭</string>
+    <string name="poi_traffic_signals_vibration">震動</string>
 </resources>

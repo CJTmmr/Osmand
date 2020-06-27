@@ -1,13 +1,11 @@
 package net.osmand.plus;
 
-import static net.osmand.data.PointDescription.getLocationOlcName;
-
 import android.content.Context;
 import android.text.format.DateUtils;
 
 import com.jwetherell.openmap.common.LatLonPoint;
 import com.jwetherell.openmap.common.UTMPoint;
-import java.text.DecimalFormatSymbols;
+
 import net.osmand.LocationConvert;
 import net.osmand.data.Amenity;
 import net.osmand.data.City.CityType;
@@ -15,18 +13,25 @@ import net.osmand.osm.AbstractPoiType;
 import net.osmand.osm.MapPoiTypes;
 import net.osmand.osm.PoiCategory;
 import net.osmand.osm.PoiType;
-import net.osmand.plus.OsmandSettings.AngularConstants;
-import net.osmand.plus.OsmandSettings.MetricsConstants;
-import net.osmand.plus.OsmandSettings.SpeedConstants;
+import net.osmand.plus.settings.backend.ApplicationMode;
+import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings.AngularConstants;
+import net.osmand.plus.settings.backend.OsmandSettings.MetricsConstants;
+import net.osmand.plus.settings.backend.OsmandSettings.SpeedConstants;
 import net.osmand.util.Algorithms;
 
 import java.text.DateFormatSymbols;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
+
+import static net.osmand.data.PointDescription.getLocationOlcName;
 
 public class OsmAndFormatter {
 	public final static float METERS_IN_KILOMETER = 1000f;
@@ -97,7 +102,7 @@ public class OsmAndFormatter {
 		} else {
 			calendar.setTimeInMillis(seconds * 1000);
 		}
-		if (isSameDay(calendar, Calendar.getInstance())) {
+		if (org.apache.commons.lang3.time.DateUtils.isSameDay(calendar, Calendar.getInstance())) {
 			return SIMPLE_TIME_OF_DAY_FORMAT.format(calendar.getTime());
 		} else {
 			return SIMPLE_TIME_OF_DAY_FORMAT.format(calendar.getTime()) + " " + localDaysStr[calendar.get(Calendar.DAY_OF_WEEK)];
@@ -222,11 +227,14 @@ public class OsmAndFormatter {
 	}
 
 	public static String getFormattedDistance(float meters, OsmandApplication ctx, boolean forceTrailingZeros) {
+		MetricsConstants mc = ctx.getSettings().METRIC_SYSTEM.get();
+		return getFormattedDistance(meters, ctx, forceTrailingZeros, mc);
+	}
+
+	public static String getFormattedDistance(float meters, OsmandApplication ctx, boolean forceTrailingZeros, MetricsConstants mc) {
 		String format1 = forceTrailingZeros ? "{0,number,0.0} " : "{0,number,0.#} ";
 		String format2 = forceTrailingZeros ? "{0,number,0.00} " : "{0,number,0.##} ";
 
-		OsmandSettings settings = ctx.getSettings();
-		MetricsConstants mc = settings.METRIC_SYSTEM.get();
 		int mainUnitStr;
 		float mainUnitInMeters;
 		if (mc == MetricsConstants.KILOMETERS_AND_METERS) {
@@ -271,6 +279,10 @@ public class OsmAndFormatter {
 	public static String getFormattedAlt(double alt, OsmandApplication ctx) {
 		OsmandSettings settings = ctx.getSettings();
 		MetricsConstants mc = settings.METRIC_SYSTEM.get();
+		return getFormattedAlt(alt, ctx, mc);
+	}
+
+	public static String getFormattedAlt(double alt, OsmandApplication ctx, MetricsConstants mc) {
 		boolean useFeet = (mc == MetricsConstants.MILES_AND_FEET) || (mc == MetricsConstants.MILES_AND_YARDS);
 		if (!useFeet) {
 			return ((int) (alt + 0.5)) + " " + ctx.getString(R.string.m);
@@ -362,24 +374,55 @@ public class OsmAndFormatter {
 	public static String getPoiStringWithoutType(Amenity amenity, String locale, boolean transliterate) {
 		PoiCategory pc = amenity.getType();
 		PoiType pt = pc.getPoiTypeByKeyName(amenity.getSubType());
-		String nm = amenity.getSubType();
+		String typeName = amenity.getSubType();
 		if (pt != null) {
-			nm = pt.getTranslation();
-		} else if(nm != null){
-			nm = Algorithms.capitalizeFirstLetterAndLowercase(nm.replace('_', ' '));
+			typeName = pt.getTranslation();
+		} else if(typeName != null){
+			typeName = Algorithms.capitalizeFirstLetterAndLowercase(typeName.replace('_', ' '));
 		}
-		String n = amenity.getName(locale, transliterate);
-		if (n.indexOf(nm) != -1) {
+		String localName = amenity.getName(locale, transliterate);
+		if (typeName != null && localName.contains(typeName)) {
 			// type is contained in name e.g.
-			// n = "Bakery the Corner"
+			// localName = "Bakery the Corner"
 			// type = "Bakery"
 			// no need to repeat this
-			return n;
+			return localName;
 		}
-		if (n.length() == 0) {
-			return nm;
+		if (localName.length() == 0) {
+			return typeName;
 		}
-		return nm + " " + n; //$NON-NLS-1$
+		return typeName + " " + localName; //$NON-NLS-1$
+	}
+
+	public static List<String> getPoiStringsWithoutType(Amenity amenity, String locale, boolean transliterate) {
+		PoiCategory pc = amenity.getType();
+		PoiType pt = pc.getPoiTypeByKeyName(amenity.getSubType());
+		String typeName = amenity.getSubType();
+		if (pt != null) {
+			typeName = pt.getTranslation();
+		} else if(typeName != null){
+			typeName = Algorithms.capitalizeFirstLetterAndLowercase(typeName.replace('_', ' '));
+		}
+		List<String> res = new ArrayList<>();
+		String localName = amenity.getName(locale, transliterate);
+		addPoiString(typeName, localName, res);
+		for (String name : amenity.getAllNames(true)) {
+			addPoiString(typeName, name, res);
+		}
+		for (String name : amenity.getAdditionalInfo().values()) {
+			addPoiString(typeName, name, res);
+		}
+		return res;
+	}
+
+	private static void addPoiString(String poiTypeName, String poiName, List<String> res) {
+		if (poiTypeName != null && poiName.contains(poiTypeName)) {
+			res.add(poiName);
+		}
+		if (poiName.length() == 0) {
+			res.add(poiTypeName);
+		}
+		res.add(poiTypeName + " " + poiName);
 	}
 
 	public static String getAmenityDescriptionContent(OsmandApplication ctx, Amenity amenity, boolean shortDescription) {
@@ -435,12 +478,6 @@ public class OsmAndFormatter {
 		return newStrings;
 	}
 
-	private static boolean isSameDay(Calendar cal1, Calendar cal2) {
-		return (cal1.get(Calendar.ERA) == cal2.get(Calendar.ERA) &&
-				cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-				cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR));
-	}
-	
 	public static String getFormattedCoordinates(double lat, double lon, int outputFormat) {
 		StringBuilder result = new StringBuilder();
 		if (outputFormat == FORMAT_DEGREES_SHORT) {

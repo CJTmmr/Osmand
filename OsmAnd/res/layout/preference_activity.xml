@@ -4,8 +4,7 @@
 			  android:layout_width="match_parent"
 			  android:layout_height="match_parent"
 			  android:orientation="vertical"
-			  android:background="?attr/list_background_color"
-			  tools:context="com.antonioleiva.materialeverywhere.SettingsActivity" >
+			  android:background="?attr/list_background_color">
 
 	<com.google.android.material.appbar.AppBarLayout
 		android:id="@+id/appbar"
@@ -15,10 +14,9 @@
 		<androidx.appcompat.widget.Toolbar
 			android:id="@+id/toolbar"
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:background="?attr/colorPrimary"
-			android:minHeight="?attr/actionBarSize"
-			app:theme="@style/ThemeOverlay.AppCompat.ActionBar">
+			android:layout_height="@dimen/toolbar_height"
+			android:padding="0dp"
+			android:background="?attr/colorPrimary">
 
 			<Spinner
 				android:id="@+id/spinner_nav"
@@ -53,7 +51,7 @@
 			android:paddingRight="@dimen/content_padding_small"
 			android:orientation="horizontal">
 
-			<ImageView
+			<androidx.appcompat.widget.AppCompatImageView
 				android:id="@+id/mode_icon"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
@@ -93,7 +91,7 @@
 
 			</LinearLayout>
 
-			<ImageView
+			<androidx.appcompat.widget.AppCompatImageView
 				android:id="@+id/type_down_arrow"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
@@ -114,7 +112,7 @@
 				android:layout_width="match_parent"
 				android:layout_height="match_parent" />
 
-		<ImageView
+		<androidx.appcompat.widget.AppCompatImageView
 			android:id="@+id/selector_shadow"
 			android:layout_width="match_parent"
 			android:layout_height="@dimen/abp__shadow_height"
@@ -122,7 +120,7 @@
 			android:visibility="gone"
 			tools:ignore="ContentDescription"/>
 
-		<ImageView
+		<androidx.appcompat.widget.AppCompatImageView
 				android:id="@+id/shadowView"
 				android:layout_width="match_parent"
 				android:layout_height="@dimen/abp__shadow_height"

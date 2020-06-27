@@ -15,9 +15,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 
 import net.osmand.PlatformUtil;
-import net.osmand.plus.ApplicationMode;
+import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.SettingsActivity;
 import net.osmand.plus.routing.VoiceRouter;
@@ -146,6 +146,10 @@ public class TTSCommandPlayerImpl extends AbstractPrologCommandPlayer {
 			// Audio focus will be released when onUtteranceCompleted() completed is called by the TTS engine.
 		} else if (ctx != null && vrt.isMute()) {
 			// sendAlertToAndroidWear(ctx, bld.toString());
+		}
+		// #5966: TTS Utterance for debugging
+		if (ctx != null && ctx.getSettings().DISPLAY_TTS_UTTERANCE.get()) {
+			((OsmandApplication) ctx.getApplicationContext()).showToastMessage(bld.toString());
 		}
 		return execute;
 	}

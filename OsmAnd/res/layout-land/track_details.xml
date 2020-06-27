@@ -12,8 +12,7 @@
         android:id="@+id/main_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="@drawable/bg_left_menu_dark">
+        android:orientation="vertical">
 
         <LinearLayout
             android:id="@+id/top_bar_layout"
@@ -109,7 +108,7 @@
                         android:background="?attr/selectableItemBackground"
                         android:gravity="center_vertical">
 
-                        <ImageView
+                        <androidx.appcompat.widget.AppCompatImageView
                             android:id="@+id/y_axis_icon"
                             android:layout_width="@dimen/standard_icon_size"
                             android:layout_height="wrap_content"
@@ -130,7 +129,7 @@
                             tools:text="@string/altitude"
 	                        android:layout_marginEnd="8dp" />
 
-                        <ImageView
+                        <androidx.appcompat.widget.AppCompatImageView
                             android:id="@+id/y_axis_arrow"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
@@ -157,7 +156,7 @@
                             android:background="?attr/dashboard_divider"
                             android:focusable="false"/>
 
-                        <ImageView
+                        <androidx.appcompat.widget.AppCompatImageView
                             android:id="@+id/x_axis_icon"
                             android:layout_width="@dimen/standard_icon_size"
                             android:layout_height="wrap_content"
@@ -178,7 +177,7 @@
                             tools:text="@string/map_widget_speed"
 	                        android:layout_marginEnd="8dp" />
 
-                        <ImageView
+                        <androidx.appcompat.widget.AppCompatImageView
                             android:id="@+id/x_axis_arrow"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"

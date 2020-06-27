@@ -23,11 +23,11 @@ import androidx.viewpager.widget.ViewPager;
 
 import net.osmand.PlatformUtil;
 import net.osmand.data.PointDescription;
-import net.osmand.plus.OsmAndAppCustomization;
+import net.osmand.plus.settings.backend.OsmAndAppCustomization;
 import net.osmand.plus.OsmAndLocationProvider;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
-import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.FavoritesTreeFragment;
 import net.osmand.plus.activities.MapActivity;
@@ -155,7 +155,7 @@ public class FavoritesActivity extends TabActivity {
 			}
 		} else if (requestCode == IMPORT_FAVOURITES_REQUEST && resultCode == Activity.RESULT_OK) {
 			if (data != null && data.getData() != null) {
-				importHelper.handleFavouritesImport(data.getData());
+				importHelper.handleGpxOrFavouritesImport(data.getData());
 			}
 		} else {
 			super.onActivityResult(requestCode, resultCode, data);

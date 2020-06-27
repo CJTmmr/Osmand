@@ -10,7 +10,7 @@ import com.google.openlocationcode.OpenLocationCode;
 import net.osmand.LocationConvert;
 import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.util.Algorithms;
@@ -29,6 +29,7 @@ public class PointDescription {
 
 	public static final String POINT_TYPE_FAVORITE = "favorite";
 	public static final String POINT_TYPE_WPT = "wpt";
+	public static final String POINT_TYPE_GPX = "gpx";
 	public static final String POINT_TYPE_RTE = "rte";
 	public static final String POINT_TYPE_POI = "poi";
 	public static final String POINT_TYPE_ADDRESS = "address";
@@ -286,6 +287,10 @@ public class PointDescription {
 
 	public boolean isCustomPoiFilter() {
 		return POINT_TYPE_CUSTOM_POI_FILTER.equals(type);
+	}
+
+	public boolean isGpxPoint() {
+		return POINT_TYPE_GPX.equals(type);
 	}
 
 	@Override

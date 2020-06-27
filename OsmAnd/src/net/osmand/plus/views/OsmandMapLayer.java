@@ -14,11 +14,13 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.Pair;
 import android.view.MotionEvent;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.core.graphics.ColorUtils;
@@ -622,6 +624,39 @@ public abstract class OsmandMapLayer {
 			r = 18;
 		}
 		return (int) (r * tb.getDensity());
+	}
+
+	protected int getIconSize(Context ctx) {
+		return ctx.getResources().getDimensionPixelSize(R.dimen.favorites_icon_outline_size);
+	}
+
+	public Rect getIconDestinationRect(float x, float y, int width, int height, float scale) {
+		int scaledWidth = width;
+		int scaledHeight = height;
+		if (scale != 1.0f) {
+			scaledWidth = (int) (width * scale);
+			scaledHeight = (int) (height * scale);
+		}
+		Rect rect = new Rect(0, 0, scaledWidth, scaledHeight);
+		rect.offset((int) x - scaledWidth / 2, (int) y - scaledHeight / 2);
+		return rect;
+	}
+
+	public int getScaledTouchRadius(OsmandApplication app, int radiusPoi) {
+		float textScale = app.getSettings().TEXT_SCALE.get();
+		if (textScale < 1.0f) {
+			textScale = 1.0f;
+		}
+		return (int) textScale * radiusPoi;
+	}
+
+	public void setMapButtonIcon(ImageView imageView, Drawable icon) {
+		int btnSizePx = imageView.getLayoutParams().height;
+		int iconSizePx = imageView.getContext().getResources().getDimensionPixelSize(R.dimen.map_widget_icon);
+		int iconPadding = (btnSizePx - iconSizePx) / 2;
+		imageView.setPadding(iconPadding, iconPadding, iconPadding, iconPadding);
+		imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+		imageView.setImageDrawable(icon);
 	}
 
 	public abstract class MapLayerData<T> {

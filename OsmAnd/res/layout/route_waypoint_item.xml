@@ -28,7 +28,7 @@
 		android:orientation="horizontal">
 
 
-		<ImageView
+		<androidx.appcompat.widget.AppCompatImageView
 			android:id="@+id/info_move"
 			android:layout_width="wrap_content"
 			android:layout_height="match_parent"
@@ -46,12 +46,12 @@
 			osmand:srcCompat="@drawable/ic_action_item_move"
 			android:visibility="visible" />
 
-		<ImageView
+		<androidx.appcompat.widget.AppCompatImageView
 			android:id="@+id/waypoint_icon"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_gravity="center_vertical"
-			osmand:srcCompat="@drawable/ic_action_fav_dark" />
+			osmand:srcCompat="@drawable/ic_action_favorite" />
 
 		<LinearLayout
 			android:layout_width="0dp"

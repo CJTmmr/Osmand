@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.fragment.app.FragmentActivity;
@@ -28,20 +29,12 @@ public class SecondSplashScreenFragment extends BaseOsmAndFragment {
 	private final static int OSM_TEXT_ID = 1003;
 	
 	public static final String TAG = "SecondSplashScreenFragment";
+	public static final int MIN_SCREEN_WIDTH_TABLET_DP = 600;
 	public static boolean SHOW = true;
 	public static boolean VISIBLE = false;
 
 	public MapActivity getMapActivity() {
 		return (MapActivity) getActivity();
-	}
-
-	private boolean hasNavBar() {
-		int id = getResources().getIdentifier("config_showNavigationBar", "bool", "android");
-		if (id > 0) {
-			return getResources().getBoolean(id);
-		} else {
-			return false;
-		}
 	}
 
 	private int getStatusBarHeight() {
@@ -54,11 +47,10 @@ public class SecondSplashScreenFragment extends BaseOsmAndFragment {
 	}
 
 	private int getNavigationBarHeight() {
-		if (!hasNavBar())
+		if (!AndroidUtils.hasNavBar(getContext()) && !AndroidUtils.isNavBarVisible(getMapActivity()))
 			return 0;
 		int orientation = getResources().getConfiguration().orientation;
-		boolean isSmartphone = getResources().getConfiguration().smallestScreenWidthDp < 600;
-		if (isSmartphone && Configuration.ORIENTATION_LANDSCAPE == orientation)
+		if (isSmartphone() && Configuration.ORIENTATION_LANDSCAPE == orientation)
 			return 0;
 		int id = getResources().getIdentifier(orientation == Configuration.ORIENTATION_PORTRAIT ? "navigation_bar_height" : "navigation_bar_height_landscape", "dimen", "android");
 		if (id > 0)
@@ -67,11 +59,10 @@ public class SecondSplashScreenFragment extends BaseOsmAndFragment {
 	}
 
 	private int getNavigationBarWidth() {
-		if (!hasNavBar())
+		if (!AndroidUtils.hasNavBar(getContext()) && !AndroidUtils.isNavBarVisible(getMapActivity()))
 			return 0;
 		int orientation = getResources().getConfiguration().orientation;
-		boolean isSmartphone = getResources().getConfiguration().smallestScreenWidthDp < 600;
-		if (orientation == Configuration.ORIENTATION_LANDSCAPE && isSmartphone) {
+		if (orientation == Configuration.ORIENTATION_LANDSCAPE && isSmartphone()) {
 			int id = getResources().getIdentifier("navigation_bar_width", "dimen", "android");
 			if (id > 0)
 				return getResources().getDimensionPixelSize(id);
@@ -81,7 +72,7 @@ public class SecondSplashScreenFragment extends BaseOsmAndFragment {
 
 	@Nullable
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		OsmandApplication app = requireMyApplication();
 		FragmentActivity activity = requireActivity();
 
@@ -97,9 +88,13 @@ public class SecondSplashScreenFragment extends BaseOsmAndFragment {
 			logo.setImageDrawable(AppCompatResources.getDrawable(activity, R.drawable.ic_logo_splash_osmand_plus));
 		}
 		RelativeLayout.LayoutParams logoLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-		logoLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-		logoLayoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-		
+		if (isSmartphone()) {
+			logoLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+			logoLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+		} else {
+			logoLayoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+		}
+
 		ImageView text = new ImageView(activity);
 		text.setId(TEXT_ID);
 		if (Version.isFreeVersion(app)) {
@@ -127,11 +122,11 @@ public class SecondSplashScreenFragment extends BaseOsmAndFragment {
 		RelativeLayout.LayoutParams osmTextLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 		osmTextLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 		osmTextLayoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
-		
-		int defaultLogoMarginTop = (int) getResources().getDimension(R.dimen.splash_screen_logo_top);
+
+		int defaultLogoMarginTop = getResources().getDimensionPixelSize(R.dimen.splash_screen_logo_top);
 		int logoMarginTop = defaultLogoMarginTop - (Build.VERSION.SDK_INT >= 21 ? 0 : getStatusBarHeight());
-		int textMarginBottom = (int) getResources().getDimension(R.dimen.splash_screen_text_bottom);
-		int osmTextMarginBottom = (int) getResources().getDimension(R.dimen.splash_screen_osm_text_bottom);
+		int textMarginBottom = getResources().getDimensionPixelSize(R.dimen.splash_screen_text_bottom);
+		int osmTextMarginBottom = getResources().getDimensionPixelSize(R.dimen.splash_screen_osm_text_bottom);
 		int elementsPaddingLeft = 0;
 		int elementsPaddingRight = 0;
 		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
@@ -158,6 +153,10 @@ public class SecondSplashScreenFragment extends BaseOsmAndFragment {
 		view.addView(osmText);
 
 		return view;
+	}
+
+	private boolean isSmartphone() {
+		return getResources().getConfiguration().smallestScreenWidthDp < MIN_SCREEN_WIDTH_TABLET_DP;
 	}
 
 	@Override

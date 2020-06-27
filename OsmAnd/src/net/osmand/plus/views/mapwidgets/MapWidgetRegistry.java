@@ -12,12 +12,12 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
-import net.osmand.plus.ApplicationMode;
+import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.ContextMenuAdapter;
 import net.osmand.plus.ContextMenuItem;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.OsmandSettings;
-import net.osmand.plus.OsmandSettings.OsmandPreference;
+import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings.OsmandPreference;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
@@ -455,7 +455,7 @@ public class MapWidgetRegistry {
 		boolean selected = app.getQuickActionRegistry().isQuickActionOn();
 		contextMenuAdapter.addItem(new ContextMenuItem.ItemBuilder()
 				.setTitleId(R.string.configure_screen_quick_action, mapActivity)
-				.setIcon(R.drawable.map_quick_action)
+				.setIcon(R.drawable.ic_quick_action)
 				.setSelected(selected)
 				.setColor(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
 				.setSecondaryIcon( R.drawable.ic_action_additional_option)
@@ -471,9 +471,11 @@ public class MapWidgetRegistry {
 						int slideInAnim = R.anim.slide_in_bottom;
 						int slideOutAnim = R.anim.slide_out_bottom;
 
+						QuickActionListFragment fragment = new QuickActionListFragment();
+						fragment.setFromDashboard(true);
 						mapActivity.getSupportFragmentManager().beginTransaction()
 								.setCustomAnimations(slideInAnim, slideOutAnim, slideInAnim, slideOutAnim)
-								.add(R.id.fragmentContainer, new QuickActionListFragment(), QuickActionListFragment.TAG)
+								.add(R.id.fragmentContainer, fragment, QuickActionListFragment.TAG)
 								.addToBackStack(QuickActionListFragment.TAG).commitAllowingStateLoss();
 
 						return true;

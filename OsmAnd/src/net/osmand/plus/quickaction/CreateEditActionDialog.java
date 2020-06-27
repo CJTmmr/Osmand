@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -21,6 +23,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
 
 import net.osmand.AndroidUtils;
 import net.osmand.CallbackWithObject;
@@ -31,11 +34,14 @@ import net.osmand.plus.activities.MapActivity;
 
 import java.util.List;
 
+import static net.osmand.plus.quickaction.QuickActionListFragment.showConfirmDeleteAnActionBottomSheet;
+
 /**
  * Created by rosty on 12/27/16.
  */
 
-public class CreateEditActionDialog extends DialogFragment implements CallbackWithObject<Object> {
+public class CreateEditActionDialog extends DialogFragment
+        implements CallbackWithObject<Object>, ConfirmationBottomSheet.OnConfirmButtonClickListener {
 
     public static final String TAG = CreateEditActionDialog.class.getSimpleName();
 
@@ -168,6 +174,25 @@ public class CreateEditActionDialog extends DialogFragment implements CallbackWi
                 dismiss();
             }
         });
+        if (!isNew) {
+            Menu menu = toolbar.getMenu();
+            menu.clear();
+
+            MenuItem item = menu.add(R.string.shared_string_delete).setIcon(R.drawable.ic_action_delete_dark);
+            item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    FragmentActivity activity = getActivity();
+                    if (activity != null) {
+                        showConfirmDeleteAnActionBottomSheet(
+                                activity, CreateEditActionDialog.this,
+                                action, false);
+                    }
+                    return true;
+                }
+            });
+            item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        }
     }
 
     private void setupHeader(View root, Bundle savedInstanceState){
@@ -264,5 +289,12 @@ public class CreateEditActionDialog extends DialogFragment implements CallbackWi
             ((SwitchableAction) action).onItemsSelected(getContext(), (List) result);
         }
         return false;
+    }
+
+    @Override
+    public void onConfirmButtonClick() {
+        quickActionRegistry.deleteQuickAction(action);
+        quickActionRegistry.notifyUpdates();
+        dismiss();
     }
 }

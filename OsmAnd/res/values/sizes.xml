@@ -9,7 +9,7 @@
 	<dimen name="wpt_list_category_height">60dp</dimen>
 	<dimen name="wpt_list_item_height">56dp</dimen>
 	<dimen name="list_item_button_padding">4dp</dimen>
-	<dimen name="action_bar_height">64dp</dimen>
+	<dimen name="action_bar_height">56dp</dimen>
 	<dimen name="list_content_padding_large">32dp</dimen>
 	<dimen name="title_padding">20dp</dimen>
     <dimen name="title_text_size">28sp</dimen>
@@ -73,12 +73,18 @@
 
 	<dimen name="favorites_icon_right_margin">24dp</dimen>
 	<dimen name="favorites_icon_size">40dp</dimen>
+	<dimen name="favorites_my_places_icon_size">30dp</dimen>
+	<dimen name="favorites_my_places_icon_left_padding">13dp</dimen>
+	<dimen name="favorites_my_places_icon_right_padding">28dp</dimen>
+	<dimen name="favorites_icon_outline_size">48dp</dimen>
+	<dimen name="favorites_icon_size_small">20dp</dimen>
 	<dimen name="favorites_icon_padding">2dp</dimen>
 	<dimen name="favorites_list_item_height">60dp</dimen>
 	<dimen name="favorites_select_group_button_height">76dp</dimen>
 	<dimen name="favorites_select_group_button_width">142dp</dimen>
 	<dimen name="favorites_icon_top_margin">13dp</dimen>
 	<dimen name="favorites_select_icon_button_right_padding">9dp</dimen>
+	<dimen name="point_background_comment_offset_y">14dp</dimen>
 
 	<dimen name="local_index_check_right_margin">10dp</dimen>
 	<dimen name="dialog_elements_vertical_margin">16dp</dimen>
@@ -86,6 +92,7 @@
 	<dimen name="dialog_content_bottom_margin">16dp</dimen>
 	<dimen name="local_size_height">34dp</dimen>
 	<dimen name="standard_icon_size">24dp</dimen>
+	<dimen name="poi_icon_size">16dp</dimen>
 	<dimen name="gpx_small_icon_margin">3dp</dimen>
 	<dimen name="gpx_small_text_margin">14dp</dimen>
 	<dimen name="gpx_text_top_margin">6dp</dimen>
@@ -159,7 +166,6 @@
     <dimen name="context_menu_first_line_bottom_margin">16dp</dimen>
     <dimen name="context_menu_second_line_top_margin">4dp</dimen>
     <dimen name="context_menu_top_right_button_min_width">76dp</dimen>
-    <dimen name="context_menu_button_padding_x">10dp</dimen>
     <dimen name="context_menu_buttons_top_margin">-16dp</dimen>
     <dimen name="context_menu_buttons_padding_bottom">4dp</dimen>
     <dimen name="context_menu_progress_min_height">54dp</dimen>
@@ -191,8 +197,9 @@
 	<dimen name="context_menu_big_icon_size">40dp</dimen>
 
 	<dimen name="fab_size_with_shadow">62dp</dimen>
-    <dimen name="fab_margin_right">12dp</dimen>
-    <dimen name="fab_margin_bottom_big">72dp</dimen>
+	<dimen name="fab_margin_right">12dp</dimen>
+	<dimen name="fab_margin_bottom_big">72dp</dimen>
+	<dimen name="fab_icon_padding">18dp</dimen>
 
     <!-- TextSizes -->
     <dimen name="default_list_text_size_large">19sp</dimen>
@@ -266,6 +273,7 @@
 	<dimen name="bottom_sheet_image_text_margin_start">10dp</dimen>
 	<dimen name="bottom_sheet_selected_item_title_height">56dp</dimen>
 	<dimen name="bottom_sheet_text_spacing_multiplier" format="float">1.25</dimen>
+	<dimen name="bottom_sheet_info_spacing_multiplier" format="float">1.5</dimen>
 	<dimen name="bottom_sheet_big_item_height">128dp</dimen>
 
 	<dimen name="action_bar_image_width_land">236dp</dimen>
@@ -273,6 +281,7 @@
 	<dimen name="action_bar_image_height">220dp</dimen>
 	<dimen name="action_bar_image_side_margin">70dp</dimen>
 
+	<dimen name="map_markers_recycler_view_item_height">56dp</dimen>
 	<dimen name="map_markers_recycler_view_padding_bottom">52dp</dimen>
 	<dimen name="map_markers_recycler_view_padding_top">10dp</dimen>
 
@@ -313,6 +322,7 @@
 	<dimen name="multi_selection_header_height">52dp</dimen>
 
 	<dimen name="wikipedia_button_left_padding">19dp</dimen>
+	<dimen name="wikipedia_options_button_width">48dp</dimen>
 
 	<dimen name="multi_selection_menu_padding_top">13dp</dimen>
 	<dimen name="multi_selection_menu_padding_bottom">15dp</dimen>
@@ -330,6 +340,7 @@
 
 	<dimen name="toolbar_height">56dp</dimen>
 	<dimen name="toolbar_height_expanded">96dp</dimen>
+	<dimen name="toolbar_inset_start_with_navigation">72dp</dimen>
 
 	<dimen name="wikivoyage_search_list_header_height">36dp</dimen>
 	<dimen name="wikivoyage_article_card_icon_size">80dp</dimen>
@@ -377,4 +388,6 @@
 
 	<dimen name="download_description_images_height">132dp</dimen>
 	<dimen name="info_description_line_spacing_multiplier" format="float">1.4</dimen>
+
+	<dimen name="screen_alert_big_warning_icon_size">92dp</dimen>
 </resources>

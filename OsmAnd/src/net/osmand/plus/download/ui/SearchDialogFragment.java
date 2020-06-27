@@ -40,7 +40,7 @@ import net.osmand.data.Amenity;
 import net.osmand.map.OsmandRegions;
 import net.osmand.map.WorldRegion;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.download.CityItem;
 import net.osmand.plus.download.DownloadActivity;
@@ -157,7 +157,7 @@ public class SearchDialogFragment extends DialogFragment implements DownloadEven
 
 		progressBar = (ProgressBar) view.findViewById(R.id.searchProgressBar);
 		clearButton = (ImageButton) view.findViewById(R.id.clearButton);
-		clearButton.setColorFilter(iconColorResId);
+		clearButton.setColorFilter(ContextCompat.getColor(getMyApplication(), iconColorResId));
 		clearButton.setVisibility(View.GONE);
 
 		searchEditText.addTextChangedListener(new TextWatcher() {

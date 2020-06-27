@@ -25,6 +25,7 @@
         android:id="@+id/ZoomToDownload"
 		style="@style/Widget.Styled.Slider"
         android:layout_width="fill_parent"
+        android:stepSize="1"
         android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/content_padding"
         android:layout_marginRight="@dimen/content_padding"
@@ -72,7 +73,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" />
 
-    <ImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_marginLeft="10dp"

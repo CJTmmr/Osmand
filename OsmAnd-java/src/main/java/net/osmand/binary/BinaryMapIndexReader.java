@@ -3,6 +3,7 @@ package net.osmand.binary;
 
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.CodedOutputStream;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.WireFormat;
 
 import net.osmand.Collator;
@@ -26,6 +27,7 @@ import net.osmand.binary.OsmandOdb.OsmAndMapIndex.MapRootLevel;
 import net.osmand.data.Amenity;
 import net.osmand.data.Building;
 import net.osmand.data.City;
+import net.osmand.data.IncompleteTransportRoute;
 import net.osmand.data.LatLon;
 import net.osmand.data.MapObject;
 import net.osmand.data.Street;
@@ -109,7 +111,8 @@ public class BinaryMapIndexReader {
 	/*private*/ List<TransportIndex> transportIndexes = new ArrayList<TransportIndex>();
 	/*private*/ List<RouteRegion> routingIndexes = new ArrayList<RouteRegion>();
 	/*private*/ List<BinaryIndexPart> indexes = new ArrayList<BinaryIndexPart>();
-
+	TLongObjectHashMap<IncompleteTransportRoute> incompleteTransportRoutes = null;
+	
 	protected CodedInputStream codedIS;
 
 	private final BinaryMapTransportReaderAdapter transportAdapter;
@@ -493,7 +496,7 @@ public class BinaryMapIndexReader {
 			}
 		}
 		Iterator<Entry<TransportIndex, TIntArrayList>> it = groupPoints.entrySet().iterator();
-		if (it.hasNext()) {
+		while (it.hasNext()) {
 			Entry<TransportIndex, TIntArrayList> e = it.next();
 			TransportIndex ind = e.getKey();
 			TIntArrayList pointers = e.getValue();
@@ -1421,7 +1424,7 @@ public class BinaryMapIndexReader {
 		return addressIndexes;
 	}
 
-	protected List<PoiRegion> getPoiIndexes() {
+	public List<PoiRegion> getPoiIndexes() {
 		return poiIndexes;
 	}
 
@@ -1454,8 +1457,14 @@ public class BinaryMapIndexReader {
 
 	public static <T> SearchRequest<T> buildAddressByNameRequest(ResultMatcher<T> resultMatcher, String nameRequest, 
 			StringMatcherMode matcherMode) {
+		return buildAddressByNameRequest(resultMatcher, null, nameRequest, matcherMode);
+	}
+
+	public static <T> SearchRequest<T> buildAddressByNameRequest(ResultMatcher<T> resultMatcher, ResultMatcher<T> rawDataCollector, String nameRequest,
+			StringMatcherMode matcherMode) {
 		SearchRequest<T> request = new SearchRequest<T>();
 		request.resultMatcher = resultMatcher;
+		request.rawDataCollector = rawDataCollector;
 		request.nameQuery = nameRequest.trim();
 		request.matcherMode = matcherMode;
 		return request;
@@ -1539,6 +1548,10 @@ public class BinaryMapIndexReader {
 
 
 	public static SearchRequest<Amenity> buildSearchPoiRequest(int x, int y, String nameFilter, int sleft, int sright, int stop, int sbottom, ResultMatcher<Amenity> resultMatcher) {
+		return buildSearchPoiRequest(x, y, nameFilter, sleft, sright, stop, sbottom, resultMatcher, null);
+	}
+
+	public static SearchRequest<Amenity> buildSearchPoiRequest(int x, int y, String nameFilter, int sleft, int sright, int stop, int sbottom, ResultMatcher<Amenity> resultMatcher, ResultMatcher<Amenity> rawDataCollector) {
 		SearchRequest<Amenity> request = new SearchRequest<Amenity>();
 		request.x = x;
 		request.y = y;
@@ -1547,6 +1560,7 @@ public class BinaryMapIndexReader {
 		request.top = stop;
 		request.bottom = sbottom;
 		request.resultMatcher = resultMatcher;
+		request.rawDataCollector = rawDataCollector;
 		request.nameQuery = nameFilter.trim();
 		return request;
 	}
@@ -1631,6 +1645,7 @@ public class BinaryMapIndexReader {
 		private boolean ocean = false;
 
 		private ResultMatcher<T> resultMatcher;
+		private ResultMatcher<T> rawDataCollector;
 
 		// 31 zoom tiles
 		// common variables
@@ -1706,6 +1721,12 @@ public class BinaryMapIndexReader {
 				return true;
 			}
 			return false;
+		}
+
+		public void collectRawData(T obj) {
+			if (rawDataCollector != null) {
+				rawDataCollector.publish(obj);
+			}
 		}
 
 		protected void publishOceanTile(boolean ocean) {
@@ -2632,6 +2653,21 @@ public class BinaryMapIndexReader {
 		if (routeAdapter != null) {
 			routeAdapter.initRouteRegion(routeReg);
 		}
+	}
+
+	public TLongObjectHashMap<IncompleteTransportRoute> getIncompleteTransportRoutes() throws InvalidProtocolBufferException, IOException {
+		if (incompleteTransportRoutes == null) {
+			incompleteTransportRoutes = new TLongObjectHashMap<>();
+			for (TransportIndex ti : transportIndexes) {
+				if (ti.incompleteRoutesLength > 0) {
+					codedIS.seek(ti.incompleteRoutesOffset);
+					int oldLimit = codedIS.pushLimit(ti.incompleteRoutesLength);
+					transportAdapter.readIncompleteRoutesList(incompleteTransportRoutes);
+					codedIS.popLimit(oldLimit);
+				}
+			}
+		}
+		return incompleteTransportRoutes;
 	}
 
 

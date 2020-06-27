@@ -28,15 +28,16 @@ import net.osmand.osm.PoiCategory;
 import net.osmand.osm.PoiType;
 import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.OsmandPlugin;
-import net.osmand.plus.OsmandSettings;
-import net.osmand.plus.OsmandSettings.MetricsConstants;
 import net.osmand.plus.R;
 import net.osmand.plus.Version;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.helpers.FontCache;
+import net.osmand.plus.mapcontextmenu.CollapsableView;
 import net.osmand.plus.mapcontextmenu.MenuBuilder;
 import net.osmand.plus.osmedit.OsmEditingPlugin;
 import net.osmand.plus.poi.PoiUIFilter;
+import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings.MetricsConstants;
 import net.osmand.plus.views.POIMapLayer;
 import net.osmand.plus.widgets.TextViewEx;
 import net.osmand.plus.widgets.tools.ClickableSpanTouchListener;
@@ -57,11 +58,13 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class AmenityMenuBuilder extends MenuBuilder {
 
@@ -223,27 +226,27 @@ public class AmenityMenuBuilder extends MenuBuilder {
 			llIconCollapseParams.gravity = Gravity.CENTER_VERTICAL;
 			iconViewCollapse.setLayoutParams(llIconCollapseParams);
 			iconViewCollapse.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-			iconViewCollapse.setImageDrawable(getCollapseIcon(collapsableView.getContenView().getVisibility() == View.GONE));
+			iconViewCollapse.setImageDrawable(getCollapseIcon(collapsableView.getContentView().getVisibility() == View.GONE));
 			llIconCollapse.addView(iconViewCollapse);
 			ll.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					if (collapsableView.getContenView().getVisibility() == View.VISIBLE) {
-						collapsableView.getContenView().setVisibility(View.GONE);
+					if (collapsableView.getContentView().getVisibility() == View.VISIBLE) {
+						collapsableView.getContentView().setVisibility(View.GONE);
 						iconViewCollapse.setImageDrawable(getCollapseIcon(true));
 						collapsableView.setCollapsed(true);
 					} else {
-						collapsableView.getContenView().setVisibility(View.VISIBLE);
+						collapsableView.getContentView().setVisibility(View.VISIBLE);
 						iconViewCollapse.setImageDrawable(getCollapseIcon(false));
 						collapsableView.setCollapsed(false);
 					}
 				}
 			});
 			if (collapsableView.isCollapsed()) {
-				collapsableView.getContenView().setVisibility(View.GONE);
+				collapsableView.getContentView().setVisibility(View.GONE);
 				iconViewCollapse.setImageDrawable(getCollapseIcon(true));
 			}
-			baseView.addView(collapsableView.getContenView());
+			baseView.addView(collapsableView.getContentView());
 		}
 
 		if (isWiki) {
@@ -275,7 +278,7 @@ public class AmenityMenuBuilder extends MenuBuilder {
 					light ? R.color.ctx_menu_controller_button_text_color_light_n : R.color.ctx_menu_controller_button_text_color_dark_n);
 			Drawable pressed = app.getUIUtilities().getIcon(R.drawable.ic_action_read_text,
 					light ? R.color.ctx_menu_controller_button_text_color_light_p : R.color.ctx_menu_controller_button_text_color_dark_p);
-			button.setCompoundDrawablesWithIntrinsicBounds(Build.VERSION.SDK_INT >= 21
+			AndroidUtils.setCompoundDrawablesWithIntrinsicBounds(button, Build.VERSION.SDK_INT >= 21
 					? AndroidUtils.createPressedStateListDrawable(normal, pressed) : normal, null, null, null);
 			button.setCompoundDrawablePadding(dpToPx(8f));
 			llText.addView(button);
@@ -426,8 +429,7 @@ public class AmenityMenuBuilder extends MenuBuilder {
 			} else if (Amenity.COLLECTION_TIMES.equals(key) || Amenity.SERVICE_TIMES.equals(key)) {
 				iconId = R.drawable.ic_action_time;
 				needLinks = false;
-			} else if (Amenity.OPENING_HOURS.equals(key) || 
-					Amenity.COLLECTION_TIMES.equals(key) || Amenity.SERVICE_TIMES.equals(key)) {
+			} else if (Amenity.OPENING_HOURS.equals(key)) {
 				iconId = R.drawable.ic_action_time;
 				collapsableView = getCollapsableTextView(view.getContext(), true,
 					amenity.getAdditionalInfo(key).replace("; ", "\n").replace(",", ", "));
@@ -526,6 +528,25 @@ public class AmenityMenuBuilder extends MenuBuilder {
 			textPrefix = formattedPrefixAndText[0];
 			vl = formattedPrefixAndText[1];
 
+			if ("ele".equals(key)) {
+				try {
+					float distance = Float.parseFloat(vl);
+					vl = OsmAndFormatter.getFormattedAlt(distance, app, metricSystem);
+					String collapsibleVal;
+					if (metricSystem == MetricsConstants.MILES_AND_FEET || metricSystem == MetricsConstants.MILES_AND_YARDS) {
+						collapsibleVal = OsmAndFormatter.getFormattedAlt(distance, app, MetricsConstants.KILOMETERS_AND_METERS);
+					} else {
+						collapsibleVal = OsmAndFormatter.getFormattedAlt(distance, app, MetricsConstants.MILES_AND_FEET);
+					}
+					Set<String> elevationData = new HashSet<>();
+					elevationData.add(collapsibleVal);
+					collapsableView = getDistanceCollapsableView(elevationData);
+					collapsable = true;
+				} catch (NumberFormatException ex) {
+					LOG.error(ex);
+				}
+			}
+
 			boolean matchWidthDivider = !isDescription && isWiki;
 			AmenityInfoRow row;
 			if (isDescription) {
@@ -565,8 +586,8 @@ public class AmenityMenuBuilder extends MenuBuilder {
 				Drawable icon;
 				PoiType pType = categoryTypes.get(0);
 				String poiAdditionalCategoryName = pType.getPoiAdditionalCategory();
-				String poiAddidionalIconName = poiTypes.getPoiAdditionalCategoryIconName(poiAdditionalCategoryName);
-				icon = getRowIcon(view.getContext(), poiAddidionalIconName);
+				String poiAdditionalIconName = poiTypes.getPoiAdditionalCategoryIconName(poiAdditionalCategoryName);
+				icon = getRowIcon(view.getContext(), poiAdditionalIconName);
 				if (icon == null) {
 					icon = getRowIcon(view.getContext(), poiAdditionalCategoryName);
 				}
@@ -627,7 +648,7 @@ public class AmenityMenuBuilder extends MenuBuilder {
 		AmenityInfoRow descInPrefLang = null;
 		for (AmenityInfoRow desc : descriptions) {
 			if (desc.key.length() > langSuffix.length()
-					&& desc.key.substring(desc.key.length() - langSuffix.length(), desc.key.length()).equals(langSuffix)) {
+					&& desc.key.substring(desc.key.length() - langSuffix.length()).equals(langSuffix)) {
 				descInPrefLang = desc;
 				break;
 			}
@@ -641,7 +662,7 @@ public class AmenityMenuBuilder extends MenuBuilder {
 			buildAmenityRow(view, info);
 		}
 
-		if (processNearstWiki() && nearestWiki.size() > 0) {
+		if (processNearestWiki() && nearestWiki.size() > 0) {
 			AmenityInfoRow wikiInfo = new AmenityInfoRow(
 					"nearest_wiki", R.drawable.ic_plugin_wikipedia, null, app.getString(R.string.wiki_around) + " (" + nearestWiki.size() + ")", true,
 					getCollapsableWikiView(view.getContext(), true),
@@ -690,7 +711,7 @@ public class AmenityMenuBuilder extends MenuBuilder {
 				}
 			case "depth":
 			case "seamark_height":
-				if(Algorithms.isFloat(value)) {
+				if (Algorithms.isFloat(value)) {
 					double valueAsDouble = Double.valueOf(value);
 					if (metricSystem == OsmandSettings.MetricsConstants.MILES_AND_FEET) {
 						formattedValue = String.valueOf(DF.format(valueAsDouble * OsmAndFormatter.FEET_IN_ONE_METER))

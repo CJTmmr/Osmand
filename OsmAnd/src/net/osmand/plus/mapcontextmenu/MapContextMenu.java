@@ -22,7 +22,7 @@ import net.osmand.data.FavouritePoint;
 import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
 import net.osmand.data.TransportStop;
-import net.osmand.plus.ApplicationMode;
+import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.ContextMenuAdapter;
 import net.osmand.plus.GpxSelectionHelper.SelectedGpxFile;
 import net.osmand.plus.MapMarkersHelper.MapMarker;
@@ -908,13 +908,13 @@ public class MapContextMenu extends MenuTitleController implements StateChangedL
 			favActionIconId = menuController.getFavActionIconId();
 			waypointActionIconId = menuController.getWaypointActionIconId();
 		} else {
-			favActionIconId = R.drawable.ic_action_fav_dark;
-			waypointActionIconId = R.drawable.ic_action_flag_dark;
+			favActionIconId = R.drawable.ic_action_favorite_stroke;
+			waypointActionIconId = R.drawable.ic_action_flag_stroke;
 		}
 	}
 
 	public int getFabIconId() {
-		int res = R.drawable.map_directions;
+		int res = R.drawable.ic_action_gdirections_dark;
 		MapActivity mapActivity = getMapActivity();
 		if (mapActivity != null) {
 			RoutingHelper routingHelper = mapActivity.getMyApplication().getRoutingHelper();

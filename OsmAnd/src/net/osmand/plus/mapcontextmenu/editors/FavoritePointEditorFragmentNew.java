@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,13 +25,15 @@ import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
-import net.osmand.plus.base.FavoriteImageDrawable;
+import net.osmand.plus.base.PointImageDrawable;
 import net.osmand.plus.dialogs.FavoriteDialogs;
 import net.osmand.plus.mapcontextmenu.MapContextMenu;
 import net.osmand.util.Algorithms;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import static net.osmand.data.FavouritePoint.DEFAULT_BACKGROUND_TYPE;
 
 public class FavoritePointEditorFragmentNew extends PointEditorFragmentNew {
 
@@ -45,7 +46,7 @@ public class FavoritePointEditorFragmentNew extends PointEditorFragmentNew {
 	private int color;
 	private int iconId;
 	@NonNull
-	private BackgroundType backgroundType = BackgroundType.CIRCLE;
+	private BackgroundType backgroundType = DEFAULT_BACKGROUND_TYPE;
 
 	@Nullable
 	private FavouritesDbHelper helper;
@@ -165,8 +166,9 @@ public class FavoritePointEditorFragmentNew extends PointEditorFragmentNew {
 	@Override
 	public void setCategory(String name, int color) {
 		FavouritesDbHelper helper = getHelper();
-		if (helper != null) {
-			FavoriteGroup group = helper.getGroup(FavoriteGroup.convertDisplayNameToGroupIdName(requireContext(), name));
+		Context ctx = getContext();
+		if (helper != null && ctx != null) {
+			FavoriteGroup group = helper.getGroup(FavoriteGroup.convertDisplayNameToGroupIdName(ctx, name));
 			this.group = group;
 			super.setCategory(name, group != null ? group.getColor() : 0);
 		}
@@ -174,10 +176,13 @@ public class FavoritePointEditorFragmentNew extends PointEditorFragmentNew {
 
 	@Override
 	protected String getLastUsedGroup() {
-		OsmandApplication app = requireMyApplication();
-		String lastCategory = app.getSettings().LAST_FAV_CATEGORY_ENTERED.get();
-		if (!Algorithms.isEmpty(lastCategory) && !app.getFavorites().groupExists(lastCategory)) {
-			lastCategory = "";
+		String lastCategory = "";
+		OsmandApplication app = getMyApplication();
+		if (app != null) {
+			lastCategory = app.getSettings().LAST_FAV_CATEGORY_ENTERED.get();
+			if (!Algorithms.isEmpty(lastCategory) && !app.getFavorites().groupExists(lastCategory)) {
+				lastCategory = "";
+			}
 		}
 		return lastCategory;
 	}
@@ -323,11 +328,14 @@ public class FavoritePointEditorFragmentNew extends PointEditorFragmentNew {
 	private void doEditFavorite(FavouritePoint favorite, String name, String category, String description,
 	                            @ColorInt int color, BackgroundType backgroundType, @DrawableRes int iconId,
 	                            FavouritesDbHelper helper) {
-		requireMyApplication().getSettings().LAST_FAV_CATEGORY_ENTERED.set(category);
-		favorite.setColor(color);
-		favorite.setBackgroundType(backgroundType);
-		favorite.setIconId(iconId);
-		helper.editFavouriteName(favorite, name, category, description);
+		OsmandApplication app = getMyApplication();
+		if (app != null) {
+			app.getSettings().LAST_FAV_CATEGORY_ENTERED.set(category);
+			favorite.setColor(color);
+			favorite.setBackgroundType(backgroundType);
+			favorite.setIconId(iconId);
+			helper.editFavouriteName(favorite, name, category, description);
+		}
 	}
 
 	private void doAddFavorite(String name, String category, String description, @ColorInt int color,
@@ -407,7 +415,7 @@ public class FavoritePointEditorFragmentNew extends PointEditorFragmentNew {
 			point.setBackgroundType(backgroundType);
 			point.setIconId(iconId);
 		}
-		return FavoriteImageDrawable.getOrCreate(getMapActivity(), getPointColor(), false, point);
+		return PointImageDrawable.getFromFavorite(getMapActivity(), getPointColor(), false, point);
 	}
 
 	@Override
@@ -461,7 +469,7 @@ public class FavoritePointEditorFragmentNew extends PointEditorFragmentNew {
 					categories.add(lastUsedGroup.getDisplayName(app));
 				}
 				for (FavouritesDbHelper.FavoriteGroup fg : getHelper().getFavoriteGroups()) {
-					if (lastUsedGroup != null && !fg.equals(lastUsedGroup) && fg.isVisible()) {
+					if (!fg.equals(lastUsedGroup) && fg.isVisible()) {
 						categories.add(fg.getDisplayName(app));
 					}
 				}

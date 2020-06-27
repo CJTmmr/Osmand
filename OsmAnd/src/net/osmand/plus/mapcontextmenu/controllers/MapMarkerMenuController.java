@@ -13,7 +13,7 @@ import androidx.core.content.ContextCompat;
 import net.osmand.data.PointDescription;
 import net.osmand.plus.MapMarkersHelper;
 import net.osmand.plus.MapMarkersHelper.MapMarker;
-import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.helpers.MapMarkerDialogHelper;
@@ -48,7 +48,7 @@ public class MapMarkerMenuController extends MenuController {
 			}
 		};
 		leftTitleButtonController.caption = mapActivity.getString(mapMarker.history ? R.string.shared_string_restore : R.string.mark_passed);
-		leftTitleButtonController.leftIcon = createPassedIcon(getPassedIconBgNormalColorId());
+		leftTitleButtonController.startIcon = createPassedIcon(getPassedIconBgNormalColorId());
 
 		if (!mapMarker.history) {
 			rightTitleButtonController = new TitleButtonController() {
@@ -69,7 +69,7 @@ public class MapMarkerMenuController extends MenuController {
 				}
 			};
 			rightTitleButtonController.caption = mapActivity.getString(R.string.make_active);
-			rightTitleButtonController.leftIcon = createShowOnTopbarIcon(getDeviceTopNormalColorId());
+			rightTitleButtonController.startIcon = createShowOnTopbarIcon(getDeviceTopNormalColorId());
 		}
 	}
 

@@ -23,7 +23,6 @@ import net.osmand.IProgress;
 import net.osmand.IndexConstants;
 import net.osmand.PlatformUtil;
 import net.osmand.aidl.OsmandAidlApi;
-import net.osmand.binary.BinaryMapIndexReader;
 import net.osmand.map.OsmandRegions;
 import net.osmand.map.OsmandRegions.RegionTranslation;
 import net.osmand.map.WorldRegion;
@@ -54,6 +53,9 @@ import net.osmand.plus.routepreparationmenu.RoutingOptionsHelper;
 import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.routing.TransportRoutingHelper;
 import net.osmand.plus.search.QuickSearchHelper;
+import net.osmand.plus.settings.backend.ApplicationMode;
+import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.backend.SettingsHelper;
 import net.osmand.plus.views.corenative.NativeCoreContext;
 import net.osmand.plus.voice.CommandPlayer;
 import net.osmand.plus.voice.CommandPlayerException;
@@ -83,6 +85,7 @@ import java.util.Random;
 
 import btools.routingapp.BRouterServiceConnection;
 
+import static net.osmand.plus.AppVersionUpgradeOnInit.LAST_APP_VERSION;
 import static net.osmand.plus.liveupdates.LiveUpdatesHelper.getPendingIntent;
 import static net.osmand.plus.liveupdates.LiveUpdatesHelper.preferenceLastCheck;
 import static net.osmand.plus.liveupdates.LiveUpdatesHelper.preferenceLiveUpdatesOn;
@@ -94,27 +97,10 @@ import static net.osmand.plus.liveupdates.LiveUpdatesHelper.setAlarmForPendingIn
 /**
  */
 public class AppInitializer implements IProgress {
-	// 22 - 2.2
-	public static final int VERSION_2_2 = 22;
-	// 23 - 2.3
-	public static final int VERSION_2_3 = 23;
-	// 32 - 3.2
-	public static final int VERSION_3_2 = 32;
-	// 35 - 3.5
-	public static final int VERSION_3_5 = 35;
-	// 36 - 3.6
-	public static final int VERSION_3_6 = 36;
-	// 37 - 3.7
-	public static final int VERSION_3_7 = 37;
-
 
 	public static final boolean TIPS_AND_TRICKS = false;
-	public static final String FIRST_TIME_APP_RUN = "FIRST_TIME_APP_RUN"; //$NON-NLS-1$
-	public static final String VERSION_INSTALLED_NUMBER = "VERSION_INSTALLED_NUMBER"; //$NON-NLS-1$
-	public static final String NUMBER_OF_STARTS = "NUMBER_OF_STARTS"; //$NON-NLS-1$
-	public static final String FIRST_INSTALLED = "FIRST_INSTALLED"; //$NON-NLS-1$
+
 	private static final String VECTOR_INDEXES_CHECK = "VECTOR_INDEXES_CHECK"; //$NON-NLS-1$
-	private static final String VERSION_INSTALLED = "VERSION_INSTALLED"; //$NON-NLS-1$
 	private static final String EXCEPTION_FILE_SIZE = "EXCEPTION_FS"; //$NON-NLS-1$
 
 	public static final String LATEST_CHANGES_URL = "https://osmand.net/blog/osmand-3-7-released";
@@ -122,13 +108,11 @@ public class AppInitializer implements IProgress {
 	public static final int APP_EXIT_CODE = 4;
 	public static final String APP_EXIT_KEY = "APP_EXIT_KEY";
 	private OsmandApplication app;
+	private AppVersionUpgradeOnInit appVersionUpgrade;
 	private static final org.apache.commons.logging.Log LOG = PlatformUtil.getLog(AppInitializer.class);
 
 	private boolean initSettings = false;
-	private boolean firstTime;
 	private boolean activityChangesShowed = false;
-	private boolean appVersionChanged;
-	private int prevAppVersion;
 	private long startTime;
 	private long startBgTime;
 	private boolean appInitializing = true;
@@ -158,6 +142,7 @@ public class AppInitializer implements IProgress {
 
 	public AppInitializer(OsmandApplication app) {
 		this.app = app;
+		appVersionUpgrade = new AppVersionUpgradeOnInit(app);
 	}
 
 
@@ -179,105 +164,38 @@ public class AppInitializer implements IProgress {
 		startPrefs = app.getSharedPreferences(
 				getLocalClassName(app.getAppCustomization().getMapActivity().getName()),
 				Context.MODE_PRIVATE);
-		if(!startPrefs.contains(NUMBER_OF_STARTS)) {
-			startPrefs.edit().putInt(NUMBER_OF_STARTS, 1).commit();
-		} else {
-			startPrefs.edit().putInt(NUMBER_OF_STARTS, startPrefs.getInt(NUMBER_OF_STARTS, 0) + 1).commit();
-		}
-		if (!startPrefs.contains(FIRST_INSTALLED)) {
-			startPrefs.edit().putLong(FIRST_INSTALLED, System.currentTimeMillis()).commit();
-		}
-		if (!startPrefs.contains(FIRST_TIME_APP_RUN)) {
-			firstTime = true;
-			startPrefs.edit().putBoolean(FIRST_TIME_APP_RUN, true).commit();
-			startPrefs.edit().putString(VERSION_INSTALLED, Version.getFullVersion(app)).commit();
-			startPrefs.edit().putInt(VERSION_INSTALLED_NUMBER, VERSION_3_5).commit();
-		} else if (!Version.getFullVersion(app).equals(startPrefs.getString(VERSION_INSTALLED, ""))) {
-			prevAppVersion = startPrefs.getInt(VERSION_INSTALLED_NUMBER, 0);
-			if(prevAppVersion < VERSION_2_2) {
-				app.getSettings().SHOW_DASHBOARD_ON_START.set(true);
-				app.getSettings().SHOW_DASHBOARD_ON_MAP_SCREEN.set(true);
-				app.getSettings().SHOW_CARD_TO_CHOOSE_DRAWER.set(true);
-				startPrefs.edit().putInt(VERSION_INSTALLED_NUMBER, VERSION_2_2).commit();
-			}
-			if(prevAppVersion < VERSION_2_3) {
-				startPrefs.edit().putInt(VERSION_INSTALLED_NUMBER, VERSION_2_3).commit();
-			}
-			if (prevAppVersion < VERSION_3_2) {
-				app.getSettings().BILLING_PURCHASE_TOKENS_SENT.set("");
-				startPrefs.edit().putInt(VERSION_INSTALLED_NUMBER, VERSION_3_2).commit();
-			}
-			if (prevAppVersion < VERSION_3_5 || Version.getAppVersion(app).equals("3.5.3")
-					|| Version.getAppVersion(app).equals("3.5.4")) {
-				app.getSettings().migratePreferences();
-				addListener(new AppInitializeListener() {
-					@Override
-					public void onProgress(AppInitializer init, InitEvents event) {
-						if (event.equals(InitEvents.FAVORITES_INITIALIZED)) {
-							app.getSettings().migrateHomeWorkParkingToFavorites();
-						}
-					}
-
-					@Override
-					public void onFinish(AppInitializer init) {
-					}
-				});
-				startPrefs.edit().putInt(VERSION_INSTALLED_NUMBER, VERSION_3_5).commit();
-			}
-			if (prevAppVersion < VERSION_3_6) {
-				app.getSettings().migratePreferences();
-				startPrefs.edit().putInt(VERSION_INSTALLED_NUMBER, VERSION_3_6).commit();
-			}
-			if (prevAppVersion < VERSION_3_7) {
-				app.getSettings().migrateEnumPreferences();
-				startPrefs.edit().putInt(VERSION_INSTALLED_NUMBER, VERSION_3_7).commit();
-			}
-			startPrefs.edit().putString(VERSION_INSTALLED, Version.getFullVersion(app)).commit();
-			appVersionChanged = true;
-		}
-		app.getSettings().SHOW_TRAVEL_UPDATE_CARD.set(true);
-		app.getSettings().SHOW_TRAVEL_NEEDED_MAPS_CARD.set(true);
+		appVersionUpgrade.upgradeVersion(startPrefs, LAST_APP_VERSION);
 		initSettings = true;
 	}
 
 	public int getNumberOfStarts() {
-		if(startPrefs == null) {
-			return 0;
-		}
-		return startPrefs.getInt(NUMBER_OF_STARTS, 1);
+		return appVersionUpgrade.getNumberOfStarts(startPrefs);
 	}
 
 	public long getFirstInstalledDays() {
-		if(startPrefs == null) {
-			return 0;
-		}
-		long nd = startPrefs.getLong(FIRST_INSTALLED, 0);
-		
-		return (System.currentTimeMillis() - nd) / (1000l * 24l * 60l * 60l);
+		return appVersionUpgrade.getFirstInstalledDays(startPrefs);
 	}
 
 	public void resetFirstTimeRun() {
-		if(startPrefs != null) {
-			startPrefs.edit().remove(FIRST_TIME_APP_RUN).commit();
-		}
+		appVersionUpgrade.resetFirstTimeRun(startPrefs);
 	}
 
 	public boolean isFirstTime() {
 		initVariables();
-		return firstTime;
+		return appVersionUpgrade.isFirstTime();
 	}
 
 	public boolean isAppVersionChanged() {
-		return appVersionChanged;
+		return appVersionUpgrade.isAppVersionChanged();
 	}
 
 	public int getPrevAppVersion() {
-		return prevAppVersion;
+		return appVersionUpgrade.getPrevAppVersion();
 	}
 
 	public boolean checkAppVersionChanged() {
 		initVariables();
-		boolean showRecentChangesDialog = !firstTime && appVersionChanged;
+		boolean showRecentChangesDialog = !isFirstTime() && isAppVersionChanged();
 //		showRecentChangesDialog = true;
 		if (showRecentChangesDialog && !activityChangesShowed) {
 			activityChangesShowed = true;
@@ -303,7 +221,7 @@ public class AppInitializer implements IProgress {
 		long size = activity.getPreferences(Context.MODE_PRIVATE).getLong(EXCEPTION_FILE_SIZE, 0);
 		final File file = app.getAppPath(OsmandApplication.EXCEPTION_PATH);
 		if (file.exists() && file.length() > 0) {
-			if (size != file.length() && !firstTime) {
+			if (size != file.length() && !isFirstTime()) {
 				if (writeFileSize) {
 					activity.getPreferences(Context.MODE_PRIVATE).edit().putLong(EXCEPTION_FILE_SIZE, file.length()).commit();
 				}
@@ -384,6 +302,7 @@ public class AppInitializer implements IProgress {
 	}
 
 	private void initPoiTypes() {
+		app.poiTypes.setForbiddenTypes(app.osmandSettings.getForbiddenTypes());
 		if (app.getAppPath(IndexConstants.SETTINGS_DIR + "poi_types.xml").exists()) {
 			app.poiTypes.init(app.getAppPath(IndexConstants.SETTINGS_DIR + "poi_types.xml").getAbsolutePath());
 		} else {
@@ -488,17 +407,6 @@ public class AppInitializer implements IProgress {
 				return null;
 			}
 		});
-	}
-
-	private void readPoiTypesFromMap() {
-		final BinaryMapIndexReader[] currentFile = app.resourceManager.getPoiSearchFiles();
-		for (BinaryMapIndexReader r : currentFile) {
-			try {
-				r.initCategories();
-			} catch (IOException e) {
-				LOG.error("Error while read poi types from map " + e);
-			}
-		}
 	}
 
 	public void onCreateApplication() {
@@ -646,7 +554,8 @@ public class AppInitializer implements IProgress {
 
 									customConfigs.put(fileName, builder);
 								} catch (XmlPullParserException | IOException e) {
-									throw new IllegalStateException(e);
+									Algorithms.removeAllFiles(f);
+									LOG.error(e.getMessage(), e);
 								}
 							}
 						}
@@ -751,12 +660,10 @@ public class AppInitializer implements IProgress {
 			initPoiTypes();
 			notifyEvent(InitEvents.POI_TYPES_INITIALIZED);
 			app.resourceManager.reloadIndexesOnStart(this, warnings);
-			readPoiTypesFromMap();
 
 			// native depends on renderers
 			initNativeCore();
 			notifyEvent(InitEvents.NATIVE_INITIALIZED);
-
 			app.favorites.loadFavorites();
 			app.gpxDbHelper.loadGpxItems();
 			notifyEvent(InitEvents.FAVORITES_INITIALIZED);
@@ -1022,6 +929,6 @@ public class AppInitializer implements IProgress {
 				|| cls.charAt(packageLen) != '.') {
 			return cls;
 		}
-		return cls.substring(packageLen+1);
+		return cls.substring(packageLen + 1);
 	}
 }

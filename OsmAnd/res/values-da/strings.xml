@@ -2339,13 +2339,13 @@ Repræsenterer område: %1$s x %2$s</string>
 \n • Valgfri visning af hastighedsgrænse med påmindelse ved overskridelse 
 \n • Valgfri hastighedsafhængig zoom  
 \n • Del placering, så dine venner kan finde dig</string>
-    <string name="osmand_plus_extended_description_part6">Cykel og fodgænger-funktioner 
-\n  • Visning af gang-, vandre- og cykelstier, fantastisk til udendørsaktiviteter 
-\n  • Særlige navigations- og visningstilstande for cyklister og fodgængere 
-\n  • Valgfrie stoppesteder for offentlig transport (bus, sporvogn, tog), herunder også linjenavne 
-\n  • Valgfri ruteoptagelse til lokal GPX-fil eller online tjeneste 
-\n  • Valgfri hastigheds og højdevisning 
-\n  • Visning af højdekurver og relieflag (med ekstra udvidelse)</string>
+    <string name="osmand_plus_extended_description_part6">Cykel og fodgænger-funktioner
+\n • Visning af gang-, vandre- og cykelstier, fantastisk til udendørsaktiviteter
+\n • Særlige navigations- og visningstilstande for cyklister og fodgængere
+\n • Valgfrie stoppesteder for offentlig transport (bus, sporvogn, tog), herunder også linjenavne
+\n • Valgfri ruteoptagelse til lokal GPX-fil eller online tjeneste
+\n • Valgfri hastigheds og højdevisning
+\n • Visning af højdekurver og relieflag (med ekstra udvidelse)</string>
     <string name="osmand_plus_extended_description_part8">Anslået kortdækning og kvalitet:
 \n • Vesteuropa: ****
 \n • Østeuropa: ***
@@ -3670,4 +3670,37 @@ Repræsenterer område: %1$s x %2$s</string>
     <string name="add_edit_favorite">Tilføj / rediger favorit</string>
     <string name="reset_deafult_order">Gendan standardrækkefølge for elementer</string>
     <string name="back_to_editing">Tilbage til redigering</string>
+    <string name="shared_string_add_profile">Tilføj profil</string>
+    <string name="shared_string_resume">Fortsæt</string>
+    <string name="ui_customization_description">Tilpas mængden af elementer i \"Panel\", \"Konfigurer Kort\" og \"Menu\".
+\n
+\nDeaktivere ubrugte programudvidelser for at skjule deres kontroller. %1$s.</string>
+    <string name="additional_actions_descr">Få adgang til handlinger ved at trykke på knappen “%1$s”.</string>
+    <string name="legend_item_description">Vejledning til symbolik på kort.</string>
+    <string name="quick_action_switch_profile_descr">Handlingsknappen skifter mellem valgte profiler.</string>
+    <string name="change_application_profile">Ændre programprofil</string>
+    <string name="profiles_for_action_not_found">Kunne ikke finde sådanne profiler.</string>
+    <string name="index_item_world_basemap_detailed">Verdensoversigtskort (detaljeret)</string>
+    <string name="unsupported_type_error">Ikke understøttet type</string>
+    <string name="shared_string_always">Altid</string>
+    <string name="screen_control">Skærmstyring</string>
+    <string name="turn_screen_on_navigation_instructions_descr">Hver navigationsinstruktion tænder skærmen.</string>
+    <string name="turn_screen_on_navigation_instructions">Navigationsinstruktioner</string>
+    <string name="turn_screen_on_power_button">Tænd/sluk-knap</string>
+    <string name="turn_screen_on_proximity_sensor">Nærhedssensor</string>
+    <string name="keep_screen_on">Hold skærmen tændt</string>
+    <string name="keep_screen_off">Hold skærmen slukket</string>
+    <string name="pseudo_mercator_projection">Pseudo-Mercatorprojektion</string>
+    <string name="sqlite_db_file">SQLiteDB fil</string>
+    <string name="online_map_name_helper_text">Angiv et navn til onlinekortkilden.</string>
+    <string name="edit_online_source">Rediger onlinekilde</string>
+    <string name="expire_time">Udløbstid</string>
+    <string name="mercator_projection">Mercatorprojektion</string>
+    <string name="storage_format">Lagerformat</string>
+    <string name="shared_string_delete_all_q">Slet alt\?</string>
+    <string name="shared_string_tones">toner</string>
+    <string name="shared_string_meters">meter</string>
+    <string name="item_deleted">%1$s slettet</string>
+    <string name="shared_string_uninstall_and_restart">Afinstaller og genstart</string>
+    <string name="app_mode_inline_skates">Inline-rulleskøjter</string>
 </resources>

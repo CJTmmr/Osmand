@@ -44,7 +44,8 @@ import net.osmand.data.FavouritePoint;
 import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
 import net.osmand.data.RotatedTileBox;
-import net.osmand.plus.ApplicationMode;
+import net.osmand.plus.routepreparationmenu.cards.NauticalBridgeHeightWarningCard;
+import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.FavouritesDbHelper;
 import net.osmand.plus.FavouritesDbHelper.FavoritesListener;
 import net.osmand.plus.GeocodingLookupService;
@@ -53,9 +54,9 @@ import net.osmand.plus.GpxSelectionHelper.SelectedGpxFile;
 import net.osmand.plus.MapMarkersHelper.MapMarker;
 import net.osmand.plus.OsmAndLocationProvider;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.OsmandSettings;
-import net.osmand.plus.OsmandSettings.CommonPreference;
-import net.osmand.plus.OsmandSettings.OsmandPreference;
+import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings.CommonPreference;
+import net.osmand.plus.settings.backend.OsmandSettings.OsmandPreference;
 import net.osmand.plus.R;
 import net.osmand.plus.TargetPointsHelper;
 import net.osmand.plus.TargetPointsHelper.TargetPoint;
@@ -119,8 +120,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-
-import static net.osmand.plus.poi.PoiFiltersHelper.PoiTemplateList;
 
 public class MapRouteInfoMenu implements IRouteInformationListener, CardListener, FavoritesListener {
 
@@ -296,7 +295,6 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 				break;
 			case TARGET:
 				targetPointsHelper.navigateToPoint(latLon, true, -1, pd);
-				OsmAndLocationProvider.requestFineLocationPermissionIfNeeded(mapActivity);
 				break;
 			case INTERMEDIATE:
 				targetPointsHelper.navigateToPoint(latLon, true, targetPointsHelper.getIntermediatePoints().size(), pd);
@@ -636,6 +634,8 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 		} else if (routeCalculationInProgress) {
 			if (app.getRoutingHelper().isPublicTransportMode()) {
 				menuCards.add(new PublicTransportBetaWarningCard(mapActivity));
+			} else if (app.getRoutingHelper().isBoatMode()) {
+				menuCards.add(new NauticalBridgeHeightWarningCard(mapActivity));
 			} else if (app.getTargetPointsHelper().hasTooLongDistanceToNavigate()) {
 				menuCards.add(new LongDistanceWarningCard(mapActivity));
 			}
@@ -760,7 +760,8 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 			} else if (card instanceof PublicTransportNotFoundWarningCard) {
 				updateApplicationMode(null, ApplicationMode.PEDESTRIAN);
 			} else if (card instanceof PublicTransportNotFoundSettingsWarningCard) {
-				AvoidRoadsBottomSheetDialogFragment avoidRoadsFragment = new AvoidRoadsBottomSheetDialogFragment(true);
+				AvoidRoadsBottomSheetDialogFragment avoidRoadsFragment = new AvoidRoadsBottomSheetDialogFragment();
+				avoidRoadsFragment.setHideImpassableRoads(true);
 				avoidRoadsFragment.show(mapActivity.getSupportFragmentManager(), AvoidRoadsBottomSheetDialogFragment.TAG);
 			} else if (card instanceof PedestrianRouteCard) {
 				updateApplicationMode(null, ApplicationMode.PEDESTRIAN);
@@ -969,6 +970,7 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 		RoutingHelper routingHelper = app.getRoutingHelper();
 		final ApplicationMode applicationMode = routingHelper.getAppMode();
 		final RouteMenuAppModes mode = app.getRoutingOptionsHelper().getRouteMenuAppMode(applicationMode);
+		boolean isLayoutRTL = AndroidUtils.isLayoutRtl(app);
 
 		updateControlButtons(mapActivity, mainView);
 		LinearLayout optionsButton = (LinearLayout) mainView.findViewById(R.id.map_options_route_button);
@@ -986,7 +988,9 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 				clickRouteParams();
 			}
 		});
-		AndroidUtils.setBackground(app, optionsButton, nightMode, R.drawable.route_info_trans_gradient_light, R.drawable.route_info_trans_gradient_dark);
+		AndroidUtils.setBackground(app, optionsButton, nightMode,
+				isLayoutRTL ? R.drawable.route_info_trans_gradient_left_light : R.drawable.route_info_trans_gradient_light,
+				isLayoutRTL ? R.drawable.route_info_trans_gradient_left_dark :R.drawable.route_info_trans_gradient_dark);
 
 		HorizontalScrollView scrollView = mainView.findViewById(R.id.route_options_scroll_container);
 		scrollView.setVerticalScrollBarEnabled(false);
@@ -1157,7 +1161,7 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 	private void createShowAlongTheRouteItems(MapActivity mapActivity, LinearLayout optionsContainer) {
 		OsmandApplication app = mapActivity.getMyApplication();
 		final ApplicationMode applicationMode = app.getRoutingHelper().getAppMode();
-		final Set<PoiUIFilter> poiFilters = app.getPoiFilters().getSelectedPoiFilters(PoiTemplateList.POI);
+		final Set<PoiUIFilter> poiFilters = app.getPoiFilters().getSelectedPoiFilters();
 		final boolean traffic = app.getSettings().SHOW_TRAFFIC_WARNINGS.getModeValue(applicationMode);
 		final boolean fav = app.getSettings().SHOW_NEARBY_FAVORITES.getModeValue(applicationMode);
 		if (!poiFilters.isEmpty()) {
@@ -1183,7 +1187,8 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 					public void onClick(View v) {
 						MapActivity mapActivity = getMapActivity();
 						if (mapActivity != null) {
-							mapActivity.getMyApplication().getPoiFilters().removeSelectedPoiFilter(PoiTemplateList.POI, poiUIFilter);
+							mapActivity.getMyApplication().getPoiFilters()
+									.removeSelectedPoiFilter(poiUIFilter);
 							mapActivity.getMapView().refreshMap();
 							updateOptionsButtons();
 						}
@@ -2298,7 +2303,7 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 				case ROUTE_INFO:
 					return 0;
 				case ROUTE_DETAILS:
-					return app != null ? app.getRoutingHelper().getAppMode().getIconRes() : R.drawable.map_directions;
+					return app != null ? app.getRoutingHelper().getAppMode().getIconRes() : R.drawable.ic_action_gdirections_dark;
 				default:
 					return 0;
 			}

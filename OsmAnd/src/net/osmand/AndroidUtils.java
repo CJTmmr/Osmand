@@ -46,11 +46,13 @@ import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.ContextCompat;
@@ -373,13 +375,20 @@ public class AndroidUtils {
 		}
 	}
 
-	public static void updateImageButton(Context ctx, ImageButton button, int iconLightId, int iconDarkId, int bgLightId, int bgDarkId, boolean night) {
-		button.setImageDrawable(AppCompatResources.getDrawable(ctx, night ? iconDarkId : iconLightId));
+	public static void updateImageButton(OsmandApplication ctx, ImageButton button,
+	                                     @DrawableRes int iconLightId, @DrawableRes int iconDarkId,
+	                                     @DrawableRes int bgLightId, @DrawableRes int bgDarkId, boolean night) {
 		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-			button.setBackground(AppCompatResources.getDrawable(ctx, night ? bgDarkId : bgLightId));
+			button.setBackground(ctx.getUIUtilities().getIcon(night ? bgDarkId : bgLightId));
 		} else {
-			button.setBackgroundDrawable(AppCompatResources.getDrawable(ctx, night ? bgDarkId : bgLightId));
+			button.setBackgroundDrawable(ctx.getUIUtilities().getIcon(night ? bgDarkId : bgLightId));
 		}
+		int btnSizePx = button.getLayoutParams().height;
+		int iconSizePx = ctx.getResources().getDimensionPixelSize(R.dimen.map_widget_icon);
+		int iconPadding = (btnSizePx - iconSizePx) / 2;
+		button.setPadding(iconPadding, iconPadding, iconPadding, iconPadding);
+		button.setScaleType(ImageView.ScaleType.FIT_CENTER);
+		button.setImageDrawable(ctx.getUIUtilities().getMapIcon(night ? iconDarkId : iconLightId, !night));
 	}
 
 	public static void setDashButtonBackground(Context ctx, View view, boolean night) {
@@ -414,6 +423,17 @@ public class AndroidUtils {
 		textView.setHintTextColor(night ?
 				ctx.getResources().getColor(R.color.text_color_secondary_dark)
 				: ctx.getResources().getColor(R.color.text_color_secondary_light));
+	}
+
+	public static int getTextMaxWidth(float textSize, List<String> titles) {
+		int width = 0;
+		for (String title : titles) {
+			int titleWidth = getTextWidth(textSize, title);
+			if (titleWidth > width) {
+				width = titleWidth;
+			}
+		}
+		return width;
 	}
 
 	public static int getTextWidth(float textSize, String text) {
@@ -696,6 +716,10 @@ public class AndroidUtils {
 
 	public static Drawable getMirroredDrawable(@NonNull Context ctx,
 	                                           @NonNull Drawable drawable) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+			drawable.setAutoMirrored(true);
+			return drawable;
+		}
 		Bitmap bitmap = drawableToBitmap(drawable);
 		return new BitmapDrawable(ctx.getResources(), flipBitmapHorizontally(bitmap));
 	}

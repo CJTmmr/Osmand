@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
@@ -49,8 +48,6 @@ import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.OsmAndLocationProvider;
 import net.osmand.plus.OsmAndLocationProvider.GPSInfo;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.OsmandSettings;
-import net.osmand.plus.OsmandSettings.RulerMode;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
@@ -60,13 +57,14 @@ import net.osmand.plus.helpers.WaypointDialogHelper;
 import net.osmand.plus.helpers.WaypointHelper;
 import net.osmand.plus.helpers.WaypointHelper.LocationPointWrapper;
 import net.osmand.plus.render.OsmandRenderer;
-import net.osmand.plus.render.RenderingIcons;
 import net.osmand.plus.render.TextRenderer;
 import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
 import net.osmand.plus.routepreparationmenu.ShowAlongTheRouteBottomSheet;
 import net.osmand.plus.routing.RouteCalculationResult;
 import net.osmand.plus.routing.RouteDirectionInfo;
 import net.osmand.plus.routing.RoutingHelper;
+import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings.RulerMode;
 import net.osmand.plus.views.OsmandMapLayer.DrawSettings;
 import net.osmand.plus.views.OsmandMapTileView;
 import net.osmand.plus.views.RulerControlLayer;
@@ -74,8 +72,6 @@ import net.osmand.plus.views.mapwidgets.MapWidgetRegistry.WidgetState;
 import net.osmand.plus.views.mapwidgets.NextTurnInfoWidget.TurnDrawable;
 import net.osmand.render.RenderingRuleSearchRequest;
 import net.osmand.render.RenderingRulesStorage;
-import net.osmand.router.ExitInfo;
-import net.osmand.router.TurnType;
 import net.osmand.util.Algorithms;
 import net.osmand.util.MapUtils;
 
@@ -933,11 +929,11 @@ public class MapInfoWidgetsFactory {
 		private View waypointInfoBar;
 		private LocationPointWrapper lastPoint;
 		private TurnDrawable turnDrawable;
-		private boolean showMarker;
 		private int shadowRad;
 		RouteCalculationResult.NextDirectionInfo calc1;
 
 		private static final Log LOG = PlatformUtil.getLog(TopTextView.class);
+		private boolean showMarker;
 
 		public TopTextView(OsmandApplication app, MapActivity map) {
 			turnDrawable = new NextTurnInfoWidget.TurnDrawable(map, true);
@@ -983,138 +979,81 @@ public class MapInfoWidgetsFactory {
 		}
 
 
-		public boolean updateInfo(DrawSettings d) {
-			String text = null;
-			TurnType[] type = new TurnType[1];
-			boolean showNextTurn = false;
-			boolean showMarker = this.showMarker;
-			boolean showExitInfo = false;
-			boolean showShield = false;
-			boolean imminentTurn = false;
-			ExitInfo exitInfo = null;
-			RouteDataObject object = null;
 
+		public boolean updateInfo(DrawSettings d) {
+			RoutingHelper.CurrentStreetName streetName = null;
+			boolean showClosestWaypointFirstInAddress = true;
 			if (routingHelper != null && routingHelper.isRouteCalculated() && !routingHelper.isDeviatedFromRoute()) {
 				if (routingHelper.isFollowingMode()) {
 					if (settings.SHOW_STREET_NAME.get()) {
 						RouteCalculationResult.NextDirectionInfo nextDirInfo = routingHelper.getNextRouteDirectionInfo(calc1, true);
-						text = routingHelper.getCurrentName(type, nextDirInfo);
-						if (text == null) {
-							text = "";
-						} else {
-							if (type[0] == null) {
-								showMarker = true;
-							} else {
-								turnDrawable.setColor(R.color.nav_arrow);
-							}
-						}
-
-						RouteDirectionInfo directionInfo = nextDirInfo.directionInfo;
-
-						if (nextDirInfo.imminent >= 0) {
-							imminentTurn = true;
-						} else {
-							imminentTurn = false;
-						}
-
-						if (directionInfo != null && directionInfo.getExitInfo() != null) {
-							exitInfo = directionInfo.getExitInfo();
-							showExitInfo = true;
-						} else {
-							showExitInfo = false;
-						}
-
-						if (showExitInfo) {
-							if(!Algorithms.isEmpty(exitInfo.getExitStreetName())) {
-								text = exitInfo.getExitStreetName();
-							}
-						}
-
-						if (directionInfo != null && directionInfo.getRouteDataObject() != null) {
-							object = directionInfo.getRouteDataObject();
-							showShield = true;
-						}
+						streetName = routingHelper.getCurrentName(nextDirInfo);
+						turnDrawable.setColor(R.color.nav_arrow);
 					}
 				} else {
 					int di = MapRouteInfoMenu.getDirectionInfo();
-					if (di >= 0 && map.getMapRouteInfoMenu().isVisible() &&
-							di < routingHelper.getRouteDirections().size()) {
-						showNextTurn = true;
+					if (di >= 0 && map.getMapRouteInfoMenu().isVisible() && di < routingHelper.getRouteDirections().size()) {
+						showClosestWaypointFirstInAddress = false;
 						RouteDirectionInfo next = routingHelper.getRouteDirections().get(di);
-						type[0] = next.getTurnType();
+						streetName = routingHelper.getCurrentName(routingHelper.getNextRouteDirectionInfo(calc1, true));
 						turnDrawable.setColor(R.color.nav_arrow_distant);
-						text = RoutingHelper.formatStreetName(next.getStreetName(), null, next.getDestinationName(), "»");
-						if (text == null) {
-							text = "";
-						}
-					} else {
-						text = null;
 					}
 				}
 			} else if (map.getMapViewTrackingUtilities().isMapLinkedToLocation() &&
 					settings.SHOW_STREET_NAME.get()) {
+				streetName = new RoutingHelper.CurrentStreetName();
 				RouteDataObject rt = locationProvider.getLastKnownRouteSegment();
 				if (rt != null) {
 					Location lastKnownLocation = locationProvider.getLastKnownLocation();
-					text = RoutingHelper.formatStreetName(
+					streetName.text = RoutingHelper.formatStreetName(
 							rt.getName(settings.MAP_PREFERRED_LOCALE.get(), settings.MAP_TRANSLITERATE_NAMES.get()),
 							rt.getRef(settings.MAP_PREFERRED_LOCALE.get(), settings.MAP_TRANSLITERATE_NAMES.get(), rt.bearingVsRouteDirection(lastKnownLocation)),
 							rt.getDestinationName(settings.MAP_PREFERRED_LOCALE.get(), settings.MAP_TRANSLITERATE_NAMES.get(), rt.bearingVsRouteDirection(lastKnownLocation)),
 							"»");
-				}
-				if (text == null) {
-					text = "";
-				} else {
-					Location lastKnownLocation = locationProvider.getLastKnownLocation();
-					if (!Algorithms.isEmpty(text) && lastKnownLocation != null) {
-						double dist =
-								CurrentPositionHelper.getOrthogonalDistance(rt, lastKnownLocation);
+					if (!Algorithms.isEmpty(streetName.text) && lastKnownLocation != null) {
+						double dist = CurrentPositionHelper.getOrthogonalDistance(rt, lastKnownLocation);
 						if (dist < 50) {
-							showMarker = true;
+							streetName.showMarker = true;
 						} else {
-							text = map.getResources().getString(R.string.shared_string_near) + " " + text;
+							streetName.text = map.getResources().getString(R.string.shared_string_near) + " " + streetName.text;
 						}
 					}
 				}
 			}
 			if (map.isTopToolbarActive() || !map.getContextMenu().shouldShowTopControls() || MapRouteInfoMenu.chooseRoutesVisible || MapRouteInfoMenu.waypointsVisible) {
 				updateVisibility(false);
-			} else if (!showNextTurn && updateWaypoint()) {
+			} else if (!showClosestWaypointFirstInAddress && updateWaypoint()) {
 				updateVisibility(true);
 				AndroidUiHelper.updateVisibility(addressText, false);
 				AndroidUiHelper.updateVisibility(addressTextShadow, false);
-			} else if (text == null) {
+			} else if (streetName == null) {
 				updateVisibility(false);
 			} else {
 				updateVisibility(true);
 				AndroidUiHelper.updateVisibility(waypointInfoBar, false);
 				AndroidUiHelper.updateVisibility(addressText, true);
 				AndroidUiHelper.updateVisibility(addressTextShadow, shadowRad > 0);
-				boolean update = turnDrawable.setTurnType(type[0]) || showMarker != this.showMarker;
-				this.showMarker = showMarker;
-				if (showShield && setRoadShield(shieldIcon, object)) {
+
+				if (streetName.shieldObject != null && streetName.shieldObject.nameIds != null
+						&& setRoadShield(shieldIcon, streetName.shieldObject)) {
 					AndroidUiHelper.updateVisibility(shieldIcon, true);
 				} else {
 					AndroidUiHelper.updateVisibility(shieldIcon, false);
 				}
 
-				if (showExitInfo) {
-					String exitRef = exitInfo.getRef();
-					if (!Algorithms.isEmpty(exitRef) && imminentTurn) {
-						exitRefText.setText(exitRef);
-						AndroidUiHelper.updateVisibility(exitRefText, true);
-					} else {
-						AndroidUiHelper.updateVisibility(exitRefText, false);
-					}
+				if (!Algorithms.isEmpty(streetName.exitRef) ) {
+					exitRefText.setText(streetName.exitRef);
+					AndroidUiHelper.updateVisibility(exitRefText, true);
 				} else {
 					AndroidUiHelper.updateVisibility(exitRefText, false);
 				}
-				if (update) {
-					if (type[0] != null) {
+				if (turnDrawable.setTurnType(streetName.turnType) || streetName.showMarker != this.showMarker) {
+					this.showMarker = streetName.showMarker;
+					if (streetName.turnType != null) {
 						turnIcon.invalidateDrawable(turnDrawable);
 						turnIcon.setImageDrawable(turnDrawable);
 						AndroidUiHelper.updateVisibility(turnIcon, true);
-					} else if (showMarker) {
+					} else if (streetName.showMarker) {
 						Drawable marker = map.getMyApplication().getUIUtilities().getIcon(R.drawable.ic_action_start_navigation, R.color.color_myloc_distance);
 						turnIcon.setImageDrawable(marker);
 						AndroidUiHelper.updateVisibility(turnIcon, true);
@@ -1122,9 +1061,12 @@ public class MapInfoWidgetsFactory {
 						AndroidUiHelper.updateVisibility(turnIcon, false);
 					}
 				}
-				if (!text.equals(addressText.getText().toString())) {
-					addressTextShadow.setText(text);
-					addressText.setText(text);
+				if(streetName.text == null || streetName.text.isEmpty()) {
+					addressTextShadow.setText("");
+					addressText.setText("");
+				} else if (!streetName.text.equals(addressText.getText().toString())) {
+					addressTextShadow.setText(streetName.text);
+					addressText.setText(streetName.text );
 					return true;
 				}
 			}

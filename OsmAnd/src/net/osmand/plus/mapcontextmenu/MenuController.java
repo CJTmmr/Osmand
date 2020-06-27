@@ -15,7 +15,6 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.core.content.ContextCompat;
 
 import net.osmand.GPXUtilities.WptPt;
 import net.osmand.IndexConstants;
@@ -48,7 +47,6 @@ import net.osmand.plus.download.DownloadValidationManager;
 import net.osmand.plus.download.IndexItem;
 import net.osmand.plus.helpers.AvoidSpecificRoads;
 import net.osmand.plus.helpers.SearchHistoryHelper;
-import net.osmand.plus.mapcontextmenu.MenuBuilder.CollapsableView;
 import net.osmand.plus.mapcontextmenu.MenuBuilder.CollapseExpandListener;
 import net.osmand.plus.mapcontextmenu.controllers.AMapPointMenuController;
 import net.osmand.plus.mapcontextmenu.controllers.AmenityMenuController;
@@ -61,6 +59,8 @@ import net.osmand.plus.mapcontextmenu.controllers.MapMarkerMenuController;
 import net.osmand.plus.mapcontextmenu.controllers.MyLocationMenuController;
 import net.osmand.plus.mapcontextmenu.controllers.PointDescriptionMenuController;
 import net.osmand.plus.mapcontextmenu.controllers.RenderedObjectMenuController;
+import net.osmand.plus.mapcontextmenu.controllers.SelectedGpxMenuController;
+import net.osmand.plus.mapcontextmenu.controllers.SelectedGpxMenuController.SelectedGpxPoint;
 import net.osmand.plus.mapcontextmenu.controllers.TargetPointMenuController;
 import net.osmand.plus.mapcontextmenu.controllers.TransportRouteController;
 import net.osmand.plus.mapcontextmenu.controllers.TransportStopController;
@@ -189,7 +189,7 @@ public abstract class MenuController extends BaseMenuController implements Colla
 			} else if (object instanceof FavouritePoint) {
 				if (pointDescription.isParking()
 						|| (FavouritePoint.SpecialPointType.PARKING.equals(((FavouritePoint) object).getSpecialPointType()))) {
-					menuController = new ParkingPositionMenuController(mapActivity, pointDescription);
+					menuController = new ParkingPositionMenuController(mapActivity, pointDescription, (FavouritePoint) object);
 				} else {
 					menuController = new FavouritePointMenuController(mapActivity, pointDescription, (FavouritePoint) object);
 				}
@@ -218,9 +218,7 @@ public abstract class MenuController extends BaseMenuController implements Colla
 			} else if (object instanceof AidlMapPointWrapper) {
 				menuController = new AMapPointMenuController(mapActivity, pointDescription, (AidlMapPointWrapper) object);
 			} else if (object instanceof LatLon) {
-				if (pointDescription.isParking()) {
-					menuController = new ParkingPositionMenuController(mapActivity, pointDescription);
-				} else if (pointDescription.isMyLocation()) {
+				if (pointDescription.isMyLocation()) {
 					menuController = new MyLocationMenuController(mapActivity, pointDescription);
 				}
 			} else if (object instanceof AvoidSpecificRoads.AvoidRoadInfo) {
@@ -229,6 +227,8 @@ public abstract class MenuController extends BaseMenuController implements Colla
 				menuController = new RenderedObjectMenuController(mapActivity, pointDescription, (RenderedObject) object);
 			} else if (object instanceof MapillaryImage) {
 				menuController = new MapillaryMenuController(mapActivity, pointDescription, (MapillaryImage) object);
+			} else if (object instanceof SelectedGpxPoint) {
+				menuController = new SelectedGpxMenuController(mapActivity, pointDescription, (SelectedGpxPoint) object);
 			}
 		}
 		if (menuController == null) {
@@ -505,7 +505,7 @@ public abstract class MenuController extends BaseMenuController implements Colla
 	}
 
 	public int getFavActionIconId() {
-		return R.drawable.ic_action_fav_dark;
+		return R.drawable.ic_action_favorite_stroke;
 	}
 
 	public int getFavActionStringId() {
@@ -517,7 +517,7 @@ public abstract class MenuController extends BaseMenuController implements Colla
 	}
 
 	public int getWaypointActionIconId() {
-		return R.drawable.ic_action_flag_dark;
+		return R.drawable.ic_action_flag_stroke;
 	}
 
 	public int getWaypointActionStringId() {
@@ -661,7 +661,7 @@ public abstract class MenuController extends BaseMenuController implements Colla
 			}
 
 			leftDownloadButtonController.visible = !downloaded;
-			leftDownloadButtonController.leftIconId = R.drawable.ic_action_import;
+			leftDownloadButtonController.startIconId = R.drawable.ic_action_import;
 
 			boolean internetConnectionAvailable =
 					mapActivity.getMyApplication().getSettings().isInternetConnectionAvailable();
@@ -714,33 +714,33 @@ public abstract class MenuController extends BaseMenuController implements Colla
 
 	public abstract class TitleButtonController {
 		public String caption = "";
-		public int leftIconId = 0;
-		public int rightIconId = 0;
+		public int startIconId = 0;
+		public int endIconId = 0;
 		public boolean needRightText = false;
 		public String rightTextCaption = "";
 		public boolean visible = true;
 		public boolean tintIcon = true;
-		public Drawable leftIcon;
-		public Drawable rightIcon;
+		public Drawable startIcon;
+		public Drawable endIcon;
 		public boolean enabled = true;
 
 		@Nullable
-		public Drawable getLeftIcon() {
+		public Drawable getStartIcon() {
 			return getIconDrawable(true);
 		}
 
 		@Nullable
-		public Drawable getRightIcon() {
+		public Drawable getEndIcon() {
 			return getIconDrawable(false);
 		}
 
 		@Nullable
-		private Drawable getIconDrawable(boolean left) {
-			Drawable drawable = left ? leftIcon : rightIcon;
+		private Drawable getIconDrawable(boolean start) {
+			Drawable drawable = start ? startIcon : endIcon;
 			if (drawable != null) {
 				return drawable;
 			}
-			int resId = left ? leftIconId : rightIconId;
+			int resId = start ? startIconId : endIconId;
 			if (resId != 0) {
 				if (tintIcon) {
 					return enabled ? getNormalIcon(resId) : getDisabledIcon(resId);
@@ -753,11 +753,11 @@ public abstract class MenuController extends BaseMenuController implements Colla
 
 		public void clearIcon(boolean left) {
 			if (left) {
-				leftIcon = null;
-				leftIconId = 0;
+				startIcon = null;
+				startIconId = 0;
 			} else {
-				rightIcon = null;
-				rightIconId = 0;
+				endIcon = null;
+				endIconId = 0;
 			}
 		}
 
@@ -895,7 +895,7 @@ public abstract class MenuController extends BaseMenuController implements Colla
 				};
 				leftDownloadButtonController.caption =
 						downloadRegion != null ? downloadRegion.getLocaleName() : mapActivity.getString(R.string.shared_string_download);
-				leftDownloadButtonController.leftIconId = R.drawable.ic_action_import;
+				leftDownloadButtonController.startIconId = R.drawable.ic_action_import;
 
 				titleProgressController = new TitleProgressController() {
 					@Override

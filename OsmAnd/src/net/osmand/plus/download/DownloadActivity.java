@@ -45,7 +45,7 @@ import net.osmand.data.PointDescription;
 import net.osmand.map.WorldRegion;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
-import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.Version;
 import net.osmand.plus.activities.LocalIndexInfo;
@@ -616,7 +616,8 @@ public class DownloadActivity extends AbstractDownloadActivity implements Downlo
 			return;
 		}
 		IndexItem worldMap = getDownloadThread().getIndexes().getWorldBaseMapItem();
-		if (!SUGGESTED_TO_DOWNLOAD_BASEMAP && worldMap != null && (!worldMap.isDownloaded() || worldMap.isOutdated()) &&
+		// (!worldMap.isDownloaded() || worldMap.isOutdated()) - now suggest to download if downloaded 
+		if (!SUGGESTED_TO_DOWNLOAD_BASEMAP && worldMap != null && worldMap.isDownloaded() && worldMap.isOutdated() &&
 				!getDownloadThread().isDownloading(worldMap)) {
 			SUGGESTED_TO_DOWNLOAD_BASEMAP = true;
 			AskMapDownloadFragment fragment = new AskMapDownloadFragment();

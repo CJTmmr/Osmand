@@ -37,16 +37,18 @@ import net.osmand.data.PointDescription;
 import net.osmand.data.QuadRect;
 import net.osmand.data.RotatedTileBox;
 import net.osmand.map.ITileSource;
-import net.osmand.plus.ApplicationMode;
+import net.osmand.plus.dialogs.SpeedCamerasBottomSheet;
+import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.ContextMenuAdapter;
 import net.osmand.plus.ContextMenuAdapter.ItemClickListener;
 import net.osmand.plus.ContextMenuItem;
 import net.osmand.plus.ContextMenuItem.ItemBuilder;
 import net.osmand.plus.MapMarkersHelper;
+import net.osmand.plus.MapMarkersHelper.MapMarker;
 import net.osmand.plus.OsmAndLocationProvider;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
-import net.osmand.plus.OsmandSettings;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.TargetPointsHelper;
 import net.osmand.plus.UiUtilities;
@@ -66,7 +68,7 @@ import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
 import net.osmand.plus.routepreparationmenu.WaypointsFragment;
 import net.osmand.plus.routing.RouteProvider.GPXRouteParamsBuilder;
 import net.osmand.plus.routing.RoutingHelper;
-import net.osmand.plus.settings.BaseSettingsFragment;
+import net.osmand.plus.settings.fragments.BaseSettingsFragment;
 import net.osmand.plus.views.BaseMapLayer;
 import net.osmand.plus.views.MapControlsLayer;
 import net.osmand.plus.views.MapTileLayer;
@@ -349,14 +351,14 @@ public class MapActivityActions implements DialogProvider {
 		adapter.addItem(itemBuilder
 				.setTitleId(selectedObj instanceof FavouritePoint ? R.string.favourites_context_menu_edit : R.string.shared_string_add, mapActivity)
 				.setId(MAP_CONTEXT_MENU_ADD_ID)
-				.setIcon(R.drawable.ic_action_fav_dark)
+				.setIcon(selectedObj instanceof FavouritePoint ? R.drawable.ic_action_edit_dark : R.drawable.ic_action_favorite_stroke)
 				.setOrder(10)
 				.createItem());
 		adapter.addItem(itemBuilder
-				.setTitleId(R.string.shared_string_marker, mapActivity)
+				.setTitleId(selectedObj instanceof MapMarker ? R.string.shared_string_edit : R.string.shared_string_marker, mapActivity)
 				.setId(MAP_CONTEXT_MENU_MARKER_ID)
 				.setOrder(20)
-				.setIcon(R.drawable.ic_action_flag_dark)
+				.setIcon(selectedObj instanceof MapMarker ? R.drawable.ic_action_edit_dark : R.drawable.ic_action_flag_stroke)
 				.createItem());
 		adapter.addItem(itemBuilder
 				.setTitleId(R.string.shared_string_share, mapActivity)
@@ -367,7 +369,7 @@ public class MapActivityActions implements DialogProvider {
 		adapter.addItem(itemBuilder
 				.setTitleId(R.string.shared_string_actions, mapActivity)
 				.setId(MAP_CONTEXT_MENU_MORE_ID)
-				.setIcon(R.drawable.map_overflow_menu_white)
+				.setIcon(R.drawable.ic_actions_menu)
 				.setOrder(40)
 				.createItem());
 
@@ -464,13 +466,13 @@ public class MapActivityActions implements DialogProvider {
 				} else if (standardId == R.string.context_menu_item_search) {
 					mapActivity.showQuickSearch(latitude, longitude);
 				} else if (standardId == R.string.context_menu_item_directions_from) {
-					if (OsmAndLocationProvider.isLocationPermissionAvailable(mapActivity)) {
+					//if (OsmAndLocationProvider.isLocationPermissionAvailable(mapActivity)) {
 						enterDirectionsFromPoint(latitude, longitude);
-					} else if (!ActivityCompat.shouldShowRequestPermissionRationale(mapActivity, Manifest.permission.ACCESS_FINE_LOCATION)) {
-						mapActivity.getMyApplication().showToastMessage(R.string.ask_for_location_permission);
-					} else {
-						ActivityCompat.requestPermissions(mapActivity, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_FOR_DIRECTIONS_NAVIGATION_PERMISSION);
-					}
+					//} else {
+					//	ActivityCompat.requestPermissions(mapActivity,
+					//			new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+					//			REQUEST_LOCATION_FOR_DIRECTIONS_NAVIGATION_PERMISSION);
+					//}
 				} else if (standardId == R.string.measurement_tool) {
 					mapActivity.getContextMenu().close();
 					MeasurementToolFragment.showInstance(mapActivity.getSupportFragmentManager(), new LatLon(latitude, longitude));
@@ -478,7 +480,7 @@ public class MapActivityActions implements DialogProvider {
 					getMyApplication().getAvoidSpecificRoads().addImpassableRoad(mapActivity, new LatLon(latitude, longitude), true, false, null);
 				} else if (standardId == R.string.shared_string_add || standardId == R.string.favourites_context_menu_edit) {
 					mapActivity.getContextMenu().buttonFavoritePressed();
-				} else if (standardId == R.string.shared_string_marker) {
+				} else if (standardId == R.string.shared_string_marker || standardId == R.string.shared_string_edit) {
 					mapActivity.getContextMenu().buttonWaypointPressed();
 				} else if (standardId == R.string.shared_string_share) {
 					mapActivity.getContextMenu().buttonSharePressed();
@@ -513,7 +515,7 @@ public class MapActivityActions implements DialogProvider {
 			params.setCalculateOsmAndRouteParts(settings.GPX_ROUTE_CALC_OSMAND_PARTS.get());
 			params.setUseIntermediatePointsRTE(settings.GPX_CALCULATE_RTEPT.get());
 			params.setCalculateOsmAndRoute(settings.GPX_ROUTE_CALC.get());
-			List<Location> ps = params.getPoints();
+			List<Location> ps = params.getPoints(settings.getContext());
 			mapActivity.getRoutingHelper().setGpxParams(params);
 			settings.FOLLOW_THE_GPX_ROUTE.set(result.path);
 			if (!ps.isEmpty()) {
@@ -567,6 +569,9 @@ public class MapActivityActions implements DialogProvider {
 		}
 		if (targets.hasTooLongDistanceToNavigate()) {
 			app.showToastMessage(R.string.route_is_too_long_v2);
+		}
+		if (!settings.SPEED_CAMERAS_ALERT_SHOWED.get()) {
+			SpeedCamerasBottomSheet.showInstance(mapActivity.getSupportFragmentManager(), null);
 		}
 	}
 
@@ -775,7 +780,7 @@ public class MapActivityActions implements DialogProvider {
 
 		optionsMenuHelper.addItem(new ItemBuilder().setTitleId(R.string.home, mapActivity)
 				.setId(DRAWER_DASHBOARD_ID)
-				.setIcon(R.drawable.map_dashboard)
+				.setIcon(R.drawable.ic_dashboard)
 				.setListener(new ItemClickListener() {
 					@Override
 					public boolean onContextMenuClick(ArrayAdapter<ContextMenuItem> adapter, int itemId, int pos, boolean isChecked, int[] viewCoordinates) {
@@ -789,7 +794,7 @@ public class MapActivityActions implements DialogProvider {
 
 		optionsMenuHelper.addItem(new ItemBuilder().setTitleId(R.string.map_markers, mapActivity)
 				.setId(DRAWER_MAP_MARKERS_ID)
-				.setIcon(R.drawable.ic_action_flag_dark)
+				.setIcon(R.drawable.ic_action_flag)
 				.setListener(new ItemClickListener() {
 					@Override
 					public boolean onContextMenuClick(ArrayAdapter<ContextMenuItem> adapter, int itemId, int pos, boolean isChecked, int[] viewCoordinates) {
@@ -802,7 +807,7 @@ public class MapActivityActions implements DialogProvider {
 
 		optionsMenuHelper.addItem(new ItemBuilder().setTitleId(R.string.shared_string_my_places, mapActivity)
 				.setId(DRAWER_MY_PLACES_ID)
-				.setIcon(R.drawable.ic_action_fav_dark)
+				.setIcon(R.drawable.ic_action_favorite)
 				.setListener(new ItemClickListener() {
 					@Override
 					public boolean onContextMenuClick(ArrayAdapter<ContextMenuItem> adapter, int itemId, int pos, boolean isChecked, int[] viewCoordinates) {
