@@ -41,13 +41,14 @@ public class GeneralRouter implements VehicleRouter {
 	public static final String VEHICLE_HEIGHT = "height";
 	public static final String VEHICLE_WEIGHT = "weight";
 	public static final String VEHICLE_WIDTH = "width";
-	
+	public static final String VEHICLE_LENGTH = "length";
+
 	private static boolean USE_CACHE = true;
 	public static long TIMER = 0;
 
 	private final RouteAttributeContext[] objectAttributes;
 	public final Map<String, String> attributes;
-	private final Map<String, RoutingParameter> parameters; 
+	private final Map<String, RoutingParameter> parameters;
 	private final Map<String, Integer> universalRules;
 	private final List<String> universalRulesById;
 	private final Map<String, BitSet> tagRuleMask;
@@ -71,6 +72,8 @@ public class GeneralRouter implements VehicleRouter {
 	private float defaultSpeed = 1f;
 	// speed in m/s
 	private float maxSpeed = 10f;
+	// speed in m/s (used for shortest route)
+	private float maxVehicleSpeed;
 
 	private TLongHashSet impassableRoads;
 	private GeneralRouterProfile profile;
@@ -148,6 +151,7 @@ public class GeneralRouter implements VehicleRouter {
 		if (params.containsKey(MAX_SPEED)) {
 			maxSpeed = parseSilentFloat(params.get(MAX_SPEED), maxSpeed);
 		}
+		maxVehicleSpeed = maxSpeed;
 		if (shortestRoute) {
 			maxSpeed = Math.min(CAR_SHORTEST_DEFAULT_SPEED, maxSpeed);
 		}
@@ -488,10 +492,15 @@ public class GeneralRouter implements VehicleRouter {
 	
 	@Override
 	public float defineVehicleSpeed(RouteDataObject road) {
+		// don't use cache cause max/min is different for routing speed
+		if (maxVehicleSpeed != maxSpeed) {
+			float spd = getObjContext(RouteDataObjectAttribute.ROAD_SPEED).evaluateFloat(road, defaultSpeed);
+			return Math.max(Math.min(spd, maxVehicleSpeed), minSpeed);
+		}
 		Float sp = getCache(RouteDataObjectAttribute.ROAD_SPEED, road);
 		if (sp == null) {
 			float spd = getObjContext(RouteDataObjectAttribute.ROAD_SPEED).evaluateFloat(road, defaultSpeed);
-			sp = Math.max(Math.min(spd, maxSpeed), minSpeed);
+			sp = Math.max(Math.min(spd, maxVehicleSpeed), minSpeed);
 			putCache(RouteDataObjectAttribute.ROAD_SPEED, road, sp);
 		}
 		return sp;
@@ -516,6 +525,7 @@ public class GeneralRouter implements VehicleRouter {
 	}
 	
 	private void putCache(RouteDataObjectAttribute attr, RouteRegion reg, int[] types, Float val, boolean extra) {
+//		TIMER -= System.nanoTime();
 		Map<RouteRegion, Map<IntHolder, Float>> ch = evalCache[attr.ordinal()];
 		if (USE_CACHE) {
 			Map<IntHolder, Float> rM = ch.get(reg);
@@ -525,7 +535,7 @@ public class GeneralRouter implements VehicleRouter {
 			}
 			rM.put(new IntHolder(types, extra), val);
 		}
-		TIMER += System.nanoTime();
+//		TIMER += System.nanoTime();
 	}
 	
 	class IntHolder {
