@@ -1767,7 +1767,6 @@
     <string name="context_menu_item_open_note">Otvoriť OSM poznámku</string>
     <string name="osm_edit_reopened_note">Znovuotvorená OSM poznámka</string>
     <string name="osm_edit_commented_note">Pridaný komentár k OSM poznámke</string>
-    <string name="osm_edit_removed_note">Odstránená OSM poznámka</string>
     <string name="osm_edit_created_note">Vytvorená OSM poznámka</string>
     <string name="osn_bug_name">OSM poznámka</string>
     <string name="osn_add_dialog_title">Vytvoriť poznámku</string>
@@ -2069,7 +2068,7 @@
     <string name="shared_string_record">Záznam</string>
     <string name="gpx_logging_no_data">Žiadne údaje</string>
     <string name="trip_rec_notification_settings">Zapnúť rýchly záznam</string>
-    <string name="trip_rec_notification_settings_desc">Zobraziť systémové oznámenie, ktoré umožňuje nahrávanie.</string>
+    <string name="trip_rec_notification_settings_desc">Zobraziť systémové oznámenie, ktoré umožňuje spustiť nahrávanie.</string>
     <string name="shared_string_notifications">Oznámenia</string>
     <string name="shared_string_resume">Pokračovať</string>
     <string name="gpx_no_tracks_title">Nemáte zatiaľ žiadne súbory GPX</string>
@@ -3813,4 +3812,14 @@
     <string name="quick_action_remove_next_destination_descr">Aktuálny cieľový bod na trase bude vymazaný. Ak je to posledný cieľ, navigácia sa zastaví.</string>
     <string name="search_download_wikipedia_maps">Stiahnuť mapy Wikipédia</string>
     <string name="plugin_wikipedia_description">Získajte informácie o bodoch záujmu z Wikipédie. Je to váš vreckový sprievodca - zapnite modul Wikipédia a užívajte si články o objektoch okolo vás.</string>
+    <string name="app_mode_enduro_motorcycle">Enduro motorka</string>
+    <string name="app_mode_motor_scooter">Skúter</string>
+    <string name="app_mode_wheelchair">Invalidný vozík</string>
+    <string name="app_mode_wheelchair_forward">Invalidný vozík dopredu</string>
+    <string name="app_mode_go_cart">Motokára</string>
+    <string name="osm_edit_closed_note">Zatvorená OSM poznámka</string>
+    <string name="set_working_days_to_continue">Pre pokračovanie musíte zadať pracovné dni</string>
+    <string name="route_between_points">Trasa medzi bodmi</string>
+    <string name="plan_a_route">Naplánovať trasu</string>
+    <string name="add_to_a_track">Pridať do stopy</string>
 </resources>

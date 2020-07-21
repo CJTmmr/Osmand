@@ -975,7 +975,7 @@
     <string name="copying_osmand_one_file_descr">(%s) dosyası yeni hedefine kopyalanıyor…</string>
     <string name="copying_osmand_files_descr">OsmAnd veri dosyaları yeni hedef (%s) \'e kopyalanıyor…</string>
     <string name="guidance_preferences_descr">Navigasyon tercihleri</string>
-    <string name="routing_preferences_descr">Güzergah seçenekleri</string>
+    <string name="routing_preferences_descr">Yönlendirme tercihleri</string>
     <string name="speech_rate_descr">Metinden konuşmaya konuşma hızını belirtin.</string>
     <string name="speech_rate">Hoparlör yerleşimi</string>
     <string name="complex_route_calculation_failed">Hızlı rota hesaplama ( $1%s) başarısız oldu , hesaplama yavaş çare .</string>
@@ -1273,7 +1273,6 @@
     <string name="context_menu_item_open_note">OSM Not\'u aç</string>
     <string name="osm_edit_reopened_note">Yeniden açılmış OSM Notu</string>
     <string name="osm_edit_commented_note">Yorum yazılmış OSM Notu</string>
-    <string name="osm_edit_removed_note">Silinmiş OSM Notu</string>
     <string name="osm_edit_created_note">Oluşturulmuş OSM Notu</string>
     <string name="osn_bug_name">OSM Notu</string>
     <string name="osn_add_dialog_title">Not oluştur</string>
@@ -1928,7 +1927,7 @@
     <string name="storage_directory_readonly_desc">Seçilen veri saklama klasörü yazma korumalı olduğu için dahili hafızaya geçildi. Lütfen yazılabilir bir depolama dizini seçin.</string>
     <string name="storage_directory_shared">Paylaşılan bellek</string>
     <string name="shared_string_topbar">Üst menü</string>
-    <string name="recalculate_route">Rota yeniden hesapla</string>
+    <string name="recalculate_route">Güzergahı yeniden hesapla</string>
     <string name="report">Rapor</string>
     <string name="access_no_destination">Hedef ayarlanmadı</string>
     <string name="access_disable_offroute_recalc">Rota terkedildiğinde yeniden hesaplanmasın</string>
@@ -1981,7 +1980,7 @@
     <string name="points_delete_multiple_succesful">Nokta(lar) silindi.</string>
     <string name="shared_string_gpx_track">Takip et</string>
     <string name="track_points_category_name">Waypointler, ilgi çekici noktalar, adlandırılmış özellikler</string>
-    <string name="max_speed">Azami hız</string>
+    <string name="max_speed">En yüksek hız</string>
     <string name="average_speed">Ortalama hız</string>
     <string name="shared_string_max">Azami</string>
     <string name="shared_string_start_time">Başlangıç zamanı</string>
@@ -2259,7 +2258,7 @@
     <string name="routing_attr_allow_motorway_name">Otoyolları kullan</string>
     <string name="routing_attr_allow_motorway_description">Otoyollara izin verir.</string>
     <string name="upload_poi">POI yükleyin</string>
-    <string name="trip_rec_notification_settings_desc">Gezi kaydına izin veren bir sistem bildirimi görüntüle.</string>
+    <string name="trip_rec_notification_settings_desc">Gezi kaydını başlatmaya izin veren bir sistem bildirimi görüntüle.</string>
     <string name="shared_string_trip">Seyahat</string>
     <string name="shared_string_recorded">Kaydedildi</string>
     <string name="create_custom_poi">Özel süzgeç oluştur</string>
@@ -2501,7 +2500,7 @@
     <string name="coord_input_add_point">Nokta ekle</string>
     <string name="hide_full_description">Açıklamayı gizle</string>
     <string name="show_full_description">Açıklamayı göster</string>
-    <string name="move_maps">Haritaları taşı</string>
+    <string name="move_maps">Haritaları hareket ettir</string>
     <string name="public_transport_try_ped">Yürüme navigasyonunu dene.</string>
     <string name="public_transport_try_change_settings">Ayarları değiştirmeyi deneyin.</string>
     <string name="shared_string_restore">Restore et</string>
@@ -2582,7 +2581,7 @@
     <string name="new_profile">Yeni profil</string>
     <string name="shared_string_crash">Çökme</string>
     <string name="app_mode_personal_transporter">Kişisel taşıyıcı</string>
-    <string name="app_mode_scooter">Scooter</string>
+    <string name="app_mode_scooter">Mobilet</string>
     <string name="day">Gün</string>
     <string name="days_2_4">Günler</string>
     <string name="days_5">Günler</string>
@@ -3266,7 +3265,7 @@
     <string name="routeInfo_piste_difficulty_name">Pist zorluğu</string>
     <string name="routing_attr_width_name">Genişlik sınırı</string>
     <string name="routing_attr_width_description">Rotalarda izin verilen araç genişlik sınırını belirtin.</string>
-    <string name="avoid_in_routing_descr_">Belirli rotalardan ve yol türlerinden kaçının</string>
+    <string name="avoid_in_routing_descr_">Belirli güzergahlardan ve yol türlerinden kaçının</string>
     <string name="app_mode_utv">Yan yana</string>
     <string name="rendering_attr_piste_difficulty_aerialway_name">Hava yolu</string>
     <string name="rendering_attr_piste_difficulty_connection_name">Bağlantı</string>
@@ -3371,7 +3370,7 @@
     <string name="select_color">Renk seç</string>
     <string name="edit_profiles_descr">OsmAnd öntanımlı profilleri silinemez, ancak (önceki ekranda) devre dışı bırakılabilir veya en altta sıralanabilir.</string>
     <string name="edit_profiles">Profilleri düzenle</string>
-    <string name="select_nav_profile_dialog_message">\'Navigasyon türü\' rotaların nasıl hesaplandığını yönetir.</string>
+    <string name="select_nav_profile_dialog_message">\'Navigasyon türü\' güzergahın nasıl hesaplandığını yönetir.</string>
     <string name="profile_appearance">Profil görünümü</string>
     <string name="choose_icon_color_name">Simge, renk ve isim</string>
     <string name="reorder_profiles">Profil listesini düzenle</string>
@@ -3397,7 +3396,7 @@
     <string name="video_notes">Video notları</string>
     <string name="photo_notes">Fotoğraf notları</string>
     <string name="route_recalculation">Rotanın yeniden hesaplanması</string>
-    <string name="accessibility_announce">Anons</string>
+    <string name="accessibility_announce">Duyuru</string>
     <string name="login_and_pass">Kullanıcı adı ve parola</string>
     <string name="plugin_global_prefs_info">Bu ayarlar tüm profiller için geçerlidir.</string>
     <string name="osm_editing">OSM düzenleme</string>
@@ -3544,9 +3543,9 @@
     <string name="restore_all_profile_settings">Tüm profil ayarları geri yüklensin mi\?</string>
     <string name="restore_all_profile_settings_descr">Bu profili oluşturduktan/ içe aktardıktan sonra tüm profil ayarları orijinal değerlerine geri yüklenecektir.</string>
     <string name="clear_recorded_data_warning">Kayıtlı verileri silmek istediğinize emin misiniz\?</string>
-    <string name="recalculate_route_in_deviation">Sapma durumunda rotayı yeniden hesapla</string>
-    <string name="select_distance_route_will_recalc">Rotanın yeniden hesaplanacağı mesafeyi seçin.</string>
-    <string name="recalculate_route_distance_promo">Rotadan geçerli konuma olan mesafe seçilen değerden fazla ise rota yeniden hesaplanacaktır.</string>
+    <string name="recalculate_route_in_deviation">Sapma durumunda güzergahı yeniden hesapla</string>
+    <string name="select_distance_route_will_recalc">Güzergahın yeniden hesaplanacağı mesafeyi seçin.</string>
+    <string name="recalculate_route_distance_promo">Güzergahtan geçerli konuma olan mesafe seçilen değerden fazla ise güzergah yeniden hesaplanacaktır.</string>
     <string name="n_items_of_z">%1$s / %2$s</string>
     <string name="download_slope_maps">Yamaçlar</string>
     <string name="quick_action_show_hide_terrain">Araziyi göster / gizle</string>
@@ -3770,4 +3769,14 @@
     <string name="use_volume_buttons_as_zoom">Yakınlaştırma için ses seviyesi düğmeleri</string>
     <string name="search_download_wikipedia_maps">Wikipedia haritalarını indir</string>
     <string name="plugin_wikipedia_description">Wikipedia\'dan ilgi çekici yerler hakkında bilgi alın. Bu sizin çevrim dışı cep rehberinizdir - sadece Wikipedia eklentisini etkinleştirin ve etrafınızdaki nesneler hakkında makalelerin tadını çıkarın.</string>
+    <string name="app_mode_enduro_motorcycle">Enduro motosiklet</string>
+    <string name="app_mode_motor_scooter">Küçük motosiklet</string>
+    <string name="app_mode_wheelchair">Tekerlekli sandalye</string>
+    <string name="app_mode_wheelchair_forward">İleri tekerlekli sandalye</string>
+    <string name="app_mode_go_cart">Go-kart</string>
+    <string name="osm_edit_closed_note">Kapatılmış OSM Notu</string>
+    <string name="add_to_a_track">İzlemeye ekle</string>
+    <string name="set_working_days_to_continue">Devam etmek için çalışma günlerini ayarlamalısınız</string>
+    <string name="route_between_points">Noktalar arasındaki güzergah</string>
+    <string name="plan_a_route">Güzergah planla</string>
 </resources>

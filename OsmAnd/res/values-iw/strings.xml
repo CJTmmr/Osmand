@@ -2390,7 +2390,6 @@
 \n</string>
     <string name="arrival_distance_descr">כמה לפני המועד ברצונך להיוודע על הגעה ליעד?</string>
     <string name="live_monitoring_max_interval_to_send">חוצץ זמן למעקב מקוון</string>
-    <string name="osm_edit_removed_note">הערת OSM נמחקה</string>
     <string name="osm_edit_created_note">נוצרה הערת OSM</string>
     <string name="osn_bug_name">הערת OSM</string>
     <string name="osn_add_dialog_title">יצירת הערה</string>
@@ -2460,7 +2459,7 @@
     <string name="track_points_category_name">נקודות דרך, נקודות עניין, תכונות עם שם</string>
     <string name="shared_string_time_span">מסגרת זמן</string>
     <string name="upload_osm_note_description">ניתן להעלות את הערות ה־OSM שלך באופן אנונימי או על ידי שימוש בפרופיל שלך ב־OpenStreetMap.org.</string>
-    <string name="trip_rec_notification_settings_desc">הצגת התראת מערכת שמאפשרת הקלטת טיול.</string>
+    <string name="trip_rec_notification_settings_desc">הצגת התראת מערכת שמאפשרת התחלת הקלטת טיול.</string>
     <string name="shared_string_paused">הופסק</string>
     <string name="shared_string_recorded">הוקלט</string>
     <string name="rendering_attr_contourColorScheme_description">ערכת הצבעים של קווי המתאר</string>
@@ -3823,4 +3822,15 @@
     <string name="quick_action_remove_next_destination_descr">נקודת היעד הנוכחית במסלול תימחק. אם זה יהיה היעד, הניווט ייעצר.</string>
     <string name="search_download_wikipedia_maps">הורדת מפות ויקיפדיה</string>
     <string name="plugin_wikipedia_description">קבלת מידע על נקודות עניין מוויקיפדיה. מדריך הכיס הפרטי שלך - עליך פשוט להפעיל את התוסף של ויקיפדיה וליהנות מערכים על מה שסביבך.</string>
+    <string name="app_mode_enduro_motorcycle">אופנוע שטח</string>
+    <string name="app_mode_motor_scooter">טוסטוס</string>
+    <string name="app_mode_wheelchair">כסא גלגלים</string>
+    <string name="app_mode_wheelchair_forward">כסא גלגלים ספורטיבי</string>
+    <string name="app_mode_go_cart">קארטינג</string>
+    <string name="osm_edit_closed_note">הערת OSM סגורה</string>
+    <string name="set_working_days_to_continue">עליך להגדיר ימי עבודה כדי להמשיך</string>
+    <string name="route_between_points">מסלול בין נקודות</string>
+    <string name="plan_a_route">תכנון מסלול</string>
+    <string name="add_to_a_track">הוספה למסלול</string>
+    <string name="add_hidden_group_info">הנקודה שנוספה לא תופיע על המפה מאחר שהקבוצה הנבחרת מוסתרת, ניתן למצוא אותה תחת „%s”.</string>
 </resources>
