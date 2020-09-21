@@ -25,7 +25,9 @@ import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -46,7 +48,9 @@ import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.base.BaseOsmAndFragment;
+import net.osmand.plus.helpers.AndroidUiHelper;
 import net.osmand.plus.helpers.ColorDialogs;
+import net.osmand.plus.mapcontextmenu.MapContextMenu;
 import net.osmand.plus.mapcontextmenu.other.HorizontalSelectionAdapter;
 import net.osmand.plus.widgets.FlowLayout;
 import net.osmand.util.Algorithms;
@@ -75,7 +79,9 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 	private View view;
 	private EditText nameEdit;
 	private TextView addDelDescription;
+	private TextView addAddressBtn;
 	private TextView addToHiddenGroupInfo;
+	private ImageView deleteAddressIcon;
 	private boolean cancelled;
 	private boolean nightMode;
 	@DrawableRes
@@ -91,8 +97,23 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 	private LinkedHashMap<String, JSONArray> iconCategories;
 	private OsmandApplication app;
 	private View descriptionCaption;
+	private View addressCaption;
 	private EditText descriptionEdit;
+	private EditText addressEdit;
 	private int layoutHeightPrevious = 0;
+
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requireMyActivity().getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+			public void handleOnBackPressed() {
+				MapActivity mapActivity = getMapActivity();
+				if (mapActivity != null) {
+					showExitDialog();
+				}
+			}
+		});
+	}
 
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
@@ -101,7 +122,7 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 
 		app = requireMyApplication();
 		nightMode = app.getDaynightHelper().isNightModeForMapControls();
-		view = UiUtilities.getMaterialInflater(getContext(), nightMode)
+		view = UiUtilities.getInflater(getContext(), nightMode)
 				.inflate(R.layout.point_editor_fragment_new, container, false);
 		AndroidUtils.addStatusBarPadding21v(getActivity(), view);
 
@@ -142,11 +163,12 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 					hideKeyboard();
 					descriptionEdit.clearFocus();
 					nameEdit.clearFocus();
+					addressEdit.clearFocus();
 				}
 			}
 		});
 
-		int activeColorResId = nightMode ? R.color.active_color_primary_dark : R.color.active_color_primary_light;
+		final int activeColorResId = getActiveColorRes();
 		ImageView toolbarAction = (ImageView) view.findViewById(R.id.toolbar_action);
 		view.findViewById(R.id.background_layout).setBackgroundResource(nightMode
 				? R.color.app_bar_color_dark : R.color.list_background_color_light);
@@ -218,15 +240,26 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 		}
 
 		descriptionEdit = (EditText) view.findViewById(R.id.description_edit);
+		addressEdit = (EditText) view.findViewById(R.id.address_edit);
 		AndroidUtils.setTextPrimaryColor(view.getContext(), descriptionEdit, nightMode);
+		AndroidUtils.setTextPrimaryColor(view.getContext(), addressEdit, nightMode);
 		AndroidUtils.setHintTextSecondaryColor(view.getContext(), descriptionEdit, nightMode);
+		AndroidUtils.setHintTextSecondaryColor(view.getContext(), addressEdit, nightMode);
 		if (getDescriptionInitValue() != null) {
 			descriptionEdit.setText(getDescriptionInitValue());
 		}
 
 		descriptionCaption = view.findViewById(R.id.description);
+		addressCaption = view.findViewById(R.id.address);
 		addDelDescription = (TextView) view.findViewById(R.id.description_button);
+		addAddressBtn = view.findViewById(R.id.address_button);
+		deleteAddressIcon = view.findViewById(R.id.delete_address_icon);
+		deleteAddressIcon.setImageDrawable(app.getUIUtilities().getIcon(R.drawable.ic_action_trash_basket_16, activeColorResId));
+
 		addDelDescription.setTextColor(getResources().getColor(activeColorResId));
+		addAddressBtn.setTextColor(getResources().getColor(activeColorResId));
+		Drawable addressIcon = app.getUIUtilities().getIcon(R.drawable.ic_action_location_16, activeColorResId);
+		addAddressBtn.setCompoundDrawablesWithIntrinsicBounds(addressIcon, null, null, null);
 		addDelDescription.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -235,12 +268,54 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 					addDelDescription.setText(view.getResources().getString(R.string.delete_description));
 					View descriptionEdit = view.findViewById(R.id.description_edit);
 					descriptionEdit.requestFocus();
-					AndroidUtils.softKeyboardDelayed(descriptionEdit);
+					AndroidUtils.softKeyboardDelayed(getActivity(), descriptionEdit);
 				} else {
 					descriptionCaption.setVisibility(View.GONE);
 					addDelDescription.setText(view.getResources().getString(R.string.add_description));
 					AndroidUtils.hideSoftKeyboard(requireActivity(), descriptionEdit);
 					descriptionEdit.clearFocus();
+				}
+				updateDescriptionIcon();
+			}
+		});
+		AndroidUiHelper.updateVisibility(addressCaption, false);
+
+		String addressInitValue = getAddressInitValue();
+		if (!Algorithms.isEmpty(addressInitValue)) {
+			addressEdit.setText(addressInitValue);
+			addAddressBtn.setText(addressInitValue);
+			addressEdit.setSelection(addressInitValue.length());
+			AndroidUiHelper.updateVisibility(deleteAddressIcon, true);
+		} else {
+			addAddressBtn.setText(getString(R.string.add_address));
+			AndroidUiHelper.updateVisibility(deleteAddressIcon, false);
+		}
+
+		deleteAddressIcon.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				addressEdit.setText("");
+				addAddressBtn.setText(view.getResources().getString(R.string.add_address));
+				AndroidUiHelper.updateVisibility(addressCaption, false);
+				AndroidUiHelper.updateVisibility(deleteAddressIcon, false);
+			}
+		});
+
+		final View addressRow = view.findViewById(R.id.address_row);
+		addAddressBtn.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (addressCaption.getVisibility() != View.VISIBLE) {
+					addressCaption.setVisibility(View.VISIBLE);
+					addressEdit.requestFocus();
+					addressEdit.setSelection(addressEdit.getText().length());
+					AndroidUtils.softKeyboardDelayed(requireActivity(), addressEdit);
+					AndroidUiHelper.updateVisibility(addressRow, false);
+				} else {
+					addressCaption.setVisibility(View.GONE);
+					addAddressBtn.setText(getAddressTextValue());
+					AndroidUtils.hideSoftKeyboard(requireActivity(), addressEdit);
+					addressEdit.clearFocus();
 				}
 			}
 		});
@@ -249,7 +324,6 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 		if (app.accessibilityEnabled()) {
 			nameCaption.setFocusable(true);
 			nameEdit.setHint(R.string.access_hint_enter_name);
-			descriptionEdit.setHint(R.string.access_hint_enter_description);
 		}
 
 		View deleteButton = view.findViewById(R.id.button_delete_container);
@@ -267,7 +341,7 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 			deleteIcon.setVisibility(View.GONE);
 			nameEdit.selectAll();
 			nameEdit.requestFocus();
-			AndroidUtils.softKeyboardDelayed(nameEdit);
+			AndroidUtils.softKeyboardDelayed(getActivity(), nameEdit);
 		} else {
 			toolbarAction.setImageDrawable(app.getUIUtilities().getIcon(R.drawable.ic_action_delete_dark, activeColorResId));
 			deleteButton.setVisibility(View.VISIBLE);
@@ -311,6 +385,17 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 		return view;
 	}
 
+	private void updateDescriptionIcon() {
+		int iconId;
+		if (descriptionCaption.getVisibility() == View.VISIBLE) {
+			iconId = R.drawable.ic_action_trash_basket_16;
+		} else {
+			iconId = R.drawable.ic_action_description_16;
+		}
+		Drawable icon = app.getUIUtilities().getIcon(iconId, getActiveColorRes());
+		addDelDescription.setCompoundDrawablesWithIntrinsicBounds(icon, null, null, null);
+	}
+
 	private void checkEmptyName(Editable name, TextInputLayout nameCaption, View saveButton) {
 		if (name.toString().trim().isEmpty()) {
 			nameCaption.setError(app.getString(R.string.please_provide_point_name_error));
@@ -348,6 +433,20 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 			descriptionCaption.setVisibility(View.GONE);
 			addDelDescription.setText(app.getString(R.string.add_description));
 		}
+		updateDescriptionIcon();
+	}
+
+	boolean isAddressAvailable() {
+		return addressCaption.getVisibility() == View.VISIBLE;
+	}
+
+	boolean isDescriptionAvailable() {
+		return descriptionCaption.getVisibility() == View.VISIBLE;
+	}
+
+	@ColorRes
+	private int getActiveColorRes() {
+		return nightMode ? R.color.active_color_primary_dark : R.color.active_color_primary_light;
 	}
 
 	private void createGroupSelector() {
@@ -680,6 +779,7 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 	public void setCategory(String name, int color) {
 		setSelectedItemWithScroll(name);
 		updateColorSelector(color, groupRecyclerView.getRootView());
+		AndroidUiHelper.updateVisibility(addToHiddenGroupInfo, !isCategoryVisible(name));
 	}
 
 	private void setSelectedItemWithScroll(String name) {
@@ -717,11 +817,15 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 		hideKeyboard();
 		MapActivity mapActivity = getMapActivity();
 		if (mapActivity != null) {
+			MapContextMenu mapContextMenu = mapActivity.getContextMenu();
 			if (includingMenu) {
 				mapActivity.getSupportFragmentManager().popBackStack();
-				mapActivity.getContextMenu().close();
+				mapContextMenu.close();
 			} else {
 				mapActivity.getSupportFragmentManager().popBackStack();
+				if (!mapContextMenu.isVisible() && mapContextMenu.isActive()) {
+					mapContextMenu.show();
+				}
 			}
 		}
 	}
@@ -753,6 +857,8 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 	public abstract String getCategoryInitValue();
 
 	public abstract String getDescriptionInitValue();
+
+	public abstract String getAddressInitValue();
 
 	public abstract Drawable getNameIcon();
 
@@ -800,6 +906,12 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 		return Algorithms.isEmpty(res) ? null : res;
 	}
 
+	String getAddressTextValue() {
+		EditText addressEdit = view.findViewById(R.id.address_edit);
+		String res = addressEdit.getText().toString().trim();
+		return Algorithms.isEmpty(res) ? null : res;
+	}
+
 	protected Drawable getPaintedIcon(int iconId, int color) {
 		return getPaintedContentIcon(iconId, color);
 	}
@@ -812,15 +924,18 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 			dismissDialog.setPositiveButton(R.string.shared_string_exit, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
-					cancelled = true;
-					dismiss();
+					exitEditing();
 				}
 			});
 			dismissDialog.show();
 		} else {
-			cancelled = true;
-			dismiss();
+			exitEditing();
 		}
+	}
+
+	private void exitEditing() {
+		cancelled = true;
+		dismiss();
 	}
 
 	private AlertDialog.Builder createWarningDialog(Activity activity, int title, int message, int negButton) {
@@ -898,7 +1013,7 @@ public abstract class PointEditorFragmentNew extends BaseOsmAndFragment {
 						int previousSelectedPosition = getItemPosition(selectedItemName);
 						selectedItemName = items.get(holder.getAdapterPosition());
 						updateColorSelector(getCategoryColor(selectedItemName), groupRecyclerView.getRootView());
-						addToHiddenGroupInfo.setVisibility(isCategoryVisible(selectedItemName) ? View.GONE : View.VISIBLE);
+						AndroidUiHelper.updateVisibility(addToHiddenGroupInfo, !isCategoryVisible(selectedItemName));
 						notifyItemChanged(holder.getAdapterPosition());
 						notifyItemChanged(previousSelectedPosition);
 					}

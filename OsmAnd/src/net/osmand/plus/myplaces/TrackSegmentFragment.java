@@ -28,8 +28,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.MenuItemCompat;
-import androidx.core.view.ViewCompat;
 import androidx.viewpager.widget.PagerAdapter;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -67,7 +65,7 @@ import net.osmand.plus.helpers.GpxUiHelper;
 import net.osmand.plus.helpers.GpxUiHelper.GPXDataSetAxisType;
 import net.osmand.plus.helpers.GpxUiHelper.GPXDataSetType;
 import net.osmand.plus.helpers.GpxUiHelper.OrderedLineDataSet;
-import net.osmand.plus.measurementtool.NewGpxData;
+import net.osmand.plus.measurementtool.GpxData;
 import net.osmand.plus.track.SaveGpxAsyncTask;
 import net.osmand.plus.track.SaveGpxAsyncTask.SaveGpxListener;
 import net.osmand.plus.myplaces.TrackBitmapDrawer.TrackBitmapDrawerListener;
@@ -170,7 +168,7 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 								return true;
 							}
 						});
-				MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+				item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 			}
 			if (gpxFile.showCurrentTrack) {
 				MenuItem item = menu.add(R.string.shared_string_refresh).setIcon(R.drawable.ic_action_refresh_dark)
@@ -184,7 +182,7 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 								return true;
 							}
 						});
-				MenuItemCompat.setShowAsAction(item, MenuItemCompat.SHOW_AS_ACTION_ALWAYS);
+				item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 			}
 		}
 	}
@@ -1028,7 +1026,7 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 		private void editSegment() {
 			TrkSegment segment = getTrkSegment();
 			if (segment != null && fragmentAdapter != null) {
-				fragmentAdapter.addNewGpxData(NewGpxData.ActionType.EDIT_SEGMENT, segment);
+				fragmentAdapter.addNewGpxData(GpxData.ActionType.EDIT_SEGMENT, segment);
 			}
 		}
 
@@ -1099,7 +1097,7 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 			int imageId = getImageId(tabType);
 			switch (tabs.getTabSelectionType()) {
 				case ALPHA:
-					ViewCompat.setAlpha(img, tabs.getTabTextSelectedAlpha());
+					img.setAlpha(tabs.getTabTextSelectedAlpha());
 					break;
 				case SOLID_COLOR:
 					img.setImageDrawable(app.getUIUtilities().getPaintedIcon(imageId, tabs.getTextColor()));
@@ -1114,7 +1112,7 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 			int imageId = getImageId(tabType);
 			switch (tabs.getTabSelectionType()) {
 				case ALPHA:
-					ViewCompat.setAlpha(img, tabs.getTabTextAlpha());
+					img.setAlpha(tabs.getTabTextAlpha());
 					break;
 				case SOLID_COLOR:
 					img.setImageDrawable(app.getUIUtilities().getPaintedIcon(imageId, tabs.getTabInactiveTextColor()));

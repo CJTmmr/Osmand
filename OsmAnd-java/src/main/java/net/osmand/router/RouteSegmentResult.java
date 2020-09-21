@@ -271,7 +271,7 @@ public class RouteSegmentResult implements StringExternalizable<RouteDataBundle>
 				bundle.putString("turnLanes", TurnType.lanesToString(turnLanes));
 			}
 		}
-		bundle.putLong("id", object.id);
+		bundle.putLong("id", object.id >> 6); // OsmAnd ID to OSM ID
 		bundle.putArray("types", convertTypes(object.types, rules));
 
 		int start = Math.min(startPointIndex, endPointIndex);
@@ -327,19 +327,21 @@ public class RouteSegmentResult implements StringExternalizable<RouteDataBundle>
 		Location prevLocation = null;
 		for (int i = 0; i < length; i++) {
 			Location location = resources.getLocation(index);
-			double dist = 0;
-			if (prevLocation != null) {
-				dist = MapUtils.getDistance(prevLocation.getLatitude(), prevLocation.getLongitude(), location.getLatitude(), location.getLongitude());
-				distance += dist;
-			}
-			prevLocation = location;
-			object.pointsX[i] = MapUtils.get31TileNumberX(location.getLongitude());
-			object.pointsY[i] = MapUtils.get31TileNumberY(location.getLatitude());
-			if (location.hasAltitude() && object.heightDistanceArray.length > 0) {
-				object.heightDistanceArray[i * 2] = (float) dist;
-				object.heightDistanceArray[i * 2 + 1] = (float) location.getAltitude();
-			} else {
-				object.heightDistanceArray = new float[0];
+			if (location != null) {
+				double dist = 0;
+				if (prevLocation != null) {
+					dist = MapUtils.getDistance(prevLocation.getLatitude(), prevLocation.getLongitude(), location.getLatitude(), location.getLongitude());
+					distance += dist;
+				}
+				prevLocation = location;
+				object.pointsX[i] = MapUtils.get31TileNumberX(location.getLongitude());
+				object.pointsY[i] = MapUtils.get31TileNumberY(location.getLatitude());
+				if (location.hasAltitude() && object.heightDistanceArray.length > 0) {
+					object.heightDistanceArray[i * 2] = (float) dist;
+					object.heightDistanceArray[i * 2 + 1] = (float) location.getAltitude();
+				} else {
+					object.heightDistanceArray = new float[0];
+				}
 			}
 			if (plus) {
 				index++;
@@ -513,7 +515,7 @@ public class RouteSegmentResult implements StringExternalizable<RouteDataBundle>
 		return endPointIndex - startPointIndex > 0;
 	}
 
-	
+
 	private LatLon convertPoint(RouteDataObject o, int ind){
 		return new LatLon(MapUtils.get31LatitudeY(o.getPoint31YTile(ind)), MapUtils.get31LongitudeX(o.getPoint31XTile(ind)));
 	}

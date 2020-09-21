@@ -74,6 +74,7 @@ import net.osmand.aidlapi.customization.OsmandSettingsParams;
 import net.osmand.aidlapi.customization.OsmandSettingsInfoParams;
 import net.osmand.aidlapi.customization.CustomizationInfoParams;
 import net.osmand.aidlapi.customization.ProfileSettingsParams;
+import net.osmand.aidlapi.customization.MapMarginsParams;
 
 import net.osmand.aidlapi.gpx.AGpxFile;
 import net.osmand.aidlapi.gpx.AGpxFileDetails;
@@ -99,6 +100,8 @@ import net.osmand.aidlapi.quickaction.QuickActionInfoParams;
 import net.osmand.aidlapi.lock.SetLockStateParams;
 
 import net.osmand.aidlapi.events.AKeyEventsParams;
+
+import net.osmand.aidlapi.info.AppInfoParams;
 
 // NOTE: Add new methods at the end of file!!!
 
@@ -860,4 +863,8 @@ interface IOsmAndAidlInterface {
      * @params keyEventList (List<Integer>) - list of requested key events
      */
     long registerForKeyEvents(in AKeyEventsParams params, IOsmAndAidlCallback callback);
+
+    AppInfoParams getAppInfo();
+
+    boolean setMapMargins(in MapMarginsParams params);
 }

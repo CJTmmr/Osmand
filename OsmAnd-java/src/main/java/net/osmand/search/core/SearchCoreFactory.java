@@ -33,6 +33,7 @@ import net.osmand.util.LocationParser.ParsedOpenLocationCode;
 import net.osmand.util.MapUtils;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -133,19 +134,19 @@ public class SearchCoreFactory {
 		public int getMinimalSearchRadius(SearchPhrase phrase) {
 			return 0;
 		}
-		
+
 		@Override
 		public int getNextSearchRadius(SearchPhrase phrase) {
 			return 0;
 		}
 
-		protected void subSearchApiOrPublish(SearchPhrase phrase, SearchResultMatcher resultMatcher, SearchResult res, SearchBaseAPI api) 
+		protected void subSearchApiOrPublish(SearchPhrase phrase, SearchResultMatcher resultMatcher, SearchResult res, SearchBaseAPI api)
 				throws IOException {
 			subSearchApiOrPublish(phrase, resultMatcher, res, api, true);
 		}
-		
+
 		protected void subSearchApiOrPublish(SearchPhrase phrase, SearchResultMatcher resultMatcher, SearchResult res, SearchBaseAPI api,
-				boolean publish) 
+											 boolean publish)
 				throws IOException {
 			phrase.countUnknownWordsMatchMainResult(res);
 			boolean firstUnknownWordMatches = res.firstUnknownWordMatches;
@@ -154,7 +155,7 @@ public class SearchCoreFactory {
 				leftUnknownSearchWords.removeAll(res.otherWordsMatch);
 			}
 			SearchResult newParentSearchResult = null;
-			if (res.parentSearchResult == null && resultMatcher.getParentSearchResult() == null && 
+			if (res.parentSearchResult == null && resultMatcher.getParentSearchResult() == null &&
 					res.objectType == ObjectType.STREET && res.object instanceof Street && ((Street) res.object).getCity() != null) {
 				City ct = ((Street) res.object).getCity();
 				SearchResult cityResult = new SearchResult(phrase);
@@ -204,15 +205,15 @@ public class SearchCoreFactory {
 				}
 			}
 			if (!leftUnknownSearchWords.isEmpty() && api != null && api.isSearchAvailable(phrase)) {
-				SearchPhrase nphrase = phrase.selectWord(res, leftUnknownSearchWords, 
-						phrase.isLastUnknownSearchWordComplete() || 
-						!leftUnknownSearchWords.contains(phrase.getLastUnknownSearchWord()));
-				SearchResult prev = resultMatcher.setParentSearchResult(publish ? res : 
-							resultMatcher.getParentSearchResult());
+				SearchPhrase nphrase = phrase.selectWord(res, leftUnknownSearchWords,
+						phrase.isLastUnknownSearchWordComplete() ||
+								!leftUnknownSearchWords.contains(phrase.getLastUnknownSearchWord()));
+				SearchResult prev = resultMatcher.setParentSearchResult(publish ? res :
+						resultMatcher.getParentSearchResult());
 				api.search(nphrase, resultMatcher);
 				resultMatcher.setParentSearchResult(prev);
 			}
-			
+
 		}
 
 		@Override
@@ -307,7 +308,7 @@ public class SearchCoreFactory {
 		public int getMinimalSearchRadius(SearchPhrase phrase) {
 			return phrase.getRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS);
 		}
-		
+
 		@Override
 		public int getNextSearchRadius(SearchPhrase phrase) {
 			return phrase.getNextRadiusSearch(DEFAULT_ADDRESS_BBOX_RADIUS);
@@ -383,7 +384,7 @@ public class SearchCoreFactory {
 
 		private void searchByName(final SearchPhrase phrase, final SearchResultMatcher resultMatcher)
 				throws IOException {
-			if (phrase.getRadiusLevel() > 1 || phrase.getUnknownWordToSearch().length() > 3 || 
+			if (phrase.getRadiusLevel() > 1 || phrase.getUnknownWordToSearch().length() > 3 ||
 					phrase.hasMoreThanOneUnknownSearchWord()|| phrase.isSearchTypeAllowed(ObjectType.POSTCODE, true)) {
 				final boolean locSpecified = phrase.getLastTokenLocation() != null;
 				LatLon loc = phrase.getLastTokenLocation();
@@ -424,7 +425,7 @@ public class SearchCoreFactory {
 							if (object.getName().startsWith("<")) {
 								return false;
 							}
-							
+
 							if (!phrase.getUnknownWordToSearchBuildingNameMatcher().matches(stripBraces(sr.localeName))) {
 								sr.priorityDistance = 5;
 							}
@@ -558,7 +559,7 @@ public class SearchCoreFactory {
 			}
 			// Take into account POI [bar] - 'Hospital 512'
 			// BEFORE: it was searching exact match of whole phrase.getUnknownSearchPhrase() [ Check feedback ] 
-			
+
 			final BinaryMapIndexReader[] currentFile = new BinaryMapIndexReader[1];
 			Iterator<BinaryMapIndexReader> offlineIterator = phrase.getRadiusOfflineIndexes(BBOX_RADIUS,
 					SearchPhraseDataType.POI);
@@ -670,7 +671,7 @@ public class SearchCoreFactory {
 			return phrase.getNextRadiusSearch(BBOX_RADIUS);
 		}
 	}
-	
+
 	protected static class PoiTypeResult {
 		public AbstractPoiType pt;
 		public Set<String> foundWords = new LinkedHashSet<String>();
@@ -709,7 +710,7 @@ public class SearchCoreFactory {
 				this.activePoiFilters.put(filterOrder.get(i), i);
 			}
 		}
-		
+
 		public Map<String, PoiTypeResult> getPoiTypeResults(NameStringMatcher nm, NameStringMatcher nmAdditional) {
 			Map<String, PoiTypeResult> results = new LinkedHashMap<>();
 			for (AbstractPoiType pf : topVisibleFilters) {
@@ -764,7 +765,7 @@ public class SearchCoreFactory {
 					} else {
 						String enTranslation = a.getEnTranslation().toLowerCase();
 						if (!"no".equals(enTranslation) // && !"yes".equals(enTranslation)
-								) {
+						) {
 							PoiTypeResult ptr = checkPoiType(nm, a);
 							if (ptr != null) {
 								results.put(a.getKeyName(), ptr);
@@ -816,12 +817,12 @@ public class SearchCoreFactory {
 				categories = types.getCategories(false);
 			}
 		}
-		
+
 		@Override
 		public boolean search(SearchPhrase phrase, SearchResultMatcher resultMatcher) throws IOException {
 			boolean showTopFiltersOnly = !phrase.isUnknownSearchWordPresent();
 			NameStringMatcher nm = phrase.getFirstUnknownNameStringMatcher();
-			
+
 			initPoiTypes();
 			if (showTopFiltersOnly) {
 				for (AbstractPoiType pt : topVisibleFilters) {
@@ -830,10 +831,10 @@ public class SearchCoreFactory {
 					res.object = pt;
 					addPoiTypeResult(phrase, resultMatcher, showTopFiltersOnly, getStandardFilterId(pt), res);
 				}
-				
+
 			} else {
 				boolean includeAdditional = !phrase.hasMoreThanOneUnknownSearchWord();
-				NameStringMatcher nmAdditional = includeAdditional ?  
+				NameStringMatcher nmAdditional = includeAdditional ?
 						new NameStringMatcher(phrase.getFirstUnknownSearchWord(), StringMatcherMode.CHECK_EQUALS_FROM_SPACE) : null;
 				Map<String, PoiTypeResult> poiTypes = getPoiTypeResults(nm, nmAdditional);
 				for (PoiTypeResult ptr : poiTypes.values()) {
@@ -869,7 +870,7 @@ public class SearchCoreFactory {
 		}
 
 		private void addPoiTypeResult(SearchPhrase phrase, SearchResultMatcher resultMatcher, boolean showTopFiltersOnly,
-				String stdFilterId, SearchResult res) {
+									  String stdFilterId, SearchResult res) {
 			res.priorityDistance = 0;
 			res.objectType = ObjectType.POI_TYPE;
 			res.firstUnknownWordMatches = true;
@@ -893,7 +894,7 @@ public class SearchCoreFactory {
 			return SEARCH_AMENITY_TYPE_PRIORITY + i.intValue();
 		}
 
-		
+
 
 		public String getStandardFilterId(AbstractPoiType poi) {
 			return STD_POI_FILTER_PREFIX + poi.getKeyName();
@@ -926,7 +927,7 @@ public class SearchCoreFactory {
 		private MapPoiTypes types;
 		private AbstractPoiType unselectedPoiType;
 		private String nameFilter;
-		
+
 		public SearchAmenityByTypeAPI(MapPoiTypes types, SearchAmenityTypesAPI searchAmenityTypesAPI) {
 			super(ObjectType.POI);
 			this.types = types;
@@ -975,7 +976,7 @@ public class SearchCoreFactory {
 				nameFilter = phrase.getUnknownSearchPhrase();
 			} else if (searchAmenityTypesAPI != null && phrase.isFirstUnknownSearchWordComplete()) {
 				NameStringMatcher nm = phrase.getFirstUnknownNameStringMatcher();
-				NameStringMatcher nmAdditional = new NameStringMatcher(phrase.getFirstUnknownSearchWord(), 
+				NameStringMatcher nmAdditional = new NameStringMatcher(phrase.getFirstUnknownSearchWord(),
 						StringMatcherMode.CHECK_EQUALS_FROM_SPACE) ;
 				searchAmenityTypesAPI.initPoiTypes();
 				Map<String, PoiTypeResult> poiTypeResults = searchAmenityTypesAPI.getPoiTypeResults(nm, nmAdditional);
@@ -1010,7 +1011,7 @@ public class SearchCoreFactory {
 				List<BinaryMapIndexReader> offlineIndexes = phrase.getOfflineIndexes();
 				Set<String> searchedPois = new TreeSet<>();
 				for (BinaryMapIndexReader r : offlineIndexes) {
-					ResultMatcher<Amenity> rm = getResultMatcher(phrase, poiTypeFilter, resultMatcher, nameFilter, r, 
+					ResultMatcher<Amenity> rm = getResultMatcher(phrase, poiTypeFilter, resultMatcher, nameFilter, r,
 							searchedPois, poiAdditionals, countExtraWords);
 					if (poiTypeFilter instanceof CustomSearchPoiFilter) {
 						rm = ((CustomSearchPoiFilter) poiTypeFilter).wrapResultMatcher(rm);
@@ -1025,12 +1026,12 @@ public class SearchCoreFactory {
 		}
 
 
-		private ResultMatcher<Amenity> getResultMatcher(final SearchPhrase phrase, final SearchPoiTypeFilter poiTypeFilter, 
-														final SearchResultMatcher resultMatcher, final String nameFilter, 
+		private ResultMatcher<Amenity> getResultMatcher(final SearchPhrase phrase, final SearchPoiTypeFilter poiTypeFilter,
+														final SearchResultMatcher resultMatcher, final String nameFilter,
 														final BinaryMapIndexReader selected, final Set<String> searchedPois,
 														final Collection<String> poiAdditionals, final int countExtraWords) {
-			
-			
+
+
 			final NameStringMatcher ns = nameFilter == null ? null : new NameStringMatcher(nameFilter, StringMatcherMode.CHECK_STARTS_FROM_SPACE);
 			return new ResultMatcher<Amenity>() {
 
@@ -1186,7 +1187,7 @@ public class SearchCoreFactory {
 				NameStringMatcher nm = phrase.getMainUnknownNameStringMatcher();
 				for (Street object : c.getStreets()) {
 					SearchResult res = new SearchResult(phrase);
-					
+
 					res.localeName = object.getName(phrase.getSettings().getLang(), phrase.getSettings().isTransliterate());
 					res.otherNames = object.getAllNames(true);
 					boolean pub = true;
@@ -1266,7 +1267,7 @@ public class SearchCoreFactory {
 
 			if (s != null) {
 				BinaryMapIndexReader file = phrase.getLastSelectedWord().getResult().file;
-				
+
 				if (cacheBuilding != s) {
 					cacheBuilding = s;
 					SearchRequest<Building> sr = BinaryMapIndexReader
@@ -1325,13 +1326,13 @@ public class SearchCoreFactory {
 						res.location = b.getLocation();
 					}
 					res.preferredZoom = 17;
-					
+
 					resultMatcher.publish(res);
 				}
 				String streetIntersection = phrase.getUnknownWordToSearch();
 				NameStringMatcher streetMatch = phrase.getMainUnknownNameStringMatcher();
-				if (Algorithms.isEmpty(streetIntersection) || 
-						(!Character.isDigit(streetIntersection.charAt(0)) && 
+				if (Algorithms.isEmpty(streetIntersection) ||
+						(!Character.isDigit(streetIntersection.charAt(0)) &&
 								CommonWords.getCommonSearch(streetIntersection) == -1) ) {
 					for (Street street : s.getIntersectedStreets()) {
 						SearchResult res = new SearchResult(phrase);
@@ -1369,7 +1370,7 @@ public class SearchCoreFactory {
 			return SEARCH_BUILDING_BY_STREET_PRIORITY;
 		}
 	}
-	
+
 	protected static class PoiAdditionalCustomFilter extends AbstractPoiType {
 
 		protected List<PoiType> additionalPoiTypes = new ArrayList<PoiType>();
@@ -1378,7 +1379,7 @@ public class SearchCoreFactory {
 			super(pt.getKeyName(), registry);
 			additionalPoiTypes.add(pt);
 		}
-		
+
 		@Override
 		public boolean isAdditional() {
 			return true;
@@ -1397,7 +1398,7 @@ public class SearchCoreFactory {
 			}
 			return acceptedTypes;
 		}
-		
+
 	}
 
 	public static class SearchLocationAndUrlAPI extends SearchBaseAPI {
@@ -1407,6 +1408,7 @@ public class SearchCoreFactory {
 		private LatLon olcPhraseLocation;
 		private ParsedOpenLocationCode cachedParsedCode;
 		private final List<String> citySubTypes = Arrays.asList("city", "town", "village");
+		private final DecimalFormat latLonFormatter = new DecimalFormat("#.0####");
 
 		public SearchLocationAndUrlAPI() {
 			super(ObjectType.LOCATION, ObjectType.PARTIAL_LOCATION);
@@ -1498,7 +1500,7 @@ public class SearchCoreFactory {
 						sp.priority = SEARCH_LOCATION_PRIORITY;
 
 						sp.object = sp.location = ll;
-						sp.localeName = ((float) sp.location.getLatitude()) + ", <input> ";
+						sp.localeName = formatLatLon(sp.location.getLatitude()) + ", <input> ";
 						sp.objectType = ObjectType.PARTIAL_LOCATION;
 						resultMatcher.publish(sp);
 					}
@@ -1510,7 +1512,7 @@ public class SearchCoreFactory {
 			SearchResult sp = new SearchResult(phrase);
 			sp.priority = SEARCH_LOCATION_PRIORITY;
 			sp.object = sp.location = l;
-			sp.localeName = ((float) sp.location.getLatitude()) + ", " + ((float) sp.location.getLongitude());
+			sp.localeName = formatLatLon(sp.location.getLatitude()) + ", " + formatLatLon(sp.location.getLongitude());
 			sp.objectType = ObjectType.LOCATION;
 			sp.wordsSpan = lw;
 			resultMatcher.publish(sp);
@@ -1525,7 +1527,7 @@ public class SearchCoreFactory {
 				sp.object = pnt;
 				sp.wordsSpan = text;
 				sp.location = new LatLon(pnt.getLatitude(), pnt.getLongitude());
-				sp.localeName = ((float)pnt.getLatitude()) +", " + ((float) pnt.getLongitude());
+				sp.localeName = formatLatLon(pnt.getLatitude()) +", " + formatLatLon(pnt.getLongitude());
 				if (pnt.getZoom() > 0) {
 					sp.preferredZoom = pnt.getZoom();
 				}
@@ -1555,6 +1557,10 @@ public class SearchCoreFactory {
 			}
 			return cachedParsedCode == null ? SEARCH_LOCATION_PRIORITY : SEARCH_MAX_PRIORITY;
 		}
+
+		private String formatLatLon(double latLon) {
+			return latLonFormatter.format(latLon);
+		}
 	}
 
 	private static String stripBraces(String localeName) {
@@ -1569,7 +1575,7 @@ public class SearchCoreFactory {
 		}
 		return retName;
 	}
-	
+
 	public static boolean isLastWordCityGroup(SearchPhrase p ) {
 		return p.isLastWord(ObjectType.CITY) || p.isLastWord(ObjectType.POSTCODE) ||
 				p.isLastWord(ObjectType.VILLAGE);

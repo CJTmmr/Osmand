@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import net.osmand.AndroidUtils;
 import net.osmand.PlatformUtil;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
@@ -64,7 +65,7 @@ public class VehicleParametersBottomSheet extends BasePreferenceBottomSheet {
 	@SuppressLint("ClickableViewAccessibility")
 	private BaseBottomSheetItem createBottomSheetItem(OsmandApplication app) {
 		final SizePreference preference = (SizePreference) getPreference();
-		View mainView = UiUtilities.getMaterialInflater(getContext(), nightMode)
+		View mainView = UiUtilities.getInflater(getContext(), nightMode)
 				.inflate(R.layout.bottom_sheet_item_edit_with_recyclerview, null);
 		TextView title = mainView.findViewById(R.id.title);
 		title.setText(preference.getTitle().toString());
@@ -196,13 +197,12 @@ public class VehicleParametersBottomSheet extends BasePreferenceBottomSheet {
 					return;
 				}
 				if (AndroidUiHelper.isOrientationPortrait(activity)) {
-					mainView.setBackgroundResource(showTopShadow ? getPortraitBgResId() : getBgColorId());
+					AndroidUtils.setBackground(mainView, showTopShadow ? getPortraitBg(activity) : getColoredBg(activity));
 					if (!showTopShadow) {
 						mainView.setPadding(0, 0, 0, 0);
 					}
 				} else {
-					mainView.setBackgroundResource(showTopShadow
-							? getLandscapeTopsidesBgResId() : getLandscapeSidesBgResId());
+					AndroidUtils.setBackground(mainView, showTopShadow ? getLandscapeTopsidesBg(activity) : getLandscapeSidesBg(activity));
 				}
 			}
 		};

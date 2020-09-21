@@ -22,6 +22,8 @@ import net.osmand.aidlapi.contextmenu.ContextMenuButtonsParams;
 import net.osmand.aidlapi.contextmenu.RemoveContextMenuButtonsParams;
 import net.osmand.aidlapi.contextmenu.UpdateContextMenuButtonsParams;
 import net.osmand.aidlapi.copyfile.CopyFileParams;
+import net.osmand.aidlapi.customization.MapMarginsParams;
+import net.osmand.aidlapi.info.AppInfoParams;
 import net.osmand.aidlapi.customization.CustomizationInfoParams;
 import net.osmand.aidlapi.customization.OsmandSettingsInfoParams;
 import net.osmand.aidlapi.customization.OsmandSettingsParams;
@@ -313,7 +315,7 @@ public class OsmandAidlServiceV2 extends Service implements AidlCallbackListener
 					AFavorite newFav = params.getFavoriteNew();
 					if (prevFav != null && newFav != null) {
 						return api.updateFavorite(prevFav.getName(), prevFav.getCategory(), prevFav.getLat(), prevFav.getLon(),
-								newFav.getName(), newFav.getCategory(), newFav.getDescription(), newFav.getLat(), newFav.getLon());
+								newFav.getName(), newFav.getCategory(), newFav.getDescription(), newFav.getAddress(), newFav.getLat(), newFav.getLon());
 					}
 				}
 				return false;
@@ -1290,6 +1292,30 @@ public class OsmandAidlServiceV2 extends Service implements AidlCallbackListener
 			try {
 				OsmandAidlApi api = getApi("setLockState");
 				return api != null && api.setLockState(params.getLockState());
+			} catch (Exception e) {
+				handleException(e);
+				return false;
+			}
+		}
+
+		@Override
+		public AppInfoParams getAppInfo() {
+			try {
+				OsmandAidlApi api = getApi("getAppInfo");
+				return api != null ? api.getAppInfo() : null;
+			} catch (Exception e) {
+				handleException(e);
+				return null;
+			}
+		}
+
+		@Override
+		public boolean setMapMargins(MapMarginsParams params) {
+			try {
+				OsmandAidlApi api = getApi("setMapMargins");
+				String packName = getCallingAppPackName();
+				return api != null && api.setMapMargins(packName, params.getAppModeKey(), params.getLeftMargin(),
+						params.getTopMargin(), params.getBottomMargin(), params.getRightMargin());
 			} catch (Exception e) {
 				handleException(e);
 				return false;
