@@ -562,7 +562,7 @@
     <string name="global_app_settings">Агульныя налады праграмы</string>
     <string name="user_name">Вашае імя карыстальніка OSM</string>
     <string name="open_street_map_login_descr">Патрэбна для падачы ў openstreetmap.org.</string>
-    <string name="user_password">Ваш пароль OSM</string>
+    <string name="user_password">Пароль</string>
     <string name="osmand_service">Фонавы рэжым</string>
     <string name="osmand_service_descr">OsmAnd працуе ў фоне з адключаным экранам.</string>
     <string name="download_files_not_enough_space">Не стае вольнага месца для спампоўвання %1$s МБ (вольна: %2$s).</string>
@@ -905,7 +905,7 @@
     <string name="uploading">Запампоўванне…</string>
     <string name="search_nothing_found">Нічога не знойдзена</string>
     <string name="searching">Пошук…</string>
-    <string name="searching_address">Пошук адрасу…</string>
+    <string name="searching_address">Пошук адраса…</string>
     <string name="search_osm_nominatim">Сеціўны пошук праз OSM Nominatim</string>
     <string name="hint_search_online">Сеціўны пошук: горад, вуліца, дом</string>
     <string name="search_offline_address">Пазасеціўны пошук</string>
@@ -1576,7 +1576,7 @@
     <string name="routing_attr_height_name">Абмежаванне па вышыні</string>
     <string name="routing_attr_height_description">Пазначыць вышыню транспартнага сродку для разліку маршруту.</string>
     <string name="use_fast_recalculation">Разумны пераразлік маршруту</string>
-    <string name="use_fast_recalculation_desc">Пераразлічваць толькі пачатак маршруту для доўгіх паездак.</string>
+    <string name="use_fast_recalculation_desc">Пераразлічваць толькі пачатак маршруту. Падыходзіць для доўгіх паездак.</string>
     <string name="shared_string_logoff">Выйсці</string>
     <string name="rendering_value_disabled_name">Выключана</string>
     <string name="rendering_value_walkingRoutesOSMC_name">Афарбоўка па пешаходнаму сімвалу OSMC</string>
@@ -3478,7 +3478,7 @@
     <string name="photo_notes">Фотанататкі</string>
     <string name="route_recalculation">Пераразлік маршруту</string>
     <string name="login_and_pass">Імя карыстальніка і пароль</string>
-    <string name="plugin_global_prefs_info">Гэтыя алады распаўсюджваюцца на ўсе профілі.</string>
+    <string name="plugin_global_prefs_info">Гэтыя налады ўбудовы распаўсюджваюцца на ўсе профілі</string>
     <string name="osm_editing">Рэдагаванне OSM</string>
     <string name="app_mode_osm">OSM</string>
     <string name="select_nav_icon_descr">Значок будзе паказвацца падчас навігацыі або руху.</string>
@@ -3939,19 +3939,45 @@
 \nАдзін месяц - 43 829 хвілін.</string>
     <string name="tiles_storage_descr">Абярыце спосаб захоўвання спампаваных фрагментаў.</string>
     <string name="shared_string_redo">Вярнуць</string>
-    <string name="release_3_8">• Абноўлены рэжым планавання маршруту дазваляе выкарыстоўваць розныя тыпы навігацыі для кожнага сегмента і прымацоўвае любы шлях да дарог
+    <string name="release_3_8">• Абноўлена функцыя планавання маршруту. З’явілася магчымасць выкарыстоўваць розныя тыпы навігацыі для кожнага сегмента і прымацоўваць сляды
 \n
-\n • Новыя варыянты выгляду для дарожак: абраць колер, таўшчыню, уключыць стрэлкі кірунку і адзнакі старту/фінішу
+\n • Новае меню \"Выгляд\" для слядоў. Можна абраць колер, таўшчыню, уключыць стрэлкі кірунку, адзнакі старту / фінішу
 \n
-\n • Палепшаная бачнасць роварных вузлоў
+\n • Палепшана бачнасць роварных вузлоў.
 \n
-\n • Кантэкстнае меню для слядоў з асноўнай інфармацыяй
+\n • Для слядоў з’явілася кантэкстнае меню з асноўнай інфармацыяй.
 \n
 \n • Палепшаны алгарытмы пошуку
 \n
-\n • Палепшаны параметры адсочвання ў навігацыі
+\n • Палепшаны параметры адсочвання слядоў у навігацыі
 \n
 \n • Выпраўлены праблемы з імпартам / экспартам налад профілю
 \n
 \n</string>
+    <string name="sort_last_modified">Апошняя змена</string>
+    <string name="sort_name_descending">Назва: Я — А</string>
+    <string name="sort_name_ascending">Назва: А — Я</string>
+    <string name="what_is_new">Што новага</string>
+    <string name="contour_lines_thanks">Дзякуй за набыццё ўбудовы «Контурныя лініі»</string>
+    <string name="osm_live_payment_desc_hw">Плата за падпіску спаганяецца за абраны перыяд. Скасаваць яе на AppGallery можна у любы момант.</string>
+    <string name="osm_live_payment_subscription_management_hw">Пры пацвярджэнні пакупкі аплата будзе спаганяцца з рахунка, звязанага з вашым акаўнтам AppGallery.
+\n
+\nПадпіска аўтаматычна працягваецца, калі вы не скасуеце яе да даты працягу. З вашага рахунка будзе адзін раз спаганяцца аплата за перыяд працягу (месяц/тры месяцы/год).
+\n
+\nВы можаце кіраваць падпіскамі і скасоўваць іх у наладах AppGallery.</string>
+    <string name="routing_attr_avoid_footways_description">Пазбягаць пешаходныя дарожкі</string>
+    <string name="routing_attr_avoid_footways_name">Пазбягаць пешаходныя дарожкі</string>
+    <string name="development">Распрацоўка</string>
+    <string name="complex_routing_descr">Дзвюхфазная аўтанавігацыя.</string>
+    <string name="use_native_pt">Натыўны грамадскі транспарт (у распрацоўцы)</string>
+    <string name="perform_oauth_authorization">Увайсці праз OAuth</string>
+    <string name="use_two_phase_routing">Выкарыстоўваць 2-фазны алгарытм маршрутызацыі A *</string>
+    <string name="use_native_pt_desc">Перайсці на разлік маршруту грамадскага транспарту на Java (бяспечны)</string>
+    <string name="file_already_imported">Файл ужо імпартаваны ў OsmAnd</string>
+    <string name="start_finish_icons">Значкі старту і фінішу</string>
+    <string name="perform_oauth_authorization_description">Увайдзіце праз OAuth, каб выкарыстоўваць функцыі osmedit</string>
+    <string name="clear_osm_token">Ачысціць токен OpenStreetMap OAuth</string>
+    <string name="osm_edit_logout_success">Выхад выкананы</string>
+    <string name="use_live_public_transport">Даныя OsmAnd Live</string>
+    <string name="use_live_routing">Даныя OsmAnd Live</string>
 </resources>

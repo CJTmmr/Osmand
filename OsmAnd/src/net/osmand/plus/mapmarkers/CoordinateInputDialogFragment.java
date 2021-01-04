@@ -63,10 +63,10 @@ import net.osmand.GPXUtilities.WptPt;
 import net.osmand.IndexConstants;
 import net.osmand.Location;
 import net.osmand.plus.GpxSelectionHelper;
-import net.osmand.plus.MapMarkersHelper;
 import net.osmand.plus.OsmAndLocationProvider.OsmAndCompassListener;
 import net.osmand.plus.OsmAndLocationProvider.OsmAndLocationListener;
 import net.osmand.plus.OsmandApplication;
+import net.osmand.plus.settings.backend.OsmandPreference;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.Version;
@@ -78,7 +78,6 @@ import net.osmand.plus.mapmarkers.CoordinateInputFormats.DDM;
 import net.osmand.plus.mapmarkers.CoordinateInputFormats.DMS;
 import net.osmand.plus.mapmarkers.CoordinateInputFormats.Format;
 import net.osmand.plus.mapmarkers.adapters.CoordinateInputAdapter;
-import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.widgets.EditTextEx;
 import net.osmand.util.Algorithms;
 import net.osmand.util.LocationParser;
@@ -170,7 +169,7 @@ public class CoordinateInputDialogFragment extends DialogFragment implements Osm
 
 	private void syncGpx(GPXFile gpxFile) {
 		MapMarkersHelper helper = getMyApplication().getMapMarkersHelper();
-		MapMarkersHelper.MapMarkersGroup group = helper.getMarkersGroup(gpxFile);
+		MapMarkersGroup group = helper.getMarkersGroup(gpxFile);
 		if (group != null) {
 			helper.runSynchronization(group);
 		}
@@ -1023,7 +1022,7 @@ public class CoordinateInputDialogFragment extends DialogFragment implements Osm
 	}
 
 	private void changeOsmandKeyboardSetting() {
-		OsmandSettings.OsmandPreference<Boolean> pref = getMyApplication().getSettings().COORDS_INPUT_USE_OSMAND_KEYBOARD;
+		OsmandPreference<Boolean> pref = getMyApplication().getSettings().COORDS_INPUT_USE_OSMAND_KEYBOARD;
 		pref.set(!pref.get());
 	}
 

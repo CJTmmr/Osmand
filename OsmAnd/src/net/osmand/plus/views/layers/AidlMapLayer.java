@@ -24,7 +24,7 @@ import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
 import net.osmand.data.RotatedTileBox;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.settings.backend.OsmandSettings.CommonPreference;
+import net.osmand.plus.settings.backend.CommonPreference;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.mapcontextmenu.MapContextMenu;
@@ -181,7 +181,7 @@ public class AidlMapLayer extends OsmandMapLayer implements IContextMenuProvider
 			}
 
 			if (imageRequests.size() > 0) {
-				executeTaskInBackground(new PointImageReaderTask(this), imageRequests.toArray(new String[imageRequests.size()]));
+				executeTaskInBackground(new PointImageReaderTask(this), imageRequests.toArray(new String[0]));
 			}
 		}
 		mapTextLayer.putData(this, displayedPoints);

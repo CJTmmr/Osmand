@@ -243,9 +243,6 @@ public class RoutePlannerFrontEnd {
 			start = gpxPoints.get(0); 
 		}
 		while (start != null && !gctx.ctx.calculationProgress.isCancelled) {
-			if (Thread.currentThread().isInterrupted()) {
-				return null;
-			}
 			double routeDist = gctx.MAXIMUM_STEP_APPROXIMATION;
 			GpxPoint next = findNextGpxPointWithin(gctx, gpxPoints, start, routeDist);
 			boolean routeFound = false;
@@ -739,7 +736,7 @@ public class RoutePlannerFrontEnd {
 			res = searchRouteImpl(ctx, points, routeDirection);
 		}
 		if (ctx.calculationProgress != null) {
-			ctx.calculationProgress.timeToCalculate += (System.nanoTime() - timeToCalculate);
+			ctx.calculationProgress.timeToCalculate = (System.nanoTime() - timeToCalculate);
 		}
 		BinaryRoutePlanner.printDebugMemoryInformation(ctx);
 		if (res != null) {
@@ -921,7 +918,7 @@ public class RoutePlannerFrontEnd {
 
 	private List<RouteSegmentResult> runNativeRouting(final RoutingContext ctx, RouteSegment recalculationEnd) throws IOException {
 		refreshProgressDistance(ctx);
-		RouteRegion[] regions = ctx.reverseMap.keySet().toArray(new BinaryMapRouteReaderAdapter.RouteRegion[ctx.reverseMap.size()]);
+		RouteRegion[] regions = ctx.reverseMap.keySet().toArray(new RouteRegion[0]);
 		ctx.checkOldRoutingFiles(ctx.startX, ctx.startY);
 		ctx.checkOldRoutingFiles(ctx.targetX, ctx.targetY);
 

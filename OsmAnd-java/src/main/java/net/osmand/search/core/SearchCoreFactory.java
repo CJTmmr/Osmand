@@ -602,7 +602,7 @@ public class SearchCoreFactory {
 							sr.localeName = object.getName(phrase.getSettings().getLang(),
 									phrase.getSettings().isTransliterate());
 							if (!nm.matches(sr.localeName) && !nm.matches(sr.otherNames)
-									&& !nm.matches(object.getAdditionalInfo().values())) {
+									&& !nm.matches(object.getAdditionalInfoValues(false))) {
 								return false;
 							}
 							sr.object = object;
@@ -923,6 +923,7 @@ public class SearchCoreFactory {
 
 	public static class SearchAmenityByTypeAPI extends SearchBaseAPI {
 		private static final int BBOX_RADIUS = 10000;
+		private static final int BBOX_RADIUS_NEAREST = 1000;
 		private SearchAmenityTypesAPI searchAmenityTypesAPI;
 		private MapPoiTypes types;
 		private AbstractPoiType unselectedPoiType;
@@ -1007,7 +1008,14 @@ public class SearchCoreFactory {
 			}
 			this.nameFilter = nameFilter;
 			if (poiTypeFilter != null) {
-				QuadRect bbox = phrase.getRadiusBBoxToSearch(BBOX_RADIUS);
+				int radius = BBOX_RADIUS;
+				if (phrase.getRadiusLevel() == 1 && poiTypeFilter instanceof CustomSearchPoiFilter) {
+					String name = ((CustomSearchPoiFilter) poiTypeFilter).getFilterId();
+					if ("std_null".equals(name)) {
+						radius = BBOX_RADIUS_NEAREST;
+					}
+				}
+				QuadRect bbox = phrase.getRadiusBBoxToSearch(radius);
 				List<BinaryMapIndexReader> offlineIndexes = phrase.getOfflineIndexes();
 				Set<String> searchedPois = new TreeSet<>();
 				for (BinaryMapIndexReader r : offlineIndexes) {
@@ -1051,7 +1059,7 @@ public class SearchCoreFactory {
 					if (!poiAdditionals.isEmpty()) {
 						boolean found = false;
 						for (String add : poiAdditionals) {
-							if(object.getAdditionalInfo().containsKey(add)) {
+							if (object.getAdditionalInfoKeys().contains(add)) {
 								found = true;
 								break;
 							}

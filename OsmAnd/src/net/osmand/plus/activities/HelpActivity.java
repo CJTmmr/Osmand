@@ -141,7 +141,7 @@ public class HelpActivity extends OsmandActionBarActivity implements AdapterView
 				"feature_articles/map-markers.html"));
 		contextMenuAdapter.addItem(createItem(R.string.travel_item, NULL_ID,
 				"feature_articles/travel.html"));
-		contextMenuAdapter.addItem(createItem(R.string.measure_distance_item, NULL_ID,
+		contextMenuAdapter.addItem(createItem(R.string.plan_a_route, NULL_ID,
 				"feature_articles/plan-route.html"));
 		contextMenuAdapter.addItem(createItem(R.string.radius_ruler_item, NULL_ID,
 				"feature_articles/ruler.html"));
@@ -172,9 +172,11 @@ public class HelpActivity extends OsmandActionBarActivity implements AdapterView
 				"feature_articles/technical-articles.html"));
 		contextMenuAdapter.addItem(createItem(R.string.versions_item, NULL_ID,
 				"feature_articles/changes.html"));
+		contextMenuAdapter.addItem(createItem(R.string.what_is_new, NULL_ID,
+				"feature_articles/osmand-3-9-released.html"));
 
 		String releasedate = "";
-		if (!this.getString(R.string.app_edition).equals("")) {
+		if (!this.getString(R.string.app_edition).isEmpty()) {
 			releasedate = ", " + this.getString(R.string.shared_string_release).toLowerCase() + ": " + this.getString(R.string.app_edition);
 		}
 		String version = Version.getFullVersion(getMyApplication()) + releasedate;

@@ -33,6 +33,7 @@ import androidx.core.graphics.drawable.DrawableCompat;
 
 import com.google.android.material.snackbar.Snackbar;
 import com.jwetherell.openmap.common.LatLonPoint;
+import com.jwetherell.openmap.common.MGRSPoint;
 import com.jwetherell.openmap.common.UTMPoint;
 
 import net.osmand.AndroidUtils;
@@ -48,6 +49,9 @@ import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.OsmAndLocationProvider;
 import net.osmand.plus.OsmAndLocationProvider.GPSInfo;
 import net.osmand.plus.OsmandApplication;
+import net.osmand.plus.routing.CurrentStreetName;
+import net.osmand.plus.routing.RoutingHelperUtils;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
@@ -63,11 +67,10 @@ import net.osmand.plus.routepreparationmenu.ShowAlongTheRouteBottomSheet;
 import net.osmand.plus.routing.RouteCalculationResult;
 import net.osmand.plus.routing.RouteDirectionInfo;
 import net.osmand.plus.routing.RoutingHelper;
-import net.osmand.plus.settings.backend.OsmandSettings;
-import net.osmand.plus.settings.backend.OsmandSettings.RulerMode;
 import net.osmand.plus.views.OsmandMapLayer.DrawSettings;
 import net.osmand.plus.views.OsmandMapTileView;
 import net.osmand.plus.views.layers.RulerControlLayer;
+import net.osmand.plus.views.layers.RulerControlLayer.RulerMode;
 import net.osmand.plus.views.mapwidgets.widgets.TextInfoWidget;
 import net.osmand.render.RenderingRuleSearchRequest;
 import net.osmand.render.RenderingRulesStorage;
@@ -932,7 +935,7 @@ public class MapInfoWidgetsFactory {
 
 
 		public boolean updateInfo(DrawSettings d) {
-			RoutingHelper.CurrentStreetName streetName = null;
+			CurrentStreetName streetName = null;
 			boolean showClosestWaypointFirstInAddress = true;
 			if (routingHelper != null && routingHelper.isRouteCalculated() && !routingHelper.isDeviatedFromRoute()) {
 				if (routingHelper.isFollowingMode()) {
@@ -952,11 +955,11 @@ public class MapInfoWidgetsFactory {
 				}
 			} else if (map.getMapViewTrackingUtilities().isMapLinkedToLocation() &&
 					settings.SHOW_STREET_NAME.get()) {
-				streetName = new RoutingHelper.CurrentStreetName();
+				streetName = new CurrentStreetName();
 				RouteDataObject rt = locationProvider.getLastKnownRouteSegment();
 				if (rt != null) {
 					Location lastKnownLocation = locationProvider.getLastKnownLocation();
-					streetName.text = RoutingHelper.formatStreetName(
+					streetName.text = RoutingHelperUtils.formatStreetName(
 							rt.getName(settings.MAP_PREFERRED_LOCALE.get(), settings.MAP_TRANSLITERATE_NAMES.get()),
 							rt.getRef(settings.MAP_PREFERRED_LOCALE.get(), settings.MAP_TRANSLITERATE_NAMES.get(), rt.bearingVsRouteDirection(lastKnownLocation)),
 							rt.getDestinationName(settings.MAP_PREFERRED_LOCALE.get(), settings.MAP_TRANSLITERATE_NAMES.get(), rt.bearingVsRouteDirection(lastKnownLocation)),
@@ -1251,6 +1254,13 @@ public class MapInfoWidgetsFactory {
 						UTMPoint pnt = new UTMPoint(new LatLonPoint(lat, lon));
 						String utmLocation = pnt.zone_number + "" + pnt.zone_letter + " " + ((long) pnt.easting) + " " + ((long) pnt.northing);
 						latitudeText.setText(utmLocation);
+					} else if (f == PointDescription.MGRS_FORMAT) {
+						AndroidUiHelper.updateVisibility(lonCoordinatesContainer, false);
+						AndroidUiHelper.updateVisibility(coordinatesDivider, false);
+						AndroidUiHelper.updateVisibility(latitudeIcon, true);
+						latitudeIcon.setImageDrawable(iconsCache.getIcon(nightMode ? R.drawable.widget_coordinates_utm_night : R.drawable.widget_coordinates_utm_day));
+						MGRSPoint pnt = new MGRSPoint(new LatLonPoint(lat, lon));
+						latitudeText.setText(pnt.toFlavoredString(5));
 					} else if (f == PointDescription.OLC_FORMAT) {
 						AndroidUiHelper.updateVisibility(lonCoordinatesContainer, false);
 						AndroidUiHelper.updateVisibility(coordinatesDivider, false);

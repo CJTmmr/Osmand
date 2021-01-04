@@ -20,11 +20,11 @@ import androidx.fragment.app.Fragment;
 import net.osmand.AndroidUtils;
 import net.osmand.data.LatLon;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.backend.ApplicationMode;
+import net.osmand.plus.settings.backend.CommonPreference;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
-import net.osmand.plus.activities.SettingsBaseActivity;
 import net.osmand.plus.base.MenuBottomSheetDialogFragment;
 import net.osmand.plus.base.bottomsheetmenu.BaseBottomSheetItem;
 import net.osmand.plus.base.bottomsheetmenu.BottomSheetItemWithCompoundButton;
@@ -33,6 +33,7 @@ import net.osmand.plus.base.bottomsheetmenu.simpleitems.SubtitleDividerItem;
 import net.osmand.plus.dashboard.DashboardOnMap;
 import net.osmand.plus.helpers.AvoidSpecificRoads;
 import net.osmand.router.GeneralRouter;
+import net.osmand.router.RouteSegmentResult;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ public class AvoidRoadsBottomSheetDialogFragment extends MenuBottomSheetDialogFr
 	private static final String AVOID_ROADS_TYPES_KEY = "avoid_roads_types";
 	private static final String HIDE_IMPASSABLE_ROADS_KEY = "hide_impassable_roads";
 	private static final String AVOID_ROADS_OBJECTS_KEY = "avoid_roads_objects";
+	private static final String AVOID_ROADS_APP_MODE_KEY = "avoid_roads_app_mode";
 
 	private RoutingOptionsHelper routingOptionsHelper;
 
@@ -64,9 +66,14 @@ public class AvoidRoadsBottomSheetDialogFragment extends MenuBottomSheetDialogFr
 	private boolean hideImpassableRoads;
 	@ColorRes
 	private int compoundButtonColorId = INVALID_ID;
+	private ApplicationMode appMode;
 
 	public void setHideImpassableRoads(boolean hideImpassableRoads) {
 		this.hideImpassableRoads = hideImpassableRoads;
+	}
+
+	public void setApplicationMode(ApplicationMode appMode) {
+		this.appMode = appMode;
 	}
 
 	@Override
@@ -83,6 +90,9 @@ public class AvoidRoadsBottomSheetDialogFragment extends MenuBottomSheetDialogFr
 			}
 			if (savedInstanceState.containsKey(AVOID_ROADS_OBJECTS_KEY)) {
 				removedImpassableRoads = (List<LatLon>) savedInstanceState.getSerializable(AVOID_ROADS_OBJECTS_KEY);
+			}
+			if (savedInstanceState.containsKey(AVOID_ROADS_APP_MODE_KEY)) {
+				appMode = ApplicationMode.valueOfStringKey(savedInstanceState.getString(AVOID_ROADS_APP_MODE_KEY), null);
 			}
 		}
 		if (routingParametersMap == null) {
@@ -155,7 +165,7 @@ public class AvoidRoadsBottomSheetDialogFragment extends MenuBottomSheetDialogFr
 					if (mapActivity != null) {
 						mapActivity.getDashboard().setDashboardVisibility(false, DashboardOnMap.DashboardType.ROUTE_PREFERENCES);
 						mapActivity.getMapRouteInfoMenu().hide();
-						app.getAvoidSpecificRoads().selectFromMap(mapActivity);
+						app.getAvoidSpecificRoads().selectFromMap(mapActivity, appMode);
 						Fragment fragment = getTargetFragment();
 						if (fragment != null) {
 							fragment.onActivityResult(getTargetRequestCode(), OPEN_AVOID_ROADS_DIALOG_REQUEST_CODE, null);
@@ -222,7 +232,7 @@ public class AvoidRoadsBottomSheetDialogFragment extends MenuBottomSheetDialogFr
 			if (parameter != null) {
 				defValue = parameter.getName();
 			}
-			String parameterName = SettingsBaseActivity.getRoutingStringPropertyName(app, parameterId, defValue);
+			String parameterName = AndroidUtils.getRoutingStringPropertyName(app, parameterId, defValue);
 
 			final BottomSheetItemWithCompoundButton[] item = new BottomSheetItemWithCompoundButton[1];
 			item[0] = (BottomSheetItemWithCompoundButton) new BottomSheetItemWithCompoundButton.Builder()
@@ -263,6 +273,9 @@ public class AvoidRoadsBottomSheetDialogFragment extends MenuBottomSheetDialogFr
 		outState.putSerializable(AVOID_ROADS_TYPES_KEY, routingParametersMap);
 		outState.putSerializable(AVOID_ROADS_OBJECTS_KEY, (Serializable) removedImpassableRoads);
 		outState.putBoolean(HIDE_IMPASSABLE_ROADS_KEY, hideImpassableRoads);
+		if (appMode != null) {
+			outState.putString(AVOID_ROADS_APP_MODE_KEY, appMode.getStringKey());
+		}
 	}
 
 	@Override
@@ -292,7 +305,7 @@ public class AvoidRoadsBottomSheetDialogFragment extends MenuBottomSheetDialogFr
 			GeneralRouter.RoutingParameter parameter = routingOptionsHelper.getRoutingPrefsForAppModeById(app.getRoutingHelper().getAppMode(), parameterId);
 			if (parameter != null) {
 				boolean checked = entry.getValue();
-				OsmandSettings.CommonPreference<Boolean> preference = app.getSettings().getCustomRoutingBooleanProperty(parameter.getId(), parameter.getDefaultBoolean());
+				CommonPreference<Boolean> preference = app.getSettings().getCustomRoutingBooleanProperty(parameter.getId(), parameter.getDefaultBoolean());
 				preference.setModeValue(app.getRoutingHelper().getAppMode(), checked);
 			}
 		}
@@ -302,7 +315,7 @@ public class AvoidRoadsBottomSheetDialogFragment extends MenuBottomSheetDialogFr
 			avoidSpecificRoads.removeImpassableRoad(routeLocation);
 		}
 
-		app.getRoutingHelper().recalculateRouteDueToSettingsChange();
+		app.getRoutingHelper().onSettingsChanged(true);
 		MapActivity mapActivity = getMapActivity();
 		if (mapActivity != null) {
 			final MapRouteInfoMenu mapRouteInfoMenu = mapActivity.getMapRouteInfoMenu();
@@ -318,7 +331,7 @@ public class AvoidRoadsBottomSheetDialogFragment extends MenuBottomSheetDialogFr
 		List<GeneralRouter.RoutingParameter> avoidParameters = routingOptionsHelper.getAvoidRoutingPrefsForAppMode(app.getRoutingHelper().getAppMode());
 
 		for (GeneralRouter.RoutingParameter parameter : avoidParameters) {
-			OsmandSettings.CommonPreference<Boolean> preference = app.getSettings().getCustomRoutingBooleanProperty(parameter.getId(), parameter.getDefaultBoolean());
+			CommonPreference<Boolean> preference = app.getSettings().getCustomRoutingBooleanProperty(parameter.getId(), parameter.getDefaultBoolean());
 			res.put(parameter.getId(), preference.getModeValue(app.getRoutingHelper().getAppMode()));
 		}
 

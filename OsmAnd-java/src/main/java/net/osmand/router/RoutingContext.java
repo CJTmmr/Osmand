@@ -289,7 +289,8 @@ public class RoutingContext {
 								if(excludeNotAllowed != null && !excludeNotAllowed.contains(ro.getId())) {
 									ts.add(ro);
 								}
-							} else if(excludeNotAllowed != null && ro.getId() > 0){
+							}
+							if(excludeNotAllowed != null && ro.getId() > 0){
 								excludeNotAllowed.add(ro.getId());
 								if(ts.excludedIds == null ){
 									ts.excludedIds = new TLongHashSet();
@@ -801,7 +802,7 @@ public class RoutingContext {
 	}
 	
 	public BinaryMapIndexReader[] getMaps() {
-		return map.keySet().toArray(new BinaryMapIndexReader[map.size()]);
+		return map.keySet().toArray(new BinaryMapIndexReader[0]);
 	}
 
 	public int getVisitedSegments() {

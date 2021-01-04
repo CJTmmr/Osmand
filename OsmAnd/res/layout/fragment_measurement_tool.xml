@@ -130,33 +130,32 @@
                 tools:text="@string/add_point_after"/>
         </RelativeLayout>
 
-        <View
+        <FrameLayout
+            android:id="@+id/info_type_buttons_container"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="?attr/dashboard_divider"/>
+            android:layout_height="wrap_content">
+
+            <include
+                layout="@layout/custom_radio_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/measurement_tool_button_height"
+                android:layout_marginStart="@dimen/content_padding"
+                android:layout_marginEnd="@dimen/content_padding"
+                android:layout_marginBottom="@dimen/measurement_tool_content_padding_medium" />
+
+        </FrameLayout>
 
         <FrameLayout
-            android:id="@+id/points_list_container"
+            android:id="@+id/cards_container"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/measurement_tool_points_list_container_height"
-            android:background="@color/activity_background_color_dark"
-            android:visibility="gone">
+            android:layout_height="@dimen/measurement_tool_info_cards_container_height"
+            android:visibility="gone" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/measure_points_recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-
-            <include layout="@layout/card_bottom_divider"/>
-
-            <androidx.appcompat.widget.AppCompatImageView
-                android:layout_width="match_parent"
-                android:layout_height="5dp"
-                android:layout_gravity="bottom"
-                android:alpha="0.5"
-                android:scaleType="fitXY"
-                osmand:srcCompat="@drawable/bg_shadow_onmap"/>
-        </FrameLayout>
+        <View
+            android:id="@+id/bottom_panel_divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/dashboard_divider" />
 
         <LinearLayout
             android:id="@+id/measure_mode_controls"
@@ -216,10 +215,12 @@
 
                 <include
                     android:id="@+id/add_point_button"
+                    layout="@layout/bottom_sheet_dialog_button"
+                    android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_width="@dimen/measurement_tool_button_width"
                     android:layout_gravity="end"
-                    layout="@layout/bottom_sheet_dialog_button" />
+                    android:minWidth="@dimen/measurement_tool_button_width" />
+
             </FrameLayout>
 
         </LinearLayout>

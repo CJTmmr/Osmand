@@ -44,6 +44,10 @@ import net.osmand.plus.OsmAndLocationProvider;
 import net.osmand.plus.OsmAndLocationSimulation;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
+import net.osmand.plus.settings.backend.OsmandPreference;
+import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.backend.CommonPreference;
+import net.osmand.plus.rastermaps.LayerTransparencySeekbarMode;
 import net.osmand.plus.R;
 import net.osmand.plus.TargetPointsHelper;
 import net.osmand.plus.TargetPointsHelper.TargetPoint;
@@ -63,9 +67,6 @@ import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.search.QuickSearchDialogFragment.QuickSearchType;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.settings.backend.OsmAndAppCustomization;
-import net.osmand.plus.settings.backend.OsmandSettings;
-import net.osmand.plus.settings.backend.OsmandSettings.CommonPreference;
-import net.osmand.plus.settings.backend.OsmandSettings.LayerTransparencySeekbarMode;
 import net.osmand.plus.views.OsmandMapLayer;
 import net.osmand.plus.views.OsmandMapTileView;
 import net.osmand.plus.views.corenative.NativeCoreContext;
@@ -338,7 +339,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 	public void stopNavigation() {
 		mapRouteInfoMenu.hide();
 		if (mapActivity.getRoutingHelper().isFollowingMode()) {
-			mapActivity.getMapActions().stopNavigationActionConfirm();
+			mapActivity.getMapActions().stopNavigationActionConfirm(null);
 		} else {
 			mapActivity.getMapActions().stopNavigationWithoutConfirm();
 		}
@@ -496,7 +497,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 			if (object instanceof SelectedGpxPoint && !((SelectedGpxPoint) object).getSelectedGpxFile().isShowCurrentTrack()) {
 				GPXFile gpxFile = ((SelectedGpxPoint) object).getSelectedGpxFile().getGpxFile();
 				mapActivity.getMapActions().enterRoutePlanningModeGivenGpx(gpxFile, null, null, true, true, MenuState.HEADER_ONLY);
-				routingHelper.recalculateRouteDueToSettingsChange();
+				routingHelper.onSettingsChanged(true);
 				menu.close();
 			} else {
 				if (routingHelper.isFollowingMode() || routingHelper.isRoutePlanningMode()) {
@@ -799,7 +800,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 		if (routingHelper.isFollowingMode()) {
 			switchToRouteFollowingLayout();
 			if (app.getSettings().APPLICATION_MODE.get() != routingHelper.getAppMode()) {
-				app.getSettings().APPLICATION_MODE.set(routingHelper.getAppMode());
+				app.getSettings().setApplicationMode(routingHelper.getAppMode(), false);
 			}
 		} else {
 			if (!app.getTargetPointsHelper().checkPointToNavigateShort()) {
@@ -807,7 +808,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 			} else {
 				touchEvent = 0;
 				app.logEvent("start_navigation");
-				app.getSettings().APPLICATION_MODE.set(routingHelper.getAppMode());
+				app.getSettings().setApplicationMode(routingHelper.getAppMode(), false);
 				mapActivity.getMapViewTrackingUtilities().backToLocationImpl(17, true);
 				app.getSettings().FOLLOW_THE_ROUTE.set(true);
 				routingHelper.setFollowingMode(true);
@@ -1064,6 +1065,17 @@ public class MapControlsLayer extends OsmandMapLayer {
 				showTransparencyBar(settings.MAP_OVERLAY_TRANSPARENCY, true);
 			} else if (seekbarMode == LayerTransparencySeekbarMode.UNDERLAY && settings.MAP_UNDERLAY.get() != null) {
 				showTransparencyBar(settings.MAP_TRANSPARENCY, true);
+			}
+		}
+	}
+
+	public void updateTransparencySlider () {
+		LayerTransparencySeekbarMode seekbarMode = settings.LAYER_TRANSPARENCY_SEEKBAR_MODE.get();
+		if (OsmandPlugin.getEnabledPlugin(OsmandRasterMapsPlugin.class) != null) {
+			if (seekbarMode == LayerTransparencySeekbarMode.OVERLAY && settings.MAP_OVERLAY.get() != null) {
+				transparencySlider.setValue(settings.MAP_OVERLAY_TRANSPARENCY.get());
+			} else if (seekbarMode == LayerTransparencySeekbarMode.UNDERLAY && settings.MAP_UNDERLAY.get() != null) {
+				transparencySlider.setValue(settings.MAP_TRANSPARENCY.get());
 			}
 		}
 	}
@@ -1349,7 +1361,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 
 			@Override
 			public boolean onLongClick(View notUseCouldBeNull) {
-				final OsmandSettings.OsmandPreference<Float> mapDensity = view.getSettings().MAP_DENSITY;
+				final OsmandPreference<Float> mapDensity = view.getSettings().MAP_DENSITY;
 				final AlertDialog.Builder bld = new AlertDialog.Builder(view.getContext());
 				int p = (int) (mapDensity.get() * 100);
 				final TIntArrayList tlist = new TIntArrayList(new int[]{25, 33, 50, 75, 100, 125, 150, 200, 300, 400});
@@ -1375,7 +1387,7 @@ public class MapControlsLayer extends OsmandMapLayer {
 				}
 
 				bld.setTitle(R.string.map_magnifier);
-				bld.setSingleChoiceItems(values.toArray(new String[values.size()]), i,
+				bld.setSingleChoiceItems(values.toArray(new String[0]), i,
 						new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog, int which) {

@@ -75,7 +75,6 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 import static net.osmand.IndexConstants.VOICE_INDEX_DIR;
 
 /**
@@ -210,7 +209,7 @@ public class ResourceManager {
 	protected final Map<String, AmenityIndexRepository> amenityRepositories =  new ConcurrentHashMap<String, AmenityIndexRepository>();
 //	protected final Map<String, BinaryMapIndexReader> routingMapFiles = new ConcurrentHashMap<String, BinaryMapIndexReader>();
 	protected final Map<String, BinaryMapReaderResource> transportRepositories = new ConcurrentHashMap<String, BinaryMapReaderResource>();
-	
+	protected final Map<String, BinaryMapReaderResource> travelRepositories = new ConcurrentHashMap<String, BinaryMapReaderResource>();
 	protected final Map<String, String> indexFileNames = new ConcurrentHashMap<String, String>();
 	protected final Map<String, String> basemapFileNames = new ConcurrentHashMap<String, String>();
 	
@@ -413,7 +412,7 @@ public class ResourceManager {
 				java.text.DateFormat dateFormat = getDateFormat();
 				for (File f : lf) {
 					if (f.isDirectory()) {
-						String lang = f.getName().replace("-tts", "");
+						String lang = f.getName().replace(IndexConstants.VOICE_PROVIDER_SUFFIX, "");
 						File conf = new File(f, lang + "_" + IndexConstants.TTSVOICE_INDEX_EXT_JS);
 						if (!conf.exists()) {
 							conf = new File(f, "_config.p");
@@ -454,9 +453,10 @@ public class ResourceManager {
 			if (appPath.canWrite()) {
 				for (AssetEntry asset : assets) {
 					File jsFile = new File(appPath, asset.destination);
-					if (asset.destination.contains("-tts") && asset.destination
+					if (asset.destination.contains(IndexConstants.VOICE_PROVIDER_SUFFIX) && asset.destination
 							.endsWith(IndexConstants.TTSVOICE_INDEX_EXT_JS)) {
-						File oggFile = new File(appPath, asset.destination.replace("-tts", ""));
+						File oggFile = new File(appPath, asset.destination.replace(
+								IndexConstants.VOICE_PROVIDER_SUFFIX, ""));
 						if (oggFile.getParentFile().exists() && !oggFile.exists()) {
 							copyAssets(context.getAssets(), asset.source, oggFile);
 						}
@@ -485,7 +485,7 @@ public class ResourceManager {
 				try {
 					progress.startTask(context.getString(R.string.installing_new_resources), -1);
 					AssetManager assetManager = context.getAssets();
-					boolean isFirstInstall = context.getSettings().PREVIOUS_INSTALLED_VERSION.get().equals("");
+					boolean isFirstInstall = context.getSettings().PREVIOUS_INSTALLED_VERSION.get().isEmpty();
 					unpackBundledAssets(assetManager, applicationDataDir, progress, isFirstInstall || forceUpdate);
 					context.getSettings().PREVIOUS_INSTALLED_VERSION.set(fv);
 					copyRegionsBoundaries();
@@ -633,6 +633,7 @@ public class ResourceManager {
 		collectFiles(roadsPath, IndexConstants.BINARY_MAP_INDEX_EXT, files);
 		if (Version.isPaidVersion(context)) {
 			collectFiles(context.getAppPath(IndexConstants.WIKI_INDEX_DIR), IndexConstants.BINARY_MAP_INDEX_EXT, files);
+			collectFiles(context.getAppPath(IndexConstants.WIKIVOYAGE_INDEX_DIR), IndexConstants.BINARY_TRAVEL_GUIDE_MAP_INDEX_EXT, files);
 		}
 		if (OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) != null || InAppPurchaseHelper.isSubscribedToLiveUpdates(context)) {
 			collectFiles(context.getAppPath(IndexConstants.SRTM_INDEX_DIR), IndexConstants.BINARY_MAP_INDEX_EXT, files);
@@ -725,7 +726,10 @@ public class ResourceManager {
 					}
 					renderer.initializeNewResource(progress, f, mapReader);
 					BinaryMapReaderResource resource = new BinaryMapReaderResource(f, mapReader);
-					
+					if (collectTravelFiles(resource)){
+						//travel files are indexed
+						continue;
+					}
 					fileReaders.put(f.getName(), resource);
 					if (!mapReader.getRegionNames().isEmpty()) {
 						RegionAddressRepositoryBinary rarb = new RegionAddressRepositoryBinary(this, resource);
@@ -797,7 +801,43 @@ public class ResourceManager {
 		return warnings;
 	}
 
-	
+	public List<BinaryMapIndexReader> getTravelRepositories() {
+		List<String> fileNames = new ArrayList<>(travelRepositories.keySet());
+		Collections.sort(fileNames, Algorithms.getStringVersionComparator());
+		List<BinaryMapIndexReader> res = new ArrayList<>();
+		for (String fileName : fileNames) {
+			BinaryMapReaderResource r = travelRepositories.get(fileName);
+			if (r != null) {
+				res.add(r.getReader(BinaryMapReaderResourceType.POI));
+			}
+		}
+		return res;
+	}
+
+	public List<BinaryMapIndexReader> getTravelRepositories(double topLat, double leftLon, double bottomLat, double rightLon) {
+		List<String> fileNames = new ArrayList<>(travelRepositories.keySet());
+		Collections.sort(fileNames, Algorithms.getStringVersionComparator());
+		int leftX31 = MapUtils.get31TileNumberX(leftLon);
+		int topX31 = MapUtils.get31TileNumberY(topLat);
+		int rightX31 = MapUtils.get31TileNumberX(rightLon);
+		int bottomX31 = MapUtils.get31TileNumberY(bottomLat);
+		List<BinaryMapIndexReader> res = new ArrayList<>();
+		for (String fileName : fileNames) {
+			BinaryMapReaderResource r = travelRepositories.get(fileName);
+			if (r != null && r.getShallowReader().containsPoiData(leftX31, topX31, rightX31, bottomX31)) {
+				res.add(r.getReader(BinaryMapReaderResourceType.POI));
+			}
+		}
+		return res;
+	}
+
+	private boolean collectTravelFiles(BinaryMapReaderResource resource) {
+		if (resource.getFileName().contains(IndexConstants.BINARY_TRAVEL_GUIDE_MAP_INDEX_EXT)){
+			travelRepositories.put(resource.getFileName(), resource);
+			return true;
+		}
+		return false;
+	}
 
 	public void initMapBoundariesCacheNative() {
 		File indCache = context.getAppPath(INDEXES_CACHE);
@@ -1064,6 +1104,7 @@ public class ResourceManager {
 		addressMap.remove(fileName);
 		transportRepositories.remove(fileName);
 		indexFileNames.remove(fileName);
+		travelRepositories.remove(fileName);
 		renderer.closeConnection(fileName);
 		BinaryMapReaderResource resource = fileReaders.remove(fileName);
 		if(resource != null) {
@@ -1079,6 +1120,7 @@ public class ResourceManager {
 		basemapFileNames.clear();
 		renderer.clearAllResources();
 		transportRepositories.clear();
+		travelRepositories.clear();
 		addressMap.clear();
 		amenityRepositories.clear();
 		for(BinaryMapReaderResource res : fileReaders.values()) {
@@ -1086,8 +1128,7 @@ public class ResourceManager {
 		}
 		fileReaders.clear();
 	}
-	
-	
+
 	public BinaryMapIndexReader[] getRoutingMapFiles() {
 		Collection<BinaryMapReaderResource> fileReaders = getFileReaders();
 		List<BinaryMapIndexReader> readers = new ArrayList<>(fileReaders.size());
@@ -1099,7 +1140,7 @@ public class ResourceManager {
 				}
 			}
 		}
-		return readers.toArray(new BinaryMapIndexReader[readers.size()]);
+		return readers.toArray(new BinaryMapIndexReader[0]);
 	}
 
 	public BinaryMapIndexReader[] getTransportRoutingMapFiles() {
@@ -1113,7 +1154,7 @@ public class ResourceManager {
 				}
 			}
 		}
-		return readers.toArray(new BinaryMapIndexReader[readers.size()]);
+		return readers.toArray(new BinaryMapIndexReader[0]);
 	}
 
 	public BinaryMapIndexReader[] getQuickSearchFiles() {
@@ -1128,7 +1169,7 @@ public class ResourceManager {
 				}
 			}
 		}
-		return readers.toArray(new BinaryMapIndexReader[readers.size()]);
+		return readers.toArray(new BinaryMapIndexReader[0]);
 	}
 
 	public Map<String, String> getIndexFileNames() {

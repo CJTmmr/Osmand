@@ -38,9 +38,8 @@ import net.osmand.plus.dialogs.HelpArticleDialogFragment;
 import net.osmand.plus.helpers.AndroidUiHelper;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.settings.backend.OsmAndAppCustomization;
-import net.osmand.plus.settings.backend.OsmandSettings;
-import net.osmand.plus.settings.backend.OsmandSettings.ContextMenuItemsPreference;
-import net.osmand.plus.settings.backend.OsmandSettings.OsmandPreference;
+import net.osmand.plus.settings.backend.ContextMenuItemsPreference;
+import net.osmand.plus.settings.backend.OsmandPreference;
 import net.osmand.util.Algorithms;
 
 import org.apache.commons.logging.Log;
@@ -52,6 +51,9 @@ import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.DRAWER_CONFIGURE_PROFILE_ID;
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.DRAWER_SWITCH_PROFILE_ID;
 
 public class ContextMenuAdapter {
 	private static final Log LOG = PlatformUtil.getLog(ContextMenuAdapter.class);
@@ -134,6 +136,19 @@ public class ContextMenuAdapter {
 		Collections.sort(items, new Comparator<ContextMenuItem>() {
 			@Override
 			public int compare(ContextMenuItem item1, ContextMenuItem item2) {
+				if (DRAWER_CONFIGURE_PROFILE_ID.equals(item1.getId())
+						&& DRAWER_SWITCH_PROFILE_ID.equals(item2.getId())) {
+					return 1;
+				} else if (DRAWER_SWITCH_PROFILE_ID.equals(item1.getId())
+						&& DRAWER_CONFIGURE_PROFILE_ID.equals(item2.getId())) {
+					return -1;
+				} else if (DRAWER_SWITCH_PROFILE_ID.equals(item1.getId())
+						|| DRAWER_CONFIGURE_PROFILE_ID.equals(item1.getId())) {
+					return -1;
+				} else if (DRAWER_SWITCH_PROFILE_ID.equals(item2.getId())
+						|| DRAWER_CONFIGURE_PROFILE_ID.equals(item2.getId())) {
+					return 1;
+				}
 				int order1 = item1.getOrder();
 				int order2 = item2.getOrder();
 				if (order1 < order2) {
@@ -193,7 +208,7 @@ public class ContextMenuAdapter {
 		}
 		items.removeAll(itemsToRemove);
 		return new ContextMenuArrayAdapter(activity, layoutId, R.id.title,
-				items.toArray(new ContextMenuItem[items.size()]), app, lightTheme, changeAppModeListener);
+				items.toArray(new ContextMenuItem[0]), app, lightTheme, changeAppModeListener);
 	}
 
 	public class ContextMenuArrayAdapter extends ArrayAdapter<ContextMenuItem> {
@@ -243,7 +258,7 @@ public class ContextMenuAdapter {
 							@Override
 							public void onClick(View view) {
 								if (selected.size() > 0) {
-									app.getSettings().APPLICATION_MODE.set(selected.iterator().next());
+									app.getSettings().setApplicationMode(selected.iterator().next());
 									notifyDataSetChanged();
 								}
 								if (changeAppModeListener != null) {
@@ -628,10 +643,10 @@ public class ContextMenuAdapter {
 	}
 
 	public static OnItemDeleteAction makeDeleteAction(final List<? extends OsmandPreference> prefs) {
-		return makeDeleteAction(prefs.toArray(new OsmandPreference[prefs.size()]));
+		return makeDeleteAction(prefs.toArray(new OsmandPreference[0]));
 	}
 
-	private static void resetSetting(ApplicationMode appMode, OsmandSettings.OsmandPreference preference, boolean profileOnly) {
+	private static void resetSetting(ApplicationMode appMode, OsmandPreference preference, boolean profileOnly) {
 		if (profileOnly) {
 			preference.resetModeToDefault(appMode);
 		} else {

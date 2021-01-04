@@ -12,6 +12,7 @@ import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.core.content.ContextCompat;
 
 import net.osmand.AndroidUtils;
+import net.osmand.GPXUtilities;
 import net.osmand.GPXUtilities.GPXFile;
 import net.osmand.IndexConstants;
 import net.osmand.plus.GPXDatabase.GpxDataItem;
@@ -19,6 +20,7 @@ import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.helpers.GpxUiHelper;
 import net.osmand.plus.helpers.GpxUiHelper.GPXInfo;
+import net.osmand.plus.settings.backend.ApplicationMode;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -60,10 +62,12 @@ public class TracksCard extends BaseCard {
 	@SuppressLint("DefaultLocale")
 	@Override
 	protected void updateContent() {
+		String gpxDir = app.getAppPath(IndexConstants.GPX_INDEX_DIR).getAbsolutePath();
 		final List<GpxItem> list = new ArrayList<>();
 		for (GPXFile gpx : gpxFiles) {
 			File f = new File(gpx.path);
-			list.add(new GpxItem(GpxUiHelper.getGpxTitle(f.getName()), gpx, new GPXInfo(f.getName(), f.lastModified(), f.length())));
+			String fileName = gpx.path.startsWith(gpxDir) ? gpx.path.substring(gpxDir.length() + 1) : f.getName();
+			list.add(new GpxItem(GpxUiHelper.getGpxTitle(f.getName()), gpx, new GPXInfo(fileName, f.lastModified(), f.length())));
 		}
 		Collections.sort(list, new Comparator<GpxItem>() {
 			@Override
@@ -115,6 +119,14 @@ public class TracksCard extends BaseCard {
 			v.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
+					List<GPXUtilities.WptPt> points = item.file.getRoutePoints();
+					if (!points.isEmpty()) {
+						ApplicationMode mode = ApplicationMode.valueOfStringKey(points.get(0).getProfileType(), null);
+						if (mode != null) {
+							app.getRoutingHelper().setAppMode(mode);
+							app.initVoiceCommandPlayer(mapActivity, mode, true, null, false, false, true);
+						}
+					}
 					mapActivity.getMapActions().setGPXRouteParams(item.file);
 					app.getTargetPointsHelper().updateRouteAndRefresh(true);
 				}

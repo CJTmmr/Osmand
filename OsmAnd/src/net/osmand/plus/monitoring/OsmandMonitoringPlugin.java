@@ -42,7 +42,7 @@ import net.osmand.plus.activities.SavingTrackHelper.SaveGpxResult;
 import net.osmand.plus.dashboard.tools.DashFragmentData;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.settings.backend.OsmandSettings;
-import net.osmand.plus.settings.fragments.BaseSettingsFragment;
+import net.osmand.plus.settings.fragments.BaseSettingsFragment.SettingsScreenType;
 import net.osmand.plus.views.OsmandMapLayer.DrawSettings;
 import net.osmand.plus.views.OsmandMapTileView;
 import net.osmand.plus.views.layers.MapInfoLayer;
@@ -73,7 +73,7 @@ public class OsmandMonitoringPlugin extends OsmandPlugin {
 		super(app);
 		liveMonitoringHelper = new LiveMonitoringHelper(app);
 		final List<ApplicationMode> am = ApplicationMode.allPossibleValues();
-		ApplicationMode.regWidgetVisibility("monitoring", am.toArray(new ApplicationMode[am.size()]));
+		ApplicationMode.regWidgetVisibility("monitoring", am.toArray(new ApplicationMode[0]));
 		settings = app.getSettings();
 		pluginPreferences.add(settings.SAVE_TRACK_TO_GPX);
 		pluginPreferences.add(settings.SAVE_TRACK_INTERVAL);
@@ -117,7 +117,7 @@ public class OsmandMonitoringPlugin extends OsmandPlugin {
 	}
 
 	@Override
-	public String getDescription() {
+	public CharSequence getDescription() {
 		return app.getString(R.string.record_plugin_description);
 	}
 
@@ -166,15 +166,9 @@ public class OsmandMonitoringPlugin extends OsmandPlugin {
 	public static final int[] MINUTES = new int[] {2, 3, 5};
 	public static final int[] MAX_INTERVAL_TO_SEND_MINUTES = new int[] {1, 2, 5, 10, 15, 20, 30, 60, 90, 2 * 60, 3 * 60, 4 * 60, 6 * 60, 12 * 60, 24 * 60};
 
-	
 	@Override
-	public Class<? extends Activity> getSettingsActivity() {
-		return SettingsMonitoringActivity.class;
-	}
-
-	@Override
-	public Class<? extends BaseSettingsFragment> getSettingsFragment() {
-		return MonitoringSettingsFragment.class;
+	public SettingsScreenType getSettingsScreenType() {
+		return SettingsScreenType.MONITORING_SETTINGS;
 	}
 
 	@Override
@@ -467,7 +461,7 @@ public class OsmandMonitoringPlugin extends OsmandPlugin {
 				if (activityRef != null && !Algorithms.isEmpty(result.getFilenames())) {
 					final Activity a = activityRef.get();
 					if (a instanceof FragmentActivity && !a.isFinishing()) {
-						OnSaveCurrentTrackFragment.showInstance(((FragmentActivity) a).getSupportFragmentManager(), result.getFilenames());
+						SaveGPXBottomSheetFragment.showInstance(((FragmentActivity) a).getSupportFragmentManager(), result.getFilenames());
 					}
 				}
 				
@@ -506,8 +500,7 @@ public class OsmandMonitoringPlugin extends OsmandPlugin {
 				settings.SAVE_GLOBAL_TRACK_INTERVAL.set(vs.value);
 				settings.SAVE_GLOBAL_TRACK_TO_GPX.set(true);
 				settings.SAVE_GLOBAL_TRACK_REMEMBER.set(choice.value);
-				int interval = settings.SAVE_GLOBAL_TRACK_INTERVAL.get();
-				app.startNavigationService(NavigationService.USED_BY_GPX, app.navigationServiceGpsInterval(interval));
+				app.startNavigationService(NavigationService.USED_BY_GPX);
 			}
 		};
 		if (choice.value || map == null) {
