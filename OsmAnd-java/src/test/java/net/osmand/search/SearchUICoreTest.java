@@ -79,19 +79,19 @@ public class SearchUICoreTest {
     	ArrayList<Object[]> arrayList = new ArrayList<>();
     	if (files != null) {
 			for (File file : files) {
-				String fileName = file.getName();
+/*				String fileName = file.getName();
 				if(fileName.endsWith(".json")) {
 					String name = fileName.substring(0, fileName.length() - ".json".length());
 					arrayList.add(new Object[] {name, file});
 				}
-			}
+*/			}
 		}
     	return arrayList;
     }
 
     @Test
 	public void testSearch() throws IOException, JSONException {
-		File jsonFile = testFile;
+    	File jsonFile = testFile;
 		File obfFile = new File(testFile.getParentFile(), testFile.getName().replace(".json", ".obf"));
 		File obfZipFile = new File(testFile.getParentFile(), testFile.getName().replace(".json", ".obf.gz"));
 		String sourceJsonText = Algorithms.getFileAsString(jsonFile);
