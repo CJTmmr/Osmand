@@ -9,7 +9,6 @@ import android.widget.LinearLayout;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
-import androidx.core.content.ContextCompat;
 
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.ContextMenuAdapter;
@@ -66,7 +65,7 @@ public class MapWidgetRegistry {
 	public static String WIDGET_BEARING = "bearing";
 	public static String WIDGET_PLAIN_TIME = "plain_time";
 	public static String WIDGET_BATTERY = "battery";
-	public static String WIDGET_RULER = "ruler";
+	public static String WIDGET_RADIUS_RULER = "ruler";
 
 	public static String WIDGET_STREET_NAME = "street_name";
 
@@ -369,6 +368,13 @@ public class MapWidgetRegistry {
 				.setSelected(settings.SHOW_COORDINATES_WIDGET.get())
 				.setListener(new AppearanceItemClickListener(settings.SHOW_COORDINATES_WIDGET, map))
 				.setLayout(R.layout.list_item_icon_and_switch).createItem());
+
+		cm.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_distance_by_tap, map)
+				.setIcon(R.drawable.ic_action_ruler_line)
+				.setSelected(settings.SHOW_DISTANCE_RULER.get())
+				.setListener(new AppearanceItemClickListener(settings.SHOW_DISTANCE_RULER, map))
+				.setLayout(R.layout.list_item_icon_and_switch).createItem());
+
 		cm.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_markers, map)
 				.setDescription(settings.MAP_MARKERS_MODE.get().toHumanString(map))
 				.setListener(new ContextMenuAdapter.ItemClickListener() {
@@ -461,8 +467,8 @@ public class MapWidgetRegistry {
 				.setTitleId(R.string.configure_screen_quick_action, mapActivity)
 				.setIcon(R.drawable.ic_quick_action)
 				.setSelected(selected)
-				.setColor(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
-				.setSecondaryIcon( R.drawable.ic_action_additional_option)
+				.setColor(app, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
+				.setSecondaryIcon(R.drawable.ic_action_additional_option)
 				.setListener(new ContextMenuAdapter.OnRowItemClick() {
 					@Override
 					public boolean onContextMenuClick(ArrayAdapter<ContextMenuItem> adapter, int itemId, int position, boolean isChecked, int[] viewCoordinates) {
@@ -497,7 +503,7 @@ public class MapWidgetRegistry {
 						}
 						ContextMenuItem item = adapter.getItem(position);
 						item.setSelected(visible);
-						item.setColorRes(visible ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
+						item.setColor(app, visible ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
 						adapter.notifyDataSetChanged();
 
 					}
@@ -515,12 +521,11 @@ public class MapWidgetRegistry {
 			final boolean selected = r.visibleCollapsed(mode) || r.visible(mode);
 			final String desc = mapActivity.getString(R.string.shared_string_collapse);
 			final boolean nightMode = app.getDaynightHelper().isNightModeForMapControls();
-			final int currentModeColorRes = mode.getIconColorInfo().getColor(nightMode);
-			final int currentModeColor = ContextCompat.getColor(app, currentModeColorRes);
+			final int currentModeColor = mode.getProfileColor(nightMode);
 			ContextMenuItem.ItemBuilder itemBuilder = new ContextMenuItem.ItemBuilder()
 					.setIcon(r.getDrawableMenu())
 					.setSelected(selected)
-					.setColor(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
+					.setColor(app, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
 					.setSecondaryIcon(r.widget != null ? R.drawable.ic_action_additional_option : ContextMenuItem.INVALID_ID)
 					.setDescription(r.visibleCollapsed(mode) ? desc : null)
 					.setListener(new ContextMenuAdapter.OnRowItemClick() {
@@ -550,7 +555,7 @@ public class MapWidgetRegistry {
 									final int id = menuItemIds[i];
 									boolean isChecked = id == checkedId;
 									String title = app.getString(titleId);
-									Drawable icon = isChecked && selected ? ic.getIcon(iconId, currentModeColorRes) : ic.getThemedIcon(iconId);
+									Drawable icon = isChecked && selected ? ic.getPaintedIcon(iconId, currentModeColor) : ic.getThemedIcon(iconId);
 									items.add(new PopUpMenuItem.Builder(app)
 											.setTitle(title)
 											.setIcon(icon)
@@ -639,7 +644,7 @@ public class MapWidgetRegistry {
 							}
 							ContextMenuItem item = adapter.getItem(position);
 							item.setSelected(visible);
-							item.setColorRes(visible ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
+							item.setColor(app, visible ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
 							item.setDescription(visible && collapsed ? desc : null);
 							adapter.notifyDataSetChanged();
 						}

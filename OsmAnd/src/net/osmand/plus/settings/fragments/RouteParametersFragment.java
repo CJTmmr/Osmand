@@ -28,10 +28,11 @@ import net.osmand.AndroidUtils;
 import net.osmand.StateChangedListener;
 import net.osmand.plus.OsmAndFormatter;
 import net.osmand.plus.OsmandApplication;
+import net.osmand.plus.OsmandPlugin;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
-import net.osmand.plus.Version;
-import net.osmand.plus.routing.RouteProvider;
+import net.osmand.plus.development.OsmandDevelopmentPlugin;
+import net.osmand.plus.routing.RouteService;
 import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.settings.backend.BooleanPreference;
@@ -156,6 +157,7 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 		timeConditionalRouting.setIcon(getRoutingPrefIcon(settings.ENABLE_TIME_CONDITIONAL_ROUTING.getId()));
 		timeConditionalRouting.setSummaryOn(R.string.shared_string_on);
 		timeConditionalRouting.setSummaryOff(R.string.shared_string_off);
+		timeConditionalRouting.setDescription(R.string.temporary_conditional_routing_descr);
 		getPreferenceScreen().addPreference(timeConditionalRouting);
 	}
 
@@ -171,15 +173,13 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 	}
 
 	private void setupNativePublicTransport() {
-		if (!Version.isBlackberry(app)) {
-			SwitchPreferenceEx setupNativePublicTransport = createSwitchPreferenceEx(settings.PT_SAFE_MODE.getId(),
-					R.string.use_native_pt, R.layout.preference_with_descr_dialog_and_switch);
-			setupNativePublicTransport.setDescription(getString(R.string.use_native_pt_desc));
-			setupNativePublicTransport.setSummaryOn(R.string.shared_string_enabled);
-			setupNativePublicTransport.setSummaryOff(R.string.shared_string_disabled);
-			setupNativePublicTransport.setIconSpaceReserved(true);
-			getPreferenceScreen().addPreference(setupNativePublicTransport);
-		}
+		SwitchPreferenceEx setupNativePublicTransport = createSwitchPreferenceEx(settings.PT_SAFE_MODE.getId(),
+				R.string.use_native_pt, R.layout.preference_with_descr_dialog_and_switch);
+		setupNativePublicTransport.setDescription(getString(R.string.use_native_pt_desc));
+		setupNativePublicTransport.setSummaryOn(R.string.shared_string_enabled);
+		setupNativePublicTransport.setSummaryOff(R.string.shared_string_disabled);
+		setupNativePublicTransport.setIconSpaceReserved(true);
+		getPreferenceScreen().addPreference(setupNativePublicTransport);
 	}
 
 	private void setupOsmLiveForRoutingPref() {
@@ -229,7 +229,7 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 		fastRoute.setSummaryOn(R.string.shared_string_on);
 		fastRoute.setSummaryOff(R.string.shared_string_off);
 
-		if (am.getRouteService() == RouteProvider.RouteService.OSMAND) {
+		if (am.getRouteService() == RouteService.OSMAND) {
 			GeneralRouter router = app.getRouter(am);
 			clearParameters();
 			if (router != null) {
@@ -308,10 +308,10 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 				}
 			}
 			setupTimeConditionalRoutingPref();
-		} else if (am.getRouteService() == RouteProvider.RouteService.BROUTER) {
+		} else if (am.getRouteService() == RouteService.BROUTER) {
 			screen.addPreference(fastRoute);
 			setupTimeConditionalRoutingPref();
-		} else if (am.getRouteService() == RouteProvider.RouteService.STRAIGHT) {
+		} else if (am.getRouteService() == RouteService.STRAIGHT) {
 			Preference straightAngle = new Preference(app.getApplicationContext());
 			straightAngle.setPersistent(false);
 			straightAngle.setKey(settings.ROUTE_STRAIGHT_ANGLE.getId());
@@ -327,17 +327,10 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 		setupRouteRecalcHeader(screen);
 		setupSelectRouteRecalcDistance(screen);
 		setupReverseDirectionRecalculation(screen);
-		addDivider(screen);
-		setupDevelopmentCategoryHeader(screen);
-		if (am.isDerivedRoutingFrom(ApplicationMode.PUBLIC_TRANSPORT)) {
-			setupOsmLiveForPublicTransportPref();
-			setupNativePublicTransport();
+
+		if (OsmandPlugin.isPluginEnabled(OsmandDevelopmentPlugin.class)) {
+			setupDevelopmentCategoryPreferences(screen, am);
 		}
-		if (am.isDerivedRoutingFrom(ApplicationMode.CAR)) {
-			setupOsmLiveForRoutingPref();
-			setupDisableComplexRoutingPref();
-		}
-		setupFastRecalculationPref();
 	}
 
 	private void setupOtherBooleanParameterSummary(ApplicationMode am, RoutingParameter p, SwitchPreferenceEx switchPreferenceEx) {
@@ -363,15 +356,14 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 	}
 
 	private void setupReverseDirectionRecalculation(PreferenceScreen screen) {
-		SwitchPreferenceEx recalcRouteReverseDirectionPreference =
-				createSwitchPreferenceEx(settings.DISABLE_WRONG_DIRECTION_RECALC.getId(),
-						R.string.in_case_of_reverse_direction,
-						R.layout.preference_with_descr_dialog_and_switch);
-		recalcRouteReverseDirectionPreference.setIcon(
-				getRoutingPrefIcon(settings.DISABLE_WRONG_DIRECTION_RECALC.getId()));
-		recalcRouteReverseDirectionPreference.setSummaryOn(R.string.shared_string_enabled);
-		recalcRouteReverseDirectionPreference.setSummaryOff(R.string.shared_string_disabled);
-		screen.addPreference(recalcRouteReverseDirectionPreference);
+		OsmandPreference<Boolean> preference = settings.DISABLE_WRONG_DIRECTION_RECALC;
+		SwitchPreferenceEx switchPreference = createSwitchPreferenceEx(preference.getId(),
+				R.string.in_case_of_reverse_direction,
+				R.layout.preference_with_descr_dialog_and_switch);
+		switchPreference.setIcon(getRoutingPrefIcon(preference.getId()));
+		switchPreference.setSummaryOn(R.string.shared_string_enabled);
+		switchPreference.setSummaryOff(R.string.shared_string_disabled);
+		screen.addPreference(switchPreference);
 	}
 
 	private void setupRouteRecalcHeader(PreferenceScreen screen) {
@@ -379,6 +371,20 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 		routingCategory.setLayoutResource(R.layout.preference_category_with_descr);
 		routingCategory.setTitle(R.string.recalculate_route);
 		screen.addPreference(routingCategory);
+	}
+
+	private void setupDevelopmentCategoryPreferences(PreferenceScreen screen, ApplicationMode am) {
+		addDivider(screen);
+		setupDevelopmentCategoryHeader(screen);
+		if (am.isDerivedRoutingFrom(ApplicationMode.PUBLIC_TRANSPORT)) {
+			setupOsmLiveForPublicTransportPref();
+			setupNativePublicTransport();
+		}
+		if (am.isDerivedRoutingFrom(ApplicationMode.CAR)) {
+			setupOsmLiveForRoutingPref();
+			setupDisableComplexRoutingPref();
+		}
+		setupFastRecalculationPref();
 	}
 
 	private void setupDevelopmentCategoryHeader(PreferenceScreen screen) {
@@ -436,7 +442,7 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 		});
 		builder.setNegativeButton(R.string.shared_string_cancel, null);
 
-		int selectedModeColor = ContextCompat.getColor(app, mode.getIconColorInfo().getColor(nightMode));
+		int selectedModeColor = mode.getProfileColor(nightMode);
 		setupAngleSlider(angleValue, sliderView, nightMode, selectedModeColor);
 		builder.show();
 	}
@@ -538,7 +544,9 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 
 	@Override
 	public boolean onPreferenceChange(Preference preference, Object newValue) {
-		if (settings.DISABLE_COMPLEX_ROUTING.getId().equals(preference.getKey()) && newValue instanceof Boolean) {
+		if ((settings.DISABLE_COMPLEX_ROUTING.getId().equals(preference.getKey()) ||
+				settings.DISABLE_WRONG_DIRECTION_RECALC.getId().equals(preference.getKey())) &&
+				newValue instanceof Boolean) {
 			return onConfirmPreferenceChange(preference.getKey(), !(Boolean) newValue, getApplyQueryType()); // pref ui was inverted
 		}
 		return onConfirmPreferenceChange(preference.getKey(), newValue, getApplyQueryType());
@@ -565,8 +573,6 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 			applyPreference(ROUTING_RECALC_DISTANCE, applyToAllProfiles, valueToSave);
 			applyPreference(settings.DISABLE_OFFROUTE_RECALC.getId(), applyToAllProfiles, !enabled);
 			updateRouteRecalcDistancePref();
-		} else if (settings.DISABLE_WRONG_DIRECTION_RECALC.getId().equals(prefId)) {
-			applyPreference(settings.DISABLE_WRONG_DIRECTION_RECALC.getId(), applyToAllProfiles, newValue);
 		} else {
 			super.onApplyPreferenceChange(prefId, applyToAllProfiles, newValue);
 		}
@@ -582,6 +588,7 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 	private ListPreferenceEx createRoutingBooleanListPreference(String groupKey, List<RoutingParameter> routingParameters) {
 		String defaultTitle = Algorithms.capitalizeFirstLetterAndLowercase(groupKey.replace('_', ' '));
 		String title = AndroidUtils.getRoutingStringPropertyName(app, groupKey, defaultTitle);
+		String description  = AndroidUtils.getRoutingStringPropertyDescription(app, groupKey, "");
 		ApplicationMode am = getSelectedAppMode();
 
 		Object[] entryValues = new Object[routingParameters.size()];
@@ -601,6 +608,9 @@ public class RouteParametersFragment extends BaseSettingsFragment implements OnP
 		routingListPref.setPersistent(false);
 		routingListPref.setValue(selectedParameterId);
 		routingListPref.setIcon(getRoutingPrefIcon(groupKey));
+		if (!Algorithms.isEmpty(defaultTitle)) {
+			routingListPref.setDescription(description);
+		}
 
 		return routingListPref;
 	}

@@ -46,7 +46,6 @@
     <string name="avoid_motorway">Evită autostrăzile</string>
     <string name="auto_zoom_map_descr">Auto zoom hartă funcție de viteză (când harta e sincronizată cu poziția curentă)</string>
     <string name="auto_zoom_map">Auto zoom hartă</string>
-    <string name="snap_to_road_descr">Menține poziția pe drum în timpul navigării</string>
     <string name="snap_to_road">Poziționează pe drum</string>
     <string name="osmand_short_description_80_chars">OsmAnd este o aplicație open source pentru navigare cu hărți offline și online</string>
     <string name="osmand_long_description_1000_chars">
@@ -711,7 +710,6 @@
     <string name="error_calculating_route">Eroare la calcularea rutei</string>
     <string name="error_calculating_route_occured">Eroare apărută în timpul calculării rutei</string>
     <string name="empty_route_calculated">Eroare: ruta calculată este vidă</string>
-    <string name="new_route_calculated_dist">O nouă rută a fost calculată, distanța</string>
     <string name="arrived_at_destination">Ați ajuns la destinație</string>
     <string name="invalid_locations">Coordonate invalide</string>
     <string name="go_back_to_osmand">Înapoi la harta OsmAnd</string>
@@ -811,7 +809,6 @@
     <string name="osb_comment_dialog_error">Nu s-a putut adăuga comentariul.</string>
     <string name="poi_edit_title">Editare POI</string>
     <string name="poi_create_title">Creează POI</string>
-    <string name="poi_error_poi_not_found">POI-ul nu poate fi găsit sau punctul de interes nu este singular</string>
     <string name="poi_remove_confirm_template">Ștergeți {0} (introduceți comentariu)?</string>
     <string name="poi_remove_title">Șterge POI</string>
     <string name="shared_string_delete">Șterge</string>
@@ -1806,9 +1803,6 @@
     <string name="increase_search_radius">Măriți aria de căutare</string>
     <string name="nothing_found">Nimic găsit</string>
     <string name="nothing_found_descr">Modifică criteriile de căutare sau mărește aria de căutare.</string>
-    <string name="quick_action_showhide_osmbugs_title">Comutare note OSM</string>
-    <string name="quick_action_osmbugs_show">Arată notele OSM</string>
-    <string name="quick_action_osmbugs_hide">Ascunde notele OSM</string>
     <string name="quick_action_showhide_osmbugs_descr">Atingând acest buton de acțiune, se afișează sau se ascund notele OSM de pe hartă.</string>
     <string name="sorted_by_distance">Sortat după distanță</string>
     <string name="search_favorites">Caută Favorite</string>
@@ -2121,7 +2115,6 @@
     <string name="feedback">Părere</string>
     <string name="contact_us">Contact</string>
     <string name="map_legend">Legendă hartă</string>
-    <string name="update">Actualizare</string>
     <string name="only_download_over_wifi">Descărcare doar pe Wi-Fi</string>
     <string name="live_update">Actualizări in timp real</string>
     <string name="update_now">Actualizați acum</string>
@@ -2208,9 +2201,6 @@
     <string name="shared_string_swap">Schimbați</string>
     <string name="show_more">Afișați mai multe</string>
     <string name="tracks_on_map">Trasee afișate</string>
-    <string name="quick_action_show_hide_gpx_tracks">Afișați/Ascundeți traseele GPX</string>
-    <string name="quick_action_gpx_tracks_hide">Ascundeți traseele GPX</string>
-    <string name="quick_action_gpx_tracks_show">Afișați traseele GPX</string>
     <string name="add_destination_query">Selectați destinația mai întâi</string>
     <string name="previous_route">Ruta anterioară</string>
     <string name="add_home">Adăugați acasă</string>
@@ -2279,7 +2269,6 @@
     <string name="routing_attr_allow_motorway_description">Permiteți autostrăzile.</string>
     <string name="search_hint">Introduceți orașul, adresa, numele POI</string>
     <string name="osm_live_payment_desc">Abonament perceput pe lună. Anulați-l pe Google Play în orice moment.</string>
-    <string name="routing_attr_short_way_description">Utilizați un mod eficient de combustibil (de obicei mai scurt).</string>
     <string name="rendering_value_black_name">Negru</string>
     <string name="shared_string_launch">Lansează</string>
     <string name="navigation_over_track">Pornesc navigarea de-a lungul traseului\?</string>
@@ -2386,13 +2375,7 @@
     <string name="routing_attr_driving_style_prefer_unpaved_description">Prefer drumurile nepavate.</string>
     <string name="layer_osm_edits">Editare OSM</string>
     <string name="quick_action_contour_lines_descr">Comută pentru a afișa sau ascunde liniile de contur pe hartă.</string>
-    <string name="quick_action_contour_lines_show">Afişează conturul liniilor</string>
-    <string name="quick_action_contour_lines_hide">Ascunde conturul liniilor</string>
-    <string name="quick_action_show_hide_contour_lines">Afişează-ascunde conturul liniilor</string>
     <string name="quick_action_hillshade_descr">Comută pentru a arăta sau ascunde umbrele de pe hartă.</string>
-    <string name="quick_action_hillshade_show">Arata si umbrele</string>
-    <string name="quick_action_hillshade_hide">Ascunde afisarea umbrelor</string>
-    <string name="quick_action_show_hide_hillshade">Afişează/ascunde umbrele</string>
     <string name="tts_initialization_error">Motorul text-to-speech nu porneste.</string>
     <string name="export_profile">Exportă profilul</string>
     <string name="exported_osmand_profile">Profil osmand exportat %1$s</string>
@@ -2414,7 +2397,6 @@
     <string name="more_transport_on_stop_hint">Mai multe optiuni de transport disponibile de la această oprire.</string>
     <string name="keep_passed_markers_descr">Marcajele adăugate ca grup de Favorite sau GPX waypoints marcate vor rămâne pe hartă.Dacă grupul nu este activ, markerii vor dispărea din hartă.</string>
     <string name="keep_passed_markers">Păstraţi markerii trecuţi pe hartă</string>
-    <string name="swap_start_and_destination">Schimba adresa de început și de sfârșit</string>
     <string name="default_speed_dialog_msg">Utilizat pentru estimarea timpului de sosire pentru tipul necunoscut de drumuri și pentru a limita viteza pentru toate drumurile (ar putea schimba ruta)</string>
     <string name="configure_profile_info">Setări pentru profil:</string>
     <string name="configure_profile">Configurează profilul</string>
@@ -2522,7 +2504,6 @@
     <string name="temporary_conditional_routing">Luați în considerare limitările temporare</string>
     <string name="route_parameters_info">Setări pentru rutare în profilul selectat \"%1$s\".</string>
     <string name="units_and_formats">Unități și formate</string>
-    <string name="appearance">Aspect</string>
     <string name="map_look_descr">Aspect hartă</string>
     <string name="list_of_installed_plugins">Plugin-uri instalate</string>
     <string name="general_settings_profile_descr">Temă aplicație, unități, regiune</string>
@@ -2832,9 +2813,6 @@
     <string name="shared_string_tones">tone</string>
     <string name="shared_string_meters">metrii</string>
     <string name="add_online_source">Adăugare surse online</string>
-    <string name="quick_action_showhide_mapillary_title">Afișare/ascundere Mapillary</string>
-    <string name="quick_action_mapillary_hide">Ascundere Mapillary</string>
-    <string name="quick_action_mapillary_show">Afișare Mapillary</string>
     <string name="quick_action_showhide_mapillary_descr">O comutare pentru a afișa sau ascunde stratul Mapillary pe hartă.</string>
     <string name="routing_attr_length_description">Specificați lungimea vehiculului care trebuie permisă pe rute.</string>
     <string name="routing_attr_length_name">Limită lungime</string>

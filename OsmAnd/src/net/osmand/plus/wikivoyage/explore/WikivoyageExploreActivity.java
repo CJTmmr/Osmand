@@ -27,13 +27,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomnavigation.BottomNavigationView.OnNavigationItemSelectedListener;
 
 import net.osmand.AndroidUtils;
+import net.osmand.plus.AppInitializer;
 import net.osmand.plus.LockableViewPager;
 import net.osmand.plus.OnDialogFragmentResultListener;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.TabActivity;
 import net.osmand.plus.download.DownloadIndexesThread.DownloadEvents;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.wikipedia.WikiArticleHelper;
 import net.osmand.plus.wikivoyage.article.WikivoyageArticleDialogFragment;
 import net.osmand.plus.wikivoyage.data.TravelArticle;
@@ -70,7 +71,7 @@ public class WikivoyageExploreActivity extends TabActivity implements DownloadEv
 		nightMode = !settings.isLightContent();
 
 		int themeId = nightMode ? R.style.OsmandDarkTheme_NoActionbar : R.style.OsmandLightTheme_NoActionbar_LightStatusBar;
-		app.setLanguage(this);
+		app.getLocaleHelper().setLanguage(this);
 		setTheme(themeId);
 		super.onCreate(savedInstanceState);
 
@@ -155,7 +156,7 @@ public class WikivoyageExploreActivity extends TabActivity implements DownloadEv
 		});
 
 		updateSearchBarVisibility();
-		populateData();
+		populateData(true);
 	}
 
 	@Override
@@ -248,7 +249,7 @@ public class WikivoyageExploreActivity extends TabActivity implements DownloadEv
 					invalidateTabAdapters();
 					break;
 				case WikivoyageOptionsBottomSheetDialogFragment.TRAVEL_BOOK_CHANGED:
-					populateData();
+					populateData(true);
 					break;
 			}
 		}
@@ -312,9 +313,26 @@ public class WikivoyageExploreActivity extends TabActivity implements DownloadEv
 		return ContextCompat.getColor(app, colorId);
 	}
 
-	public void populateData() {
+	public void populateData(final boolean resetData) {
 		switchProgressBarVisibility(true);
-		new LoadWikivoyageData(this).execute();
+		if (app.isApplicationInitializing()) {
+			final WeakReference<WikivoyageExploreActivity> activityRef = new WeakReference<>(this);
+			app.getAppInitializer().addListener(new AppInitializer.AppInitializeListener() {
+				@Override
+				public void onProgress(AppInitializer init, AppInitializer.InitEvents event) {
+				}
+
+				@Override
+				public void onFinish(AppInitializer init) {
+					WikivoyageExploreActivity activity = activityRef.get();
+					if (AndroidUtils.isActivityNotDestroyed(activity)) {
+						new LoadWikivoyageData(activity, resetData).execute();
+					}
+				}
+			});
+		} else {
+			new LoadWikivoyageData(this, resetData).execute();
+		}
 	}
 
 	private void onDataLoaded() {
@@ -353,35 +371,39 @@ public class WikivoyageExploreActivity extends TabActivity implements DownloadEv
 		}
 	}
 
-	public void onTabFragmentResume(Fragment fragment) {
-		updateFragments();
-	}
-
 	@Override
 	public void savedArticlesUpdated() {
-		updateFragments();
+		ExploreTabFragment exploreTabFragment = getExploreTabFragment();
+		SavedArticlesTabFragment savedArticlesTabFragment = getSavedArticlesTabFragment();
+		if (exploreTabFragment != null && savedArticlesTabFragment != null
+				&& exploreTabFragment.isAdded() && savedArticlesTabFragment.isAdded()) {
+			exploreTabFragment.savedArticlesUpdated();
+			savedArticlesTabFragment.savedArticlesUpdated();
+		}
 	}
 
-	private static class LoadWikivoyageData extends AsyncTask<Void, Void, Void> {
+	public static class LoadWikivoyageData extends AsyncTask<Void, Void, Void> {
 
-		private WeakReference<WikivoyageExploreActivity> activityRef;
-		private TravelHelper travelHelper;
+		private final WeakReference<WikivoyageExploreActivity> activityRef;
+		private final TravelHelper travelHelper;
+		private final boolean resetData;
 
-		LoadWikivoyageData(WikivoyageExploreActivity activity) {
+		LoadWikivoyageData(WikivoyageExploreActivity activity, boolean resetData) {
 			travelHelper = activity.getMyApplication().getTravelHelper();
 			activityRef = new WeakReference<>(activity);
+			this.resetData = resetData;
 		}
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			travelHelper.initializeDataToDisplay();
+			travelHelper.initializeDataToDisplay(resetData);
 			return null;
 		}
 
 		@Override
 		protected void onPostExecute(Void result) {
 			WikivoyageExploreActivity activity = activityRef.get();
-			if (activity != null) {
+			if (AndroidUtils.isActivityNotDestroyed(activity)) {
 				activity.onDataLoaded();
 			}
 		}

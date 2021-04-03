@@ -45,7 +45,6 @@
     <string name="no_inet_connection">İnternet bağlantısı yoxdur</string>
     <string name="search_location">Məkan axtarılır…</string>
     <string name="storage_free_space">Boş yaddaş</string>
-    <string name="no_update_info">Yeni versiyaları göstərmə</string>
     <string name="int_continuosly">Davam et</string>
     <string name="shared_string_change">Dəyiş</string>
     <string name="get_started">Başla</string>
@@ -725,7 +724,6 @@
     <string name="versions_item">Versiyalar</string>
     <string name="contact_us">Əlaqə</string>
     <string name="use_drawer_btn">Menyu istifadə et</string>
-    <string name="update">Yenilə</string>
     <string name="only_download_over_wifi">Yalnız Wi-Fi ilə endir</string>
     <string name="update_now">İndi yenilə</string>
     <string name="last_update">Son yeniləmə: %s</string>
@@ -743,10 +741,6 @@
     <string name="quick_action_add_favorite">Favorit əlavə et</string>
     <string name="favorite_autofill_toast_text">" burda saxlandı: "</string>
     <string name="favorite_empty_place_name">Yer</string>
-    <string name="quick_action_showhide_favorites_title">Favoritləri göstər/gizlət</string>
-    <string name="quick_action_favorites_show">Favoritləri göstər</string>
-    <string name="quick_action_favorites_hide">Favoritləri gizlət</string>
-    <string name="quick_action_showhide_poi_title">POI-ni göstər/gizlət</string>
     <string name="quick_action_poi_show">%1$s-i göstər</string>
     <string name="quick_action_poi_hide">%1$s-i gizlət</string>
     <string name="quick_action_add_category">Kateqoriya əlavə et</string>
@@ -756,9 +750,6 @@
     <string name="quick_action_map_styles">Xəritə stilləri</string>
     <string name="increase_search_radius">Axtarış radiusunu artır</string>
     <string name="nothing_found_descr">Axtarış sorğusunu dəyişin və ya axtarış radiusunu artırın.</string>
-    <string name="quick_action_showhide_osmbugs_title">OSM qeydlərini göstər və ya gizlət</string>
-    <string name="quick_action_osmbugs_show">OSM qeydlərini göstər</string>
-    <string name="quick_action_osmbugs_hide">OSM qeydlərini gizlət</string>
     <string name="quick_action_showhide_osmbugs_descr">Bu fəaliyyət düyməsinə toxunulduqda, xəritədə OSM qeydləri göstəriləcək və ya gizlədiləcək.</string>
     <string name="sorted_by_distance">Məsafəyə görə sırala</string>
     <string name="search_favorites">Favoritlərdə axtar</string>
@@ -781,15 +772,13 @@
     <string name="altitude_descent">Eniş</string>
     <string name="altitude_ascent">Yoxuş</string>
     <string name="routing_attr_height_obstacles_name">Yüksəklik məlumatlarını istifadə et</string>
-    <string name="routing_attr_height_obstacles_description">SRTM, ASTER və EU-DEM tərəfindən təmin edilən ərazi yüksəklik məlumatlarını istifadə et.</string>
+
     <string name="rendering_attr_depthContours_description">Dərinlik konturlarını və nöqtələrini göstər.</string>
     <string name="rendering_attr_depthContours_name">Dəniz dərinliyi konturları</string>
     <string name="rendering_attr_contourDensity_description">Kontur xəttinin sıxlığı</string>
     <string name="rendering_attr_contourDensity_name">Kontur xəttinin sıxlığı</string>
     <string name="rendering_attr_contourWidth_description">Kontur xəttinin genişliyi</string>
     <string name="rendering_attr_contourWidth_name">Kontur xəttinin genişliyi</string>
-    <string name="legacy_search">Köhnə axtarış</string>
-    <string name="show_legacy_search">Köhnə axtarışı göstər</string>
     <string name="upload_osm_note_description">OSM qeydinizi anonim və ya OpenStreetMap.org profilinizi istifadə edərək yükləyin.</string>
     <string name="wiki_around">Yaxındakı Vikipediya məqalələri</string>
     <string name="search_map_hint">Şəhər və ya ölkə axtarın</string>
@@ -983,7 +972,6 @@
     <string name="impassable_road">Yollardan yayın…</string>
     <string name="routing_attr_avoid_toll_name">Pullu yollardan yayın</string>
     <string name="ending_point_too_far">Son nöqtə ən yaxın yoldan çox uzaqdır.</string>
-    <string name="snap_to_road_descr">Naviqasiya zamanı mövqeni yollara bərkit.</string>
     <string name="snap_to_road">Yola bərkit</string>
     <string name="avoid_unpaved">Asfaltsız yollardan yayın</string>
     <string name="avoid_toll_roads">Pullu yollardan yayın</string>
@@ -1099,7 +1087,6 @@
     <string name="error_calculating_route">Marşrut hesablana bilmədi.</string>
     <string name="error_calculating_route_occured">Marşrut hesablana bilmədi.</string>
     <string name="empty_route_calculated">Hesablanan marşrut boşdur.</string>
-    <string name="new_route_calculated_dist">Yeni marşrut hesablandı, məsafə</string>
     <string name="arrived_at_destination">Təyinat nöqtənizə gəlib çatdınız</string>
     <string name="invalid_locations">Yanlış koordinatlar</string>
     <string name="use_online_routing_descr">Marşrutu hesablamaq üçün internet istifadə et.</string>
@@ -1268,7 +1255,6 @@
     <string name="first_usage_wizard_desc">OsmAnd-a məkanınızı müəyyənləşdirmək və həmin region üçün xəritə endirməsi təklif etmək icazəsi verin.</string>
     <string name="give_permission">İcazə ver</string>
     <string name="first_usage_greeting">İnternet bağlantısı olmadan istiqamətlər alın və yeni yerlər kəşf edin</string>
-    <string name="no_update_info_desc">Yeni versiyaları və ya OsmAnd ilə bağlı endirimləri yoxlama.</string>
     <string name="access_disable_offroute_recalc">Çıxanda marşrut yenidən hesablanmasın</string>
     <string name="access_disable_wrong_direction_recalc">Əks istiqamət üçün marşrut yenidən hesablanmasın</string>
     <string name="recalculate_route">Marşrutu yenidən hesabla</string>
@@ -1967,14 +1953,12 @@
     <string name="access_smart_autoannounce_descr">Yalnız hədəf nöqtəyə istiqamət dəyişilən zaman bildir.</string>
     <string name="plugin_mapillary_descr">Hər kəs üçün küçə səviyyəli şəkillər. Yerləri kəşf edin, əməkdaşlıq edin, dünyanı çəkin.</string>
     <string name="auto_split_recording_descr">6 dəqiqə fasilədən sonra yeni seqment, 2 saat fasilədən sonra yeni iz, ya da tarix dəyişdiyində uzun fasilədən sonra yeni fayl başlat.</string>
-    <string name="show_legacy_search_desc">Menyuya köhnə axtarışı əlavə et.</string>
     <string name="save_track_min_distance">Qeydiyyatın minimum yerdəyişməsi</string>
     <string name="save_track_min_distance_descr">Filtr: Nöqtənin qeydiyyatı üçün son mövqedən minimum məsafəni seçin.</string>
     <string name="save_track_precision">Qeydiyyatın minimum dəqiqliyi</string>
     <string name="save_track_precision_descr">Filtr: Nöqtənin qeydiyyatı üçün minimum dəqiqlik seçin.</string>
     <string name="rendering_attr_surfaceIntegrity_name">Yol səthinin keyfiyyəti</string>
     <string name="routing_attr_short_way_name">Yanacağa qənaətli yol</string>
-    <string name="routing_attr_short_way_description">Yanacağa qənaətli yoldan istifadə et (adətən daha qısa).</string>
     <string name="access_direction_haptic_feedback_descr">Hədəf nöqtənin istiqamətini titrəmə ilə göstər.</string>
     <string name="use_osm_live_routing_description">OsmAnd Live dəyişiklikləri üçün naviqasiyanı aktivləşdir.</string>
     <string name="storage_permission_restart_is_required">İndi proqramın xarici yaddaşa yazmasına icazə verilir, lakin bunun üçün yenidən başlatmaq lazımdır.</string>
@@ -2161,9 +2145,6 @@
     <string name="shared_string_uninstall">Sil</string>
     <string name="shared_string_tones">ton</string>
     <string name="shared_string_meters">metr</string>
-    <string name="quick_action_showhide_mapillary_title">Mapillary-ni göstər/gizlət</string>
-    <string name="quick_action_mapillary_hide">Mapillary-ni gizlət</string>
-    <string name="quick_action_mapillary_show">Mapillary-ni göstər</string>
     <string name="item_deleted">%1$s silindi</string>
     <string name="shared_string_uninstall_and_restart">Sil və yenidən başlat</string>
     <string name="search_download_wikipedia_maps">Vikipediya xəritələrini endir</string>

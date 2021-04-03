@@ -1,9 +1,7 @@
 package net.osmand.plus.mapcontextmenu.other;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Matrix;
-import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.util.Pair;
 import android.view.MotionEvent;
@@ -20,7 +18,6 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.listener.BarLineChartTouchListener;
 import com.github.mikephil.charting.listener.ChartTouchListener.ChartGesture;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
@@ -36,6 +33,7 @@ import net.osmand.data.LatLon;
 import net.osmand.data.QuadRect;
 import net.osmand.data.RotatedTileBox;
 import net.osmand.plus.GpxSelectionHelper.GpxDisplayItem;
+import net.osmand.plus.GpxSelectionHelper.SelectedGpxFile;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
@@ -65,6 +63,8 @@ public class TrackDetailsMenu {
 	private MapActivity mapActivity;
 	@Nullable
 	private GpxDisplayItem gpxItem;
+	@Nullable
+	private SelectedGpxFile selectedGpxFile;
 	@Nullable
 	private TrackDetailsBarController toolbarController;
 	@Nullable
@@ -99,6 +99,15 @@ public class TrackDetailsMenu {
 
 	public void setGpxItem(@NonNull GpxDisplayItem gpxItem) {
 		this.gpxItem = gpxItem;
+	}
+
+	@Nullable
+	public SelectedGpxFile getSelectedGpxFile() {
+		return selectedGpxFile;
+	}
+
+	public void setSelectedGpxFile(@NonNull SelectedGpxFile selectedGpxFile) {
+		this.selectedGpxFile = selectedGpxFile;
 	}
 
 	public boolean isVisible() {
@@ -539,7 +548,7 @@ public class TrackDetailsMenu {
 		}
 	}
 
-	public boolean shouldShowXAxisPoints () {
+	public boolean shouldShowXAxisPoints() {
 		return true;
 	}
 
@@ -599,39 +608,39 @@ public class TrackDetailsMenu {
 
 			}
 		});
-		final float minDragTriggerDist = AndroidUtils.dpToPx(app, 3);
-		chart.setOnTouchListener(new BarLineChartTouchListener(chart, chart.getViewPortHandler().getMatrixTouch(), 3f) {
-			private PointF touchStartPoint = new PointF();
-
-			@SuppressLint("ClickableViewAccessibility")
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				switch (event.getAction() & MotionEvent.ACTION_MASK) {
-					case MotionEvent.ACTION_DOWN:
-						saveTouchStart(event);
-						break;
-					case MotionEvent.ACTION_POINTER_DOWN:
-						if (event.getPointerCount() >= 2) {
-							saveTouchStart(event);
-						}
-						break;
-					case MotionEvent.ACTION_MOVE:
-						if (mTouchMode == NONE && mChart.hasNoDragOffset()) {
-							float touchDistance = distance(event.getX(), touchStartPoint.x, event.getY(), touchStartPoint.y);
-							if (Math.abs(touchDistance) > minDragTriggerDist) {
-								mTouchMode = DRAG;
-							}
-						}
-						break;
-				}
-				return super.onTouch(v, event);
-			}
-
-			private void saveTouchStart(MotionEvent event) {
-				touchStartPoint.x = event.getX();
-				touchStartPoint.y = event.getY();
-			}
-		});
+//		final float minDragTriggerDist = AndroidUtils.dpToPx(app, 3);
+//		chart.setOnTouchListener(new BarLineChartTouchListener(chart, chart.getViewPortHandler().getMatrixTouch(), 3f) {
+//			private PointF touchStartPoint = new PointF();
+//
+//			@SuppressLint("ClickableViewAccessibility")
+//			@Override
+//			public boolean onTouch(View v, MotionEvent event) {
+//				switch (event.getAction() & MotionEvent.ACTION_MASK) {
+//					case MotionEvent.ACTION_DOWN:
+//						saveTouchStart(event);
+//						break;
+//					case MotionEvent.ACTION_POINTER_DOWN:
+//						if (event.getPointerCount() >= 2) {
+//							saveTouchStart(event);
+//						}
+//						break;
+//					case MotionEvent.ACTION_MOVE:
+//						if (mTouchMode == NONE && mChart.hasNoDragOffset()) {
+//							float touchDistance = distance(event.getX(), touchStartPoint.x, event.getY(), touchStartPoint.y);
+//							if (Math.abs(touchDistance) > minDragTriggerDist) {
+//								mTouchMode = DRAG;
+//							}
+//						}
+//						break;
+//				}
+//				return super.onTouch(v, event);
+//			}
+//
+//			private void saveTouchStart(MotionEvent event) {
+//				touchStartPoint.x = event.getX();
+//				touchStartPoint.y = event.getY();
+//			}
+//		});
 		chart.setOnChartGestureListener(new OnChartGestureListener() {
 			boolean hasTranslated = false;
 			float highlightDrawX = -1;
@@ -707,18 +716,19 @@ public class TrackDetailsMenu {
 		if (gpxItem.chartTypes != null && gpxItem.chartTypes.length > 0) {
 			for (int i = 0; i < gpxItem.chartTypes.length; i++) {
 				OrderedLineDataSet dataSet = null;
+				boolean withoutGaps = selectedGpxFile != null && (!selectedGpxFile.isJoinSegments() && gpxItem.isGeneralTrack());
 				switch (gpxItem.chartTypes[i]) {
 					case ALTITUDE:
 						dataSet = GpxUiHelper.createGPXElevationDataSet(app, chart, analysis,
-								gpxItem.chartAxisType, false, true, false);
+								gpxItem.chartAxisType, false, true, withoutGaps);
 						break;
 					case SPEED:
 						dataSet = GpxUiHelper.createGPXSpeedDataSet(app, chart, analysis,
-								gpxItem.chartAxisType, gpxItem.chartTypes.length > 1, true, false);
+								gpxItem.chartAxisType, gpxItem.chartTypes.length > 1, true, withoutGaps);
 						break;
 					case SLOPE:
 						dataSet = GpxUiHelper.createGPXSlopeDataSet(app, chart, analysis,
-								gpxItem.chartAxisType, null, gpxItem.chartTypes.length > 1, true, false);
+								gpxItem.chartAxisType, null, gpxItem.chartTypes.length > 1, true, withoutGaps);
 						break;
 				}
 				if (dataSet != null) {

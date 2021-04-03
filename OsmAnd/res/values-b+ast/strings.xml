@@ -519,7 +519,7 @@
     <string name="shared_string_time">Tiempu</string>
     <string name="total_distance">Distancia total</string>
     <string name="routing_attr_height_obstacles_name">Usar datos d\'elevación</string>
-    <string name="routing_attr_height_obstacles_description">Inclúi la elevación del tarrén (pelos datos de SRTM, ASTER y EU-DEM).</string>
+
     <string name="search_another_country">Esbillar otra rexón</string>
     <string name="shared_string_change">Camudar</string>
     <string name="mapillary_image">Imaxe de Mapillary</string>
@@ -539,7 +539,6 @@
     <string name="increase_search_radius">Aumentar el radiu de gueta</string>
     <string name="nothing_found">Nun s\'alcontró nada</string>
     <string name="nothing_found_descr">Modifica la consulta o aumenta\'l radiu de gueta.</string>
-    <string name="quick_action_showhide_osmbugs_title">Alternar notes d\'OSM</string>
     <string name="quick_action_showhide_osmbugs_descr">Tocar esti botón d\'aición amuesa/anubre nel mapa les notes d\'OSM.</string>
     <string name="shared_string_plugin">Plugin</string>
     <string name="srtm_color_scheme">Esquema de colores</string>
@@ -622,7 +621,6 @@
     <string name="exit_without_saving">¿Colar ensin guardar\?</string>
     <string name="line">Llinia</string>
     <string name="shared_string_options">Opciones</string>
-    <string name="no_update_info">Nun amosar anovamientos</string>
     <string name="index_name_openmaps">OpenMaps EU</string>
     <string name="local_indexes_cat_av">Datos d\'audiu/videu</string>
     <string name="dropbox_plugin_name">Plugin pa Dropbox</string>
@@ -1115,7 +1113,6 @@
     <string name="quick_action_switch_night_mode">Mou nocherniegu</string>
     <string name="quick_action_showhide_favorites_descr">Tocar esti botón d\'aición amuesa/anubre nel mapa los puntos favoritos.</string>
     <string name="quick_action_showhide_poi_descr">Tocar esti botón d\'aición amuesa/anubre nel mapa los PdI.</string>
-    <string name="quick_action_showhide_favorites_title">Amosar/anubrir Favoritos</string>
     <string name="quick_action_add_navigation">Navegación</string>
     <string name="quick_action_bug_descr">Esti mensaxe inclúise nel campu de comentarios.</string>
     <string name="quick_action_gpx_category_descr">Esbilla una estaya opcional.</string>
@@ -1181,7 +1178,6 @@
     <string name="renderers_descr">Esceuyi l\'aspeutu del renderizáu.</string>
     <string name="show_route">Detalles de la ruta</string>
     <string name="layer_map">Fonte del mapa…</string>
-    <string name="new_route_calculated_dist">Calculóse una ruta nueva, distancia</string>
     <string name="app_settings">Axustes de l\'aplicación</string>
     <string name="add_favorite_dialog_favourite_added_template">Amestóse\'l puntu favoritu «{0}».</string>
     <string name="av_camera_pic_size_descr">Esbilla\'l tamañu de les semeyes de la cámara interna.</string>
@@ -1220,7 +1216,7 @@
     <string name="popular_destinations">Destinos sonaos</string>
     <string name="paid_app">Aplicación de pagu</string>
     <string name="paid_plugin">Plugin de pagu</string>
-    <string name="welcome_to_open_beta_description">Anguaño les guíes de viaxes básense en Wikivoyage. Prueba de baldre toles carauterístiques na beta abierta. Dempués, eses guíes van tar disponibles pa los soscriptores d\'OsmAnd Unlimited y dueños dOsmAnd +.</string>
+    <string name="welcome_to_open_beta_description">Anguaño les guíes de viaxes básense en Wikivoyage. Prueba de baldre toles carauterístiques na beta abierta.</string>
     <string name="start_editing_card_description">Puedes y tendríes d\'editar cualesquier artículu de Wikivoyage. Comparti la conocencia, esperiencia, talentu y atención</string>
     <string name="get_unlimited_access">Consiguir l\'accesu ensin llende</string>
     <string name="all_markers_moved_to_history">Tolos marcadores del mapa moviéronse al historial</string>
@@ -1280,7 +1276,6 @@
     <string name="speak_poi">PdI cercanos</string>
     <string name="routing_attr_avoid_unpaved_name">Evitar carreteres ensin pavimentar</string>
     <string name="routing_attr_avoid_motorway_name">Evitar autopistes</string>
-    <string name="snap_to_road_descr">Axusta la posición a los caminos na navegación.</string>
     <string name="snap_to_road">Axustar a la carretera</string>
     <string name="keep_informing_never">Namái a mano (toca na flecha)</string>
     <string name="keep_informing">Repitir les instrucciones de navegación</string>
@@ -1311,7 +1306,6 @@
     <string name="update_all">Anovar too (%1$sMB)</string>
     <string name="quick_action_map_style">Camudar l\'estilu del mapa</string>
     <string name="quick_action_day_night_switch_mode">Cambiar al mou día/nueche</string>
-    <string name="quick_action_showhide_poi_title">Amosar/anubrir PdI</string>
     <string name="quick_action_add_create_items">Creación d\'elementos</string>
     <string name="quick_action_add_configure_map">Configuración del mapa</string>
     <string name="waypoint_one">Puntu 1</string>

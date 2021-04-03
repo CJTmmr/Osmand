@@ -42,7 +42,6 @@
     <string name="poi_copyshop">Ксерокопия, полиграфия</string>
     <string name="poi_curtain">Шторы, портьеры</string>
     <string name="poi_fabric">Ткани</string>
-    <!--	<string name="poi_bedding">Постельное бельё</string>-->
     <string name="poi_dive">Снаряжение для дайвинга</string>
     <string name="poi_doityourself">Инструменты и стройматериалы</string>
     <string name="poi_doors">Двери</string>
@@ -104,7 +103,6 @@
     <string name="poi_free_flying">Товары для свободного полёта</string>
     <string name="poi_games">Магазин игр;Игры</string>
     <string name="poi_garden_furniture">Садовая мебель, аксессуары</string>
-    <string name="poi_furnace">Системы отопления</string>
     <string name="poi_leather">Магазин кожи, галантерея</string>
     <string name="poi_pyrotechnics">Пиротехника;Фейерверки</string>
     <string name="poi_weapons">Оружие</string>
@@ -464,13 +462,12 @@
     <string name="poi_religion_shinto">Синтоизм</string>
     <string name="poi_religion_taoist">Даосизм</string>
     <string name="poi_monastery">Монастырь</string>
-    <string name="poi_historic_monastery">Исторический монастырь</string>
     <string name="poi_wayside_cross">Придорожный крест</string>
     <string name="poi_wayside_shrine">Придорожная святыня</string>
     <string name="poi_information">Информация</string>
     <string name="poi_clock">Часы</string>
     <string name="poi_travel_agent">Турагентство;Туристическое агентство</string>
-    <string name="poi_viewpoint">Место с хорошим видом;Обзорная площадка</string>
+    <string name="poi_viewpoint">Обзорная площадка;Место с хорошим видом</string>
     <string name="poi_camp_site">Место для лагеря</string>
     <string name="poi_caravan_site">Ночлег</string>
     <string name="poi_picnic_site">Место для пикника</string>
@@ -819,7 +816,6 @@
     <string name="poi_neighbourhood">Микрорайон</string>
     <string name="poi_residential">Жилой район</string>
     <string name="poi_religious">Религиозное землепользование</string>
-    <!--	<string name="poi_general_tourist_attraction_yes">Достопримечательность (тип неизвестен)</string>-->
     <string name="poi_attraction_amusement_ride">Аттракцион</string>
     <string name="poi_wilderness_hut">Лесной домик</string>
     <string name="poi_hunting_lodge">Охотничий домик</string>
@@ -1007,7 +1003,6 @@
     <string name="poi_information_route_marker">Метка маршрута</string>
     <string name="poi_information_hikingmap">Карта для пешего туризма</string>
     <string name="poi_information_nature">Природа</string>
-    <string name="poi_information_wildlife">Дикая природа</string>
     <string name="poi_information_history">История</string>
     <string name="poi_information_sign">Знак</string>
     <string name="poi_information_audioguide">Аудиогид</string>
@@ -1020,7 +1015,6 @@
     <string name="poi_board_type_public_transport">Расписание общественного транспорта</string>
     <string name="poi_board_type_technology">Технология</string>
     <string name="poi_board_type_astronomy">Астрономия</string>
-    <string name="poi_tourism_attraction">Достопримечательность</string>
     <string name="poi_commercial">Коммерческое землепользование</string>
     <string name="poi_retail">Розничная торговля (землепользование)</string>
     <string name="poi_fireplace">Место для разведения огня</string>
@@ -1470,7 +1464,7 @@
     <string name="poi_memorial_plaque">Доска</string>
     <string name="poi_memorial_statue">Статуя</string>
     <string name="poi_memorial_stone">Камень</string>
-    <string name="poi_memorial_stele">Стелла</string>
+    <string name="poi_memorial_stele">Стела</string>
     <string name="poi_memorial_bust">Бюст</string>
     <string name="poi_memorial_blue_plaque">Синяя табличка</string>
     <string name="poi_memorial_jizo">Дзидзо</string>
@@ -2598,7 +2592,6 @@
     <string name="poi_counselling_type_marriage_yes">Консультация брачная: да</string>
     <string name="poi_counselling_type_marriage_no">Консультация брачная: нет</string>
     <string name="poi_counselling_type_nutrition_yes">Консультация по вопросам питания: да</string>
-    <string name="poi_counselling_type_nutrition_no">Консультация по вопросам питания: нет</string>
     <string name="poi_counselling_type_rehabilitation_yes">Консультация реабилитационная: да</string>
     <string name="poi_counselling_type_rehabilitation_no">Консультация реабилитационная: нет</string>
     <string name="poi_counselling_type_sexual_yes">Консультация сексологическая: да</string>
@@ -2666,7 +2659,6 @@
     <string name="poi_water_source_main">Основной</string>
     <string name="poi_water_source_pond">Пруд</string>
     <string name="poi_water_source_stream">Поток</string>
-    <string name="poi_fire_hydrant_style_water_source_cistern">Ёмкость</string>
     <string name="poi_in_service_yes">Используется: да</string>
     <string name="poi_street_cabinet_power">Тип шкафа: электрический</string>
     <string name="poi_street_cabinet_telecom">Тип шкафа: телекоммуникации</string>
@@ -2793,7 +2785,7 @@
     <string name="poi_organic_no">Отсутствуют</string>
     <string name="poi_organic_only">Исключительно</string>
     <string name="poi_traffic_mirror">Дорожное зеркало</string>
-    <string name="poi_diplomatic_filter">Вид</string>
+    <string name="poi_diplomatic_filter">Дипломатическое учреждение</string>
     <string name="poi_diplomatic_consulate">Консульство</string>
     <string name="poi_diplomatic_consulate_general">Генеральное консульство</string>
     <string name="poi_diplomatic_honorary_consulate">Почётное консульство</string>
@@ -3450,7 +3442,6 @@
     <string name="poi_park_ride_metro">Метро</string>
     <string name="poi_park_ride_tram">Трамвай</string>
     <string name="poi_park_ride_ferry">Паром</string>
-    <string name="poi_generator_source_biomass">Источник энергии: биомасса</string>
     <string name="poi_wiki_link">Википедия</string>
     <string name="poi_rtsa_scale_filter">Категория сложности</string>
     <string name="poi_flare">Газовый факел</string>
@@ -3557,7 +3548,7 @@
     <string name="poi_changing_table_count">Количество пеленальных столов</string>
     <string name="poi_changing_table_fee_yes">Платный пеленальный стол: да</string>
     <string name="poi_changing_table_fee_no">Платный пеленальный стол: нет</string>
-    <string name="poi_source_biomass">Источник энергии: биомасса</string>
+    <string name="poi_generator_source_biomass">Источник энергии: биомасса</string>
     <string name="poi_access_motorcycle">Доступ для мотоциклов</string>
     <string name="poi_access_moped">Доступ для мопедов</string>
     <string name="poi_access_mofa">Доступ для мопедов Mofa</string>
@@ -3887,4 +3878,15 @@
     <string name="poi_waste_transfer_station">Станция перекачки отходов</string>
     <string name="poi_ranger_station">Станция рейнджеров</string>
     <string name="poi_swimming_area">Место для купания</string>
+    <string name="poi_wildlife_crossing">Экодук</string>
+    <string name="poi_piste_status_closed">Состояние трассы: закрыта</string>
+    <string name="poi_piste_status_open">Состояние трассы: открыта</string>
+    <string name="poi_patrolled_no">Патрулируется: нет</string>
+    <string name="poi_patrolled_yes">Патрулируется: да</string>
+    <string name="poi_piste_name">Название трассы</string>
+    <string name="poi_piste_ski_jump">Лыжный трамплин</string>
+    <string name="poi_gladed_yes">По лесу: да</string>
+    <string name="poi_wildlife_crossing_bat_tunnel">Туннель летучих мышей</string>
+    <string name="poi_wildlife_crossing_bat_bridge">Мост летучих мышей</string>
+    <string name="poi_conference_centre">Конференц-центр</string>
 </resources>

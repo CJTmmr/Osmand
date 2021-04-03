@@ -9,11 +9,9 @@ import androidx.annotation.Nullable;
 import androidx.annotation.Size;
 
 import net.osmand.GPXUtilities.GPXFile;
-import net.osmand.Location;
-import net.osmand.aidl.search.SearchResult;
-import net.osmand.data.LatLon;
+import net.osmand.IndexConstants;
+import net.osmand.plus.OsmandApplication;
 import net.osmand.util.Algorithms;
-import net.osmand.util.MapUtils;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -22,8 +20,6 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.Objects;
 
 public class TravelArticle {
 
@@ -35,25 +31,46 @@ public class TravelArticle {
 	String title;
 	String content;
 	String isPartOf;
+	String isParentOf = "";
 	double lat = Double.NaN;
 	double lon = Double.NaN;
 	String imageTitle;
 	GPXFile gpxFile;
 	String routeId;
-	String routeSource;
+	String routeSource = "";
 	long originalId;
 	String lang;
 	String contentsJson;
 	String aggregatedPartOf;
-	String fullContent;
+
+	long lastModified;
+	boolean gpxFileReading;
+	boolean gpxFileRead;
 
 	@NonNull
 	public TravelArticleIdentifier generateIdentifier() {
 		return new TravelArticleIdentifier(this);
 	}
 
+	@NonNull
+	public static String getTravelBook(@NonNull OsmandApplication app, @NonNull File file) {
+		return file.getPath().replace(app.getAppPath(IndexConstants.WIKIVOYAGE_INDEX_DIR).getPath() + "/", "");
+	}
+
+	@Nullable
+	public String getTravelBook(@NonNull OsmandApplication app) {
+		return file != null ? getTravelBook(app, file) : null;
+	}
+
 	public File getFile() {
 		return file;
+	}
+
+	public long getLastModified() {
+		if (lastModified > 0) {
+			return lastModified;
+		}
+		return file != null ? file.lastModified() : 0;
 	}
 
 	public String getTitle() {
@@ -142,7 +159,8 @@ public class TravelArticle {
 			System.err.println(e.getMessage());
 		}
 		String prefix = thumbnail ? THUMB_PREFIX : REGULAR_PREFIX;
-		return IMAGE_ROOT_URL + "thumb/" + hash[0] + "/" + hash[1] + "/" + imageTitle + "/" + prefix + imageTitle;
+		String suffix = imageTitle.endsWith(".svg") ? ".png" : "";
+		return IMAGE_ROOT_URL + "thumb/" + hash[0] + "/" + hash[1] + "/" + imageTitle + "/" + prefix + imageTitle + suffix;
 	}
 
 	@Size(2)
@@ -150,6 +168,26 @@ public class TravelArticle {
 	private static String[] getHash(@NonNull String s) {
 		String md5 = new String(Hex.encodeHex(DigestUtils.md5(s)));
 		return new String[]{md5.substring(0, 1), md5.substring(0, 2)};
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		TravelArticle that = (TravelArticle) o;
+		return TravelArticleIdentifier.areLatLonEqual(that.lat, that.lon, lat, lon) &&
+				Algorithms.objectEquals(file, that.file) &&
+				Algorithms.stringsEqual(routeId, that.routeId) &&
+				Algorithms.stringsEqual(routeSource, that.routeSource);
+	}
+
+	@Override
+	public int hashCode() {
+		return Algorithms.hash(file, lat, lon, routeId, routeSource);
 	}
 
 	public static class TravelArticleIdentifier implements Parcelable {
@@ -223,17 +261,16 @@ public class TravelArticle {
 			TravelArticleIdentifier that = (TravelArticleIdentifier) o;
 			return areLatLonEqual(that.lat, that.lon, lat, lon) &&
 					Algorithms.objectEquals(file, that.file) &&
-					Algorithms.stringsEqual(title, that.title) &&
 					Algorithms.stringsEqual(routeId, that.routeId) &&
 					Algorithms.stringsEqual(routeSource, that.routeSource);
 		}
 
 		@Override
 		public int hashCode() {
-			return Algorithms.hash(file, lat, lon, title, routeId, routeSource);
+			return Algorithms.hash(file, lat, lon, routeId, routeSource);
 		}
 
-		private static boolean areLatLonEqual(double lat1, double lon1, double lat2, double lon2) {
+		public static boolean areLatLonEqual(double lat1, double lon1, double lat2, double lon2) {
 			boolean latEqual = (Double.isNaN(lat1) && Double.isNaN(lat2)) || Math.abs(lat1 - lat2) < 0.00001;
 			boolean lonEqual = (Double.isNaN(lon1) && Double.isNaN(lon2)) || Math.abs(lon1 - lon2) < 0.00001;
 			return latEqual && lonEqual;

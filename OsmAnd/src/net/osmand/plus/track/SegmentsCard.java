@@ -22,7 +22,6 @@ public class SegmentsCard extends BaseCard {
 
 	private TrackDisplayHelper displayHelper;
 	private GpxDisplayItemType[] filterTypes = new GpxDisplayItemType[] {GpxDisplayItemType.TRACK_SEGMENT};
-	private SegmentGPXAdapter adapter;
 	private SegmentActionsListener listener;
 
 	public SegmentsCard(@NonNull MapActivity mapActivity, @NonNull TrackDisplayHelper displayHelper,
@@ -34,7 +33,7 @@ public class SegmentsCard extends BaseCard {
 
 	@Override
 	public int getCardLayoutId() {
-		return R.layout.track_segments_container;
+		return R.layout.card_container;
 	}
 
 	@Override
@@ -48,7 +47,7 @@ public class SegmentsCard extends BaseCard {
 			WrapContentHeightViewPager pager = segmentView.findViewById(R.id.pager);
 			PagerSlidingTabStrip tabLayout = segmentView.findViewById(R.id.sliding_tabs);
 
-			pager.setAdapter(new GPXItemPagerAdapter(tabLayout, displayItem, displayHelper, listener));
+			pager.setAdapter(new GPXItemPagerAdapter(app, displayItem, displayHelper, nightMode, listener, false));
 			tabLayout.setViewPager(pager);
 
 			container.addView(segmentView);

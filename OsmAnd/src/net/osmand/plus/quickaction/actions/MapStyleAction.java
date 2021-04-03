@@ -15,7 +15,6 @@ import net.osmand.plus.OsmandPlugin;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
-import net.osmand.plus.dialogs.ConfigureMapMenu;
 import net.osmand.plus.openseamapsplugin.NauticalMapsPlugin;
 import net.osmand.plus.quickaction.QuickAction;
 import net.osmand.plus.quickaction.QuickActionType;
@@ -92,7 +91,7 @@ public class MapStyleAction extends SwitchableAction<String> {
 			view.getSettings().RENDERER.set(params);
 
 			app.getRendererRegistry().setCurrentSelectedRender(loaded);
-			ConfigureMapMenu.refreshMapComplete(activity);
+			activity.refreshMapComplete();
 
 			Toast.makeText(activity, activity.getString(R.string.quick_action_map_style_switch,
 					getTranslatedItemName(activity, params)), Toast.LENGTH_SHORT).show();
@@ -103,9 +102,7 @@ public class MapStyleAction extends SwitchableAction<String> {
 
 	@Override
 	public String getTranslatedItemName(Context context, String item) {
-		String translation = RendererRegistry.getTranslatedRendererName(context, item);
-		return translation != null ? translation
-				: item.replace('_', ' ').replace('-', ' ');
+		return RendererRegistry.getRendererName(context, item);
 	}
 
 	public List<String> getFilteredStyles() {
@@ -176,9 +173,8 @@ public class MapStyleAction extends SwitchableAction<String> {
 				List<String> visibleNamesList = new ArrayList<>();
 				final List<String> items = new ArrayList<>(renderers.keySet());
 				for (String item : items) {
-					String translation = RendererRegistry.getTranslatedRendererName(activity, item);
-					visibleNamesList.add(translation != null ? translation
-							: item.replace('_', ' ').replace('-', ' '));
+					String name = RendererRegistry.getRendererName(activity, item);
+					visibleNamesList.add(name);
 				}
 
 				final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(themedContext, R.layout.dialog_text_item);

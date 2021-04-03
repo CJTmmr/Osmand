@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.annotation.ColorRes;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.Preference;
@@ -35,7 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import static net.osmand.plus.importfiles.ImportHelper.ImportType.SETTINGS;
-import static net.osmand.plus.profiles.SelectProfileBottomSheet.IS_PROFILE_IMPORTED_ARG;
+import static net.osmand.plus.profiles.SelectProfileBottomSheet.PROFILES_LIST_UPDATED_ARG;
 import static net.osmand.plus.profiles.SelectProfileBottomSheet.PROFILE_KEY_ARG;
 
 public class MainSettingsFragment extends BaseSettingsFragment implements OnSelectProfileCallback{
@@ -44,6 +43,7 @@ public class MainSettingsFragment extends BaseSettingsFragment implements OnSele
 
 	private static final String CONFIGURE_PROFILE = "configure_profile";
 	private static final String APP_PROFILES = "app_profiles";
+	private static final String PURCHASES_SETTINGS = "purchases_settings";
 	private static final String SELECTED_PROFILE = "selected_profile";
 	private static final String CREATE_PROFILE = "create_profile";
 	private static final String IMPORT_PROFILE = "import_profile";
@@ -70,10 +70,12 @@ public class MainSettingsFragment extends BaseSettingsFragment implements OnSele
 		availableAppModes = new LinkedHashSet<>(ApplicationMode.values(getMyApplication()));
 		Preference globalSettings = findPreference("global_settings");
 		globalSettings.setIcon(getContentIcon(R.drawable.ic_action_settings));
-		PreferenceCategory selectedProfile = (PreferenceCategory) findPreference(SELECTED_PROFILE);
+		Preference purchasesSettings = findPreference(PURCHASES_SETTINGS);
+		purchasesSettings.setIcon(getContentIcon(R.drawable.ic_action_purchases));
+		PreferenceCategory selectedProfile = findPreference(SELECTED_PROFILE);
 		selectedProfile.setIconSpaceReserved(false);
 		setupConfigureProfilePref();
-		PreferenceCategory appProfiles = (PreferenceCategory) findPreference(APP_PROFILES);
+		PreferenceCategory appProfiles = findPreference(APP_PROFILES);
 		appProfiles.setIconSpaceReserved(false);
 		setupAppProfiles(appProfiles);
 		profileManagementPref();
@@ -87,8 +89,7 @@ public class MainSettingsFragment extends BaseSettingsFragment implements OnSele
 		if (CONFIGURE_PROFILE.equals(key)) {
 			View selectedProfile = holder.itemView.findViewById(R.id.selectable_list_item);
 			if (selectedProfile != null) {
-				int activeProfileColorId = getSelectedAppMode().getIconColorInfo().getColor(isNightMode());
-				int activeProfileColor = ContextCompat.getColor(app, activeProfileColorId);
+				int activeProfileColor = getSelectedAppMode().getProfileColor(isNightMode());
 				Drawable backgroundDrawable = new ColorDrawable(UiUtilities.getColorWithAlpha(activeProfileColor, 0.15f));
 				AndroidUtils.setBackground(selectedProfile, backgroundDrawable);
 			}
@@ -149,7 +150,14 @@ public class MainSettingsFragment extends BaseSettingsFragment implements OnSele
 				FragmentManager fragmentManager = mapActivity.getSupportFragmentManager();
 				ExportSettingsFragment.showInstance(fragmentManager, mode, true);
 			}
+		} else if (PURCHASES_SETTINGS.equals(prefId)) {
+			MapActivity mapActivity = getMapActivity();
+			if (mapActivity != null) {
+				FragmentManager fragmentManager = mapActivity.getSupportFragmentManager();
+				PurchasesFragment.showInstance(fragmentManager);
+			}
 		}
+
 		return super.onPreferenceClick(preference);
 	}
 
@@ -212,7 +220,7 @@ public class MainSettingsFragment extends BaseSettingsFragment implements OnSele
 
 	private Drawable getAppProfilesIcon(ApplicationMode applicationMode, boolean appProfileEnabled) {
 		int iconResId = applicationMode.getIconRes();
-		return appProfileEnabled ? app.getUIUtilities().getIcon(applicationMode.getIconRes(), applicationMode.getIconColorInfo().getColor(isNightMode()))
+		return appProfileEnabled ? app.getUIUtilities().getPaintedIcon(applicationMode.getIconRes(), applicationMode.getProfileColor(isNightMode()))
 				: getIcon(iconResId, isNightMode() ? R.color.icon_color_secondary_dark : R.color.icon_color_secondary_light);
 	}
 
@@ -229,7 +237,7 @@ public class MainSettingsFragment extends BaseSettingsFragment implements OnSele
 			FragmentManager fragmentManager = activity.getSupportFragmentManager();
 			if (fragmentManager != null) {
 				String profileKey = args.getString(PROFILE_KEY_ARG);
-				boolean imported = args.getBoolean(IS_PROFILE_IMPORTED_ARG);
+				boolean imported = args.getBoolean(PROFILES_LIST_UPDATED_ARG);
 				ProfileAppearanceFragment.showInstance(activity, SettingsScreenType.PROFILE_APPEARANCE,
 						profileKey, imported);
 			}

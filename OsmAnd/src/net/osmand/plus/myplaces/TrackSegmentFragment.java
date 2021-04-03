@@ -1,6 +1,8 @@
 package net.osmand.plus.myplaces;
 
+import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -20,14 +22,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-
 import net.osmand.AndroidUtils;
+import net.osmand.FileUtils;
+import net.osmand.FileUtils.RenameCallback;
 import net.osmand.GPXUtilities.GPXFile;
-import net.osmand.GPXUtilities.Track;
 import net.osmand.GPXUtilities.TrkSegment;
-import net.osmand.GPXUtilities.WptPt;
-import net.osmand.data.LatLon;
 import net.osmand.data.PointDescription;
 import net.osmand.plus.GpxSelectionHelper.GpxDisplayGroup;
 import net.osmand.plus.GpxSelectionHelper.GpxDisplayItem;
@@ -39,8 +38,6 @@ import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.activities.TrackActivity;
 import net.osmand.plus.base.OsmAndListFragment;
 import net.osmand.plus.helpers.GpxUiHelper;
-import net.osmand.plus.helpers.GpxUiHelper.GPXDataSetType;
-import net.osmand.plus.helpers.GpxUiHelper.OrderedLineDataSet;
 import net.osmand.plus.myplaces.TrackBitmapDrawer.TrackBitmapDrawerListener;
 import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.track.SaveGpxAsyncTask;
@@ -53,7 +50,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrackSegmentFragment extends OsmAndListFragment implements TrackBitmapDrawerListener, SegmentActionsListener {
+public class TrackSegmentFragment extends OsmAndListFragment implements TrackBitmapDrawerListener,
+		SegmentActionsListener, RenameCallback {
+
+	public static final String TRACK_DELETED_KEY = "track_deleted_key";
 
 	private OsmandApplication app;
 	private TrackDisplayHelper displayHelper;
@@ -134,8 +134,40 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 							}
 						});
 				item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-			}
-			if (gpxFile.showCurrentTrack) {
+				MenuItem renameItem = menu.add(R.string.shared_string_rename)
+						.setIcon(app.getUIUtilities().getIcon((R.drawable.ic_action_edit_dark)))
+						.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+							@Override
+							public boolean onMenuItemClick(MenuItem item) {
+								GPXFile gpx = displayHelper.getGpx();
+								FragmentActivity activity = getActivity();
+								if (activity != null && gpx != null) {
+									FileUtils.renameFile(activity, new File(gpx.path), TrackSegmentFragment.this, false);
+								}
+								return true;
+							}
+						});
+				renameItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+				MenuItem deleteItem = menu.add(R.string.shared_string_delete)
+						.setIcon(app.getUIUtilities().getIcon((R.drawable.ic_action_delete_dark)))
+						.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+							@Override
+							public boolean onMenuItemClick(MenuItem item) {
+								GPXFile gpx = displayHelper.getGpx();
+								FragmentActivity activity = getActivity();
+								if (activity != null && gpx != null) {
+									if (FileUtils.removeGpxFile(app, new File((gpx.path)))) {
+										Intent intent = new Intent();
+										intent.putExtra(TRACK_DELETED_KEY, true);
+										activity.setResult(Activity.RESULT_OK, intent);
+										activity.onBackPressed();
+									}
+								}
+								return true;
+							}
+						});
+				deleteItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);
+			} else if (gpxFile.showCurrentTrack) {
 				MenuItem item = menu.add(R.string.shared_string_refresh).setIcon(R.drawable.ic_action_refresh_dark)
 						.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
 							@Override
@@ -245,7 +277,7 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 	}
 
 	@Override
-	public void onPointSelected(double lat, double lon) {
+	public void onPointSelected(TrkSegment segment, double lat, double lon) {
 		if (fragmentAdapter != null) {
 			fragmentAdapter.updateSelectedPoint(lat, lon);
 		}
@@ -260,55 +292,9 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 	}
 
 	@Override
-	public void openAnalyzeOnMap(GpxDisplayItem gpxItem, List<ILineDataSet> dataSets, GPXTabItemType tabType) {
-		LatLon location = null;
-		WptPt wpt = null;
-		gpxItem.chartTypes = null;
-		if (dataSets != null && dataSets.size() > 0) {
-			gpxItem.chartTypes = new GPXDataSetType[dataSets.size()];
-			for (int i = 0; i < dataSets.size(); i++) {
-				OrderedLineDataSet orderedDataSet = (OrderedLineDataSet) dataSets.get(i);
-				gpxItem.chartTypes[i] = orderedDataSet.getDataSetType();
-			}
-			if (gpxItem.chartHighlightPos != -1) {
-				TrkSegment segment = null;
-				for (Track t : gpxItem.group.getGpx().tracks) {
-					for (TrkSegment s : t.segments) {
-						if (s.points.size() > 0 && s.points.get(0).equals(gpxItem.analysis.locationStart)) {
-							segment = s;
-							break;
-						}
-					}
-					if (segment != null) {
-						break;
-					}
-				}
-				if (segment != null) {
-					OrderedLineDataSet dataSet = (OrderedLineDataSet) dataSets.get(0);
-					float distance = gpxItem.chartHighlightPos * dataSet.getDivX();
-					for (WptPt p : segment.points) {
-						if (p.distance >= distance) {
-							wpt = p;
-							break;
-						}
-					}
-					if (wpt != null) {
-						location = new LatLon(wpt.lat, wpt.lon);
-					}
-				}
-			}
-		}
-		if (location == null) {
-			location = new LatLon(gpxItem.locationStart.lat, gpxItem.locationStart.lon);
-		}
-		if (wpt != null) {
-			gpxItem.locationOnMap = wpt;
-		} else {
-			gpxItem.locationOnMap = gpxItem.locationStart;
-		}
-
+	public void openAnalyzeOnMap(GpxDisplayItem gpxItem) {
 		OsmandSettings settings = app.getSettings();
-		settings.setMapLocationToShow(location.getLatitude(), location.getLongitude(),
+		settings.setMapLocationToShow(gpxItem.locationOnMap.lat, gpxItem.locationOnMap.lon,
 				settings.getLastKnownMapZoom(),
 				new PointDescription(PointDescription.POINT_TYPE_WPT, gpxItem.name),
 				false,
@@ -318,14 +304,19 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 	}
 
 	@Override
-	public void showOptionsPopupMenu(View view, final TrkSegment segment, final boolean confirmDeletion) {
+	public void showOptionsPopupMenu(View view, final TrkSegment segment, final boolean confirmDeletion, final GpxDisplayItem gpxItem) {
 		FragmentActivity activity = getActivity();
 		if (activity != null) {
-			optionsPopupMenu = new IconPopupMenu(activity, view.findViewById(R.id.overflow_menu));
-			Menu menu = optionsPopupMenu.getMenu();
+			IconPopupMenu optionsPopupMenu = new IconPopupMenu(activity, view.findViewById(R.id.overflow_menu));
+			final Menu menu = optionsPopupMenu.getMenu();
 			optionsPopupMenu.getMenuInflater().inflate(R.menu.track_segment_menu, menu);
 			menu.findItem(R.id.action_edit).setIcon(app.getUIUtilities().getThemedIcon(R.drawable.ic_action_edit_dark));
 			menu.findItem(R.id.action_delete).setIcon(app.getUIUtilities().getThemedIcon(R.drawable.ic_action_remove_dark));
+			if (displayHelper.getGpx().showCurrentTrack) {
+				menu.findItem(R.id.split_interval).setVisible(false);
+			} else {
+				menu.findItem(R.id.split_interval).setIcon(app.getUIUtilities().getThemedIcon(R.drawable.ic_action_split_interval));
+			}
 			optionsPopupMenu.setOnMenuItemClickListener(new IconPopupMenu.OnMenuItemClickListener() {
 				@Override
 				public boolean onMenuItemClick(MenuItem item) {
@@ -350,6 +341,8 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 							builder.show();
 						}
 						return true;
+					} else if (i == R.id.split_interval) {
+						openSplitInterval(gpxItem, segment);
 					}
 					return false;
 				}
@@ -414,5 +407,15 @@ public class TrackSegmentFragment extends OsmAndListFragment implements TrackBit
 				}
 			}
 		}).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
+
+	@Override
+	public void renamedTo(File file) {
+		displayHelper.setFile(file);
+		TrackActivity activity = getTrackActivity();
+		if (activity != null) {
+			activity.setupActionBar();
+			activity.loadGpx();
+		}
 	}
 }

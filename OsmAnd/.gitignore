@@ -39,13 +39,7 @@ mx_*
 valgrind/
 bin/
 dist/
-res/values/no_translate.xml
-res/values/skip_translate.xml
-assets/specialphrases/*
-assets/voice/*
-assets/fonts/*
-assets/feature_articles/*
-assets/World_basemap_mini*
+
 gen/
 local.properties
 raw/
@@ -58,6 +52,11 @@ out/
 use/
 osmand.properties
 osmand.xml
+assets/specialphrases/*
+assets/voice/*
+assets/fonts/*
+assets/feature_articles/*
+assets/*.obf
 assets/style.css
 assets/poi_categories.json
 assets/help/*.html

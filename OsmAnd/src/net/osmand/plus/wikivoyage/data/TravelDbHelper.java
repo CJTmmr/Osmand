@@ -174,7 +174,7 @@ public class TravelDbHelper implements TravelHelper {
 	}
 
 	@Override
-	public void initializeDataToDisplay() {
+	public void initializeDataToDisplay(boolean resetData) {
 		localDataHelper.refreshCachedData();
 		loadPopularArticles();
 	}
@@ -292,7 +292,7 @@ public class TravelDbHelper implements TravelHelper {
 		}
 		String LANG_WHERE = " WHERE " + ARTICLES_COL_LANG + " = '" + language + "'";
 		SQLiteCursor cursor = conn.rawQuery(POP_ARTICLES_TABLE_SELECT + LANG_WHERE, null);
-		if(cursor == null) {
+		if (cursor == null) {
 			return popularArticles;
 		}
 		// read popular articles
@@ -549,13 +549,13 @@ public class TravelDbHelper implements TravelHelper {
 
 	@Override
 	@Nullable
-	public TravelArticle getArticleById(@NonNull TravelArticleIdentifier articleId, @NonNull String lang) {
+	public TravelArticle getArticleById(@NonNull TravelArticleIdentifier articleId, @Nullable String lang, boolean readGpx, @Nullable GpxReadCallback callback) {
 		TravelArticle res = null;
 		SQLiteConnection conn = openConnection();
 		String routeId = articleId.routeId;
-		if (conn != null && !Algorithms.isEmpty(routeId)) {
+		if (conn != null && !Algorithms.isEmpty(routeId) && lang != null) {
 			SQLiteCursor cursor = conn.rawQuery(ARTICLES_TABLE_SELECT + " WHERE " + ARTICLES_COL_TRIP_ID + " = ? AND "
-					+ ARTICLES_COL_LANG + " = ?", new String[] { routeId, lang });
+					+ ARTICLES_COL_LANG + " = ?", new String[]{routeId, lang});
 			if (cursor != null) {
 				if (cursor.moveToFirst()) {
 					res = readArticle(cursor);
@@ -563,24 +563,30 @@ public class TravelDbHelper implements TravelHelper {
 				cursor.close();
 			}
 		}
+		if (res == null) {
+			res = localDataHelper.getSavedArticle(articleId.file, articleId.routeId, lang);
+		}
+		if (res != null && callback != null) {
+			callback.onGpxFileRead(res.gpxFile);
+		}
 		return res;
 	}
 
 	@Nullable
 	@Override
-	public TravelArticle getArticleByTitle(@NonNull final String title, @NonNull final String lang) {
-		return getArticleByTitle(title, new QuadRect(), lang);
+	public TravelArticle getArticleByTitle(@NonNull final String title, @NonNull final String lang, boolean readGpx, @Nullable GpxReadCallback callback) {
+		return getArticleByTitle(title, new QuadRect(), lang, readGpx, callback);
 	}
 
 	@Nullable
 	@Override
-	public TravelArticle getArticleByTitle(@NonNull final String title, @NonNull LatLon latLon, @NonNull final String lang) {
-		return getArticleByTitle(title, new QuadRect(), lang);
+	public TravelArticle getArticleByTitle(@NonNull final String title, @NonNull LatLon latLon, @NonNull final String lang, boolean readGpx, @Nullable GpxReadCallback callback) {
+		return getArticleByTitle(title, new QuadRect(), lang, readGpx, callback);
 	}
 
 	@Nullable
 	@Override
-	public TravelArticle getArticleByTitle(@NonNull final String title, @NonNull QuadRect rect, @NonNull final String lang) {
+	public TravelArticle getArticleByTitle(@NonNull final String title, @NonNull QuadRect rect, @NonNull final String lang, boolean readGpx, @Nullable GpxReadCallback callback) {
 		TravelArticle res = null;
 		SQLiteConnection conn = openConnection();
 		if (conn != null) {
@@ -593,7 +599,15 @@ public class TravelDbHelper implements TravelHelper {
 				cursor.close();
 			}
 		}
+		if (res != null && callback != null) {
+			callback.onGpxFileRead(res.gpxFile);
+		}
 		return res;
+	}
+
+	@Override
+	public TravelArticle findSavedArticle(@NonNull TravelArticle savedArticle) {
+		return savedArticle;
 	}
 
 	@Nullable
@@ -643,13 +657,19 @@ public class TravelDbHelper implements TravelHelper {
 				cursor.close();
 			}
 		}
+		if (res.isEmpty()) {
+			List<TravelArticle> articles = localDataHelper.getSavedArticles(articleId.file, articleId.routeId);
+			for (TravelArticle a : articles) {
+				res.add(a.getLang());
+			}
+		}
 		return res;
 	}
 
 	@NonNull
 	private TravelArticle readArticle(SQLiteCursor cursor) {
 		TravelArticle res = new TravelArticle();
-
+		res.file = selectedTravelBook;
 		res.title = cursor.getString(0);
 		try {
 			res.content = Algorithms.gzipToString(cursor.getBlob(1)).trim();
@@ -671,7 +691,6 @@ public class TravelDbHelper implements TravelHelper {
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
 		}
-
 		return res;
 	}
 

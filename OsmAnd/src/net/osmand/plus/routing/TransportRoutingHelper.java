@@ -18,7 +18,6 @@ import net.osmand.plus.OsmandPlugin;
 import net.osmand.plus.R;
 import net.osmand.plus.render.NativeOsmandLibrary;
 import net.osmand.plus.routing.RouteCalculationParams.RouteCalculationResultListener;
-import net.osmand.plus.routing.RouteProvider.RouteService;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.settings.backend.CommonPreference;
 import net.osmand.plus.settings.backend.OsmandSettings;
@@ -55,6 +54,8 @@ import static net.osmand.plus.notifications.OsmandNotification.NotificationType.
 public class TransportRoutingHelper {
 
 	private static final org.apache.commons.logging.Log log = PlatformUtil.getLog(TransportRoutingHelper.class);
+
+	public static final String PUBLIC_TRANSPORT_KEY = "public_transport";
 
 	private List<WeakReference<IRouteInformationListener>> listeners = new LinkedList<>();
 

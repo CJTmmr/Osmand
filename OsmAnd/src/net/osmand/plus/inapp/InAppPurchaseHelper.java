@@ -8,9 +8,6 @@ import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import net.osmand.AndroidNetworkUtils;
 import net.osmand.AndroidNetworkUtils.OnRequestResultListener;
 import net.osmand.AndroidNetworkUtils.OnRequestsResultListener;
@@ -42,6 +39,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public abstract class InAppPurchaseHelper {
 	// Debug tag, for logging
@@ -153,11 +153,15 @@ public abstract class InAppPurchaseHelper {
 	}
 
 	public static boolean isDepthContoursPurchased(@NonNull OsmandApplication ctx) {
-		return Version.isDeveloperBuild(ctx) || ctx.getSettings().DEPTH_CONTOURS_PURCHASED.get();
+		return Version.isDeveloperBuild(ctx)
+				|| Version.isPaidVersion(ctx)
+				|| ctx.getSettings().DEPTH_CONTOURS_PURCHASED.get();
 	}
 
 	public static boolean isContourLinesPurchased(@NonNull OsmandApplication ctx) {
-		return Version.isDeveloperBuild(ctx) || ctx.getSettings().CONTOUR_LINES_PURCHASED.get();
+		return Version.isDeveloperBuild(ctx)
+				|| Version.isPaidVersion(ctx)
+				|| ctx.getSettings().CONTOUR_LINES_PURCHASED.get();
 	}
 
 	public InAppPurchases getInAppPurchases() {
@@ -194,6 +198,18 @@ public abstract class InAppPurchaseHelper {
 		isDeveloperVersion = Version.isDeveloperVersion(ctx);
 	}
 
+	@NonNull
+	public List<InAppSubscription> getEverMadeSubscriptions() {
+		List<InAppSubscription> subscriptions = new ArrayList<>();
+		for (InAppSubscription subscription : getLiveUpdates().getVisibleSubscriptions()) {
+			SubscriptionState state = subscription.getState();
+			if (state != SubscriptionState.UNDEFINED) {
+				subscriptions.add(subscription);
+			}
+		}
+		return subscriptions;
+	}
+
 	public abstract void isInAppPurchaseSupported(@NonNull final Activity activity, @Nullable final InAppPurchaseInitCallback callback);
 
 	public boolean hasInventory() {
@@ -212,7 +228,7 @@ public abstract class InAppPurchaseHelper {
 	}
 
 	protected void exec(final @NonNull InAppPurchaseTaskType taskType, final @NonNull InAppCommand command) {
-		if (isDeveloperVersion || (!Version.isGooglePlayEnabled(ctx) && !Version.isHuawei(ctx))) {
+		if (isDeveloperVersion || (!Version.isGooglePlayEnabled() && !Version.isHuawei())) {
 			notifyDismissProgress(taskType);
 			stop(true);
 			return;
@@ -360,8 +376,8 @@ public abstract class InAppPurchaseHelper {
 			notifyDismissProgress(InAppPurchaseTaskType.PURCHASE_LIVE_UPDATES);
 			if (!Algorithms.isEmpty(userId) && !Algorithms.isEmpty(token)) {
 				logDebug("Launching purchase flow for live updates subscription for userId=" + userId);
-				final String payload = userId + " " + token;
-				exec(InAppPurchaseTaskType.PURCHASE_LIVE_UPDATES, getPurchaseLiveUpdatesCommand(activity, sku, payload));
+				final String userInfo = userId + " " + token;
+				exec(InAppPurchaseTaskType.PURCHASE_LIVE_UPDATES, getPurchaseLiveUpdatesCommand(activity, sku, userInfo));
 			} else {
 				notifyError(InAppPurchaseTaskType.PURCHASE_LIVE_UPDATES, "Empty userId");
 				stop(true);
@@ -370,7 +386,7 @@ public abstract class InAppPurchaseHelper {
 	}
 
 	protected abstract InAppCommand getPurchaseLiveUpdatesCommand(final WeakReference<Activity> activity,
-																  final String sku, final String payload) throws UnsupportedOperationException;
+																  final String sku, final String userInfo) throws UnsupportedOperationException;
 
 	@SuppressLint("StaticFieldLeak")
 	private class RequestInventoryTask extends AsyncTask<Void, Void, String[]> {

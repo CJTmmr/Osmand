@@ -10,18 +10,14 @@ import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 
 import net.osmand.AndroidUtils;
 import net.osmand.data.LatLon;
-import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.ContextMenuAdapter;
 import net.osmand.plus.ContextMenuItem;
 import net.osmand.plus.DialogListItemAdapter;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
-import net.osmand.plus.settings.backend.OsmandSettings;
-import net.osmand.plus.settings.backend.CommonPreference;
 import net.osmand.plus.R;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.dashboard.DashboardOnMap;
@@ -31,6 +27,9 @@ import net.osmand.plus.download.DownloadResources;
 import net.osmand.plus.download.IndexItem;
 import net.osmand.plus.inapp.InAppPurchaseHelper;
 import net.osmand.plus.quickaction.QuickActionType;
+import net.osmand.plus.settings.backend.ApplicationMode;
+import net.osmand.plus.settings.backend.CommonPreference;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.views.OsmandMapTileView;
 import net.osmand.render.RenderingRuleProperty;
 import net.osmand.util.Algorithms;
@@ -88,13 +87,13 @@ public class SRTMPlugin extends OsmandPlugin {
 
 	@Override
 	public boolean needsInstallation() {
-		return super.needsInstallation() && !InAppPurchaseHelper.isSubscribedToLiveUpdates(app);
+		return super.needsInstallation()
+				&& !InAppPurchaseHelper.isContourLinesPurchased(app);
 	}
 
 	@Override
 	protected boolean pluginAvailable(OsmandApplication app) {
 		return super.pluginAvailable(app)
-				|| InAppPurchaseHelper.isSubscribedToLiveUpdates(app)
 				|| InAppPurchaseHelper.isContourLinesPurchased(app);
 	}
 
@@ -303,13 +302,12 @@ public class SRTMPlugin extends OsmandPlugin {
 								if (item != null) {
 									item.setDescription(app.getString(R.string.display_zoom_level,
 											getPrefDescription(app, contourLinesProp, pref)));
-									item.setColorRes(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
+									item.setColor(app, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
 									item.setSelected(selected);
 									adapter.notifyDataSetChanged();
 								}
-								refreshMapComplete(mapActivity);
+								mapActivity.refreshMapComplete();
 							}
-
 						}
 					});
 				} else if (itemId == R.string.shared_string_terrain) {
@@ -323,12 +321,12 @@ public class SRTMPlugin extends OsmandPlugin {
 							}
 							ContextMenuItem item = adapter.getItem(position);
 							if (item != null) {
-								item.setColorRes(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
+								item.setColor(app, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
 								item.setSelected(selected);
 								adapter.notifyDataSetChanged();
 							}
 							updateLayers(mapView, mapActivity);
-							refreshMapComplete(mapActivity);
+							mapActivity.refreshMapComplete();
 						}
 					});
 				}
@@ -347,7 +345,7 @@ public class SRTMPlugin extends OsmandPlugin {
 					.setSelected(contourLinesSelected)
 					.setIcon(R.drawable.ic_plugin_srtm)
 					.setDescription(app.getString(R.string.display_zoom_level, descr))
-					.setColor(contourLinesSelected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
+					.setColor(app, contourLinesSelected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
 					.setItemDeleteAction(makeDeleteAction(settings.CONTOUR_LINES_ZOOM))
 					.setSecondaryIcon(R.drawable.ic_action_additional_option)
 					.setListener(listener).createItem());
@@ -361,7 +359,7 @@ public class SRTMPlugin extends OsmandPlugin {
 						? R.string.shared_string_hillshade
 						: R.string.download_slope_maps))
 				.setSelected(terrainEnabled)
-				.setColor(terrainEnabled ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
+				.setColor(app, terrainEnabled ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
 				.setIcon(R.drawable.ic_action_hillshade_dark)
 				.setSecondaryIcon(R.drawable.ic_action_additional_option)
 				.setItemDeleteAction(makeDeleteAction(settings.TERRAIN, settings.TERRAIN_MODE))
@@ -474,7 +472,7 @@ public class SRTMPlugin extends OsmandPlugin {
 					possibleValues[j]);
 		}
 
-		int selectedModeColor = ContextCompat.getColor(app, settings.getApplicationMode().getIconColorInfo().getColor(nightMode));
+		int selectedModeColor = settings.getApplicationMode().getProfileColor(nightMode);
 		DialogListItemAdapter dialogAdapter = DialogListItemAdapter.createSingleChoiceAdapter(
 				possibleValuesString, nightMode, i, app, selectedModeColor, themeRes, new View.OnClickListener() {
 
@@ -486,7 +484,7 @@ public class SRTMPlugin extends OsmandPlugin {
 						} else {
 							pref.set(possibleValues[which - 1]);
 						}
-						refreshMapComplete(activity);
+						activity.refreshMapComplete();
 					}
 				}
 		);
@@ -505,12 +503,6 @@ public class SRTMPlugin extends OsmandPlugin {
 
 	@Override
 	public void disable(OsmandApplication app) {
-	}
-
-	public static void refreshMapComplete(final MapActivity activity) {
-		activity.getMyApplication().getResourceManager().getRenderer().clearCache();
-		activity.updateMapSettings();
-		activity.getMapView().refreshMap(true);
 	}
 
 	private static boolean isNightMode(Activity activity, OsmandApplication app) {

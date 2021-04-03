@@ -96,6 +96,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+
 public class DashboardOnMap implements ObservableScrollViewCallbacks, IRouteInformationListener {
 	private static final org.apache.commons.logging.Log LOG =
 			PlatformUtil.getLog(DashboardOnMap.class);
@@ -777,7 +778,7 @@ public class DashboardOnMap implements ObservableScrollViewCallbacks, IRouteInfo
 					plugin.registerLayers(mapActivity);
 				}
 			}
-			SRTMPlugin.refreshMapComplete(mapActivity);
+			mapActivity.refreshMapComplete();
 		} else if (visibleType == DashboardType.WIKIPEDIA) {
 			refreshContent(true);
 		}
@@ -1003,7 +1004,7 @@ public class DashboardOnMap implements ObservableScrollViewCallbacks, IRouteInfo
 				new TransactionBuilder(mapActivity.getSupportFragmentManager(), settings, mapActivity);
 		builder.addFragmentsData(fragmentsData)
 				.addFragmentsData(OsmandPlugin.getPluginsCardsList())
-				.getFragmentTransaction().commit();
+				.getFragmentTransaction().commitAllowingStateLoss();
 	}
 
 	private void removeFragment(String tag) {

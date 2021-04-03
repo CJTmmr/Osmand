@@ -66,6 +66,8 @@ import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
 import net.osmand.util.Algorithms;
 
+import org.apache.commons.logging.Log;
+
 import java.io.File;
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
@@ -84,17 +86,18 @@ import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 import static android.util.TypedValue.COMPLEX_UNIT_SP;
 
 public class AndroidUtils {
+	private static final Log LOG = PlatformUtil.getLog(AndroidUtils.class);
 
 	public static final String STRING_PLACEHOLDER = "%s";
 	public static final MessageFormat formatKb = new MessageFormat("{0, number,##.#}", Locale.US);
 	public static final MessageFormat formatGb = new MessageFormat("{0, number,#.##}", Locale.US);
 	public static final MessageFormat formatMb = new MessageFormat("{0, number,##.#}", Locale.US);
-	
+
 	/**
 	 * @param context
 	 * @return true if Hardware keyboard is available
 	 */
-	
+
 	public static boolean isHardwareKeyboardAvailable(Context context) {
 		return context.getResources().getConfiguration().keyboard != Configuration.KEYBOARD_NOKEYS;
 	}
@@ -333,6 +336,43 @@ public class AndroidUtils {
 		);
 	}
 
+	public static ColorStateList createCheckedColorIntStateList(@ColorInt int normal, @ColorInt int checked) {
+		return createCheckedColorIntStateList(false, normal, checked, 0, 0);
+	}
+
+	public static ColorStateList createCheckedColorIntStateList(boolean night,
+															 @ColorInt int lightNormal, @ColorInt int lightChecked,
+															 @ColorInt int darkNormal, @ColorInt int darkChecked) {
+		return createColorIntStateList(night, android.R.attr.state_checked,
+				lightNormal, lightChecked, darkNormal, darkChecked);
+	}
+
+	public static ColorStateList createEnabledColorIntStateList(@ColorInt int normal, @ColorInt int pressed) {
+		return createEnabledColorIntStateList(false, normal, pressed, 0, 0);
+	}
+
+	public static ColorStateList createEnabledColorIntStateList(boolean night,
+															 @ColorInt int lightNormal, @ColorInt int lightPressed,
+															 @ColorInt int darkNormal, @ColorInt int darkPressed) {
+		return createColorIntStateList(night, android.R.attr.state_enabled,
+				lightNormal, lightPressed, darkNormal, darkPressed);
+	}
+
+	private static ColorStateList createColorIntStateList(boolean night, int state,
+													   @ColorInt int lightNormal, @ColorInt int lightState,
+													   @ColorInt int darkNormal, @ColorInt int darkState) {
+		return new ColorStateList(
+				new int[][]{
+						new int[]{state},
+						new int[]{}
+				},
+				new int[]{
+						night ? darkState : lightState,
+						night ? darkNormal : lightNormal
+				}
+		);
+	}
+
 	public static StateListDrawable createCheckedStateListDrawable(Drawable normal, Drawable checked) {
 		return createStateListDrawable(normal, checked, android.R.attr.state_checked);
 	}
@@ -438,6 +478,16 @@ public class AndroidUtils {
 		textView.setHintTextColor(night ?
 				ctx.getResources().getColor(R.color.text_color_secondary_dark)
 				: ctx.getResources().getColor(R.color.text_color_secondary_light));
+	}
+
+	@ColorRes
+	public static int getPrimaryTextColorId(boolean nightMode) {
+		return nightMode ? R.color.text_color_primary_dark : R.color.text_color_primary_light;
+	}
+
+	@ColorRes
+	public static int getSecondaryTextColorId(boolean nightMode) {
+		return nightMode ? R.color.text_color_secondary_dark : R.color.text_color_secondary_light;
 	}
 
 	public static int getTextMaxWidth(float textSize, List<String> titles) {
@@ -721,7 +771,7 @@ public class AndroidUtils {
 			tv.setTextDirection(textDirection);
 		}
 	}
-	
+
 	public static int getLayoutDirection(@NonNull Context ctx) {
 		Locale currentLocale = ctx.getResources().getConfiguration().locale;
 		return TextUtilsCompat.getLayoutDirectionFromLocale(currentLocale);
@@ -804,16 +854,24 @@ public class AndroidUtils {
 
 	public static long getAvailableSpace(@Nullable File dir) {
 		if (dir != null && dir.canRead()) {
-			StatFs fs = new StatFs(dir.getAbsolutePath());
-			return fs.getAvailableBlocksLong() * fs.getBlockSize();
+			try {
+				StatFs fs = new StatFs(dir.getAbsolutePath());
+				return fs.getAvailableBlocksLong() * fs.getBlockSize();
+			} catch (IllegalArgumentException e) {
+				LOG.error(e);
+			}
 		}
 		return -1;
 	}
 
 	public static float getFreeSpaceGb(File dir) {
 		if (dir.canRead()) {
-			StatFs fs = new StatFs(dir.getAbsolutePath());
-			return (float) (fs.getBlockSize()) * fs.getAvailableBlocks() / (1 << 30);
+			try {
+				StatFs fs = new StatFs(dir.getAbsolutePath());
+				return (float) (fs.getBlockSize()) * fs.getAvailableBlocks() / (1 << 30);
+			} catch (IllegalArgumentException e) {
+				LOG.error(e);
+			}
 		}
 		return -1;
 	}
@@ -861,7 +919,7 @@ public class AndroidUtils {
 	public static boolean isRTL() {
 		return TextUtilsCompat.getLayoutDirectionFromLocale(Locale.getDefault()) == ViewCompat.LAYOUT_DIRECTION_RTL;
 	}
-	
+
 	public static String createNewFileName(String oldName) {
 		int firstDotIndex = oldName.indexOf('.');
 		String nameWithoutExt = oldName.substring(0, firstDotIndex);
@@ -883,7 +941,7 @@ public class AndroidUtils {
 			i--;
 		} while (i >= 0);
 		int newNumberValue = Integer.parseInt(hasNameNumberSection ? numberSection.toString() : "0") + 1;
-		
+
 		String newName;
 		if (newNumberValue == 1) {
 			newName = nameWithoutExt + " " + newNumberValue + ext;
@@ -949,6 +1007,12 @@ public class AndroidUtils {
 		String propertyValueReplaced = propertyValue.replaceAll("\\s+", "_");
 		String value = getStringByProperty(ctx, "routeInfo_" + propertyValueReplaced + "_name");
 		return value != null ? value : propertyValue;
+	}
+
+
+	public static String getActivityTypeStringPropertyName(Context ctx, String propertyName, String defValue) {
+		String value = getStringByProperty(ctx, "activity_type_" + propertyName + "_name");
+		return value != null ? value : defValue;
 	}
 
 	private static String getStringByProperty(@NonNull Context ctx, @NonNull String property) {

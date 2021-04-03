@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -66,18 +65,21 @@ import net.osmand.plus.GpxSelectionHelper;
 import net.osmand.plus.OsmAndLocationProvider.OsmAndCompassListener;
 import net.osmand.plus.OsmAndLocationProvider.OsmAndLocationListener;
 import net.osmand.plus.OsmandApplication;
-import net.osmand.plus.settings.backend.OsmandPreference;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.Version;
 import net.osmand.plus.activities.SavingTrackHelper;
 import net.osmand.plus.activities.TrackActivity;
 import net.osmand.plus.helpers.AndroidUiHelper;
+import net.osmand.plus.itinerary.ItineraryGroup;
+import net.osmand.plus.itinerary.ItineraryHelper;
 import net.osmand.plus.mapmarkers.CoordinateInputBottomSheetDialogFragment.CoordinateInputFormatChangeListener;
 import net.osmand.plus.mapmarkers.CoordinateInputFormats.DDM;
 import net.osmand.plus.mapmarkers.CoordinateInputFormats.DMS;
 import net.osmand.plus.mapmarkers.CoordinateInputFormats.Format;
 import net.osmand.plus.mapmarkers.adapters.CoordinateInputAdapter;
+import net.osmand.plus.settings.backend.OsmandPreference;
+import net.osmand.plus.track.TrackMenuFragment;
 import net.osmand.plus.widgets.EditTextEx;
 import net.osmand.util.Algorithms;
 import net.osmand.util.LocationParser;
@@ -168,8 +170,8 @@ public class CoordinateInputDialogFragment extends DialogFragment implements Osm
 	}
 
 	private void syncGpx(GPXFile gpxFile) {
-		MapMarkersHelper helper = getMyApplication().getMapMarkersHelper();
-		MapMarkersGroup group = helper.getMarkersGroup(gpxFile);
+		ItineraryHelper helper = getMyApplication().getItineraryHelper();
+		ItineraryGroup group = helper.getMarkersGroup(gpxFile);
 		if (group != null) {
 			helper.runSynchronization(group);
 		}
@@ -1089,7 +1091,7 @@ public class CoordinateInputDialogFragment extends DialogFragment implements Osm
 			public void saveGpx(final String fileName) {
 				new SaveGpxAsyncTask(app, getGpx(),fileName, false).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 				hasUnsavedChanges = false;
-				app.getMapMarkersHelper().addOrEnableGroup(getGpx());
+				app.getItineraryHelper().addOrEnableGroup(getGpx());
 				if (listener != null) {
 					listener.onPointsSaved();
 				}
@@ -1097,11 +1099,7 @@ public class CoordinateInputDialogFragment extends DialogFragment implements Osm
 						.setAction(R.string.shared_string_show, new View.OnClickListener() {
 							@Override
 							public void onClick(View view) {
-								Intent intent = new Intent(app, app.getAppCustomization().getTrackActivity());
-								intent.putExtra(TrackActivity.OPEN_POINTS_TAB, true);
-								intent.putExtra(TrackActivity.TRACK_FILE_NAME, getGpx().path);
-								intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-								startActivity(intent);
+								TrackMenuFragment.openTrack(app, new File(getGpx().path), null);
 							}
 						});
 				UiUtilities.setupSnackbar(snackbar, !lightTheme);
@@ -1448,8 +1446,9 @@ public class CoordinateInputDialogFragment extends DialogFragment implements Osm
 		if (!compassUpdateAllowed) {
 			return;
 		}
-		final OsmandApplication app = getMyApplication();
-		if (app != null && adapter != null) {
+		Activity activity = getActivity();
+		if (activity != null && adapter != null) {
+			OsmandApplication app = (OsmandApplication) activity.getApplication();
 			app.runInUIThread(new Runnable() {
 				@Override
 				public void run() {

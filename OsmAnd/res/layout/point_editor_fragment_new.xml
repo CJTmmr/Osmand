@@ -58,7 +58,9 @@
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:layout_marginLeft="@dimen/content_padding"
-					android:layout_marginRight="@dimen/content_padding">
+					android:layout_marginRight="@dimen/content_padding"
+					android:layout_marginEnd="@dimen/content_padding"
+					android:layout_marginStart="@dimen/content_padding">
 
 
 					<LinearLayout
@@ -84,6 +86,7 @@
 								android:drawableEnd="@drawable/btn_circle_transparent_full"
 								android:drawableRight="@drawable/btn_circle_transparent_full"
 								android:drawablePadding="@dimen/favorites_list_item_height"
+								android:imeOptions="actionDone"
 								android:inputType="textMultiLine"
 								android:maxLines="4"
 								android:minHeight="@dimen/favorites_list_item_height"
@@ -93,7 +96,6 @@
 								android:paddingRight="@dimen/content_padding_small"
 								android:scrollHorizontally="false"
 								android:textSize="@dimen/default_list_text_size"
-								android:imeOptions="actionDone"
 								tools:text="@string/lorem_ipsum" />
 
 						</com.google.android.material.textfield.TextInputLayout>
@@ -130,13 +132,16 @@
 						android:layout_weight="1"
 						android:hint="@string/shared_string_address"
 						app:boxBackgroundColor="@color/material_text_input_layout_bg"
-						app:hintAnimationEnabled="false">
+						app:hintAnimationEnabled="false"
+						android:layout_marginEnd="@dimen/content_padding"
+						android:layout_marginStart="@dimen/content_padding">
 
 						<com.google.android.material.textfield.TextInputEditText
 							android:id="@+id/address_edit"
 							android:layout_width="match_parent"
 							android:layout_height="wrap_content"
 							android:gravity="start"
+							android:imeOptions="actionDone"
 							android:maxLines="4"
 							android:minHeight="@dimen/favorites_list_item_height"
 							android:paddingStart="@dimen/content_padding_small"
@@ -144,7 +149,6 @@
 							android:paddingEnd="@dimen/content_padding_small"
 							android:paddingRight="@dimen/content_padding_small"
 							android:textSize="@dimen/default_list_text_size"
-							android:imeOptions="actionDone"
 							tools:text="@string/lorem_ipsum" />
 
 					</com.google.android.material.textfield.TextInputLayout>
@@ -200,7 +204,9 @@
 					android:layout_height="1dp"
 					android:layout_marginLeft="@dimen/content_padding"
 					android:layout_marginRight="@dimen/content_padding"
-					android:background="?attr/dashboard_divider" />
+					android:background="?attr/dashboard_divider"
+					android:layout_marginStart="@dimen/content_padding"
+					android:layout_marginEnd="@dimen/content_padding" />
 
 				<LinearLayout
 					android:id="@+id/description"
@@ -220,7 +226,9 @@
 						android:layout_weight="1"
 						android:hint="@string/shared_string_description"
 						app:boxBackgroundColor="@color/material_text_input_layout_bg"
-						app:hintAnimationEnabled="false">
+						app:hintAnimationEnabled="false"
+						android:layout_marginStart="@dimen/content_padding"
+						android:layout_marginEnd="@dimen/content_padding">
 
 						<com.google.android.material.textfield.TextInputEditText
 							android:id="@+id/description_edit"
@@ -248,6 +256,7 @@
 					android:drawablePadding="8dp"
 					android:duplicateParentState="true"
 					android:gravity="center"
+					android:imeOptions="actionDone"
 					android:paddingStart="@dimen/content_padding_half"
 					android:paddingLeft="@dimen/content_padding_half"
 					android:paddingEnd="@dimen/content_padding_half"
@@ -255,7 +264,6 @@
 					android:text="@string/add_description"
 					android:textSize="@dimen/default_desc_text_size"
 					osmand:typeface="@string/font_roboto_medium"
-					android:imeOptions="actionDone"
 					tools:text="@string/add_description" />
 
 				<View
@@ -288,7 +296,9 @@
 							android:text="@string/select_group"
 							android:textColor="?android:textColorSecondary"
 							android:textSize="@dimen/default_desc_text_size"
-							osmand:typeface="@string/font_roboto_medium" />
+							osmand:typeface="@string/font_roboto_medium"
+							android:paddingEnd="@dimen/content_padding"
+							android:paddingStart="@dimen/content_padding" />
 
 						<LinearLayout
 							android:id="@+id/group_list_button"
@@ -381,7 +391,9 @@
 					android:text="@string/select_icon_profile_dialog_title"
 					android:textColor="?android:textColorSecondary"
 					android:textSize="@dimen/default_desc_text_size"
-					osmand:typeface="@string/font_roboto_medium" />
+					osmand:typeface="@string/font_roboto_medium"
+					android:paddingEnd="@dimen/content_padding"
+					android:paddingStart="@dimen/content_padding" />
 
 				<androidx.recyclerview.widget.RecyclerView
 					android:id="@+id/group_name_recycler_view"
@@ -402,9 +414,11 @@
 					android:id="@+id/select_icon"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:layout_marginStart="@dimen/content_padding_small"
-					android:layout_marginLeft="@dimen/content_padding_small"
+					android:layout_marginStart="@dimen/content_padding"
+					android:layout_marginLeft="@dimen/content_padding"
 					android:layout_marginTop="@dimen/context_menu_padding_margin_tiny"
+					android:layout_marginEnd="@dimen/content_padding"
+					android:layout_marginRight="@dimen/content_padding"
 					android:layout_marginBottom="@dimen/content_padding_half" />
 
 				<View
@@ -429,7 +443,9 @@
 						android:text="@string/select_color"
 						android:textColor="?android:textColorSecondary"
 						android:textSize="@dimen/default_desc_text_size"
-						osmand:typeface="@string/font_roboto_medium" />
+						osmand:typeface="@string/font_roboto_medium"
+						android:paddingStart="@dimen/content_padding"
+						android:paddingEnd="@dimen/content_padding" />
 
 					<net.osmand.plus.widgets.TextViewEx
 						android:id="@+id/color_name"
@@ -444,17 +460,18 @@
 						android:text="@string/select_color"
 						android:textColor="?android:textColorSecondary"
 						android:textSize="@dimen/default_desc_text_size"
-						osmand:typeface="@string/font_roboto_medium" />
+						osmand:typeface="@string/font_roboto_medium"
+						android:paddingStart="@dimen/content_padding"
+						android:paddingEnd="@dimen/content_padding" />
 				</LinearLayout>
 
 				<LinearLayout
 					android:id="@+id/select_color"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:layout_marginStart="@dimen/content_padding_small"
-					android:layout_marginLeft="@dimen/content_padding_small"
 					android:layout_marginTop="@dimen/context_menu_padding_margin_tiny"
-					android:layout_marginBottom="@dimen/content_padding_half" />
+					android:layout_marginBottom="@dimen/content_padding_half"
+					android:orientation="horizontal" />
 
 				<View
 					android:layout_width="match_parent"
@@ -478,7 +495,9 @@
 						android:text="@string/select_shape"
 						android:textColor="?android:textColorSecondary"
 						android:textSize="@dimen/default_desc_text_size"
-						osmand:typeface="@string/font_roboto_medium" />
+						osmand:typeface="@string/font_roboto_medium"
+						android:paddingEnd="@dimen/content_padding"
+						android:paddingStart="@dimen/content_padding" />
 
 					<net.osmand.plus.widgets.TextViewEx
 						android:id="@+id/shape_name"
@@ -493,16 +512,20 @@
 						android:text="@string/select_shape"
 						android:textColor="?android:textColorSecondary"
 						android:textSize="@dimen/default_desc_text_size"
-						osmand:typeface="@string/font_roboto_medium" />
+						osmand:typeface="@string/font_roboto_medium"
+						android:paddingStart="@dimen/content_padding"
+						android:paddingEnd="@dimen/content_padding" />
 				</LinearLayout>
 
 				<net.osmand.plus.widgets.FlowLayout
 					android:id="@+id/select_shape"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:layout_marginStart="@dimen/content_padding_small"
-					android:layout_marginLeft="@dimen/content_padding_small"
+					android:layout_marginStart="@dimen/content_padding"
+					android:layout_marginLeft="@dimen/content_padding"
 					android:layout_marginTop="@dimen/context_menu_padding_margin_tiny"
+					android:layout_marginEnd="@dimen/content_padding"
+					android:layout_marginRight="@dimen/content_padding"
 					android:layout_marginBottom="@dimen/content_padding_half"
 					android:gravity="start" />
 

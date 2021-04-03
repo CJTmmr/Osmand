@@ -57,15 +57,16 @@ import net.osmand.plus.routepreparationmenu.cards.ReverseTrackCard;
 import net.osmand.plus.routepreparationmenu.cards.SelectTrackCard;
 import net.osmand.plus.routepreparationmenu.cards.TrackEditCard;
 import net.osmand.plus.routepreparationmenu.cards.TracksToFollowCard;
+import net.osmand.plus.routing.GPXRouteParams.GPXRouteParamsBuilder;
 import net.osmand.plus.routing.IRouteInformationListener;
-import net.osmand.plus.routing.RouteProvider;
-import net.osmand.plus.routing.RouteProvider.GPXRouteParamsBuilder;
+import net.osmand.plus.routing.RouteService;
 import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.settings.backend.ApplicationMode;
-import net.osmand.plus.views.layers.MapControlsLayer;
+import net.osmand.plus.track.TrackSelectSegmentBottomSheet;
+import net.osmand.plus.track.TrackSelectSegmentBottomSheet.OnSegmentSelectedListener;
+import net.osmand.plus.views.layers.MapControlsLayer.MapControlsThemeInfoProvider;
 import net.osmand.plus.widgets.popup.PopUpMenuHelper;
 import net.osmand.plus.widgets.popup.PopUpMenuItem;
-import net.osmand.util.Algorithms;
 
 import org.apache.commons.logging.Log;
 
@@ -75,7 +76,7 @@ import java.util.List;
 
 
 public class FollowTrackFragment extends ContextMenuScrollFragment implements CardListener,
-		IRouteInformationListener, MapControlsLayer.MapControlsThemeInfoProvider {
+		IRouteInformationListener, MapControlsThemeInfoProvider, OnSegmentSelectedListener {
 
 	public static final String TAG = FollowTrackFragment.class.getName();
 
@@ -210,20 +211,8 @@ public class FollowTrackFragment extends ContextMenuScrollFragment implements Ca
 			if (gpxFile == null || selectingTrack) {
 				setupTracksCard();
 			} else {
-				String fileName = null;
-				File file = null;
-				if (!Algorithms.isEmpty(gpxFile.path)) {
-					file = new File(gpxFile.path);
-					fileName = file.getName();
-				} else if (!Algorithms.isEmpty(gpxFile.tracks)) {
-					fileName = gpxFile.tracks.get(0).name;
-				}
-				if (Algorithms.isEmpty(fileName)) {
-					fileName = app.getString(R.string.shared_string_gpx_track);
-				}
 				sortButton.setVisibility(View.GONE);
-				GPXInfo gpxInfo = new GPXInfo(fileName, file != null ? file.lastModified() : 0, file != null ? file.length() : 0);
-				TrackEditCard importTrackCard = new TrackEditCard(mapActivity, gpxInfo);
+				TrackEditCard importTrackCard = new TrackEditCard(mapActivity, gpxFile);
 				importTrackCard.setListener(this);
 				cardsContainer.addView(importTrackCard.build(mapActivity));
 
@@ -235,18 +224,16 @@ public class FollowTrackFragment extends ContextMenuScrollFragment implements Ca
 
 				RoutingHelper routingHelper = app.getRoutingHelper();
 				GPXRouteParamsBuilder rparams = routingHelper.getCurrentGPXRoute();
-				boolean osmandRouter = mode.getRouteService() == RouteProvider.RouteService.OSMAND;
+				boolean osmandRouter = mode.getRouteService() == RouteService.OSMAND;
 				if (rparams != null && osmandRouter) {
-					boolean showReverseCard = !routingHelper.isCurrentGPXRouteV2();
-					if (showReverseCard) {
-						cardsContainer.addView(buildDividerView(cardsContainer, false));
+					cardsContainer.addView(buildDividerView(cardsContainer, false));
 
-						ReverseTrackCard reverseTrackCard = new ReverseTrackCard(mapActivity, rparams.isReverse());
-						reverseTrackCard.setListener(this);
-						cardsContainer.addView(reverseTrackCard.build(mapActivity));
-					}
+					ReverseTrackCard reverseTrackCard = new ReverseTrackCard(mapActivity, rparams.isReverse());
+					reverseTrackCard.setListener(this);
+					cardsContainer.addView(reverseTrackCard.build(mapActivity));
+
 					if (!gpxFile.hasRtePt() && !gpxFile.hasRoute()) {
-						cardsContainer.addView(buildDividerView(cardsContainer, showReverseCard));
+						cardsContainer.addView(buildDividerView(cardsContainer, true));
 
 						AttachTrackToRoadsCard attachTrackCard = new AttachTrackToRoadsCard(mapActivity);
 						attachTrackCard.setListener(this);
@@ -459,8 +446,11 @@ public class FollowTrackFragment extends ContextMenuScrollFragment implements Ca
 		if (mapActivity != null) {
 			if (card instanceof ImportTrackCard) {
 				importTrack();
-			} else if (card instanceof TrackEditCard || card instanceof AttachTrackToRoadsCard) {
-				openPlanRoute();
+			} else if (card instanceof AttachTrackToRoadsCard) {
+				openPlanRoute(true);
+				close();
+			} else if (card instanceof TrackEditCard) {
+				openPlanRoute(false);
 				close();
 			} else if (card instanceof SelectTrackCard) {
 				updateSelectionMode(true);
@@ -490,14 +480,26 @@ public class FollowTrackFragment extends ContextMenuScrollFragment implements Ca
 			String fileName = gpxInfo.getFileName();
 			SelectedGpxFile selectedGpxFile = app.getSelectedGpxHelper().getSelectedFileByName(fileName);
 			if (selectedGpxFile != null) {
-				selectTrackToFollow(selectedGpxFile.getGpxFile());
-				updateSelectionMode(false);
+				GPXFile gpxFile = selectedGpxFile.getGpxFile();
+				if (gpxFile.getNonEmptySegmentsCount() > 1) {
+					TrackSelectSegmentBottomSheet.showInstance(mapActivity.getSupportFragmentManager(), gpxFile, this);
+				} else {
+					selectTrackToFollow(gpxFile);
+					updateSelectionMode(false);
+				}
 			} else {
 				CallbackWithObject<GPXFile[]> callback = new CallbackWithObject<GPXFile[]>() {
 					@Override
 					public boolean processResult(GPXFile[] result) {
-						selectTrackToFollow(result[0]);
-						updateSelectionMode(false);
+						MapActivity mapActivity = getMapActivity();
+						if (mapActivity != null) {
+							if (result[0].getNonEmptySegmentsCount() > 1) {
+								TrackSelectSegmentBottomSheet.showInstance(mapActivity.getSupportFragmentManager(), result[0], FollowTrackFragment.this);
+							} else {
+								selectTrackToFollow(result[0]);
+								updateSelectionMode(false);
+							}
+						}
 						return true;
 					}
 				};
@@ -575,7 +577,7 @@ public class FollowTrackFragment extends ContextMenuScrollFragment implements Ca
 		}
 	}
 
-	public void openPlanRoute() {
+	public void openPlanRoute(boolean showSnapWarning) {
 		MapActivity mapActivity = getMapActivity();
 		if (mapActivity != null && gpxFile != null) {
 			editingTrack = true;
@@ -583,7 +585,8 @@ public class FollowTrackFragment extends ContextMenuScrollFragment implements Ca
 			MeasurementEditingContext editingContext = new MeasurementEditingContext();
 			editingContext.setGpxData(gpxData);
 			editingContext.setAppMode(app.getRoutingHelper().getAppMode());
-			MeasurementToolFragment.showInstance(mapActivity.getSupportFragmentManager(), editingContext, true);
+			editingContext.setSelectedSegment(app.getSettings().GPX_ROUTE_SEGMENT.get());
+			MeasurementToolFragment.showInstance(mapActivity.getSupportFragmentManager(), editingContext, true, showSnapWarning);
 		}
 	}
 
@@ -715,5 +718,17 @@ public class FollowTrackFragment extends ContextMenuScrollFragment implements Ca
 	@Override
 	protected String getThemeInfoProviderTag() {
 		return TAG;
+	}
+
+	@Override
+	public void onSegmentSelect(GPXFile gpxFile, int selectedSegment) {
+		app.getSettings().GPX_ROUTE_SEGMENT.set(selectedSegment);
+		selectTrackToFollow(gpxFile);
+		GPXRouteParamsBuilder paramsBuilder = app.getRoutingHelper().getCurrentGPXRoute();
+		if (paramsBuilder != null) {
+			paramsBuilder.setSelectedSegment(selectedSegment);
+			app.getRoutingHelper().onSettingsChanged(true);
+		}
+		updateSelectionMode(false);
 	}
 }

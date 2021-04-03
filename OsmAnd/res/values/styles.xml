@@ -54,7 +54,7 @@
         <item name="android:windowBackground">@drawable/first_splash_screen_free</item>
     </style>
 
-    <style name="FirstSplashScreenFreeDev" parent="SplashScreenBaseTheme">
+    <style name="FirstSplashScreenNightlyFree" parent="SplashScreenBaseTheme">
         <item name="android:windowBackground">@drawable/first_splash_screen_free_dev</item>
     </style>
 
@@ -218,6 +218,7 @@
         <item name="divider_color_basic">@color/divider_color_light</item>
         <item name="main_font_color_basic">@color/text_color_primary_light</item>
         <item name="active_color_basic">@color/active_color_primary_light</item>
+        <item name="profile_icon_color_green">@color/profile_icon_color_green_light</item>
         <item name="card_and_list_background_basic">@color/card_and_list_background_light</item>
         <item name="activity_background_basic">@color/activity_background_light</item>
         <item name="pages_bg">@drawable/pages_bg_light</item>
@@ -247,6 +248,11 @@
         <item name="checkboxStyle">@style/CheckboxStyle</item>
         <item name="radioButtonStyle">@style/RadioButtonStyle</item>
         <item name="text_input_background">@color/text_input_background_light</item>
+        <item name="image_help_announcement_time">@drawable/img_help_announcement_time_day</item>
+        <item name="switch_button_active">@color/switch_button_active_light</item>
+        <item name="bottom_navigation_item_background">@drawable/bottom_navigation_item_bg_light</item>
+
+        <item name="android:forceDarkAllowed">false</item>
     </style>
 
     <style name="ToolbarStyle" parent="@style/Widget.AppCompat.Toolbar">
@@ -514,6 +520,7 @@
         <item name="divider_color_basic">@color/divider_color_dark</item>
         <item name="main_font_color_basic">@color/text_color_primary_dark</item>
         <item name="active_color_basic">@color/active_color_primary_dark</item>
+        <item name="profile_icon_color_green">@color/profile_icon_color_green_dark</item>
         <item name="card_and_list_background_basic">@color/card_and_list_background_dark</item>
         <item name="activity_background_basic">@color/activity_background_dark</item>
         <item name="pages_bg">@drawable/pages_bg_dark</item>
@@ -543,6 +550,11 @@
         <item name="checkboxStyle">@style/CheckboxStyle</item>
         <item name="radioButtonStyle">@style/RadioButtonStyle</item>
         <item name="text_input_background">@color/text_input_background_dark</item>
+        <item name="image_help_announcement_time">@drawable/img_help_announcement_time_night</item>
+        <item name="switch_button_active">@color/switch_button_active_dark</item>
+        <item name="bottom_navigation_item_background">@drawable/bottom_navigation_item_bg_dark</item>
+
+        <item name="android:forceDarkAllowed">false</item>
     </style>
 
     <style name="FreeVersionBanner" parent="OsmandDarkTheme">

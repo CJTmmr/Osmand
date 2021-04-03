@@ -1,6 +1,7 @@
 package net.osmand.plus;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -9,8 +10,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RippleDrawable;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.os.Build;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -51,6 +50,7 @@ import net.osmand.AndroidUtils;
 import net.osmand.Location;
 import net.osmand.PlatformUtil;
 import net.osmand.data.LatLon;
+import net.osmand.plus.helpers.AndroidUiHelper;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.views.DirectionDrawable;
 import net.osmand.plus.widgets.TextViewEx;
@@ -64,12 +64,12 @@ public class UiUtilities {
 
 	private static final Log LOG = PlatformUtil.getLog(UiUtilities.class);
 
-	private TLongObjectHashMap<Drawable> drawableCache = new TLongObjectHashMap<>();
-	private OsmandApplication app;
 	private static final int ORIENTATION_0 = 0;
 	private static final int ORIENTATION_90 = 3;
 	private static final int ORIENTATION_270 = 1;
 	private static final int ORIENTATION_180 = 2;
+	private final TLongObjectHashMap<Drawable> drawableCache = new TLongObjectHashMap<>();
+	private final OsmandApplication app;
 	private static final int INVALID_ID = -1;
 
 	public enum DialogButtonType {
@@ -87,6 +87,7 @@ public class UiUtilities {
 
 	public enum CustomRadioButtonType {
 		START,
+		CENTER,
 		END,
 	}
 
@@ -249,9 +250,15 @@ public class UiUtilities {
 		return a << ALPHA_CHANNEL | r << RED_CHANNEL | g << GREEN_CHANNEL | b << BLUE_CHANNEL;
 	}
 
-	public UpdateLocationViewCache getUpdateLocationViewCache(){
+	public UpdateLocationViewCache getUpdateLocationViewCache() {
+		return getUpdateLocationViewCache(true);
+	}
+
+	public UpdateLocationViewCache getUpdateLocationViewCache(boolean useScreenOrientation) {
 		UpdateLocationViewCache uvc = new UpdateLocationViewCache();
-		uvc.screenOrientation = getScreenOrientation();
+		if (useScreenOrientation) {
+			uvc.screenOrientation = getScreenOrientation();
+		}
 		return uvc;
 	}
 
@@ -367,8 +374,9 @@ public class UiUtilities {
 				break;
 		}
 		//Looks like screenOrientation correction must not be applied for devices without compass?
-		Sensor compass = ((SensorManager) app.getSystemService(Context.SENSOR_SERVICE)).getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-		if (compass == null) {
+		PackageManager manager = app.getPackageManager();
+		boolean hasCompass = manager.hasSystemFeature(PackageManager.FEATURE_SENSOR_COMPASS);
+		if (!hasCompass) {
 			screenOrientation = 0;
 		}
 		return screenOrientation;
@@ -454,10 +462,10 @@ public class UiUtilities {
 		int radius = AndroidUtils.dpToPx(app, 4);
 		boolean isLayoutRtl = AndroidUtils.isLayoutRtl(app);
 
-		TextView startButtonText = buttonsView.findViewById(R.id.left_button);
 		View startButtonContainer = buttonsView.findViewById(R.id.left_button_container);
-		TextView endButtonText = buttonsView.findViewById(R.id.right_button);
+		View centerButtonContainer = buttonsView.findViewById(R.id.center_button_container);
 		View endButtonContainer = buttonsView.findViewById(R.id.right_button_container);
+
 		GradientDrawable background = new GradientDrawable();
 		background.setColor(UiUtilities.getColorWithAlpha(activeColor, 0.1f));
 		background.setStroke(AndroidUtils.dpToPx(app, 1), UiUtilities.getColorWithAlpha(activeColor, 0.5f));
@@ -467,20 +475,56 @@ public class UiUtilities {
 			} else {
 				background.setCornerRadii(new float[]{radius, radius, 0, 0, 0, 0, radius, radius});
 			}
+			TextView startButtonText = startButtonContainer.findViewById(R.id.left_button);
+			TextView endButtonText = endButtonContainer.findViewById(R.id.right_button);
+
 			endButtonContainer.setBackgroundColor(Color.TRANSPARENT);
 			endButtonText.setTextColor(activeColor);
 			startButtonContainer.setBackgroundDrawable(background);
 			startButtonText.setTextColor(textColor);
+
+			if (centerButtonContainer != null) {
+				TextView centerButtonText = centerButtonContainer.findViewById(R.id.center_button);
+				centerButtonText.setTextColor(activeColor);
+				centerButtonContainer.setBackgroundColor(Color.TRANSPARENT);
+			}
+		} else if (buttonType == CustomRadioButtonType.CENTER) {
+			background.setCornerRadii(new float[] {0, 0, 0, 0, 0, 0, 0, 0});
+			centerButtonContainer.setBackgroundDrawable(background);
+			AndroidUiHelper.updateVisibility(centerButtonContainer, true);
+
+			TextView centerButtonText = centerButtonContainer.findViewById(R.id.center_button);
+			centerButtonText.setTextColor(textColor);
+
+			if (endButtonContainer != null) {
+				TextView endButtonText = endButtonContainer.findViewById(R.id.right_button);
+				endButtonText.setTextColor(activeColor);
+				endButtonContainer.setBackgroundColor(Color.TRANSPARENT);
+			}
+			if (startButtonContainer != null) {
+				TextView startButtonText = startButtonContainer.findViewById(R.id.left_button);
+				startButtonText.setTextColor(activeColor);
+				startButtonContainer.setBackgroundColor(Color.TRANSPARENT);
+			}
 		} else {
 			if (isLayoutRtl) {
-				background.setCornerRadii(new float[]{radius, radius, 0, 0, 0, 0, radius, radius});
+				background.setCornerRadii(new float[] {radius, radius, 0, 0, 0, 0, radius, radius});
 			} else {
 				background.setCornerRadii(new float[]{0, 0, radius, radius, radius, radius, 0, 0});
 			}
+			TextView startButtonText = startButtonContainer.findViewById(R.id.left_button);
+			TextView endButtonText = endButtonContainer.findViewById(R.id.right_button);
+
 			endButtonContainer.setBackgroundDrawable(background);
 			endButtonText.setTextColor(textColor);
 			startButtonContainer.setBackgroundColor(Color.TRANSPARENT);
 			startButtonText.setTextColor(activeColor);
+
+			if (centerButtonContainer != null) {
+				TextView centerButtonText = centerButtonContainer.findViewById(R.id.center_button);
+				centerButtonText.setTextColor(activeColor);
+				centerButtonContainer.setBackgroundColor(Color.TRANSPARENT);
+			}
 		}
 	}
 
@@ -515,7 +559,7 @@ public class UiUtilities {
 		switch (type) {
 			case PROFILE_DEPENDENT:
 				ApplicationMode appMode = app.getSettings().getApplicationMode();
-				activeColor = ContextCompat.getColor(app, appMode.getIconColorInfo().getColor(nightMode));
+				activeColor = appMode.getProfileColor(nightMode);
 				break;
 			case TOOLBAR:
 				activeColor = Color.WHITE;
@@ -595,8 +639,9 @@ public class UiUtilities {
 		}
 		int activeDisableColor = getColorWithAlpha(activeColor, 0.25f);
 		ColorStateList activeCsl = new ColorStateList(states, new int[] {activeColor, activeDisableColor});
-		int inactiveColor = ContextCompat.getColor(ctx, nightMode ? R.color.icon_color_default_dark : R.color.icon_color_secondary_light);
-		ColorStateList inactiveCsl = new ColorStateList(states, new int[] {inactiveColor, inactiveColor});
+		int inactiveColor = getColorWithAlpha(activeColor, 0.5f);
+		int inactiveDisableColor = ContextCompat.getColor(ctx, nightMode ? R.color.icon_color_default_dark : R.color.icon_color_secondary_light);
+		ColorStateList inactiveCsl = new ColorStateList(states, new int[] {inactiveColor, inactiveDisableColor});
 		slider.setTrackActiveTintList(activeCsl);
 		slider.setTrackInactiveTintList(inactiveCsl);
 		slider.setHaloTintList(activeCsl);
@@ -636,7 +681,7 @@ public class UiUtilities {
 		int activeDisableColor = getColorWithAlpha(activeColor, 0.25f);
 		ColorStateList activeCsl = new ColorStateList(states, new int[] {activeColor, activeDisableColor});
 		int inactiveColor = ContextCompat.getColor(ctx, nightMode ? R.color.icon_color_default_dark : R.color.icon_color_secondary_light);
-		ColorStateList inactiveCsl = new ColorStateList(states, new int[] {inactiveColor, inactiveColor});
+		ColorStateList inactiveCsl = new ColorStateList(states, new int[] {activeDisableColor, inactiveColor});
 		slider.setTrackActiveTintList(activeCsl);
 		slider.setTrackInactiveTintList(inactiveCsl);
 		slider.setHaloTintList(activeCsl);

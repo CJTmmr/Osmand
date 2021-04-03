@@ -6,6 +6,7 @@ import net.osmand.binary.StringBundle;
 import net.osmand.binary.StringBundleWriter;
 import net.osmand.binary.StringBundleXmlWriter;
 import net.osmand.data.QuadRect;
+import net.osmand.router.RouteColorize.ColorizationType;
 import net.osmand.util.Algorithms;
 
 import org.apache.commons.logging.Log;
@@ -60,7 +61,8 @@ public class GPXUtilities {
 
 	private final static NumberFormat latLonFormat = new DecimalFormat("0.00#####", new DecimalFormatSymbols(
 			new Locale("EN", "US")));
-	private final static NumberFormat decimalFormat = new DecimalFormat("#.###", new DecimalFormatSymbols(
+	// speed, ele, hdop
+	private final static NumberFormat decimalFormat = new DecimalFormat("#.#", new DecimalFormatSymbols(
 			new Locale("EN", "US")));
 
 	public enum GPXColor {
@@ -226,6 +228,9 @@ public class GPXUtilities {
 		public double hdop = Double.NaN;
 		public float heading = Float.NaN;
 		public boolean deleted = false;
+		public int speedColor = 0;
+		public int altitudeColor = 0;
+		public int slopeColor = 0;
 		public int colourARGB = 0;                    // point colour (used for altitude/speed colouring)
 		public double distance = 0.0;                // cumulative distance, if in a track
 
@@ -248,6 +253,9 @@ public class GPXUtilities {
 			this.hdop = wptPt.hdop;
 			this.heading = wptPt.heading;
 			this.deleted = wptPt.deleted;
+			this.speedColor = wptPt.speedColor;
+			this.altitudeColor = wptPt.altitudeColor;
+			this.slopeColor = wptPt.slopeColor;
 			this.colourARGB = wptPt.colourARGB;
 			this.distance = wptPt.distance;
 		}
@@ -308,6 +316,16 @@ public class GPXUtilities {
 
 		public void setIconName(String iconName) {
 			getExtensionsToWrite().put(ICON_NAME_EXTENSION, iconName);
+		}
+
+		public int getColor(ColorizationType type) {
+			if (type == ColorizationType.SPEED) {
+				return speedColor;
+			} else if (type == ColorizationType.ELEVATION) {
+				return altitudeColor;
+			} else {
+				return slopeColor;
+			}
 		}
 
 		public String getBackgroundType() {
@@ -448,6 +466,10 @@ public class GPXUtilities {
 
 		public String getArticleLang() {
 			return getExtensionsToRead().get("article_lang");
+		}
+
+		public String getDescription() {
+			return getExtensionsToRead().get("desc");
 		}
 	}
 
@@ -1251,6 +1273,10 @@ public class GPXUtilities {
 			return g;
 		}
 
+		public boolean containsRoutePoint(WptPt point) {
+			return getRoutePoints().contains(point);
+		}
+
 		public List<WptPt> getRoutePoints() {
 			List<WptPt> points = new ArrayList<>();
 			for (int i = 0; i < routes.size(); i++) {
@@ -1653,16 +1679,16 @@ public class GPXUtilities {
 			return new QuadRect(left, top, right, bottom);
 		}
 
-		public int getGradientScaleColor(String gradientScaleType, int defColor) {
+		public int[] getGradientScaleColor(String gradientScaleType) {
 			String clrValue = null;
 			if (extensions != null) {
 				clrValue = extensions.get(gradientScaleType);
 			}
-			return parseColor(clrValue, defColor);
+			return Algorithms.stringToGradientPalette(clrValue);
 		}
 
-		public void setGradientScaleColor(String gradientScaleType, int gradientScaleColor) {
-			getExtensionsToWrite().put(gradientScaleType, Algorithms.colorToString(gradientScaleColor));
+		public void setGradientScaleColor(String gradientScaleType, int[] gradientScalePalette) {
+			getExtensionsToWrite().put(gradientScaleType, Algorithms.gradientPaletteToString(gradientScalePalette));
 		}
 
 		public String getGradientScaleType() {
@@ -1790,6 +1816,7 @@ public class GPXUtilities {
 				serializer.attribute(null, "creator", file.author); //$NON-NLS-1$
 			}
 			serializer.attribute(null, "xmlns", "http://www.topografix.com/GPX/1/1"); //$NON-NLS-1$ //$NON-NLS-2$
+			serializer.attribute(null, "xmlns:osmand", "https://osmand.net");
 			serializer.attribute(null, "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 			serializer.attribute(null, "xsi:schemaLocation",
 					"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd");
@@ -1821,6 +1848,25 @@ public class GPXUtilities {
 			}
 			serializer.endTag(null, "metadata");
 
+			for (WptPt l : file.points) {
+				serializer.startTag(null, "wpt"); //$NON-NLS-1$
+				writeWpt(format, serializer, l);
+				serializer.endTag(null, "wpt"); //$NON-NLS-1$
+			}
+
+			for (Route track : file.routes) {
+				serializer.startTag(null, "rte"); //$NON-NLS-1$
+				writeNotNullText(serializer, "name", track.name);
+				writeNotNullText(serializer, "desc", track.desc);
+
+				for (WptPt p : track.points) {
+					serializer.startTag(null, "rtept"); //$NON-NLS-1$
+					writeWpt(format, serializer, p);
+					serializer.endTag(null, "rtept"); //$NON-NLS-1$
+				}
+				writeExtensions(serializer, track);
+				serializer.endTag(null, "rte"); //$NON-NLS-1$
+			}
 
 			for (Track track : file.tracks) {
 				if (!track.generalTrack) {
@@ -1841,26 +1887,6 @@ public class GPXUtilities {
 					writeExtensions(serializer, track);
 					serializer.endTag(null, "trk"); //$NON-NLS-1$
 				}
-			}
-
-			for (Route track : file.routes) {
-				serializer.startTag(null, "rte"); //$NON-NLS-1$
-				writeNotNullText(serializer, "name", track.name);
-				writeNotNullText(serializer, "desc", track.desc);
-
-				for (WptPt p : track.points) {
-					serializer.startTag(null, "rtept"); //$NON-NLS-1$
-					writeWpt(format, serializer, p);
-					serializer.endTag(null, "rtept"); //$NON-NLS-1$
-				}
-				writeExtensions(serializer, track);
-				serializer.endTag(null, "rte"); //$NON-NLS-1$
-			}
-
-			for (WptPt l : file.points) {
-				serializer.startTag(null, "wpt"); //$NON-NLS-1$
-				writeWpt(format, serializer, l);
-				serializer.endTag(null, "wpt"); //$NON-NLS-1$
 			}
 
 			writeExtensions(serializer, file);
@@ -1938,7 +1964,7 @@ public class GPXUtilities {
 			serializer.startTag(null, "extensions");
 			if (!extensions.isEmpty()) {
 				for (Entry<String, String> s : extensions.entrySet()) {
-					writeNotNullText(serializer, s.getKey(), s.getValue());
+					writeNotNullText(serializer,"osmand:" + s.getKey(), s.getValue());
 				}
 			}
 			if (extensionsWriter != null) {
@@ -2472,6 +2498,7 @@ public class GPXUtilities {
 				firstSegment.routeSegments = routeSegments;
 				firstSegment.routeTypes = routeTypes;
 			}
+		gpxFile.addGeneralTrack();
 		} catch (Exception e) {
 			gpxFile.error = e;
 			log.error("Error reading gpx", e); //$NON-NLS-1$
@@ -2544,7 +2571,7 @@ public class GPXUtilities {
 			if (maxlat == null) {
 				maxlat = parser.getAttributeValue("", "maxLat");
 			}
-			if (maxlat == null) {
+			if (maxlon == null) {
 				maxlon = parser.getAttributeValue("", "maxLon");
 			}
 

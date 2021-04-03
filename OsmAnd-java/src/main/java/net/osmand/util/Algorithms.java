@@ -2,6 +2,8 @@ package net.osmand.util;
 
 import net.osmand.IProgress;
 import net.osmand.PlatformUtil;
+import net.osmand.router.RouteColorize;
+import net.osmand.data.LatLon;
 
 import org.apache.commons.logging.Log;
 import org.xmlpull.v1.XmlPullParser;
@@ -53,6 +55,8 @@ public class Algorithms {
 	public static final int XML_FILE_SIGNATURE = 0x3c3f786d;
 	public static final int OBF_FILE_SIGNATURE = 0x08029001;
 	public static final int SQLITE_FILE_SIGNATURE = 0x53514C69;
+	public static final int BZIP_FILE_SIGNATURE = 0x425a;
+	public static final int GZIP_FILE_SIGNATURE = 0x1f8b;
 
 	public static String normalizeSearchText(String s) {
 		boolean norm = false;
@@ -115,7 +119,7 @@ public class Algorithms {
 		}
 		return def;
 	}
-	
+
 	public static int parseIntSilently(String input, int def) {
 		if (input != null && input.length() > 0) {
 			try {
@@ -125,6 +129,46 @@ public class Algorithms {
 			}
 		}
 		return def;
+	}
+
+	public static double parseDoubleSilently(String input, double def) {
+		if (input != null && input.length() > 0) {
+			try {
+				return Double.parseDouble(input);
+			} catch (NumberFormatException e) {
+				return def;
+			}
+		}
+		return def;
+	}
+
+	public static boolean isFirstPolygonInsideSecond(List<LatLon> firstPolygon,
+	                                                 List<LatLon> secondPolygon) {
+		for (LatLon point : firstPolygon) {
+			if (!isPointInsidePolygon(point, secondPolygon)) {
+				// if at least one point is not inside the boundary, return false
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean isPointInsidePolygon(LatLon point,
+	                                           List<LatLon> polygon) {
+		double pointX = point.getLongitude();
+		double pointY = point.getLatitude();
+		boolean result = false;
+		for (int i = 0, j = polygon.size() - 1; i < polygon.size(); j = i++) {
+			double x1 = polygon.get(i).getLongitude();
+			double y1 = polygon.get(i).getLatitude();
+			double x2 = polygon.get(j).getLongitude();
+			double y2 = polygon.get(j).getLatitude();
+			if ((y1 > pointY) != (y2 > pointY)
+					&& (pointX < (x2 - x1) * (pointY - y1) / (y2-y1) + x1)) {
+				result = !result;
+			}
+		}
+		return result;
 	}
 
 	public static String getFileNameWithoutExtension(File f) {
@@ -311,6 +355,24 @@ public class Algorithms {
 		return test == ZIP_FILE_SIGNATURE;
 	}
 
+	public static boolean checkFileSignature(InputStream inputStream, int fileSignature) throws IOException {
+		if (inputStream == null) return false;
+		int firstBytes;
+		if (isSmallFileSignature(fileSignature)) {
+			firstBytes = readSmallInt(inputStream);
+		} else {
+			firstBytes = readInt(inputStream);
+		}
+		if (inputStream.markSupported()) {
+			inputStream.reset();
+		}
+		return firstBytes == fileSignature;
+	}
+
+	public static boolean isSmallFileSignature(int fileSignature) {
+		return fileSignature == BZIP_FILE_SIGNATURE || fileSignature == GZIP_FILE_SIGNATURE;
+	}
+
 	/**
 	 * Checks, whether the child directory is a subdirectory of the parent
 	 * directory.
@@ -345,6 +407,14 @@ public class Algorithms {
 		if ((ch1 | ch2 | ch3 | ch4) < 0)
 			throw new EOFException();
 		return ((ch1 << 24) + (ch2 << 16) + (ch3 << 8) + ch4);
+	}
+
+	public static int readSmallInt(InputStream in) throws IOException {
+		int ch1 = in.read();
+		int ch2 = in.read();
+		if ((ch1 | ch2) < 0)
+			throw new EOFException();
+		return ((ch1 << 8) + ch2);
 	}
 
 	public static String capitalizeFirstLetterAndLowercase(String s) {
@@ -524,6 +594,13 @@ public class Algorithms {
 		} catch (IOException e) {
 			log.warn("Closing stream warn", e); //$NON-NLS-1$
 		}
+	}
+
+	public static ByteArrayInputStream createByteArrayIS(InputStream in) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		streamCopy(in, out);
+		in.close();
+		return new ByteArrayInputStream(out.toByteArray());
 	}
 
 	@SuppressWarnings("ResultOfMethodCallIgnored")
@@ -710,6 +787,10 @@ public class Algorithms {
 			}
 		}
 		return false;
+	}
+
+	public static boolean isInt(double d) {
+		return (d == Math.floor(d)) && !Double.isInfinite(d);
 	}
 
 	public static boolean isInt(String value) {
@@ -980,5 +1061,31 @@ public class Algorithms {
 			return counter == 0;
 		}
 		return false;
+	}
+
+	public static int[] stringToGradientPalette(String str) {
+		if (Algorithms.isBlank(str)) {
+			return RouteColorize.colors;
+		}
+		String[] arr = str.split(" ");
+		if (arr.length != 3) {
+			return RouteColorize.colors;
+		}
+		int[] colors = new int[3];
+		try {
+			for (int i = 0; i < 3; i++) {
+				colors[i] = Algorithms.parseColor(arr[i]);
+			}
+		} catch (IllegalArgumentException e) {
+			return RouteColorize.colors;
+		}
+		return colors;
+	}
+
+	public static String gradientPaletteToString(int[] colors) {
+		int[] src = (colors != null && colors.length == 3) ? colors : RouteColorize.colors;
+		return Algorithms.colorToString(src[0]) + " " +
+				Algorithms.colorToString(src[1]) + " " +
+				Algorithms.colorToString(src[2]);
 	}
 }

@@ -41,10 +41,14 @@ public class Amenity extends MapObject {
 	public static final String OSM_DELETE_TAG = "osmand_change";
 	public static final String IMAGE_TITLE = "image_title";
 	public static final String IS_PART = "is_part";
+	public static final String IS_PARENT_OF = "is_parent_of";
 	public static final String IS_AGGR_PART = "is_aggr_part";
 	public static final String CONTENT_JSON = "content_json";
 	public static final String ROUTE_ID = "route_id";
 	public static final String ROUTE_SOURCE = "route_source";
+	public static final String COLOR = "color";
+	public static final String LANG_YES = "lang_yes";
+	public static final String GPX_ICON = "gpx_icon";
 
 
 	private String subType;
@@ -201,6 +205,15 @@ public class Amenity extends MapObject {
 		setAdditionalInfo(PHONE, phone);
 	}
 
+	public String getColor() {
+		return getAdditionalInfo(COLOR);
+	}
+
+	public String getGpxIcon() {
+		return getAdditionalInfo(GPX_ICON);
+	}
+
+
 	public String getContentLanguage(String tag, String lang, String defLang) {
 		if (lang != null) {
 			String translateName = getAdditionalInfo(tag + ":" + lang);
@@ -250,7 +263,35 @@ public class Amenity extends MapObject {
 		return l;
 	}
 
+	public String getTagSuffix(String tagPrefix) {
+		for (String infoTag : getAdditionalInfoKeys()) {
+			if (infoTag.startsWith(tagPrefix)) {
+				if (infoTag.length() > tagPrefix.length()) {
+					return infoTag.substring(tagPrefix.length());
+				}
+			}
+		}
+		return null;
+	}
+
+	public String getTagContent(String tag) {
+		return getTagContent(tag, null);
+	}
+
 	public String getTagContent(String tag, String lang) {
+		String translateName = getStrictTagContent(tag, lang);
+		if (translateName != null) {
+			return translateName;
+		}
+		for (String nm : getAdditionalInfoKeys()) {
+			if (nm.startsWith(tag + ":")) {
+				return getAdditionalInfo(nm);
+			}
+		}
+		return null;
+	}
+
+	public String getStrictTagContent(String tag, String lang) {
 		if (lang != null) {
 			String translateName = getAdditionalInfo(tag + ":" + lang);
 			if (!Algorithms.isEmpty(translateName)) {
@@ -264,11 +305,6 @@ public class Amenity extends MapObject {
 		String enName = getAdditionalInfo(tag + ":en");
 		if (!Algorithms.isEmpty(enName)) {
 			return enName;
-		}
-		for (String nm : getAdditionalInfoKeys()) {
-			if (nm.startsWith(tag + ":")) {
-				return getAdditionalInfo(nm);
-			}
 		}
 		return null;
 	}
@@ -381,6 +417,4 @@ public class Amenity extends MapObject {
 		}
 		return a;
 	}
-
-	
 }

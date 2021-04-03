@@ -29,6 +29,8 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.transition.AutoTransition;
 import androidx.transition.Scene;
 import androidx.transition.Transition;
@@ -71,7 +73,7 @@ import net.osmand.plus.mapcontextmenu.other.TrackDetailsMenuFragment;
 import net.osmand.plus.mapmarkers.MapMarker;
 import net.osmand.plus.mapmarkers.MapMarkerSelectionFragment;
 import net.osmand.plus.poi.PoiUIFilter;
-import net.osmand.plus.profiles.AppModesBottomSheetDialogFragment;
+import net.osmand.plus.profiles.AppModesBottomSheetDialogFragment.UpdateMapRouteMenuListener;
 import net.osmand.plus.profiles.ConfigureAppModesBottomSheetDialogFragment;
 import net.osmand.plus.routepreparationmenu.RoutingOptionsHelper.AvoidPTTypesRoutingParameter;
 import net.osmand.plus.routepreparationmenu.RoutingOptionsHelper.AvoidRoadsRoutingParameter;
@@ -96,9 +98,9 @@ import net.osmand.plus.routepreparationmenu.cards.PublicTransportNotFoundSetting
 import net.osmand.plus.routepreparationmenu.cards.PublicTransportNotFoundWarningCard;
 import net.osmand.plus.routepreparationmenu.cards.SimpleRouteCard;
 import net.osmand.plus.routepreparationmenu.cards.TracksCard;
+import net.osmand.plus.routing.GPXRouteParams.GPXRouteParamsBuilder;
 import net.osmand.plus.routing.IRouteInformationListener;
 import net.osmand.plus.routing.RouteCalculationResult;
-import net.osmand.plus.routing.RouteProvider.GPXRouteParamsBuilder;
 import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.routing.RoutingHelperUtils;
 import net.osmand.plus.routing.TransportRoutingHelper;
@@ -870,16 +872,16 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 	}
 
 	private void showProfileBottomSheetDialog() {
-		final AppModesBottomSheetDialogFragment fragment = new ConfigureAppModesBottomSheetDialogFragment();
-		fragment.setUsedOnMap(true);
-		fragment.setUpdateMapRouteMenuListener(new AppModesBottomSheetDialogFragment.UpdateMapRouteMenuListener() {
-			@Override
-			public void updateAppModeMenu() {
-				updateApplicationModes();
-			}
-		});
-		getMapActivity().getSupportFragmentManager().beginTransaction()
-				.add(fragment, ConfigureAppModesBottomSheetDialogFragment.TAG).commitAllowingStateLoss();
+		FragmentActivity activity = getMapActivity();
+		if (activity != null) {
+			FragmentManager manager = activity.getSupportFragmentManager();
+			ConfigureAppModesBottomSheetDialogFragment.showInstance(manager, true, new UpdateMapRouteMenuListener() {
+				@Override
+				public void updateAppModeMenu() {
+					updateApplicationModes();
+				}
+			});
+		}
 	}
 
 	private void updateApplicationMode(ApplicationMode mode, ApplicationMode next) {
@@ -1673,6 +1675,13 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 				if (Algorithms.isEmpty(fileName)) {
 					fileName = app.getString(R.string.shared_string_gpx_track);
 				}
+				GPXRouteParamsBuilder routeParams = app.getRoutingHelper().getCurrentGPXRoute();
+
+				if (gpxFile.getNonEmptySegmentsCount() > 1 && routeParams != null && routeParams.getSelectedSegment() != -1) {
+					int selectedSegmentCount = routeParams.getSelectedSegment() + 1;
+					int totalSegmentCount = routeParams.getFile().getNonEmptyTrkSegments(false).size();
+					fileName = app.getResources().getString(R.string.of, selectedSegmentCount, totalSegmentCount) + ", " + fileName;
+				}
 				title.setText(GpxUiHelper.getGpxTitle(fileName));
 				description.setText(R.string.follow_track);
 				buttonDescription.setText(R.string.shared_string_add);
@@ -1822,6 +1831,13 @@ public class MapRouteInfoMenu implements IRouteInformationListener, CardListener
 		});
 
 		FrameLayout fromButton = (FrameLayout) mainView.findViewById(R.id.from_button);
+		boolean isFollowTrack = app.getRoutingHelper().getCurrentGPXRoute() != null;
+
+		if (isFollowTrack) {
+			fromButton.setVisibility(View.GONE);
+		} else {
+			fromButton.setVisibility(View.VISIBLE);
+		}
 		LinearLayout fromButtonContainer = (LinearLayout) mainView.findViewById(R.id.from_button_container);
 		setupButtonBackground(fromButton, fromButtonContainer);
 

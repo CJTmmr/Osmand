@@ -8,21 +8,20 @@ import net.osmand.plus.GpxSelectionHelper.GpxDisplayItem;
 import net.osmand.plus.GpxSelectionHelper.GpxDisplayItemType;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.activities.SavingTrackHelper;
-import net.osmand.plus.mapmarkers.MapMarkersGroup;
-import net.osmand.plus.mapmarkers.MapMarkersHelper;
+import net.osmand.plus.itinerary.ItineraryGroup;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.Set;
 
-class DeletePointsTask extends AsyncTask<Void, Void, Void> {
+public class DeletePointsTask extends AsyncTask<Void, Void, Void> {
 
 	private OsmandApplication app;
 	private GPXFile gpx;
 	private Set<GpxDisplayItem> selectedItems;
 	private WeakReference<OnPointsDeleteListener> listenerRef;
 
-	DeletePointsTask(OsmandApplication app, GPXFile gpxFile, Set<GpxDisplayItem> selectedItems, OnPointsDeleteListener listener) {
+	public DeletePointsTask(OsmandApplication app, GPXFile gpxFile, Set<GpxDisplayItem> selectedItems, OnPointsDeleteListener listener) {
 		this.app = app;
 		this.gpx = gpxFile;
 		this.selectedItems = selectedItems;
@@ -65,10 +64,9 @@ class DeletePointsTask extends AsyncTask<Void, Void, Void> {
 	}
 
 	private void syncGpx(GPXFile gpxFile) {
-		MapMarkersHelper helper = app.getMapMarkersHelper();
-		MapMarkersGroup group = helper.getMarkersGroup(gpxFile);
+		ItineraryGroup group = app.getItineraryHelper().getMarkersGroup(gpxFile);
 		if (group != null) {
-			helper.runSynchronization(group);
+			app.getItineraryHelper().runSynchronization(group);
 		}
 	}
 

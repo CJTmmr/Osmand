@@ -62,12 +62,14 @@ import net.osmand.plus.mapmarkers.MarkersPlanRouteContext;
 import net.osmand.plus.measurementtool.MeasurementToolFragment;
 import net.osmand.plus.measurementtool.StartPlanRouteBottomSheet;
 import net.osmand.plus.monitoring.OsmandMonitoringPlugin;
+import net.osmand.plus.monitoring.TripRecordingBottomSheet;
+import net.osmand.plus.monitoring.TripRecordingStartingBottomSheet;
 import net.osmand.plus.osmedit.dialogs.DismissRouteBottomSheetFragment;
+import net.osmand.plus.profiles.ProfileDataObject;
 import net.osmand.plus.profiles.ProfileDataUtils;
-import net.osmand.plus.profiles.RoutingProfileDataObject;
 import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
 import net.osmand.plus.routepreparationmenu.WaypointsFragment;
-import net.osmand.plus.routing.RouteProvider.GPXRouteParamsBuilder;
+import net.osmand.plus.routing.GPXRouteParams.GPXRouteParamsBuilder;
 import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.settings.backend.OsmandSettings;
@@ -98,6 +100,7 @@ import static net.osmand.aidlapi.OsmAndCustomizationConstants.DRAWER_CONFIGURE_P
 import static net.osmand.aidlapi.OsmAndCustomizationConstants.DRAWER_CONFIGURE_SCREEN_ID;
 import static net.osmand.aidlapi.OsmAndCustomizationConstants.DRAWER_DASHBOARD_ID;
 import static net.osmand.aidlapi.OsmAndCustomizationConstants.DRAWER_DIRECTIONS_ID;
+import static net.osmand.aidlapi.OsmAndCustomizationConstants.DRAWER_TRIP_RECORDING_ID;
 import static net.osmand.aidlapi.OsmAndCustomizationConstants.DRAWER_DIVIDER_ID;
 import static net.osmand.aidlapi.OsmAndCustomizationConstants.DRAWER_DOWNLOAD_MAPS_ID;
 import static net.osmand.aidlapi.OsmAndCustomizationConstants.DRAWER_HELP_ID;
@@ -356,10 +359,10 @@ public class MapActivityActions implements DialogProvider {
 	}
 
 	public void addActionsToAdapter(final double latitude,
-	                                final double longitude,
-	                                final ContextMenuAdapter adapter,
-	                                Object selectedObj,
-	                                boolean configureMenu) {
+									final double longitude,
+									final ContextMenuAdapter adapter,
+									Object selectedObj,
+									boolean configureMenu) {
 		ItemBuilder itemBuilder = new ItemBuilder();
 
 		adapter.addItem(itemBuilder
@@ -438,7 +441,7 @@ public class MapActivityActions implements DialogProvider {
 		}
 
 		adapter.addItem(itemBuilder
-				.setTitleId(R.string.plan_a_route, mapActivity)
+				.setTitleId(R.string.plan_route, mapActivity)
 				.setId(MAP_CONTEXT_MENU_MEASURE_DISTANCE)
 				.setIcon(R.drawable.ic_action_ruler)
 				.setOrder(MEASURE_DISTANCE_ITEM_ORDER)
@@ -486,7 +489,7 @@ public class MapActivityActions implements DialogProvider {
 					//			new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
 					//			REQUEST_LOCATION_FOR_DIRECTIONS_NAVIGATION_PERMISSION);
 					//}
-				} else if (standardId == R.string.plan_a_route) {
+				} else if (standardId == R.string.plan_route) {
 					mapActivity.getContextMenu().close();
 					MeasurementToolFragment.showInstance(mapActivity.getSupportFragmentManager(), new LatLon(latitude, longitude));
 				} else if (standardId == R.string.avoid_road) {
@@ -522,6 +525,7 @@ public class MapActivityActions implements DialogProvider {
 			GPXRouteParamsBuilder params = new GPXRouteParamsBuilder(result, settings);
 			params.setCalculateOsmAndRouteParts(settings.GPX_ROUTE_CALC_OSMAND_PARTS.get());
 			params.setCalculateOsmAndRoute(settings.GPX_ROUTE_CALC.get());
+			params.setSelectedSegment(settings.GPX_ROUTE_SEGMENT.get());
 			List<Location> ps = params.getPoints(settings.getContext());
 			mapActivity.getRoutingHelper().setGpxParams(params);
 			settings.FOLLOW_THE_GPX_ROUTE.set(result.path);
@@ -539,17 +543,17 @@ public class MapActivityActions implements DialogProvider {
 	}
 
 	public void enterRoutePlanningModeGivenGpx(GPXFile gpxFile, LatLon from, PointDescription fromName,
-	                                           boolean useIntermediatePointsByDefault, boolean showMenu) {
+											   boolean useIntermediatePointsByDefault, boolean showMenu) {
 		enterRoutePlanningModeGivenGpx(gpxFile, from, fromName, useIntermediatePointsByDefault, showMenu, MapRouteInfoMenu.DEFAULT_MENU_STATE);
 	}
 
 	public void enterRoutePlanningModeGivenGpx(GPXFile gpxFile, LatLon from, PointDescription fromName,
-	                                           boolean useIntermediatePointsByDefault, boolean showMenu, int menuState) {
+											   boolean useIntermediatePointsByDefault, boolean showMenu, int menuState) {
 		enterRoutePlanningModeGivenGpx(gpxFile, null, from, fromName, useIntermediatePointsByDefault, showMenu, menuState);
 	}
 
 	public void enterRoutePlanningModeGivenGpx(GPXFile gpxFile, ApplicationMode appMode, LatLon from, PointDescription fromName,
-	                                           boolean useIntermediatePointsByDefault, boolean showMenu, int menuState) {
+											   boolean useIntermediatePointsByDefault, boolean showMenu, int menuState) {
 		settings.USE_INTERMEDIATE_POINTS_NAVIGATION.set(useIntermediatePointsByDefault);
 		OsmandApplication app = mapActivity.getMyApplication();
 		TargetPointsHelper targets = app.getTargetPointsHelper();
@@ -737,7 +741,7 @@ public class MapActivityActions implements DialogProvider {
 
 		String modeDescription;
 
-		Map<String, RoutingProfileDataObject> profilesObjects = ProfileDataUtils.getRoutingProfiles(app);
+		Map<String, ProfileDataObject> profilesObjects = ProfileDataUtils.getRoutingProfiles(app);
 		for (final ApplicationMode appMode : activeModes) {
 			if (appMode.isCustomProfile()) {
 				modeDescription = getProfileDescription(app, appMode, profilesObjects, getString(R.string.profile_type_user_string));
@@ -749,7 +753,7 @@ public class MapActivityActions implements DialogProvider {
 
 			optionsMenuHelper.addItem(new ItemBuilder().setLayout(R.layout.profile_list_item)
 					.setIcon(appMode.getIconRes())
-					.setColor(appMode.getIconColorInfo().getColor(nightMode))
+					.setColor(appMode.getProfileColor(nightMode))
 					.setTag(tag)
 					.setTitle(appMode.toHumanString())
 					.setDescription(modeDescription)
@@ -766,7 +770,7 @@ public class MapActivityActions implements DialogProvider {
 
 		int activeColorPrimaryResId = nightMode ? R.color.active_color_primary_dark : R.color.active_color_primary_light;
 		optionsMenuHelper.addItem(new ItemBuilder().setLayout(R.layout.profile_list_item)
-				.setColor(activeColorPrimaryResId)
+				.setColor(app, activeColorPrimaryResId)
 				.setTag(PROFILES_CONTROL_BUTTON_TAG)
 				.setTitle(getString(R.string.shared_string_manage))
 				.setListener(new ItemClickListener() {
@@ -839,6 +843,26 @@ public class MapActivityActions implements DialogProvider {
 					}
 				}).createItem());
 
+		final OsmandMonitoringPlugin monitoringPlugin = OsmandPlugin.getEnabledPlugin(OsmandMonitoringPlugin.class);
+		if (monitoringPlugin != null) {
+			optionsMenuHelper.addItem(new ItemBuilder().setTitleId(R.string.map_widget_monitoring, mapActivity)
+					.setId(DRAWER_TRIP_RECORDING_ID)
+					.setIcon(R.drawable.ic_action_track_recordable)
+					.setListener(new ItemClickListener() {
+						@Override
+						public boolean onContextMenuClick(ArrayAdapter<ContextMenuItem> adapter, int itemId, int pos, boolean isChecked, int[] viewCoordinates) {
+							app.logEvent("trip_recording_open");
+							MapActivity.clearPrevActivityIntent();
+							if (monitoringPlugin.hasDataToSave() || monitoringPlugin.wasTrackMonitored()) {
+								TripRecordingBottomSheet.showInstance(mapActivity.getSupportFragmentManager());
+							} else {
+								TripRecordingStartingBottomSheet.showTripRecordingDialog(mapActivity.getSupportFragmentManager(), app);
+							}
+							return true;
+						}
+					}).createItem());
+		}
+
 
 		optionsMenuHelper.addItem(new ItemBuilder().setTitleId(R.string.get_directions, mapActivity)
 				.setId(DRAWER_DIRECTIONS_ID)
@@ -903,22 +927,6 @@ public class MapActivityActions implements DialogProvider {
 					}
 				}).createItem());
 
-		if (Version.isGooglePlayEnabled(app) || Version.isHuawei(app) || Version.isDeveloperVersion(app)) {
-			optionsMenuHelper.addItem(new ItemBuilder().setTitleId(R.string.osm_live, mapActivity)
-					.setId(DRAWER_OSMAND_LIVE_ID)
-					.setIcon(R.drawable.ic_action_osm_live)
-					.setListener(new ItemClickListener() {
-						@Override
-						public boolean onContextMenuClick(ArrayAdapter<ContextMenuItem> adapter, int itemId, int pos, boolean isChecked, int[] viewCoordinates) {
-							app.logEvent("drawer_osm_live_open");
-							Intent intent = new Intent(mapActivity, OsmLiveActivity.class);
-							intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-							mapActivity.startActivity(intent);
-							return true;
-						}
-					}).createItem());
-		}
-
 		optionsMenuHelper.addItem(new ItemBuilder().setTitle(getString(R.string.shared_string_travel_guides) + " (Beta)")
 				.setId(DRAWER_TRAVEL_GUIDES_ID)
 				.setIcon(R.drawable.ic_action_travel)
@@ -928,7 +936,7 @@ public class MapActivityActions implements DialogProvider {
 						MapActivity.clearPrevActivityIntent();
 						TravelHelper travelHelper = getMyApplication().getTravelHelper();
 						travelHelper.initializeDataOnAppStartup();
-						if (!travelHelper.isAnyTravelBookPresent()) {
+						if (!travelHelper.isAnyTravelBookPresent() && !travelHelper.getBookmarksHelper().hasSavedArticles()) {
 							WikivoyageWelcomeDialogFragment.showInstance(mapActivity.getSupportFragmentManager());
 						} else {
 							Intent intent = new Intent(mapActivity, WikivoyageExploreActivity.class);
@@ -939,7 +947,7 @@ public class MapActivityActions implements DialogProvider {
 					}
 				}).createItem());
 
-		optionsMenuHelper.addItem(new ItemBuilder().setTitleId(R.string.plan_a_route, mapActivity)
+		optionsMenuHelper.addItem(new ItemBuilder().setTitleId(R.string.plan_route, mapActivity)
 				.setId(DRAWER_MEASURE_DISTANCE_ID)
 				.setIcon(R.drawable.ic_action_plan_route)
 				.setListener(new ItemClickListener() {
@@ -1046,7 +1054,7 @@ public class MapActivityActions implements DialogProvider {
 		//switch profile button
 		ApplicationMode currentMode = app.getSettings().APPLICATION_MODE.get();
 		String modeDescription;
-		Map<String, RoutingProfileDataObject> profilesObjects = ProfileDataUtils.getRoutingProfiles(app);
+		Map<String, ProfileDataObject> profilesObjects = ProfileDataUtils.getRoutingProfiles(app);
 		if (currentMode.isCustomProfile()) {
 			modeDescription = getProfileDescription(app, currentMode, profilesObjects, getString(R.string.profile_type_user_string));
 		} else {
@@ -1059,7 +1067,7 @@ public class MapActivityActions implements DialogProvider {
 				.setId(DRAWER_SWITCH_PROFILE_ID)
 				.setIcon(currentMode.getIconRes())
 				.setSecondaryIcon(icArrowResId)
-				.setColor(currentMode.getIconColorInfo().getColor(nightMode))
+				.setColor(currentMode.getProfileColor(nightMode))
 				.setTitle(currentMode.toHumanString())
 				.setDescription(modeDescription)
 				.setListener(new ItemClickListener() {
@@ -1073,7 +1081,7 @@ public class MapActivityActions implements DialogProvider {
 				.createItem());
 		optionsMenuHelper.addItem(new ItemBuilder().setLayout(R.layout.main_menu_drawer_btn_configure_profile)
 				.setId(DRAWER_CONFIGURE_PROFILE_ID)
-				.setColor(currentMode.getIconColorInfo().getColor(nightMode))
+				.setColor(currentMode.getProfileColor(nightMode))
 				.setTitle(getString(R.string.configure_profile))
 				.setListener(new ItemClickListener() {
 					@Override
@@ -1087,12 +1095,12 @@ public class MapActivityActions implements DialogProvider {
 	}
 
 	private String getProfileDescription(OsmandApplication app, ApplicationMode mode,
-	                                     Map<String, RoutingProfileDataObject> profilesObjects, String defaultDescription) {
+										 Map<String, ProfileDataObject> profilesObjects, String defaultDescription) {
 		String description = defaultDescription;
 
 		String routingProfileKey = mode.getRoutingProfile();
 		if (!Algorithms.isEmpty(routingProfileKey)) {
-			RoutingProfileDataObject profileDataObject = profilesObjects.get(routingProfileKey);
+			ProfileDataObject profileDataObject = profilesObjects.get(routingProfileKey);
 			if (profileDataObject != null) {
 				description = String.format(app.getString(R.string.profile_type_descr_string),
 						Algorithms.capitalizeFirstLetterAndLowercase(profileDataObject.getName()));

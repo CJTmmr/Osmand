@@ -28,7 +28,6 @@ import net.osmand.map.OsmandRegions.RegionTranslation;
 import net.osmand.map.WorldRegion;
 import net.osmand.osm.AbstractPoiType;
 import net.osmand.osm.MapPoiTypes;
-import net.osmand.plus.helpers.DayNightHelper;
 import net.osmand.plus.activities.LocalIndexHelper;
 import net.osmand.plus.activities.LocalIndexInfo;
 import net.osmand.plus.activities.SavingTrackHelper;
@@ -36,15 +35,18 @@ import net.osmand.plus.base.MapViewTrackingUtilities;
 import net.osmand.plus.download.DownloadActivity;
 import net.osmand.plus.download.ui.AbstractLoadLocalIndexTask;
 import net.osmand.plus.helpers.AvoidSpecificRoads;
+import net.osmand.plus.helpers.DayNightHelper;
 import net.osmand.plus.helpers.LockHelper;
 import net.osmand.plus.helpers.WaypointHelper;
 import net.osmand.plus.inapp.InAppPurchaseHelperImpl;
+import net.osmand.plus.itinerary.ItineraryHelper;
 import net.osmand.plus.liveupdates.LiveUpdatesHelper;
 import net.osmand.plus.mapmarkers.MapMarkersDbHelper;
 import net.osmand.plus.mapmarkers.MapMarkersHelper;
 import net.osmand.plus.monitoring.LiveMonitoringHelper;
 import net.osmand.plus.monitoring.OsmandMonitoringPlugin;
 import net.osmand.plus.onlinerouting.OnlineRoutingHelper;
+import net.osmand.plus.openplacereviews.OprAuthHelper;
 import net.osmand.plus.osmedit.oauth.OsmOAuthHelper;
 import net.osmand.plus.poi.PoiFiltersHelper;
 import net.osmand.plus.quickaction.QuickActionRegistry;
@@ -92,8 +94,8 @@ import btools.routingapp.IBRouterService;
 
 import static net.osmand.plus.AppVersionUpgradeOnInit.LAST_APP_VERSION;
 import static net.osmand.plus.liveupdates.LiveUpdatesHelper.getPendingIntent;
+import static net.osmand.plus.liveupdates.LiveUpdatesHelper.preferenceForLocalIndex;
 import static net.osmand.plus.liveupdates.LiveUpdatesHelper.preferenceLastCheck;
-import static net.osmand.plus.liveupdates.LiveUpdatesHelper.preferenceLiveUpdatesOn;
 import static net.osmand.plus.liveupdates.LiveUpdatesHelper.preferenceTimeOfDayToUpdate;
 import static net.osmand.plus.liveupdates.LiveUpdatesHelper.preferenceUpdateFrequency;
 import static net.osmand.plus.liveupdates.LiveUpdatesHelper.runLiveUpdate;
@@ -468,7 +470,9 @@ public class AppInitializer implements IProgress {
 		app.settingsHelper = startupInit(new SettingsHelper(app), SettingsHelper.class);
 		app.quickActionRegistry = startupInit(new QuickActionRegistry(app.getSettings()), QuickActionRegistry.class);
 		app.osmOAuthHelper = startupInit(new OsmOAuthHelper(app), OsmOAuthHelper.class);
+		app.oprAuthHelper = startupInit(new OprAuthHelper(app), OprAuthHelper.class);
 		app.onlineRoutingHelper = startupInit(new OnlineRoutingHelper(app), OnlineRoutingHelper.class);
+		app.itineraryHelper = startupInit(new ItineraryHelper(app), ItineraryHelper.class);
 
 		initOpeningHoursParser();
 	}
@@ -512,7 +516,7 @@ public class AppInitializer implements IProgress {
 				return null;
 			}
 		});
-		app.regions.setLocale(app.getLanguage(), app.getCountry());
+		app.regions.setLocale(app.getLanguage(), app.getLocaleHelper().getCountry());
 	}
 
 
@@ -681,7 +685,7 @@ public class AppInitializer implements IProgress {
 			// restore backuped favorites to normal file
 			restoreBackupForFavoritesFiles();
 			notifyEvent(InitEvents.RESTORE_BACKUPS);
-			app.mapMarkersHelper.syncAllGroupsAsync();
+			app.itineraryHelper.syncAllGroupsAsync();
 			app.searchUICore.initSearchUICore();
 
 			checkLiveUpdatesAlerts();
@@ -712,7 +716,7 @@ public class AppInitializer implements IProgress {
 		AlarmManager alarmMgr = (AlarmManager) app.getSystemService(Context.ALARM_SERVICE);
 		for (LocalIndexInfo fm : fullMaps) {
 			String fileName = fm.getFileName();
-			if (!preferenceLiveUpdatesOn(fileName, settings).get()) {
+			if (!preferenceForLocalIndex(fileName, settings).get()) {
 				continue;
 			}
 			int updateFrequencyOrd = preferenceUpdateFrequency(fileName, settings).get();
@@ -721,7 +725,7 @@ public class AppInitializer implements IProgress {
 			long lastCheck = preferenceLastCheck(fileName, settings).get();
 
 			if (System.currentTimeMillis() - lastCheck > updateFrequency.getTime() * 2) {
-				runLiveUpdate(app, fileName, false);
+				runLiveUpdate(app, fileName, false, null);
 				PendingIntent alarmIntent = getPendingIntent(app, fileName);
 				int timeOfDayOrd = preferenceTimeOfDayToUpdate(fileName, settings).get();
 				LiveUpdatesHelper.TimeOfDay timeOfDayToUpdate =

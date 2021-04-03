@@ -8,6 +8,7 @@ import net.osmand.plus.ContextMenuAdapter;
 import net.osmand.plus.ContextMenuItem;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
+import net.osmand.plus.chooseplan.ChoosePlanDialogFragment.ChoosePlanDialogType;
 import net.osmand.plus.settings.backend.CommonPreference;
 import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
@@ -52,7 +53,7 @@ public class ContourLinesMenu {
 		final OsmandApplication app = mapActivity.getMyApplication();
 		final OsmandSettings settings = app.getSettings();
 		final SRTMPlugin plugin = OsmandPlugin.getPlugin(SRTMPlugin.class);
-		final boolean srtmEnabled = OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) != null || InAppPurchaseHelper.isSubscribedToLiveUpdates(app);
+		final boolean srtmEnabled = OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) != null || InAppPurchaseHelper.isContourLinesPurchased(app);
 
 		final RenderingRuleProperty contourLinesProp = app.getRendererRegistry().getCustomRenderingRuleProperty(CONTOUR_LINES_ATTR);
 		final RenderingRuleProperty colorSchemeProp = app.getRendererRegistry().getCustomRenderingRuleProperty(CONTOUR_LINES_SCHEME_ATTR);
@@ -109,7 +110,7 @@ public class ContourLinesMenu {
 								@Override
 								public void run() {
 									mapActivity.getDashboard().refreshContent(true);
-									SRTMPlugin.refreshMapComplete(mapActivity);
+									mapActivity.refreshMapComplete();
 								}
 							});
 						}
@@ -123,7 +124,7 @@ public class ContourLinesMenu {
 								item.setDescription(plugin.getPrefDescription(app, contourLinesProp, pref));
 								adapter.notifyDataSetChanged();
 							}
-							SRTMPlugin.refreshMapComplete(mapActivity);
+							mapActivity.refreshMapComplete();
 						}
 					});
 				} else if (itemId == colorSchemeStringId) {
@@ -135,11 +136,12 @@ public class ContourLinesMenu {
 								item.setDescription(plugin.getPrefDescription(app, colorSchemeProp, colorPref));
 								adapter.notifyDataSetChanged();
 							}
-							SRTMPlugin.refreshMapComplete(mapActivity);
+							mapActivity.refreshMapComplete();
 						}
 					});
 				} else if (itemId == R.string.srtm_plugin_name) {
-					ChoosePlanDialogFragment.showHillshadeSrtmPluginInstance(mapActivity.getSupportFragmentManager());
+					ChoosePlanDialogFragment.showDialogInstance(mapActivity.getMyApplication(),
+							mapActivity.getSupportFragmentManager(), ChoosePlanDialogType.HILLSHADE_SRTM_PLUGIN);
 					closeDashboard(mapActivity);
 				} else if (contourWidthProp != null && itemId == contourWidthName.hashCode()) {
 					plugin.selectPropertyValue(mapActivity, contourWidthProp, widthPref, new Runnable() {
@@ -150,7 +152,7 @@ public class ContourLinesMenu {
 								item.setDescription(plugin.getPrefDescription(app, contourWidthProp, widthPref));
 								adapter.notifyDataSetChanged();
 							}
-							SRTMPlugin.refreshMapComplete(mapActivity);
+							mapActivity.refreshMapComplete();
 						}
 					});
 				} else if (contourDensityProp != null && itemId == contourDensityName.hashCode()) {
@@ -162,7 +164,7 @@ public class ContourLinesMenu {
 								item.setDescription(plugin.getPrefDescription(app, contourDensityProp, densityPref));
 								adapter.notifyDataSetChanged();
 							}
-							SRTMPlugin.refreshMapComplete(mapActivity);
+							mapActivity.refreshMapComplete();
 						}
 					});
 				}
@@ -184,7 +186,7 @@ public class ContourLinesMenu {
 		contextMenuAdapter.addItem(new ContextMenuItem.ItemBuilder()
 				.setTitleId(toggleActionStringId, mapActivity)
 				.setIcon(toggleIconId)
-				.setColor(toggleIconColorId)
+				.setColor(app, toggleIconColorId)
 				.setListener(l)
 				.setSelected(selected).createItem());
 		if (selected) {
@@ -225,7 +227,7 @@ public class ContourLinesMenu {
 					.setTitleId(R.string.srtm_plugin_name, mapActivity)
 					.setLayout(R.layout.list_item_icon_and_right_btn)
 					.setIcon(R.drawable.ic_plugin_srtm)
-					.setColor(R.color.osmand_orange)
+					.setColor(app, R.color.osmand_orange)
 					.setDescription(app.getString(R.string.shared_string_plugin))
 					.setListener(l).createItem());
 		} else {

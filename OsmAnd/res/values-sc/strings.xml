@@ -57,7 +57,7 @@
     <string name="index_name_gb">Europa - Britannia Manna</string>
     <string name="calculate_osmand_route_without_internet">Càrculu chene impreu de ìnternet de un\'àndala de OsmAnd</string>
     <string name="gpx_option_calculate_first_last_segment">Càrcula un’àndala cun OsmAnd pro su primu e s’ùrtimu segmentu de sa caminera</string>
-    <string name="use_displayed_track_for_navigation">Cheres impreare s’àndala ammustrada pro sa navigatzione\?</string>
+    <string name="use_displayed_track_for_navigation">Cheres impreare sa rasta ammustrada pro sa navigatzione\?</string>
     <string name="keep_and_add_destination_point">Annanghe comente destinatzione imbeniente</string>
     <string name="select_gpx">Issèbera GPX…</string>
     <string name="route_descr_select_destination">Imposta sa destinatzione</string>
@@ -356,7 +356,6 @@
     <string name="avoid_motorway">Peruna autostrada</string>
     <string name="auto_zoom_map_descr">Ismanniamentu mapa relativu a sa lestresa (si sa mapa est sincronizzata cun sa positzione currente).</string>
     <string name="auto_zoom_map">Ismanniamentu automàticu mapa</string>
-    <string name="snap_to_road_descr">Arrea sa positzione in subra de sos caminos durante sa navigatzione.</string>
     <string name="snap_to_road">Arrea in subra de sos caminos</string>
     <string name="interrupt_music_descr">Sos annùntzios vocales ponent sa mùsica in pàusa.</string>
     <string name="interrupt_music">Firma sa mùsica</string>
@@ -618,7 +617,7 @@
     <string name="map_online_data_descr">Imprea sas mapas in lìnia (iscàrriga e archìvia sos tasseddos in s’ischeda de memòria).</string>
     <string name="shared_string_online_maps">Mapas in lìnia</string>
     <string name="online_map_settings_descr">Ischerta sas mitzas de sas mapas in lìnia o de sos tasseddos in cache.</string>
-    <string name="osmand_accessibility_description">Permitit de impreare sas funtzionalidades pro s\'atzessibilidade de su dispositivu ditetamente in OsmAnd, e fatzilitat, pro nàrrere, sa modìfica de sa lestresa de sas boghes de sìntesi vocale, sa cunfiguratzione de su movimentu de s\'ischermu, s’impreu de una trackball pro s\'ismanniamentu o de un’interfàtzia vocale pro cosas che s\'annùntziu de sa positzione tua.</string>
+    <string name="osmand_accessibility_description">Permitit de impreare sas funtzionalidades pro s\'atzessibilidade de su dispositivu diretamente in OsmAnd, e fatzìlitat, pro nàrrere, sa modìfica de sa lestresa de sas boghes de sìntesi vocale, sa cunfiguratzione de su movimentu de s\'ischermu, s’impreu de una trackball pro s\'ismanniamentu o de un’interfache vocale pro cosas che s\'annùntziu de sa positzione tua.</string>
     <string name="plugins_screen">Estensiones</string>
     <string name="prefs_plugins_descr">Sas estensiones abìlitant funtzionalidades agiuntivas e impostatziones avantzadas.</string>
     <string name="prefs_plugins">Estensiones</string>
@@ -845,7 +844,7 @@
     <string name="favorite_home_category">Domo</string>
     <string name="favorite_friends_category">Amigos</string>
     <string name="favorite_places_category">Logos</string>
-    <string name="shared_string_others">Àteru</string>
+    <string name="shared_string_others">Àteros</string>
     <string name="shared_string_name">Nùmene</string>
     <string name="favourites_edit_dialog_category">Categoria</string>
     <string name="shared_string_no_thanks">No, gràtzias</string>
@@ -909,7 +908,7 @@
     <string name="search_osm_offline">Chirca impreende sa positzione geogràfica</string>
     <string name="system_locale">Sistema</string>
     <string name="preferred_locale_descr">Limba de interfache de s\'aplicatzione (impreada a pustis chi as a torrare a allùghere OsmAnd).</string>
-    <string name="preferred_locale">Limba interfàtzia</string>
+    <string name="preferred_locale">Limba de interfache</string>
     <string name="incomplete_locale">non cumpridu</string>
     <string name="shared_string_next">Imbeniente</string>
     <string name="shared_string_previous">Antepostu</string>
@@ -1170,7 +1169,6 @@
     <string name="error_calculating_route">Impossìbile carculare s\'àndala.</string>
     <string name="error_calculating_route_occured">Impossìbile carculare s\'àndala.</string>
     <string name="empty_route_calculated">S’àndala carculada est bòida.</string>
-    <string name="new_route_calculated_dist">Àndala noa calculada, distàntzia</string>
     <string name="arrived_at_destination">Ses arribadu.</string>
     <string name="invalid_locations">Coordinadas non vàlidas</string>
     <string name="go_back_to_osmand">Torra a sa mapa</string>
@@ -1266,7 +1264,6 @@
     <string name="osb_comment_dialog_error">Impossìbile annànghere su cummentu.</string>
     <string name="poi_edit_title">Muda PDI</string>
     <string name="poi_create_title">Crea PDI</string>
-    <string name="poi_error_poi_not_found">Su nodu non podet èssere agatadu, o s’amenidade est fata de prus nodos, cosa chi no est galu suportada.</string>
     <string name="poi_remove_confirm_template">Iscantzellare {0} (cummentu)?</string>
     <string name="poi_remove_title">Iscantzelladura PDI</string>
     <string name="shared_string_delete">Iscantzella</string>
@@ -1373,7 +1370,7 @@
     <string name="no_internet_connection">Impossìbile iscarrigare. Pro praghere còmpida sa connessione tua pro sighire.</string>
     <string name="download_tab_downloads">Totu sos iscarrigamentos</string>
     <string name="download_tab_updates">Agiornamentos</string>
-    <string name="download_tab_local">Iscarrigadas</string>
+    <string name="download_tab_local">Installadas</string>
     <string name="navigate_point_zone">Zona</string>
     <string name="navigate_point_northing">In diretzione Nord</string>
     <string name="navigate_point_easting">In diretzione Est</string>
@@ -1802,7 +1799,6 @@
     <string name="route_distance">Distàntzia:</string>
     <string name="route_duration">Tempus:</string>
     <string name="rendering_attr_horseRoutes_name">Àndalas a caddu</string>
-    <string name="update">Agiorna cada</string>
     <string name="only_download_over_wifi">Iscàrriga petzi cun su WiFi</string>
     <string name="live_update">Agiornamentos in tempus reale</string>
     <string name="update_now">Agiorna como</string>
@@ -1992,7 +1988,6 @@
     <string name="advanced_coords_search">Chirca avantzada cun coordinadas</string>
     <string name="route_stops_before">%1$s firmadas in antis</string>
     <string name="routing_attr_short_way_name">Àndala prus de atòliu pro sos consumos</string>
-    <string name="routing_attr_short_way_description">Issèbera s\'àndala prus de atòliu pro sos consumos (sa prus curtza, de sòlitu).</string>
     <string name="replace_favorite_confirmation">Seguru ses de bòlere sostituire su preferidu %1$s?</string>
     <string name="rendering_attr_hideOverground_name">Ogetos subra de terra</string>
     <string name="shared_string_change">Càmbia</string>
@@ -2013,8 +2008,6 @@
     <string name="give_permission">Dae su permissu</string>
     <string name="allow_access_location">Dae su permissu pro s\'atzessu a sa positzione</string>
     <string name="search_my_location">Agata sa positzione mea</string>
-    <string name="no_update_info_desc">Non chircare versiones noas o ofertas promotzionales pro OsmAnd.</string>
-    <string name="no_update_info">No ammustres versiones noas</string>
     <string name="update_all_maps_now">Agiornare totu sas mapas como?</string>
     <string name="clear_tile_data">Iscantzella totu sos tasseddos</string>
     <string name="first_usage_greeting">Retzi indicatziones e iscoberi logos noos chene una connessione a ìnternet</string>
@@ -2078,9 +2071,6 @@
     <string name="routing_attr_allow_motorway_description">Permitit s\'impreu de sas autostradas.</string>
     <string name="lang_sr_latn">Serbu (latinu)</string>
     <string name="lang_zh_hk">Tzinesu (Hong Kong)</string>
-    <string name="legacy_search">Chirca betza</string>
-    <string name="show_legacy_search">Ammustra sa chirca betza</string>
-    <string name="show_legacy_search_desc">Annanghe sa chirca betza a sa lista.</string>
     <string name="rendering_attr_contourWidth_description">Grussesa curvas de livellu</string>
     <string name="rendering_attr_contourWidth_name">Ispessore curvas de livellu</string>
     <string name="rendering_attr_hideWaterPolygons_description">Abba</string>
@@ -2129,10 +2119,6 @@
     <string name="quick_action_interim_dialog">Ammustra una ventana intermèdia</string>
     <string name="quick_action_showhide_favorites_descr">Unu butone pro ammustrare o cuare sos puntos preferidos in sa mapa.</string>
     <string name="quick_action_showhide_poi_descr">Unu butone pro ammustrare o cuare sos PDI in sa mapa.</string>
-    <string name="quick_action_showhide_favorites_title">Ammustra/cua sos preferidos</string>
-    <string name="quick_action_favorites_show">Ammustra sos preferidos</string>
-    <string name="quick_action_favorites_hide">Cua sos preferidos</string>
-    <string name="quick_action_showhide_poi_title">Ammustra/cua sos PDI</string>
     <string name="quick_action_poi_show">Ammustra %1$s</string>
     <string name="quick_action_poi_hide">Cua %1$s</string>
     <string name="quick_action_add_category">Annanghe una categoria</string>
@@ -2177,7 +2163,6 @@
     <string name="rendering_attr_depthContours_name">Curvas de profondidade nàuticas</string>
     <string name="rendering_attr_depthContours_description">Ammustra sas lìnias de profondidade.</string>
     <string name="routing_attr_height_obstacles_name">Imprea sos datos de s\'artària</string>
-    <string name="routing_attr_height_obstacles_description">Fatore pro s\'artària de su terrinu (dae datos SRTM, ASTER e EU-DEM).</string>
     <string name="routing_attr_driving_style_name">Istile de ghia</string>
     <string name="route_altitude">Artària de su caminu</string>
     <string name="altitude_descent">Falada</string>
@@ -2399,9 +2384,6 @@
     <string name="srtm_purchase_header">Còmpora e installa s\'estensione \'Curvas de Livellu\' pro ammustrare sas àreas verticales graduadas.</string>
     <string name="search_favorites">Chirca in sos preferidos</string>
     <string name="sorted_by_distance">Ordinados pro distàntzia</string>
-    <string name="quick_action_showhide_osmbugs_title">Ammustra/cua sas notas OSM</string>
-    <string name="quick_action_osmbugs_show">Ammustra sas notas OSM</string>
-    <string name="quick_action_osmbugs_hide">Cua sas notas OSM</string>
     <string name="quick_action_showhide_osmbugs_descr">Unu butone pro ammustrare o cuare sas Notas OSM in sa mapa.</string>
     <string name="restart_search">Torra a incumintzare sa chirca</string>
     <string name="increase_search_radius">Ismànnia su raju de chirca</string>
@@ -2597,17 +2579,6 @@
     <string name="by_date">Pro data</string>
     <string name="by_type">Pro casta</string>
     <string name="modify_the_search_query">Muda sa chirca tua.</string>
-    <string name="release_3_0">• Nou: suportu pro ghias globales de biàgiu non in lìnia. Sos logos numenados sunt ligados a sa mapa. Datos initziales dae WikiVoyage. 
-\n 
-\n • Wikipedia: aspetu nou, ligàmenes ativos, immàgines 
-\n 
-\n • Interfache pro abèrrere sas rastas: ammustra sos puntos de coladòrgiu 
-\n 
-\n • Marcadores mapa: importatzione de grupos ischertados dae documentos GPX, aspetu noude s\'insertada de sas coordinadas 
-\n 
-\n • S\'abbonamentu a OsmAnd Live como incluet totu sas funtzionalidades de OsmAnd 
-\n 
-\n</string>
     <string name="what_is_here">Ite b\'at inoghe:</string>
     <string name="parked_at">parchegiadu in</string>
     <string name="pick_up_till">Piga intre</string>
@@ -2727,7 +2698,7 @@
     <string name="update_is_available">Agiornamentu disponìbile</string>
     <string name="download_file">Iscàrriga documentu</string>
     <string name="start_editing_card_image_text">Sa ghia turìstica lìbera pro totu su mundu chi totus podent megiorare.</string>
-    <string name="welcome_to_open_beta_description">Sas ghias de biàgiu sunt basadas in subra de Wikivoyage. Proa totu sas funtzionalidades suas de badas pro su tempus chi at a durare sa beta aberta. A pustis de sa fine de custu perìodu, imbetzes, at a èssere disponìbile petzi pro abbonados a OsmAnd Unlimited e a chie tenet OsmAnd+.</string>
+    <string name="welcome_to_open_beta_description">Sas ghias de biàgiu sunt basadas in subra de Wikivoyage. Proa totu sas funtzionalidades suas de badas pro su tempus chi at a durare sa beta aberta.</string>
     <string name="start_editing_card_description">Podes acontzare cale si siat artìculu in Wikivoyage. Cumpartzi connoschèntzias, esperièntzias, talentu e s\'atentzione tua.</string>
     <string name="start_editing">Incumintza a modificare</string>
     <string name="get_unlimited_access">Otene s’atzessu illimitadu</string>
@@ -2782,46 +2753,13 @@
     <string name="shared_string_world">Mundu</string>
     <string name="send_search_query_description">Amos a imbiare sos tèrmines de sa chirca tua: \"%1$s\", in paris cun sa positzione tua.\n
         \n Non benit collida peruna informatzione personale, sos datos de chirca benint impreados petzi pro megiorare s\'algoritmu de chirca.</string>
-    <string name="search_no_results_description">Perunu risultadu?
-\nFaghide·nos·lu ischire.</string>
     <string name="send_search_query">Imbiare sos tèrmines de chirca?</string>
-    <string name="release_3_1">• Nàvigu: Barra de progressu acontzada, cuncàmbiu lestru intre sos puntos de incumintzu e de acabu de s\'àndala 
-\n 
-\n • Marcadores de sa mapa: acontzu de s\'allughidura/istudadura de sos grupos, possibilidade de istichire marcadores dae sa mapa 
-\n 
-\n • Modìficas OSM: Possibilidade de modificare sas etichetas pro sos ogetos e sas bias chi non sunt puntos, acontzu de su problema de sos cummentos chi mancaiant in sas notas, còpia de seguresa de sas modìficas 
-\n 
-\n • Anàlisi de Wikipedia e de Wikivoyage megioradas, sos documentos agiornados sunt giai disponìbiles 
-\n 
-\n • Menù de cuntestu: colores de sos iscudos de trasportu in sa modalidade pro sa note acontzados, mannàrias pro sos menùs additzionales acontzadas 
-\n
-\n • Nàvigu in barca: suportu pro sos canales navigàbiles
-\n 
-\n • Àteros acontzos de errores 
-\n 
-\n</string>
     <string name="increase_search_radius_to">Ismànnia su raju de chirca finas a %1$s</string>
     <string name="thank_you_for_feedback">Gràtzias pro s\'opinione tua</string>
     <string name="poi_cannot_be_found">Impossìbile agatare su nodu o sa bia.</string>
     <string name="search_no_results_feedback">Perunu risultadu de chirca\? 
 \nFruni·nos s\'opinione tua</string>
-    <string name="commiting_way">Imbiende sa bia…</string>
     <string name="test_voice_desrc">Toca unu butone e ascurta s\'annùntziu vocale chi li currispondet pro intendere si mancat o si est isballiadu</string>
-    <string name="release_3_2_pre">• Curretu s\'errore de istudada a s\'allughidura chi bi fiat pro carchi dispositivu 
-\n 
-\n • Funtzionalidae noa pro sos marcadores: ammustra sos marcadores chi as giai coladu 
-\n 
-\n • Sa cronologia de sas chircas como ammustrat sas categorias chi as chircadu in antis 
-\n
-\n • Errore de istudada a s\'allughidura cun mapas cun caràteres non latinos curretu 
-\n 
-\n • Lestresa de sa renderizatzione in sos dispositivos Android 8.0 megiorada 
-\n 
-\n • Suportu a sa modìfica de ogetos poligonales (non amenidades) 
-\n 
-\n • Medida de distàntzias: butone pro sas medidas annantu a su butone de sas atziones in su menù de cuntestu 
-\n 
-\n</string>
     <string name="ask_for_location_permission">Pro praghere fruni a OsmAnd s\'atzessu a sa positzione pro sighire.</string>
     <string name="rendering_value_black_name">Nieddu</string>
     <string name="more_transport_on_stop_hint">In custa firmada bi sunt àteros mesos de trasportu disponìbiles.</string>
@@ -2898,27 +2836,7 @@
     <string name="routeInfo_road_types_name">Castas de àndalas</string>
     <string name="exit_at">Essi in</string>
     <string name="sit_on_the_stop">Àrtzia in sa firmada</string>
-    <string name="quick_action_show_hide_gpx_tracks">Ammustra/cua sas rastas</string>
     <string name="quick_action_show_hide_gpx_tracks_descr">Unu butone pro ammustrare o cuare sas rastas ischertadas in sa mapa.</string>
-    <string name="quick_action_gpx_tracks_hide">Istichi sas rastas</string>
-    <string name="quick_action_gpx_tracks_show">Ammustra sas rastas</string>
-    <string name="release_3_3">• Ischermada \'Diretziones\' noa: Ammustrat sos butones de destinatzione pro sa domo e su logu de traballu, s\'incurtzada \'àndala imbeniente\', sa lista de rastas GPX e de marcadores ativos e sa cronologia de sas chircas 
-\n 
-\n • Informatziones agiuntivas in suta de \'Minujas de s\'àndala\': casta de carreras, superfìtzies, ratesa, uniformidade 
-\n 
-\n • Navigatzione cun su trasportu pùblicu chi suportat cada genia de trasportu: metropolitana, postale, tram, etz. 
-\n 
-\n • Butone de atzione nou pro ammustrare/istichire rastas e modalidades die/note 
-\n 
-\n • Àreas fissadas ammustradas comente inundadas in Germània, Àfrica de su Sud, Quebec 
-\n 
-\n • Suportu agiuntivu pro s\'importatzione de KML e KMZ 
-\n 
-\n • Errore de istudada a s\'abertura de carchi firmada de trasportu pùblicu curretu 
-\n 
-\n • Anàlisi de Facebook e Firebase bogadas dae sa versione lìbera (OsmAnd+ non las incluet)
-\n
-\n</string>
     <string name="use_osm_live_public_transport_description">Abìlita su trasportu pùblicu pro sas modìficas de OsmAnd Live.</string>
     <string name="use_osm_live_public_transport">Trasportu pùblicu in OsmAnd Live</string>
     <string name="transfers_size">%1$d tramudòngios</string>
@@ -2995,15 +2913,6 @@
     <string name="routing_attr_avoid_subway_description">Istransit sas metropolitanas e sas metrotranvias</string>
     <string name="routing_attr_avoid_ferry_name">Perunu navile</string>
     <string name="routing_attr_avoid_ferry_description">Istransit sos naviles</string>
-    <string name="release_3_3_7">• Ammustra su tempus intre sos movimentos in su trasportu pùblicu
-\n
-\n • Interfache pro s\'impreadore pro sas minujas de s\'àndala curreta
-\n
-\n • Tema iscuru in su menù de sas diretziones e in sas minujas de s\'àndala curretu
-\n
-\n • Ammustra s\'azimuth in Medi sa distàntzia
-\n
-\n</string>
     <string name="send_log">Imbia su registru</string>
     <string name="files_moved">%1$d documentos tramudados (%2$s).</string>
     <string name="files_copied">%1$d documentos copiados (%2$s).</string>
@@ -3189,8 +3098,7 @@
     <string name="shared_string_default">Predefinidu</string>
     <string name="gpx_join_gaps">Liga sas separatziones</string>
     <string name="app_mode_campervan">Camper (RV)</string>
-    <string name="new_route_calculated_dist_dbg">Àndala: distàntzia %s, tempus %s 
-\nCàrculu: %.1f seg, %d caminos, %d tasseddos)</string>
+    <string name="new_route_calculated_dist_dbg">Àndala: distàntzia %1$s, tempus %2$s \nCàrculu: %3$.1f seg, %4$d caminos, %5$d tasseddos)</string>
     <string name="lang_oc">Otzitanu</string>
     <string name="app_mode_wagon">Vagone pro sas mertzes</string>
     <string name="app_mode_pickup_truck">Camieddu</string>
@@ -3217,7 +3125,6 @@
     <string name="shared_string_example">Esèmpiu</string>
     <string name="navigate_point_format_utm">Istandard UTM</string>
     <string name="navigate_point_format_olc">Còdighe Abertu de Logu (OLC)</string>
-    <string name="appearance">Aparèntzia</string>
     <string name="list_of_installed_plugins">Estensiones installadas</string>
     <string name="reset_to_default">Reimposta sos valores predefinidos</string>
     <string name="turn_screen_on">Allughe s’ischermu</string>
@@ -3255,7 +3162,7 @@
     <string name="vehicle_parameters">Paràmetros de su veìculu</string>
     <string name="voice_announces_info">Sos annùntzios vocales benint riproduidos petzi durante sa navigatzione.</string>
     <string name="voice_announces_descr">Istrutziones e annùntzios de navigatzione</string>
-    <string name="voice_announces">Annùntzios vocales</string>
+    <string name="voice_announces">Indicatziones vocales</string>
     <string name="screen_alerts">Avisos in s\'ischermu</string>
     <string name="route_parameters_descr">Cunfigura sos paràmetros de s\'àndala</string>
     <string name="route_parameters">Paràmetros de s\'àndala</string>
@@ -3263,7 +3170,6 @@
     <string name="logcat_buffer">Buffer de Logcat</string>
     <string name="shared_string_by_default">Predefinidu</string>
     <string name="plugins_settings">Impostatziones de s\'estensione</string>
-    <string name="download_detaile_map">Iscàrriga sa mapa de %s fata a sa minuda pro pompiare cust\'àrea.</string>
     <string name="download_detailed_map">Iscàrriga sa mapa de %s fata a sa minuda pro pompiare cust\'àrea.</string>
     <string name="change_data_storage_full_description">Tramudare sos datos de OsmAnd in sa destinatzione noa\?
 \n%1$s &gt; %2$s</string>
@@ -3345,13 +3251,7 @@
     <string name="routing_attr_driving_style_prefer_unpaved_description">Preferi caminos no apamentados a sos caminos pamentados pro s\'àndala.</string>
     <string name="layer_osm_edits">Modìficas de OSM</string>
     <string name="quick_action_contour_lines_descr">Butone chi ammustrat o cuat sas curvas de livellu in sa mapa.</string>
-    <string name="quick_action_contour_lines_show">Ammustra sas curvas de livellu</string>
-    <string name="quick_action_contour_lines_hide">Cua sas curvas de livellu</string>
-    <string name="quick_action_show_hide_contour_lines">Ammustra/cua sas curvas de livellu</string>
     <string name="quick_action_hillshade_descr">Unu butone pro ammustrare o cuare sas umbraduras de sos rilievos in sa mapa.</string>
-    <string name="quick_action_hillshade_show">Ammustra sas umbraduras de sos rilievos</string>
-    <string name="quick_action_hillshade_hide">Cua sas umbraduras de sos rilievos</string>
-    <string name="quick_action_show_hide_hillshade">Ammustra/cua sas umbraduras de sos rilievos</string>
     <string name="tts_initialization_error">Allughidura de su motore de sìntesi vocale fallida.</string>
     <string name="simulate_your_location_gpx_descr">Sìmula sa positzione tua impreende una rasta GPX registrada.</string>
     <string name="export_profile">Esporta su profilu</string>
@@ -3577,9 +3477,6 @@
     <string name="shared_string_hillshade">Umbraduras de sos rilievos</string>
     <string name="n_items_of_z">%1$s de %2$s</string>
     <string name="download_slope_maps">Pistas</string>
-    <string name="quick_action_show_hide_terrain">Ammustra o cua su terrinu</string>
-    <string name="quick_action_terrain_hide">Cua su terrinu</string>
-    <string name="quick_action_terrain_show">Ammustra su terrinu</string>
     <string name="quick_action_terrain_descr">Unu butone pro ammustrare o cuare s\'istratu de su terrinu in sa mapa.</string>
     <string name="delete_description">Iscantzella sa descritzione</string>
     <string name="add_description">Annanghe una descritzione</string>
@@ -3693,9 +3590,6 @@
 \n</string>
     <string name="shared_string_resume">Sighi</string>
     <string name="additional_actions_descr">Podes atzèdere a custas atziones incarchende su butone \"%1$s\".</string>
-    <string name="quick_action_transport_hide">Cua sos trasportos pùblicos</string>
-    <string name="quick_action_transport_show">Ammustra sos trasportos pùblicos</string>
-    <string name="quick_action_show_hide_transport">Ammustra o cua sos trasportos pùblicos</string>
     <string name="quick_action_transport_descr">Butone pro ammustrare o cuare sos trasportos pùblicos in sa mapa.</string>
     <string name="create_edit_poi">Crea o modìfica unu PDI</string>
     <string name="parking_positions">Logos de parchègiu</string>
@@ -3712,7 +3606,6 @@
     <string name="export_import_quick_actions_with_profiles_promo">Podes esportare o importare atziones lestras cun profilos de s\'aplicatzione.</string>
     <string name="shared_string_delete_all_q">Iscantzellare totu\?</string>
     <string name="delete_all_actions_message_q">Ses seguru de chèrrere iscantzellare definitivamente %d atziones lestras\?</string>
-    <string name="shared_string_all_time">Totu su tempus</string>
     <string name="shared_string_meters">metros</string>
     <string name="details_dialog_decr">Ammustra o cua sos detàllios additzionales in sa mapa</string>
     <string name="shared_string_night_map">Mapa noturna</string>
@@ -3764,9 +3657,6 @@
     <string name="vessel_height_warning">Podes impostare s\'artària de sa barca pro evitare sos pontes bassos. Ammenta·ti chi, si su ponte est mòbile, amus a impreare s\'artària sua de cando est abertu.</string>
     <string name="vessel_height_limit_description">Imposta s\'artària de sa barca pro evitare sos pontes bassos. Ammenta·ti chi, si su ponte est mòbile, amus a impreare s\'artària sua de cando est abertu.</string>
     <string name="vessel_width_limit_description">Imposta sa largària de sa barca pro evitare pontes astrintos</string>
-    <string name="quick_action_showhide_mapillary_title">Ammustra/cua Mapillary</string>
-    <string name="quick_action_mapillary_hide">Cua Mapillary</string>
-    <string name="quick_action_mapillary_show">Ammustra Mapillary</string>
     <string name="quick_action_showhide_mapillary_descr">Unu butone pro ammustrare o cuare s\'istratu de Mapillary in sa mapa.</string>
     <string name="uninstall_speed_cameras">Disinstalla sos autovelox</string>
     <string name="shared_string_legal">Legale</string>
@@ -3881,7 +3771,7 @@
     <string name="only_selected_segment_recalc">Petzi su segmentu ischertadu s\'at a torrare a carculare impreende su profilu ischertadu.</string>
     <string name="all_next_segments_will_be_recalc">Totu sos segmentos imbenientes s\'ant a torrare a carculare impreende su segmentu ischertadu.</string>
     <string name="all_previous_segments_will_be_recalc">Totu sos segmentos s\'ant a torrare a carculare impreende su profilu ischertadu.</string>
-    <string name="open_saved_track">Aberi una rasta sarvada</string>
+    <string name="open_saved_track">Aberi sa rasta sarvada</string>
     <string name="shared_string_is_saved">est sarvadu</string>
     <string name="one_point_error">Pro praghere annanghe a su mancu duos puntos.</string>
     <string name="shared_string_redo">Torra a fàghere</string>
@@ -3998,7 +3888,6 @@
     <string name="select_picture">Ischerta un\'immàgine</string>
     <string name="ltr_or_rtl_combine_via_star">%1$s * %2$s</string>
     <string name="lang_de_casual">Tedescu (informale)</string>
-    <string name="elevation_data">Podes impreare sos datos de s\'artària pro valutare s\'Artziada / Achirrada pro su biàgiu tuo</string>
     <string name="app_mode_light_aircraft">Aèreu lèbiu</string>
     <string name="plan_route_join_segments">Auni sos segmentos</string>
     <string name="plan_route_split_before">Iscroba in antis de</string>
@@ -4025,4 +3914,136 @@
     <string name="routing_attr_allow_intermittent_description">Permite caminos de abba intermitentes</string>
     <string name="routing_attr_allow_intermittent_name">Permite caminos de abba intermitentes</string>
     <string name="voice_prompts_timetable">Nùmeru de annùntzios vocales</string>
+    <string name="add_online_routing_engine">Annanghe unu motore de càrculu de s\'àndala in lìnia</string>
+    <string name="edit_online_routing_engine">Modìfica su motore de càrculu de s\'àndala in lìnia</string>
+    <string name="shared_string_subtype">Suta-casta</string>
+    <string name="shared_string_vehicle">Veìculu</string>
+    <string name="shared_string_api_key">Crae de s\'API</string>
+    <string name="shared_string_server_url">URL de su serbidore</string>
+    <string name="shared_string_enter_param">Inserta su paràmetru</string>
+    <string name="keep_it_empty_if_not">Si nono, mantene·lu bòidu</string>
+    <string name="online_routing_example_hint">S\'URL cun totu sos paràmetros at a apàrrere gasi:</string>
+    <string name="test_route_calculation">Proa a carculare un\'àndala</string>
+    <string name="routing_engine_vehicle_type_driving">In vetura</string>
+    <string name="routing_engine_vehicle_type_foot">A pee</string>
+    <string name="routing_engine_vehicle_type_bike">Bitzicleta</string>
+    <string name="routing_engine_vehicle_type_car">Màchina</string>
+    <string name="copy_address">Còpia s\'indiritzu</string>
+    <string name="online_routing_engine">Motore de càrculu in lìnia</string>
+    <string name="online_routing_engines">Motores de càrculu in lìnia</string>
+    <string name="shared_string_folders">Cartellas</string>
+    <string name="select_folder">Ischerta sa cartella</string>
+    <string name="select_folder_descr">Ischerta una cartella o crea·nde una noa</string>
+    <string name="shared_string_empty">Bòidu</string>
+    <string name="announcement_time_intervals">Intervallos de tempus e de distàntzia</string>
+    <string name="start_recording">Incumintza a registrare</string>
+    <string name="show_track_on_map">Ammustra sa rasta in sa mapa</string>
+    <string name="routing_engine_vehicle_type_wheelchair">Cadira a rodas</string>
+    <string name="routing_engine_vehicle_type_hiking">Escursionismu</string>
+    <string name="routing_engine_vehicle_type_walking">A pee</string>
+    <string name="routing_engine_vehicle_type_cycling_electric">Tziclismu elètricu</string>
+    <string name="routing_engine_vehicle_type_cycling_mountain">Tziclismu de monte</string>
+    <string name="routing_engine_vehicle_type_cycling_road">Tziclismu in carreras</string>
+    <string name="routing_engine_vehicle_type_cycling_regular">Tziclismu regulare</string>
+    <string name="routing_engine_vehicle_type_hgv">Veìculu de trasportu</string>
+    <string name="routing_engine_vehicle_type_small_truck">Camioneta</string>
+    <string name="routing_engine_vehicle_type_truck">Càmion</string>
+    <string name="routing_engine_vehicle_type_scooter">Motorinu (Scooter)</string>
+    <string name="routing_engine_vehicle_type_racingbike">Bitzicleta de cursa</string>
+    <string name="routing_engine_vehicle_type_mtb">MTB (motosilurante)</string>
+    <string name="message_server_error">Errore de su serbidore: %1$s</string>
+    <string name="message_name_is_already_exists">Su nùmene esistit giai</string>
+    <string name="analyze_by_intervals">Analiza sos intervallos fratzionados</string>
+    <string name="upload_to_openstreetmap">Càrriga in OpenStreetMap</string>
+    <string name="edit_track">Modìfica sa rasta</string>
+    <string name="rename_track">Modìfica su nùmene de sa rasta</string>
+    <string name="change_folder">Càmbia sa cartella</string>
+    <string name="shared_string_sec">seg</string>
+    <string name="delete_online_routing_engine">Iscantzellare custu motore de càrculu in lìnia\?</string>
+    <string name="context_menu_read_full">Leghe totu</string>
+    <string name="context_menu_edit_descr">Modìfica sa descritzione</string>
+    <string name="delete_waypoints">Iscantzella sos puntos de coladòrgiu</string>
+    <string name="copy_to_map_markers">Còpia in sos marcadores de sa mapa</string>
+    <string name="copy_to_map_favorites">Còpia in sos preferidos</string>
+    <string name="upload_photo">Carrighende</string>
+    <string name="upload_photo_completed">Carrigamentu acabadu</string>
+    <string name="uploading_count">Carrighende %1$d de %2$d</string>
+    <string name="uploaded_count">%1$d de %2$d carrigados</string>
+    <string name="toast_select_edits_for_upload">Ischerta modìficas de carrigare</string>
+    <string name="announcement_time_descr">Su tempus de annùntziu de sos annùntzios vocales diferentes dipendet dae sa casta de annùntziu, dae sa lestresa de navigatzione de cussu momentu e dae sa lestresa de navigatzione predefinida.</string>
+    <string name="announcement_time_title">Tempus de annùntziu</string>
+    <string name="open_place_reviews_plugin_description">OpenPlaceReviews est unu progetu ghiadu dae sa comunidade in subra de logos pùblicos che a ristorantes, albergos, museos, puntos de coladòrgiu. Collit totu sas informatziones pùblicas chi lis pertocant che a sas fotos, sas retzensiones, e sos ligàmenes a àteros sistemas che ligant a OpenStreetMap e Wikipedia.
+\n
+\nTotu sos datos de OpenPlaceReview sunt lìberos e a disponimentu de totus: http://openplacereviews.org/data.
+\n
+\nPodes agatare àteras informatziones inoghe: http://openplacereviews.org</string>
+    <string name="announcement_time_passing">Colende</string>
+    <string name="announcement_time_approach">Acurtzia·ti</string>
+    <string name="announcement_time_prepare_long">Ammaniamentu longu</string>
+    <string name="announcement_time_prepare">Ammània</string>
+    <string name="announcement_time_off_route">In foras de s\'àndala</string>
+    <string name="announcement_time_arrive">Arribu a destinatzione</string>
+    <string name="shared_string_turn">Bortada</string>
+    <string name="hillshade_slope_contour_lines">Umbradura de sos rilievos / Pendèntzia / Lìnias de livellu</string>
+    <string name="open_place_reviews">OpenPlaceReviews</string>
+    <string name="opr_use_dev_url">Imprea test.openplacereviews.org</string>
+    <string name="login_open_place_reviews">Intra in OpenPlaceReviews</string>
+    <string name="activity_type_water_name">Abba</string>
+    <string name="activity_type_winter_name">Ierru</string>
+    <string name="activity_type_snowmobile_name">Motoislita</string>
+    <string name="activity_type_riding_name">A caddu</string>
+    <string name="activity_type_racing_name">Gara</string>
+    <string name="activity_type_mountainbike_name">Bitzicleta de monte</string>
+    <string name="activity_type_cycling_name">Bitzicleta</string>
+    <string name="activity_type_hiking_name">Escursionismu</string>
+    <string name="activity_type_running_name">Cursa</string>
+    <string name="activity_type_walking_name">A pee</string>
+    <string name="activity_type_offroad_name">Foras de camineras</string>
+    <string name="activity_type_motorbike_name">Moto</string>
+    <string name="activity_type_car_name">Màchina</string>
+    <string name="select_segments">Ischerta sos segmentos</string>
+    <string name="select_segments_description">%1$s cuntenet prus de unu segmentu. Depes ischertare sa parte chi serbit pro sa navigatzione.</string>
+    <string name="segments_count">Segmentu %1$d</string>
+    <string name="temporary_conditional_routing_descr">Imprea sas restritziones de sos caminos chi sunt ativas como in sa mapa</string>
+    <string name="routing_attr_short_way_description">Àndala prus curtza otimizada (rispàrmiu energèticu)</string>
+    <string name="routing_attr_driving_style_description">Ischerta sa modalidade pro sa ghia pro otènnere un\'àndala prus curtza, prus lestra o prus segura</string>
+    <string name="snap_to_road_descr">S\'icona de sa positzione atuale s\'at a ligare a s\'àndala de navigatzione atuale</string>
+    <string name="map_orientation_threshold_descr">Non rodes sa vista de sa mapa si sa lestresa est in suta de unu lìmite</string>
+    <string name="restart">Torra a incumintzare</string>
+    <string name="shared_strings_all_regions">Totu sas regiones</string>
+    <string name="delete_number_files_question">Iscantzellare %1$d documentos\?</string>
+    <string name="track_recording_stop_without_saving">Acabba chene sarvare</string>
+    <string name="track_recording_save_and_stop">Sarva e acabba sa registratzione</string>
+    <string name="track_recording_title">Registratzione de sa rasta firmada</string>
+    <string name="track_recording_description">Ses seguru de chèrrere acabbare cun sa registratzione\?
+\nTotu sos datos non sarvados s\'ant a pèrdere.</string>
+    <string name="on_pause">In pàusa</string>
+    <string name="app_restart_required">Pro aplicare unas cantas impostatziones diat pòdere èssere netzessàriu torrare a allùghere s\'aplicatzione.</string>
+    <string name="routing_attr_height_obstacles_description">Su càrculu de s\'àndala diat pòdere evitare artziadas mannas.</string>
+    <string name="quick_action_coordinates_widget_descr">Unu butone pro ammustrare o cuare su widget de sas coordinadas in sa mapa.</string>
+    <string name="latest_openstreetmap_update">Ùrtimu agiornamentu de OpenStreetMap a disponimentu:</string>
+    <string name="updated">Agiornadu: %s</string>
+    <string name="last_time_checked">Ùrtima verìfica: %s</string>
+    <string name="update_frequency">Frecuèntzia de sos agiornamentos</string>
+    <string name="live_update_frequency_week_variant">Sos agiornamentos de sa mapa ant a èssere verificados cada chida. Sa borta chi benit: %1$s in %2$s.</string>
+    <string name="live_update_frequency_day_variant">Sos agiornamentos de sa mapa ant a èssere verificados cada die. Sa borta chi benit: %1$s in %2$s.</string>
+    <string name="live_update_frequency_hour_variant">Sos agiornamentos de sa mapa ant a èssere verificados cada ora. Sa borta chi benit: %1$s in %2$s.</string>
+    <string name="delete_updates">Iscantzella sos agiornamentos</string>
+    <string name="live_update_delete_updates_msg">Ses seguru de chèrrere iscantzellare totu sos %s agiornamentos in direta\?</string>
+    <string name="select_category_descr">Ischerta una categoria o annanghe·nde una noa</string>
+    <string name="track_recording_will_be_continued">Sa registratzione at a sighire.</string>
+    <string name="copy_poi_name">Còpia su nùmene de su PDI</string>
+    <string name="quick_action_show_hide_title">Ammustra/cua</string>
+    <string name="shared_string_interval">Intervallu</string>
+    <string name="rendering_attr_noNatureReserveBoundaries_description">Cua sas làcanas de sas riservas naturales, de sas àreas amparadas e de sos parcos natzionales</string>
+    <string name="rendering_attr_noNatureReserveBoundaries_name">Làcanas naturales</string>
+    <string name="track_has_no_altitude">Sa rasta non cuntenet datos de artària.</string>
+    <string name="track_has_no_speed">Sa rasta non cuntenet datos de lestresa.</string>
+    <string name="select_another_colorization">Ischerta un\'àtera casta de coloratzione.</string>
+    <string name="purchases">Còmporas</string>
+    <string name="map_widget_distance_by_tap">Distàntzia pro tocu</string>
+    <string name="trip_recording_save_and_continue">Sarva e sighi</string>
+    <string name="lost_data_warning">Totu sos datos non sarvados s\'ant a pèrdere.</string>
+    <string name="show_start_dialog">Ammustra su diàlogu de incumintzu</string>
+    <string name="specify_color_for_map_mode">Dislinda unu colore pro sa modalidade pro sa mapa: %1$s.</string>
 </resources>

@@ -22,21 +22,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.ColorRes;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.LayoutRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatImageView;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-
 import net.osmand.AndroidUtils;
 import net.osmand.PlatformUtil;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
-import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.Version;
@@ -50,6 +39,7 @@ import net.osmand.plus.inapp.InAppPurchases.InAppPurchase;
 import net.osmand.plus.inapp.InAppPurchases.InAppSubscription;
 import net.osmand.plus.inapp.InAppPurchases.InAppSubscriptionIntroductoryInfo;
 import net.osmand.plus.liveupdates.SubscriptionFragment;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.srtmplugin.SRTMPlugin;
 import net.osmand.plus.widgets.TextViewEx;
 import net.osmand.util.Algorithms;
@@ -57,6 +47,17 @@ import net.osmand.util.Algorithms;
 import org.apache.commons.logging.Log;
 
 import java.util.List;
+
+import androidx.annotation.ColorRes;
+import androidx.annotation.DrawableRes;
+import androidx.annotation.LayoutRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 public abstract class ChoosePlanDialogFragment extends BaseOsmAndDialogFragment implements InAppPurchaseListener {
 	public static final String TAG = ChoosePlanDialogFragment.class.getSimpleName();
@@ -120,7 +121,7 @@ public abstract class ChoosePlanDialogFragment extends BaseOsmAndDialogFragment 
 				case SEA_DEPTH_MAPS:
 					return InAppPurchaseHelper.isDepthContoursPurchased(ctx);
 				case CONTOUR_LINES_HILLSHADE_MAPS:
-					return OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) != null;
+					return OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) != null || InAppPurchaseHelper.isContourLinesPurchased(ctx);
 			}
 			return false;
 		}
@@ -216,7 +217,7 @@ public abstract class ChoosePlanDialogFragment extends BaseOsmAndDialogFragment 
 			infoDescription.setText(getInfoDescription());
 		}
 		TextViewEx planInfoDescription = (TextViewEx) view.findViewById(R.id.plan_info_description);
-		planInfoDescription.setText(Version.isHuawei(app)
+		planInfoDescription.setText(Version.isHuawei()
 				? R.string.osm_live_payment_subscription_management_hw : R.string.osm_live_payment_subscription_management);
 		ViewGroup osmLiveCard = buildOsmLiveCard(ctx, cardsContainer);
 		if (osmLiveCard != null) {
@@ -488,14 +489,18 @@ public abstract class ChoosePlanDialogFragment extends BaseOsmAndDialogFragment 
 						buttonView.setOnClickListener(new OnClickListener() {
 							@Override
 							public void onClick(View v) {
-								subscribe(s.getSku());
+								if (getActivity() != null) {
+									subscribe(app, getActivity(), purchaseHelper, s.getSku());
+								}
 							}
 						});
 					} else {
 						buttonExView.setOnClickListener(new OnClickListener() {
 							@Override
 							public void onClick(View v) {
-								subscribe(s.getSku());
+								if (getActivity() != null) {
+									subscribe(app, getActivity(), purchaseHelper, s.getSku());
+								}
 							}
 						});
 					}
@@ -525,14 +530,14 @@ public abstract class ChoosePlanDialogFragment extends BaseOsmAndDialogFragment 
 		}
 	}
 
-	private void subscribe(String sku) {
+	public static void subscribe(@NonNull OsmandApplication app, Activity activity,
+								 InAppPurchaseHelper purchaseHelper, String sku) {
 		if (!app.getSettings().isInternetConnectionAvailable(true)) {
 			Toast.makeText(app, R.string.internet_not_available, Toast.LENGTH_LONG).show();
 		} else {
-			FragmentActivity ctx = getActivity();
-			if (ctx != null && purchaseHelper != null) {
+			if (activity != null && purchaseHelper != null) {
 				OsmandSettings settings = app.getSettings();
-				purchaseHelper.purchaseLiveUpdates(ctx, sku,
+				purchaseHelper.purchaseLiveUpdates(activity, sku,
 						settings.BILLING_USER_EMAIL.get(),
 						settings.BILLING_USER_NAME.get(),
 						settings.BILLING_USER_COUNTRY_DOWNLOAD_NAME.get(),
@@ -711,57 +716,41 @@ public abstract class ChoosePlanDialogFragment extends BaseOsmAndDialogFragment 
 		}
 	}
 
-	public static void showFreeVersionInstance(@NonNull FragmentManager fm) {
-		try {
-			ChoosePlanFreeBannerDialogFragment fragment = new ChoosePlanFreeBannerDialogFragment();
-			fragment.show(fm, ChoosePlanFreeBannerDialogFragment.TAG);
-		} catch (RuntimeException e) {
-			LOG.error("showFreeVersionInstance", e);
+	public enum ChoosePlanDialogType {
+
+		FREE_VERSION("showFreeVersionInstance", ChoosePlanFreeBannerDialogFragment.TAG, ChoosePlanFreeBannerDialogFragment.class),
+		WIKIPEDIA("showWikipediaInstance", ChoosePlanWikipediaDialogFragment.TAG, ChoosePlanWikipediaDialogFragment.class),
+		WIKIVOYAGE("showWikivoyageInstance", ChoosePlanWikivoyageDialogFragment.TAG, ChoosePlanWikivoyageDialogFragment.class),
+		SEA_DEPTH_MAPS("showSeaDepthMapsInstance", ChoosePlanSeaDepthMapsDialogFragment.TAG, ChoosePlanSeaDepthMapsDialogFragment.class),
+		HILLSHADE_SRTM_PLUGIN("showHillshadeSrtmPluginInstance", ChoosePlanHillshadeSrtmDialogFragment.TAG, ChoosePlanHillshadeSrtmDialogFragment.class),
+		OSM_LIVE("showOsmLiveInstance", ChoosePlanOsmLiveBannerDialogFragment.TAG, ChoosePlanOsmLiveBannerDialogFragment.class);
+
+		private final String tag;
+		private final String errorName;
+		private final Class<? extends ChoosePlanDialogFragment> fragmentClass;
+
+		ChoosePlanDialogType(String errorName, String tag, Class<? extends ChoosePlanDialogFragment> fragmentClass) {
+			this.tag = tag;
+			this.errorName = errorName;
+			this.fragmentClass = fragmentClass;
 		}
 	}
 
-	public static void showWikipediaInstance(@NonNull FragmentManager fm) {
-		try {
-			ChoosePlanWikipediaDialogFragment fragment = new ChoosePlanWikipediaDialogFragment();
-			fragment.show(fm, ChoosePlanWikipediaDialogFragment.TAG);
-		} catch (RuntimeException e) {
-			LOG.error("showWikipediaInstance", e);
-		}
-	}
-
-	public static void showWikivoyageInstance(@NonNull FragmentManager fm) {
-		try {
-			ChoosePlanWikivoyageDialogFragment fragment = new ChoosePlanWikivoyageDialogFragment();
-			fragment.show(fm, ChoosePlanWikivoyageDialogFragment.TAG);
-		} catch (RuntimeException e) {
-			LOG.error("showWikivoyageInstance", e);
-		}
-	}
-
-	public static void showSeaDepthMapsInstance(@NonNull FragmentManager fm) {
-		try {
-			ChoosePlanSeaDepthMapsDialogFragment fragment = new ChoosePlanSeaDepthMapsDialogFragment();
-			fragment.show(fm, ChoosePlanSeaDepthMapsDialogFragment.TAG);
-		} catch (RuntimeException e) {
-			LOG.error("showSeaDepthMapsInstance", e);
-		}
-	}
-
-	public static void showHillshadeSrtmPluginInstance(@NonNull FragmentManager fm) {
-		try {
-			ChoosePlanHillshadeSrtmDialogFragment fragment = new ChoosePlanHillshadeSrtmDialogFragment();
-			fragment.show(fm, ChoosePlanHillshadeSrtmDialogFragment.TAG);
-		} catch (RuntimeException e) {
-			LOG.error("showHillshadeSrtmPluginInstance", e);
-		}
-	}
-
-	public static void showOsmLiveInstance(@NonNull FragmentManager fm) {
-		try {
-			ChoosePlanOsmLiveBannerDialogFragment fragment = new ChoosePlanOsmLiveBannerDialogFragment();
-			fragment.show(fm, ChoosePlanOsmLiveBannerDialogFragment.TAG);
-		} catch (RuntimeException e) {
-			LOG.error("showOsmLiveInstance", e);
+	public static void showDialogInstance(@NonNull OsmandApplication app, @NonNull FragmentManager manager,
+										  @NonNull ChoosePlanDialogType dialogType) {
+		if (Version.isAmazon()) {
+			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(Version.getUrlWithUtmRef(app, "net.osmand.plus")));
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			if (AndroidUtils.isIntentSafe(app, intent)) {
+				app.startActivity(intent);
+			}
+		} else {
+			try {
+				ChoosePlanDialogFragment fragment = (ChoosePlanDialogFragment) Fragment.instantiate(app, dialogType.fragmentClass.getName());
+				fragment.show(manager, dialogType.tag);
+			} catch (RuntimeException e) {
+				LOG.error(dialogType.errorName, e);
+			}
 		}
 	}
 }

@@ -30,21 +30,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
-import androidx.core.content.ContextCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentManager.BackStackEntry;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceFragmentCompat.OnPreferenceStartFragmentCallback;
-
 import net.osmand.AndroidUtils;
 import net.osmand.GPXUtilities.GPXFile;
 import net.osmand.Location;
@@ -67,10 +52,10 @@ import net.osmand.plus.AppInitializer;
 import net.osmand.plus.AppInitializer.AppInitializeListener;
 import net.osmand.plus.AppInitializer.InitEvents;
 import net.osmand.plus.GpxSelectionHelper.GpxDisplayItem;
-import net.osmand.plus.mapmarkers.MapMarker;
-import net.osmand.plus.mapmarkers.MapMarkersHelper.MapMarkerChangedListener;
+import net.osmand.plus.GpxSelectionHelper.SelectedGpxFile;
 import net.osmand.plus.OnDismissDialogFragmentListener;
 import net.osmand.plus.OsmAndConstants;
+import net.osmand.plus.OsmAndLocationProvider.OsmAndLocationListener;
 import net.osmand.plus.OsmAndLocationSimulation;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
@@ -80,7 +65,6 @@ import net.osmand.plus.TargetPointsHelper.TargetPoint;
 import net.osmand.plus.Version;
 import net.osmand.plus.activities.search.SearchActivity;
 import net.osmand.plus.base.BaseOsmAndFragment;
-import net.osmand.plus.base.ContextMenuFragment;
 import net.osmand.plus.base.FailSafeFuntions;
 import net.osmand.plus.base.MapViewTrackingUtilities;
 import net.osmand.plus.chooseplan.OsmLiveGoneDialog;
@@ -88,7 +72,6 @@ import net.osmand.plus.dashboard.DashBaseFragment;
 import net.osmand.plus.dashboard.DashboardOnMap;
 import net.osmand.plus.dialogs.CrashBottomSheetDialogFragment;
 import net.osmand.plus.dialogs.ImportGpxBottomSheetDialogFragment;
-import net.osmand.plus.dialogs.RateUsBottomSheetDialogFragment;
 import net.osmand.plus.dialogs.SendAnalyticsBottomSheetDialogFragment;
 import net.osmand.plus.dialogs.WhatsNewDialogFragment;
 import net.osmand.plus.dialogs.XMasDialogFragment;
@@ -103,15 +86,17 @@ import net.osmand.plus.helpers.DiscountHelper;
 import net.osmand.plus.helpers.IntentHelper;
 import net.osmand.plus.helpers.LockHelper;
 import net.osmand.plus.helpers.LockHelper.LockUIAdapter;
+import net.osmand.plus.helpers.RateUsHelper;
 import net.osmand.plus.helpers.ScrollHelper;
 import net.osmand.plus.helpers.ScrollHelper.OnScrollEventListener;
 import net.osmand.plus.importfiles.ImportHelper;
 import net.osmand.plus.mapcontextmenu.AdditionalActionsBottomSheetDialogFragment;
 import net.osmand.plus.mapcontextmenu.MapContextMenu;
-import net.osmand.plus.mapcontextmenu.MenuController;
 import net.osmand.plus.mapcontextmenu.builders.cards.dialogs.ContextMenuCardDialogFragment;
 import net.osmand.plus.mapcontextmenu.other.DestinationReachedMenu;
 import net.osmand.plus.mapcontextmenu.other.TrackDetailsMenu;
+import net.osmand.plus.mapmarkers.MapMarker;
+import net.osmand.plus.mapmarkers.MapMarkersHelper.MapMarkerChangedListener;
 import net.osmand.plus.mapmarkers.PlanRouteFragment;
 import net.osmand.plus.measurementtool.GpxApproximationFragment;
 import net.osmand.plus.measurementtool.GpxData;
@@ -119,14 +104,15 @@ import net.osmand.plus.measurementtool.LoginBottomSheetFragment;
 import net.osmand.plus.measurementtool.MeasurementEditingContext;
 import net.osmand.plus.measurementtool.MeasurementToolFragment;
 import net.osmand.plus.measurementtool.SnapTrackWarningFragment;
+import net.osmand.plus.monitoring.TripRecordingStartingBottomSheet;
 import net.osmand.plus.render.RendererRegistry;
 import net.osmand.plus.resources.ResourceManager;
 import net.osmand.plus.routepreparationmenu.ChooseRouteFragment;
 import net.osmand.plus.routepreparationmenu.MapRouteInfoMenu;
 import net.osmand.plus.routepreparationmenu.MapRouteInfoMenuFragment;
 import net.osmand.plus.routing.IRouteInformationListener;
-import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.routing.RouteCalculationProgressCallback;
+import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.routing.TransportRoutingHelper.TransportRouteCalculationProgressCallback;
 import net.osmand.plus.search.QuickSearchDialogFragment;
 import net.osmand.plus.search.QuickSearchDialogFragment.QuickSearchTab;
@@ -135,11 +121,13 @@ import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.settings.backend.CommonPreference;
 import net.osmand.plus.settings.backend.OsmAndAppCustomization.OsmAndAppCustomizationListener;
 import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.datastorage.DataStorageFragment;
 import net.osmand.plus.settings.fragments.BaseSettingsFragment;
 import net.osmand.plus.settings.fragments.BaseSettingsFragment.SettingsScreenType;
 import net.osmand.plus.settings.fragments.ConfigureProfileFragment;
-import net.osmand.plus.settings.fragments.DataStorageFragment;
+import net.osmand.plus.settings.fragments.RouteLineAppearanceFragment;
 import net.osmand.plus.track.TrackAppearanceFragment;
+import net.osmand.plus.track.TrackMenuFragment;
 import net.osmand.plus.views.AddGpxPointBottomSheetHelper.NewGpxPoint;
 import net.osmand.plus.views.AnimateDraggingMapThread;
 import net.osmand.plus.views.OsmAndMapLayersView;
@@ -152,6 +140,7 @@ import net.osmand.plus.views.layers.MapControlsLayer;
 import net.osmand.plus.views.layers.MapInfoLayer;
 import net.osmand.plus.views.mapwidgets.MapInfoWidgetsFactory.TopToolbarController;
 import net.osmand.plus.views.mapwidgets.MapInfoWidgetsFactory.TopToolbarControllerType;
+import net.osmand.plus.views.mapwidgets.WidgetsVisibilityHelper;
 import net.osmand.render.RenderingRulesStorage;
 import net.osmand.router.GeneralRouter;
 import net.osmand.util.Algorithms;
@@ -168,9 +157,22 @@ import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
+import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentManager.BackStackEntry;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceFragmentCompat.OnPreferenceStartFragmentCallback;
+
 import static net.osmand.aidlapi.OsmAndCustomizationConstants.DRAWER_SETTINGS_ID;
-import static net.osmand.plus.activities.TrackActivity.CURRENT_RECORDING;
-import static net.osmand.plus.activities.TrackActivity.TRACK_FILE_NAME;
 
 public class MapActivity extends OsmandActionBarActivity implements DownloadEvents,
 		OnRequestPermissionsResultCallback, IRouteInformationListener, AMapPointUpdateListener,
@@ -209,6 +211,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	private MapActivityActions mapActions;
 	private MapActivityLayers mapLayers;
+	private WidgetsVisibilityHelper mapWidgetsVisibilityHelper;
 
 	// App variables
 	private OsmandApplication app;
@@ -304,6 +307,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		}
 		mapActions = new MapActivityActions(this);
 		mapLayers = new MapActivityLayers(this);
+		mapWidgetsVisibilityHelper = new WidgetsVisibilityHelper(this);
 		dashboardOnMap.createDashboardView();
 		checkAppInitialization();
 
@@ -348,11 +352,19 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 		if (!settings.isLastKnownMapLocation()) {
 			// show first time when application ran
-			net.osmand.Location location = app.getLocationProvider().getFirstTimeRunDefaultLocation();
+			final WeakReference<MapActivity> activityRef = new WeakReference<>(this);
+			net.osmand.Location location = app.getLocationProvider().getFirstTimeRunDefaultLocation(new OsmAndLocationListener() {
+				@Override
+				public void updateLocation(Location location) {
+					MapActivity a = activityRef.get();
+					if (AndroidUtils.isActivityNotDestroyed(a) && app.getLocationProvider().getLastKnownLocation() == null) {
+						setMapInitialLatLon(a.mapView, location);
+					}
+				}
+			});
 			mapViewTrackingUtilities.setMapLinkedToLocation(true);
 			if (location != null) {
-				mapView.setLatLon(location.getLatitude(), location.getLongitude());
-				mapView.setIntZoom(14);
+				setMapInitialLatLon(mapView, location);
 			}
 		}
 		addDialogProvider(mapActions);
@@ -375,6 +387,13 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		lockHelper.setLockUIAdapter(this);
 		mapActivityKeyListener = new MapActivityKeyListener(this);
 		mIsDestroyed = false;
+	}
+
+	private void setMapInitialLatLon(@NonNull OsmandMapTileView mapView, @Nullable Location location) {
+		if (location != null) {
+			mapView.setLatLon(location.getLatitude(), location.getLongitude());
+			mapView.setIntZoom(14);
+		}
 	}
 
 	public void exitFromFullScreen(View view) {
@@ -636,7 +655,9 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	protected void onNewIntent(final Intent intent) {
 		super.onNewIntent(intent);
 		setIntent(intent);
-		intentHelper.parseLaunchIntents();
+		if (!intentHelper.parseLaunchIntents()) {
+			intentHelper.parseContentIntent();
+		}
 	}
 
 	@Override
@@ -714,9 +735,9 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 					if (CrashBottomSheetDialogFragment.shouldShow(settings, this)) {
 						SecondSplashScreenFragment.SHOW = false;
 						CrashBottomSheetDialogFragment.showInstance(getSupportFragmentManager());
-					} else if (RateUsBottomSheetDialogFragment.shouldShow(app)) {
+					} else if (RateUsHelper.shouldShowRateDialog(app)) {
 						SecondSplashScreenFragment.SHOW = false;
-						RateUsBottomSheetDialogFragment.showInstance(getSupportFragmentManager());
+						RateUsHelper.showRateDialog(this);
 					}
 				}
 			} else {
@@ -1177,15 +1198,15 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 					MapRouteInfoMenu.showLocationOnMap(this, latLonToShow.getLatitude(), latLonToShow.getLongitude());
 				} else if (toShow instanceof GPXFile) {
 					hideContextAndRouteInfoMenues();
+					GPXFile gpxFile = (GPXFile) toShow;
+					SelectedGpxFile selectedGpxFile;
+					if (gpxFile.showCurrentTrack) {
+						selectedGpxFile = app.getSavingTrackHelper().getCurrentTrack();
+					} else {
+						selectedGpxFile = app.getSelectedGpxHelper().getSelectedFileByPath(gpxFile.path);
+					}
 
-					Bundle args = new Bundle();
-					args.putString(TRACK_FILE_NAME, ((GPXFile) toShow).path);
-					args.putBoolean(CURRENT_RECORDING, ((GPXFile) toShow).showCurrentTrack);
-					args.putInt(ContextMenuFragment.MENU_STATE_KEY, MenuController.MenuState.HALF_SCREEN);
-
-					TrackAppearanceFragment fragment = new TrackAppearanceFragment();
-					fragment.setArguments(args);
-					TrackAppearanceFragment.showInstance(this, fragment);
+					TrackAppearanceFragment.showInstance(this, selectedGpxFile, null);
 				} else if (toShow instanceof QuadRect) {
 					QuadRect qr = (QuadRect) toShow;
 					mapView.fitRectToMap(qr.left, qr.right, qr.top, qr.bottom, (int) qr.width(), (int) qr.height(), 0);
@@ -1410,6 +1431,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		updateMapSettings();
 		app.getPoiFilters().loadSelectedPoiFilters();
 		mapViewTrackingUtilities.updateSettings();
+		mapViewTrackingUtilities.resetDrivingRegionUpdate();
 		//app.getRoutingHelper().setAppMode(settings.getApplicationMode());
 		if (mapLayers.getMapInfoLayer() != null) {
 			mapLayers.getMapInfoLayer().recreateControls();
@@ -1551,6 +1573,17 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		}
 	}
 
+	public boolean shouldHideTopControls() {
+		boolean hideTopControls = !mapContextMenu.shouldShowTopControls();
+
+		TrackMenuFragment fragment = getTrackMenuFragment();
+		if (fragment != null) {
+			hideTopControls = hideTopControls || !fragment.shouldShowTopControls();
+		}
+
+		return hideTopControls;
+	}
+
 	public OsmandMapTileView getMapView() {
 		return mapView;
 	}
@@ -1565,6 +1598,10 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	public MapActivityLayers getMapLayers() {
 		return mapLayers;
+	}
+
+	public WidgetsVisibilityHelper getWidgetsVisibilityHelper() {
+		return mapWidgetsVisibilityHelper;
 	}
 
 	public static void launchMapActivityMoveToTop(Context activity, Bundle prevIntentParams, Uri intentData, Bundle intentParams) {
@@ -1611,8 +1648,8 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		launchMapActivityMoveToTop(activity, null);
 	}
 
-	public static void launchMapActivityMoveToTop(Context activity, Bundle intentParams) {
-		launchMapActivityMoveToTop(activity, intentParams, null, null);
+	public static void launchMapActivityMoveToTop(Context activity, Bundle prevIntentParams) {
+		launchMapActivityMoveToTop(activity, prevIntentParams, null, null);
 	}
 
 	public static void clearPrevActivityIntent() {
@@ -1633,6 +1670,12 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	public void refreshMap() {
 		getMapView().refreshMap();
+	}
+
+	public void refreshMapComplete() {
+		getMyApplication().getResourceManager().getRenderer().clearCache();
+		updateMapSettings();
+		getMapView().refreshMap(true);
 	}
 
 	public View getLayout() {
@@ -2208,6 +2251,10 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 		return getFragment(MeasurementToolFragment.TAG);
 	}
 
+	public TripRecordingStartingBottomSheet getTripRecordingBottomSheet() {
+		return getFragment(TripRecordingStartingBottomSheet.TAG);
+	}
+
 	public ChooseRouteFragment getChooseRouteFragment() {
 		return getFragment(ChooseRouteFragment.TAG);
 	}
@@ -2222,6 +2269,14 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	public SnapTrackWarningFragment getSnapTrackWarningBottomSheet() {
 		return getFragment(SnapTrackWarningFragment.TAG);
+	}
+
+	public TrackMenuFragment getTrackMenuFragment() {
+		return getFragment(TrackMenuFragment.TAG);
+	}
+
+	public RouteLineAppearanceFragment getRouteLineAppearanceFragment() {
+		return getFragment(RouteLineAppearanceFragment.TAG);
 	}
 
 	public void backToConfigureProfileFragment() {

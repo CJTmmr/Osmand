@@ -5,7 +5,7 @@ import android.content.Context;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
 import net.osmand.plus.R;
-import net.osmand.plus.onlinerouting.OnlineRoutingEngine;
+import net.osmand.plus.onlinerouting.engine.OnlineRoutingEngine;
 import net.osmand.plus.profiles.RoutingProfileDataObject.RoutingProfilesResources;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.router.GeneralRouter;
@@ -22,6 +22,7 @@ import java.util.Map;
 public class ProfileDataUtils {
 
 	public static final String OSMAND_NAVIGATION = "osmand_navigation";
+	public static final String ONLINE_NAVIGATION = "online_navigation";
 
 	public static List<ProfileDataObject> getDataObjects(OsmandApplication app,
 	                                                     List<ApplicationMode> appModes) {
@@ -32,7 +33,7 @@ public class ProfileDataUtils {
 				description = getAppModeDescription(app, mode);
 			}
 			profiles.add(new ProfileDataObject(mode.toHumanString(), description,
-					mode.getStringKey(), mode.getIconRes(), false, mode.getIconColorInfo()));
+					mode.getStringKey(), mode.getIconRes(), false, mode.getProfileColor(false), mode.getProfileColor(true)));
 		}
 		return profiles;
 	}
@@ -48,18 +49,33 @@ public class ProfileDataUtils {
 		return description;
 	}
 
-	public static List<RoutingProfileDataObject> getSortedRoutingProfiles(OsmandApplication app) {
-		List<RoutingProfileDataObject> result = new ArrayList<>();
-		Map<String, List<RoutingProfileDataObject>> routingProfilesByFileNames = getRoutingProfilesByFileNames(app);
+	public static List<ProfileDataObject> getSortedRoutingProfiles(OsmandApplication app) {
+		List<ProfileDataObject> result = new ArrayList<>();
+		Map<String, List<ProfileDataObject>> routingProfilesByFileNames = getRoutingProfilesByFileNames(app);
 		List<String> fileNames = new ArrayList<>(routingProfilesByFileNames.keySet());
 		Collections.sort(fileNames, new Comparator<String>() {
 			@Override
 			public int compare(String s, String t1) {
-				return s.equals(OSMAND_NAVIGATION) ? -1 : t1.equals(OSMAND_NAVIGATION) ? 1 : s.compareToIgnoreCase(t1);
+				// OsmAnd navigation should be at the top of the list
+				if (s.equals(OSMAND_NAVIGATION)) {
+					return -1;
+				} else if (t1.equals(OSMAND_NAVIGATION)) {
+					return 1;
+
+				// Online navigation should be at the bottom of the list
+				} else if (s.equals(ONLINE_NAVIGATION)) {
+					return 1;
+				} else if (t1.equals(ONLINE_NAVIGATION)) {
+					return -1;
+
+				// Other sorted by file names
+				} else {
+					return s.compareToIgnoreCase(t1);
+				}
 			}
 		});
 		for (String fileName : fileNames) {
-			List<RoutingProfileDataObject> routingProfilesFromFile = routingProfilesByFileNames.get(fileName);
+			List<ProfileDataObject> routingProfilesFromFile = routingProfilesByFileNames.get(fileName);
 			if (routingProfilesFromFile != null) {
 				Collections.sort(routingProfilesFromFile);
 				result.addAll(routingProfilesFromFile);
@@ -70,21 +86,29 @@ public class ProfileDataUtils {
 
 	public static List<OnlineRoutingEngineDataObject> getOnlineRoutingProfiles(OsmandApplication app) {
 		List<OnlineRoutingEngineDataObject> objects = new ArrayList<>();
-		for (OnlineRoutingEngine engine : app.getOnlineRoutingHelper().getEngines()) {
+		List<OnlineRoutingEngine> engines = app.getOnlineRoutingHelper().getEngines();
+		for (int i = 0; i < engines.size(); i++) {
+			OnlineRoutingEngine engine = engines.get(i);
 			objects.add(new OnlineRoutingEngineDataObject(
-					engine.getName(app), engine.getBaseUrl(), engine.getStringKey()));
+					engine.getName(app), engine.getBaseUrl(), engine.getStringKey(), i));
 		}
 		return objects;
 	}
 
-	public static Map<String, List<RoutingProfileDataObject>> getRoutingProfilesByFileNames(OsmandApplication app) {
-		Map<String, List<RoutingProfileDataObject>> result = new HashMap<>();
-		for (final RoutingProfileDataObject profile : getRoutingProfiles(app).values()) {
-			String fileName = profile.getFileName() != null ? profile.getFileName() : OSMAND_NAVIGATION;
+	public static Map<String, List<ProfileDataObject>> getRoutingProfilesByFileNames(OsmandApplication app) {
+		Map<String, List<ProfileDataObject>> result = new HashMap<>();
+		for (final ProfileDataObject profile : getRoutingProfiles(app).values()) {
+			String fileName = null;
+			if (profile instanceof RoutingProfileDataObject) {
+				fileName = ((RoutingProfileDataObject) profile).getFileName();
+			} else if (profile instanceof OnlineRoutingEngineDataObject) {
+				fileName = ONLINE_NAVIGATION;
+			}
+			fileName = fileName != null ? fileName : OSMAND_NAVIGATION;
 			if (result.containsKey(fileName)) {
 				result.get(fileName).add(profile);
 			} else {
-				result.put(fileName, new ArrayList<RoutingProfileDataObject>() {
+				result.put(fileName, new ArrayList<ProfileDataObject>() {
 					{ add(profile); }
 				});
 			}
@@ -92,8 +116,8 @@ public class ProfileDataUtils {
 		return result;
 	}
 
-	public static Map<String, RoutingProfileDataObject> getRoutingProfiles(OsmandApplication context) {
-		Map<String, RoutingProfileDataObject> profilesObjects = new HashMap<>();
+	public static Map<String, ProfileDataObject> getRoutingProfiles(OsmandApplication context) {
+		Map<String, ProfileDataObject> profilesObjects = new HashMap<>();
 		profilesObjects.put(RoutingProfilesResources.STRAIGHT_LINE_MODE.name(), new RoutingProfileDataObject(
 				RoutingProfilesResources.STRAIGHT_LINE_MODE.name(),
 				context.getString(RoutingProfilesResources.STRAIGHT_LINE_MODE.getStringRes()),
@@ -119,11 +143,14 @@ public class ProfileDataUtils {
 		for (RoutingConfiguration.Builder builder : context.getAllRoutingConfigs()) {
 			collectRoutingProfilesFromConfig(context, builder, profilesObjects, disabledRouterNames);
 		}
+		for (OnlineRoutingEngineDataObject onlineEngine : getOnlineRoutingProfiles(context)) {
+			profilesObjects.put(onlineEngine.getStringKey(), onlineEngine);
+		}
 		return profilesObjects;
 	}
 
 	private static void collectRoutingProfilesFromConfig(OsmandApplication app, RoutingConfiguration.Builder builder,
-	                                                     Map<String, RoutingProfileDataObject> profilesObjects, List<String> disabledRouterNames) {
+	                                                     Map<String, ProfileDataObject> profilesObjects, List<String> disabledRouterNames) {
 		for (Map.Entry<String, GeneralRouter> entry : builder.getAllRouters().entrySet()) {
 			String routerKey = entry.getKey();
 			GeneralRouter router = entry.getValue();

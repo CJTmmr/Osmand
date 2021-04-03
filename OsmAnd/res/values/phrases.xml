@@ -284,7 +284,6 @@
 	<string name="poi_ship_chandler">Ship chandler</string>
 	<string name="poi_sports">Sporting goods</string>
 	<string name="poi_stationery">Stationery store</string>
-	<string name="poi_tableware">Tableware store</string>
 	<string name="poi_ticket">Ticket sales</string>
 	<string name="poi_tobacco">Tobacco store</string>
 	<string name="poi_toys">Toyshop</string>
@@ -1489,7 +1488,7 @@
 	<string name="poi_generator_source_geothermal">Energy source: geothermal</string>
 	<string name="poi_generator_source_oil">Energy source: oil</string>
 	<string name="poi_generator_source_diesel">Energy source: diesel</string>
-	<string name="poi_source_biomass">Energy source: biomass</string>
+	<string name="poi_generator_source_biomass">Energy source: biomass</string>
 
 	<string name="poi_int_name">International name</string>
 	<string name="poi_nat_name">National name</string>
@@ -4332,5 +4331,53 @@
 	<string name="poi_wildlife_crossing_bat_bridge">Bat bridge</string>
 	<string name="poi_wildlife_crossing_bat_tunnel">Bat tunnel</string>
 
+	<string name="poi_piste_ski_jump">Ski jump</string>
+	<string name="poi_piste_name">Piste name</string>
+	<string name="poi_gladed_yes">Gladed: yes</string>
+	<string name="poi_patrolled_yes">Patrolled: yes</string>
+	<string name="poi_patrolled_no">Patrolled: no</string>
+	<string name="poi_piste_status_open">Piste status: open</string>
+	<string name="poi_piste_status_closed">Piste status: closed</string>
+	<string name="poi_summit_register_yes">Summit register: yes</string>
+	<string name="poi_summit_register_no">Summit register: no</string>
+	<string name="poi_mobile_library">Mobile library stop position</string>
+	<string name="poi_conference_centre">Conference centre</string>
+	<string name="poi_geodesist">Geodesist</string>
+
+	<string name="poi_local_ref">Local ref</string>
+
+	<string name="poi_camp_pitch">Camp pitch</string>
+
+	<string name="poi_hoops">Hoops</string>
+	<string name="poi_karate">Karate</string>
+	<string name="poi_jiu_jitsu">Jiu-jitsu</string>
+	<string name="poi_pilates">Pilates</string>
+	<string name="poi_shot_put">Shot put</string>
+	<string name="poi_snooker">Snooker</string>
+	<string name="poi_speedway">Speedway</string>
+	<string name="poi_sumo">Sumo</string>
+	<string name="poi_table_soccer">Table soccer</string>
+	<string name="poi_taekwondo">Taekwondo</string>
+	<string name="poi_ultimate">Ultimate</string>
+	<string name="poi_wakeboarding">Wakeboarding</string>
+	<string name="poi_weightlifting">Weightlifting</string>
+	<string name="poi_wrestling">Wrestling</string>
+	<string name="poi_zurkhaneh_sport">Zurkhaneh sport</string>
+	<string name="poi_water_polo">Water polo</string>
+	<string name="poi_water_ski">Water ski</string>
+	<string name="poi_aikido">Aikido</string>
+	<string name="poi_biathlon">Biathlon</string>
+	<string name="poi_bobsleigh">Bobsleigh</string>
+	<string name="poi_bullfighting">Bullfighting</string>
+	<string name="poi_cliff_diving">Cliff diving</string>
+	<string name="poi_cockfighting">Cockfighting</string>
+	<string name="poi_crossfit">Crossfit</string>
+	<string name="poi_curling">Curling</string>
+	<string name="poi_cycle_polo">Cycle polo</string>
+	<string name="poi_fencing">Fencing</string>
+	<string name="poi_horseshoes">Horseshoes</string>
+	<string name="poi_kickboxing">Kickboxing</string>
+
+	<string name="poi_office_diplomatic">Diplomatic office</string>
 
 </resources>

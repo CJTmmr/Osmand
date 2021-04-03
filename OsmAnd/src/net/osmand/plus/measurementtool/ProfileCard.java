@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static net.osmand.plus.routing.TransportRoutingHelper.PUBLIC_TRANSPORT_KEY;
+
 public class ProfileCard extends BaseCard {
 
 	private ApplicationMode selectedMode;
@@ -42,14 +44,14 @@ public class ProfileCard extends BaseCard {
 		Iterator<ApplicationMode> iterator = modes.iterator();
 		while (iterator.hasNext()) {
 			ApplicationMode mode = iterator.next();
-			if ("public_transport".equals(mode.getRoutingProfile())) {
+			if (PUBLIC_TRANSPORT_KEY.equals(mode.getRoutingProfile())) {
 				iterator.remove();
 			}
 		}
 		for (int i = 0; i < modes.size(); i++) {
 			ApplicationMode mode = modes.get(i);
 			LinearLayout container = view.findViewById(R.id.content_container);
-			Drawable icon = app.getUIUtilities().getIcon(mode.getIconRes(), mode.getIconColorInfo().getColor(nightMode));
+			Drawable icon = app.getUIUtilities().getPaintedIcon(mode.getIconRes(), mode.getProfileColor(nightMode));
 			String title = mode.toHumanString();
 			View.OnClickListener onClickListener = new View.OnClickListener() {
 				@Override

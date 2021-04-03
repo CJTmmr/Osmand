@@ -58,7 +58,7 @@ import net.osmand.plus.routepreparationmenu.RouteDetailsFragment.CumulativeInfo;
 import net.osmand.plus.routepreparationmenu.RouteDetailsFragment.RouteDetailsFragmentListener;
 import net.osmand.plus.routepreparationmenu.cards.PublicTransportCard;
 import net.osmand.plus.routing.RouteDirectionInfo;
-import net.osmand.plus.routing.RouteProvider.GPXRouteParamsBuilder;
+import net.osmand.plus.routing.GPXRouteParams.GPXRouteParamsBuilder;
 import net.osmand.plus.routing.RoutingHelper;
 import net.osmand.plus.routing.TransportRoutingHelper;
 import net.osmand.plus.settings.backend.OsmandSettings;
@@ -767,7 +767,7 @@ public class ChooseRouteFragment extends BaseOsmAndFragment implements ContextMe
 			int pagesY = y - getPagesViewHeight() + fragment.getShadowHeight() +
 					(Build.VERSION.SDK_INT >= 21 ? AndroidUtils.getStatusBarHeight(pagesView.getContext()) : 0);
 			if (animated) {
-				fragment.animateView(pagesView, pagesY);
+				fragment.animateView(pagesView, pagesY, null);
 			} else {
 				pagesView.setY(pagesY);
 			}
@@ -780,7 +780,7 @@ public class ChooseRouteFragment extends BaseOsmAndFragment implements ContextMe
 			int zoomY = y - getZoomButtonsHeight() +
 					(Build.VERSION.SDK_INT >= 21 ? AndroidUtils.getStatusBarHeight(zoomButtonsView.getContext()) : 0);
 			if (animated) {
-				fragment.animateView(zoomButtonsView, zoomY);
+				fragment.animateView(zoomButtonsView, zoomY, null);
 			} else {
 				zoomButtonsView.setY(zoomY);
 			}
@@ -815,7 +815,7 @@ public class ChooseRouteFragment extends BaseOsmAndFragment implements ContextMe
 	}
 
 	@Override
-	public void onContextMenuStateChanged(@NonNull ContextMenuFragment fragment, int menuState) {
+	public void onContextMenuStateChanged(@NonNull ContextMenuFragment fragment, int menuState, int previousMenuState) {
 		LockableViewPager viewPager = this.viewPager;
 		RouteDetailsFragment current = getCurrentFragment();
 		if (viewPager != null && fragment == current) {

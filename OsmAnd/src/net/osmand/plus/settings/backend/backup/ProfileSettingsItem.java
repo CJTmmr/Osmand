@@ -124,7 +124,7 @@ public class ProfileSettingsItem extends OsmandSettingsItem {
 		if (Algorithms.isEmpty(modeBean.userProfileName)) {
 			ApplicationMode appMode = ApplicationMode.valueOfStringKey(modeBean.stringKey, null);
 			if (appMode != null) {
-				modeBean.userProfileName = app.getString(appMode.getNameKeyResource());
+				modeBean.userProfileName = appMode.toHumanString();
 			}
 		}
 		int number = 0;
@@ -301,6 +301,7 @@ public class ProfileSettingsItem extends OsmandSettingsItem {
 		OsmandSettings settings = app.getSettings();
 		return new String[] {
 				settings.ICON_COLOR.getId(),
+				settings.CUSTOM_ICON_COLOR.getId(),
 				settings.ICON_RES_NAME.getId(),
 				settings.PARENT_APP_MODE.getId(),
 				settings.ROUTING_PROFILE.getId(),

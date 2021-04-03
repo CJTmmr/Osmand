@@ -33,17 +33,17 @@ import net.osmand.plus.ContextMenuItem;
 import net.osmand.plus.DialogListItemAdapter;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.OsmandPlugin;
-import net.osmand.plus.helpers.enums.DayNightMode;
-import net.osmand.plus.settings.backend.OsmandPreference;
-import net.osmand.plus.settings.backend.OsmandSettings;
-import net.osmand.plus.settings.backend.CommonPreference;
-import net.osmand.plus.settings.backend.ListStringPreference;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
+import net.osmand.plus.helpers.enums.DayNightMode;
 import net.osmand.plus.inapp.InAppPurchaseHelper;
 import net.osmand.plus.poi.PoiUIFilter;
 import net.osmand.plus.render.RendererRegistry;
+import net.osmand.plus.settings.backend.CommonPreference;
+import net.osmand.plus.settings.backend.ListStringPreference;
+import net.osmand.plus.settings.backend.OsmandPreference;
+import net.osmand.plus.settings.backend.OsmandSettings;
 import net.osmand.plus.srtmplugin.SRTMPlugin;
 import net.osmand.plus.transport.TransportLinesMenu;
 import net.osmand.plus.views.OsmandMapTileView;
@@ -172,7 +172,7 @@ public class ConfigureMapMenu {
 	                               final MapActivity activity, final int themeRes, final boolean nightMode) {
 		final OsmandApplication app = activity.getMyApplication();
 		final OsmandSettings settings = app.getSettings();
-		final int selectedProfileColorRes = settings.getApplicationMode().getIconColorInfo().getColor(nightMode);
+		final int selectedProfileColor = settings.getApplicationMode().getProfileColor(nightMode);
 		MapLayerMenuListener l = new MapLayerMenuListener(activity, adapter);
 		adapter.addItem(new ContextMenuItem.ItemBuilder()
 				.setId(SHOW_CATEGORY_ID)
@@ -184,7 +184,7 @@ public class ConfigureMapMenu {
 				.setId(FAVORITES_ID)
 				.setTitleId(R.string.shared_string_favorites, activity)
 				.setSelected(settings.SHOW_FAVORITES.get())
-				.setColor(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
+				.setColor(app, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
 				.setIcon(R.drawable.ic_action_favorite)
 				.setItemDeleteAction(makeDeleteAction(settings.SHOW_FAVORITES))
 				.setListener(l)
@@ -196,7 +196,7 @@ public class ConfigureMapMenu {
 				.setTitleId(R.string.layer_poi, activity)
 				.setSelected(selected)
 				.setDescription(app.getPoiFilters().getSelectedPoiFiltersName(wiki))
-				.setColor(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
+				.setColor(app, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
 				.setIcon(R.drawable.ic_action_info_dark)
 				.setSecondaryIcon(R.drawable.ic_action_additional_option)
 				.setListener(l).createItem());
@@ -205,7 +205,7 @@ public class ConfigureMapMenu {
 				.setId(POI_OVERLAY_LABELS_ID)
 				.setTitleId(R.string.layer_amenity_label, activity)
 				.setSelected(settings.SHOW_POI_LABEL.get())
-				.setColor(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
+				.setColor(app, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
 				.setIcon(R.drawable.ic_action_text_dark)
 				.setItemDeleteAction(makeDeleteAction(settings.SHOW_POI_LABEL))
 				.setListener(l).createItem());
@@ -217,7 +217,7 @@ public class ConfigureMapMenu {
 				.setIcon(R.drawable.ic_action_transport_bus)
 				.setSecondaryIcon(R.drawable.ic_action_additional_option)
 				.setSelected(selected)
-				.setColor(selected ? selectedProfileColorRes : ContextMenuItem.INVALID_ID)
+				.setColor(selected ? selectedProfileColor : null)
 				.setListener(l).createItem());
 
 		selected = app.getSelectedGpxHelper().isShowingAnyGpxFiles();
@@ -226,7 +226,7 @@ public class ConfigureMapMenu {
 				.setTitleId(R.string.layer_gpx_layer, activity)
 				.setSelected(app.getSelectedGpxHelper().isShowingAnyGpxFiles())
 				.setDescription(app.getSelectedGpxHelper().getGpxDescription())
-				.setColor(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
+				.setColor(app, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
 				.setIcon(R.drawable.ic_action_polygom_dark)
 				.setSecondaryIcon(R.drawable.ic_action_additional_option)
 				.setListener(l).createItem());
@@ -236,7 +236,7 @@ public class ConfigureMapMenu {
 				.setId(MAP_MARKERS_ID)
 				.setTitleId(R.string.map_markers, activity)
 				.setSelected(selected)
-				.setColor(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
+				.setColor(app, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
 				.setIcon(R.drawable.ic_action_flag)
 				.setItemDeleteAction(makeDeleteAction(settings.SHOW_MAP_MARKERS))
 				.setListener(l).createItem());
@@ -251,7 +251,7 @@ public class ConfigureMapMenu {
 
 		OsmandPlugin.registerLayerContextMenu(activity.getMapView(), adapter, activity);
 		boolean srtmDisabled = OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) == null
-				&& !InAppPurchaseHelper.isSubscribedToLiveUpdates(app);
+				&& !InAppPurchaseHelper.isContourLinesPurchased(app);
 		if (srtmDisabled) {
 			SRTMPlugin srtmPlugin = OsmandPlugin.getPlugin(SRTMPlugin.class);
 			if (srtmPlugin != null) {
@@ -261,19 +261,13 @@ public class ConfigureMapMenu {
 		app.getAidlApi().registerLayerContextMenu(adapter, activity);
 	}
 
-	public static void refreshMapComplete(final MapActivity activity) {
-		activity.getMyApplication().getResourceManager().getRenderer().clearCache();
-		activity.updateMapSettings();
-		activity.getMapView().refreshMap(true);
-	}
 
 	private void createRenderingAttributeItems(List<RenderingRuleProperty> customRules,
 											   final ContextMenuAdapter adapter, final MapActivity activity,
 	                                           final int themeRes, final boolean nightMode) {
 		final OsmandApplication app = activity.getMyApplication();
 		final OsmandSettings settings = app.getSettings();
-		final int selectedProfileColorRes = settings.APPLICATION_MODE.get().getIconColorInfo().getColor(nightMode);
-		final int selectedProfileColor = ContextCompat.getColor(app, selectedProfileColorRes);
+		final int selectedProfileColor = settings.APPLICATION_MODE.get().getProfileColor(nightMode);
 
 		adapter.addItem(new ContextMenuItem.ItemBuilder().setTitleId(R.string.map_widget_map_rendering, activity)
 				.setId(MAP_RENDERING_CATEGORY_ID)
@@ -347,7 +341,7 @@ public class ConfigureMapMenu {
 									public void onClick(View v) {
 										int which = (int) v.getTag();
 										view.getSettings().DAYNIGHT_MODE.set(DayNightMode.values()[which]);
-										refreshMapComplete(activity);
+										activity.refreshMapComplete();
 										activity.getDashboard().refreshContent(true);
 										// adapter.getItem(pos).setDescription(s, getDayNightDescr(activity));
 										// ad.notifyDataSetInvalidated();
@@ -466,7 +460,7 @@ public class ConfigureMapMenu {
 									public void onClick(View v) {
 										int which = (int) v.getTag();
 										view.getSettings().TEXT_SCALE.set(txtValues[which]);
-										refreshMapComplete(activity);
+										activity.refreshMapComplete();
 										adapter.getItem(pos).setDescription(getScale(activity));
 										ad.notifyDataSetInvalidated();
 									}
@@ -510,7 +504,7 @@ public class ConfigureMapMenu {
 							}
 						}
 						selectedLanguageIndex = selected;
-						transliterateNames = view.getSettings().MAP_TRANSLITERATE_NAMES.get();
+						transliterateNames = settings.MAP_TRANSLITERATE_NAMES.get();
 
 						final OnCheckedChangeListener translitChangdListener = new OnCheckedChangeListener() {
 							@Override
@@ -536,7 +530,7 @@ public class ConfigureMapMenu {
 									TextView switchText = (TextView) v.findViewById(R.id.switchText);
 									switchText.setText(activity.getString(R.string.translit_name_if_miss, txtValues[position]));
 									SwitchCompat check = (SwitchCompat) v.findViewById(R.id.check);
-									check.setChecked(transliterateNames);
+									check.setChecked(settings.MAP_TRANSLITERATE_NAMES.isSet() ? transliterateNames : txtIds[position].equals("en"));
 									check.setOnCheckedChangeListener(translitChangdListener);
 									UiUtilities.setupCompoundButton(nightMode, selectedProfileColor, check);
 								} else {
@@ -568,7 +562,7 @@ public class ConfigureMapMenu {
 								int index = dlg.getListView().getCheckedItemPosition();
 								view.getSettings().MAP_PREFERRED_LOCALE.set(
 										txtIds[index]);
-								refreshMapComplete(activity);
+								activity.refreshMapComplete();
 								String localeDescr = txtIds[index];
 								localeDescr = localeDescr == null || localeDescr.isEmpty() ? activity
 										.getString(R.string.local_map_names) : localeDescr;
@@ -710,9 +704,8 @@ public class ConfigureMapMenu {
 						for (int i = 0; i < prefs.size(); i++) {
 							prefs.get(i).set(false);
 						}
-						adapter.getItem(pos).setColorRes(ContextMenuItem.INVALID_ID);
 						a.notifyDataSetInvalidated();
-						refreshMapComplete(activity);
+						activity.refreshMapComplete();
 						activity.getMapLayers().updateLayers(activity.getMapView());
 					} else {
 						if (UI_CATEGORY_DETAILS.equals(category)) {
@@ -744,7 +737,7 @@ public class ConfigureMapMenu {
 					}
 				}
 			}
-			builder.setColor(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
+			builder.setColor(activity, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
 			if (useDescription) {
 				final String descr = getDescription(prefs, includedPrefs);
 				builder.setDescription(descr);
@@ -845,7 +838,7 @@ public class ConfigureMapMenu {
 					selected |= prefs.get(i).get();
 				}
 				adapter.getItem(pos).setSelected(selected);
-				adapter.getItem(pos).setColorRes(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
+				adapter.getItem(pos).setColor(activity, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
 				a.notifyDataSetInvalidated();
 			}
 		});
@@ -880,10 +873,10 @@ public class ConfigureMapMenu {
 					} else {
 						adapter.getItem(pos).setSelected(selected);
 					}
-					adapter.getItem(pos).setColorRes(selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
+					adapter.getItem(pos).setColor(activity, selected ? R.color.osmand_orange : ContextMenuItem.INVALID_ID);
 				}
 				a.notifyDataSetInvalidated();
-				refreshMapComplete(activity);
+				activity.refreshMapComplete();
 				activity.getMapLayers().updateLayers(activity.getMapView());
 			}
 		});
@@ -1041,7 +1034,7 @@ public class ConfigureMapMenu {
 						@Override
 						public boolean onContextMenuClick(ArrayAdapter<ContextMenuItem> adapter, int itemId, int pos, boolean isChecked, int[] viewCoordinates) {
 							pref.set(!pref.get());
-							refreshMapComplete(activity);
+							activity.refreshMapComplete();
 							return false;
 						}
 					})
@@ -1096,7 +1089,7 @@ public class ConfigureMapMenu {
 											} else {
 												pref.set(p.getPossibleValues()[which - 1]);
 											}
-											refreshMapComplete(activity);
+											activity.refreshMapComplete();
 											String description = AndroidUtils.getRenderingStringPropertyValue(activity, pref.get());
 											adapter.getItem(pos).setDescription(description);
 										}

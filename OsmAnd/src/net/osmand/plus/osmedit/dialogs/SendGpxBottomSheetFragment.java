@@ -47,7 +47,7 @@ public class SendGpxBottomSheetFragment extends MenuBottomSheetDialogFragment {
 	public static final String TAG = SendGpxBottomSheetFragment.class.getSimpleName();
 
 	private GpxInfo[] gpxInfos;
-	private UploadVisibility selectedUploadVisibility = UploadVisibility.PUBLIC;
+	private UploadVisibility selectedUploadVisibility;
 
 	private TextInputEditText tagsField;
 	private TextInputEditText messageField;
@@ -59,20 +59,23 @@ public class SendGpxBottomSheetFragment extends MenuBottomSheetDialogFragment {
 	@Override
 	public void createMenuItems(Bundle savedInstanceState) {
 		OsmandApplication app = requiredMyApplication();
-		OsmandSettings settings = app.getSettings();
+		final OsmandSettings settings = app.getSettings();
 
 		LayoutInflater themedInflater = UiUtilities.getInflater(app, nightMode);
 		View sendGpxView = themedInflater.inflate(R.layout.send_gpx_fragment, null);
 		sendGpxView.getViewTreeObserver().addOnGlobalLayoutListener(getShadowLayoutListener());
 
+		if (selectedUploadVisibility == null) {
+			selectedUploadVisibility = settings.OSM_UPLOAD_VISIBILITY.get();
+		}
 		tagsField = sendGpxView.findViewById(R.id.tags_field);
 		messageField = sendGpxView.findViewById(R.id.message_field);
 
 		TextView accountName = sendGpxView.findViewById(R.id.user_name);
-		if (!Algorithms.isEmpty(settings.USER_DISPLAY_NAME.get())) {
-			accountName.setText(settings.USER_DISPLAY_NAME.get());
+		if (!Algorithms.isEmpty(settings.OSM_USER_DISPLAY_NAME.get())) {
+			accountName.setText(settings.OSM_USER_DISPLAY_NAME.get());
 		} else {
-			accountName.setText(settings.USER_NAME.get());
+			accountName.setText(settings.OSM_USER_NAME.get());
 		}
 
 		String fileName = gpxInfos[0].getFileName();
@@ -96,8 +99,9 @@ public class SendGpxBottomSheetFragment extends MenuBottomSheetDialogFragment {
 		horizontalSelectionAdapter.setSelectedItemByTitle(getString(selectedUploadVisibility.getTitleId()));
 		horizontalSelectionAdapter.setListener(new HorizontalSelectionAdapterListener() {
 			@Override
-			public void onItemSelected(HorizontalSelectionAdapter.HorizontalSelectionItem item) {
+			public void onItemSelected(HorizontalSelectionItem item) {
 				selectedUploadVisibility = (OsmEditingPlugin.UploadVisibility) item.getObject();
+				settings.OSM_UPLOAD_VISIBILITY.set(selectedUploadVisibility);
 				visibilityName.setText(selectedUploadVisibility.getTitleId());
 				visibilityDescription.setText(selectedUploadVisibility.getDescriptionId());
 				horizontalSelectionAdapter.notifyDataSetChanged();

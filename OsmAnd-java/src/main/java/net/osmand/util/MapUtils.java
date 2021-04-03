@@ -49,6 +49,47 @@ public class MapUtils {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '_', '~'
     };
 
+	public static int calculateFromBaseZoomPrecisionXY(int baseZoom, int finalZoom, int xFinal, int yFinal) {
+		int px = xFinal;
+		int py = yFinal;
+		int precisionNumber = 1;
+		for (int zoom = finalZoom - 1; zoom >= baseZoom; zoom--) {
+			int x = px / 2; // (int) MapUtils.getTileNumberX(zoom, lon);
+			int y = py / 2; // (int) MapUtils.getTileNumberY(zoom, lat);
+			int deltax = px - x * 2;
+			int deltay = py - y * 2;
+			precisionNumber = (precisionNumber << 2) + (deltax << 1) + deltay;
+			// StringBuilder spaces = new StringBuilder();
+			// for (int i = 0; i < 32 - zoom; i++) {
+			//	spaces.append(' ');
+			// }
+			// System.out.println(String.format("%d %s + %d %s %s + %d", zoom, Integer.toBinaryString(x), deltax, spaces.toString(), Integer.toBinaryString(y), deltay));
+			px = x;
+			py = y;
+		}
+		// System.out.println(String.format("Bits: %d %s (%d)", Integer.toBinaryString(precisionNumber).length(), Integer.toBinaryString(precisionNumber), precisionNumber));
+		return precisionNumber;
+	}
+
+	public static int[] calculateFinalXYFromBaseAndPrecisionXY(int bazeZoom, int finalZoom,
+			int precisionXY, int xBase, int yBase, boolean ignoreNotEnoughPrecision) {
+		// System.out.println(String.format("Base x, y at zoom %d: %d %d", zoomToStart, xBaseApproximation, yBaseApproximation));
+		// calculate finish approximation using precisionNumber
+		int finalX = xBase;
+		int finalY = yBase;
+		int precisionCalc = precisionXY;
+		for (int zoom = bazeZoom; zoom < finalZoom; zoom++) {
+			if (precisionCalc <= 1 && precisionCalc > 0 && !ignoreNotEnoughPrecision) {
+				 throw new IllegalArgumentException("Not enough bits to retrieve zoom approximation");
+			}
+			finalY = finalY * 2 + (precisionXY & 1);
+			finalX = finalX * 2 + ((precisionXY & 2) >> 1);
+			precisionXY = precisionXY >> 2;
+		}
+		// System.out.println(String.format("Calc x, y at zoom %d: %d %d", finalZoom, finalX, finalY));
+		return new int[] { finalX, finalY };
+	}
+
 
 
 	public static double getDistance(LatLon l, double latitude, double longitude) {
@@ -333,8 +374,8 @@ public class MapUtils {
 		});
 	}
 
-	public static String buildGeoUrl(double latitude, double longitude, int zoom) {
-		return "geo:" + ((float) latitude) + "," + ((float) longitude) + "?z=" + zoom;
+	public static String buildGeoUrl(String latitude, String longitude, int zoom) {
+		return "geo:" + latitude + "," + longitude + "?z=" + zoom;
 	}
 
 	// Examples
@@ -668,8 +709,13 @@ public class MapUtils {
 
 	public static boolean areLatLonEqual(Location l1, Location l2) {
 		return l1 == null && l2 == null
-				|| (l1 != null && l2 != null && Math.abs(l1.getLatitude() - l2.getLatitude()) < 0.00001
-				&& Math.abs(l1.getLongitude() - l2.getLongitude()) < 0.00001);
+				|| (l2 != null && areLatLonEqual(l1, l2.getLatitude(), l2.getLongitude()));
+	}
+
+	public static boolean areLatLonEqual(Location l, double lat, double lon) {
+		return l != null
+				&& Math.abs(l.getLatitude() - lat) < 0.00001
+				&& Math.abs(l.getLongitude() - lon) < 0.00001;
 	}
 	
 	public static LatLon rhumbDestinationPoint(LatLon latLon, double distance, double bearing){

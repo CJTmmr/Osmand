@@ -85,7 +85,7 @@ public class MapDataMenuController extends MenuController {
 		}
 
 		srtmDisabled = OsmandPlugin.getEnabledPlugin(SRTMPlugin.class) == null
-				&& !InAppPurchaseHelper.isSubscribedToLiveUpdates(app);
+				&& !InAppPurchaseHelper.isContourLinesPurchased(app);
 		OsmandPlugin srtmPlugin = OsmandPlugin.getPlugin(SRTMPlugin.class);
 		srtmNeedsInstallation = srtmPlugin == null || srtmPlugin.needsInstallation();
 
@@ -118,7 +118,7 @@ public class MapDataMenuController extends MenuController {
 					} else if (!downloaded || indexItem.isOutdated()) {
 						new DownloadValidationManager(app).startDownload(activity, indexItem);
 					} else if (isLiveUpdatesOn()) {
-						LiveUpdatesHelper.runLiveUpdate(activity, indexItem.getTargetFileName(), true);
+						LiveUpdatesHelper.runLiveUpdate(activity, indexItem.getTargetFileName(), true, null);
 					}
 				}
 			}

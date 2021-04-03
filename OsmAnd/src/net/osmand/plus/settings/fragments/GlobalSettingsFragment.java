@@ -6,11 +6,6 @@ import android.os.Bundle;
 import android.util.Pair;
 import android.widget.ImageView;
 
-import androidx.fragment.app.FragmentManager;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceViewHolder;
-import androidx.preference.SwitchPreferenceCompat;
-
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
 import net.osmand.plus.dialogs.ConfigureMapMenu;
@@ -22,8 +17,15 @@ import net.osmand.plus.profiles.SelectProfileBottomSheet.DialogMode;
 import net.osmand.plus.profiles.SelectProfileBottomSheet.OnSelectProfileCallback;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.settings.backend.OsmandSettings;
+import net.osmand.plus.settings.datastorage.DataStorageHelper;
+import net.osmand.plus.settings.datastorage.item.StorageItem;
 import net.osmand.plus.settings.preferences.ListPreferenceEx;
 import net.osmand.plus.settings.preferences.SwitchPreferenceEx;
+
+import androidx.fragment.app.FragmentManager;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceViewHolder;
+import androidx.preference.SwitchPreferenceCompat;
 
 import static net.osmand.plus.profiles.SelectProfileBottomSheet.PROFILE_KEY_ARG;
 import static net.osmand.plus.profiles.SelectProfileBottomSheet.USE_LAST_PROFILE_ARG;
@@ -106,7 +108,7 @@ public class GlobalSettingsFragment extends BaseSettingsFragment
 			Activity activity = getActivity();
 			OsmandApplication app = getMyApplication();
 			if (app != null && activity != null) {
-				app.checkPreferredLocale();
+				app.getLocaleHelper().checkPreferredLocale();
 				app.restartApp(activity);
 			}
 		} else if (prefId.equals(settings.SPEED_CAMERAS_UNINSTALLED.getId())) {
@@ -140,7 +142,6 @@ public class GlobalSettingsFragment extends BaseSettingsFragment
 
 	private void setupDefaultAppModePref() {
 		Preference defaultApplicationMode = (Preference) findPreference(settings.DEFAULT_APPLICATION_MODE.getId());
-		int iconColor = settings.getApplicationMode().getIconColorInfo().getColor(isNightMode());
 		String summary;
 		int iconId;
 		if (settings.USE_LAST_APPLICATION_MODE_BY_DEFAULT.get()) {
@@ -151,7 +152,7 @@ public class GlobalSettingsFragment extends BaseSettingsFragment
 			summary = appMode.toHumanString();
 			iconId = appMode.getIconRes();
 		}
-		defaultApplicationMode.setIcon(getIcon(iconId, iconColor));
+		defaultApplicationMode.setIcon(getPaintedIcon(iconId, settings.getApplicationMode().getProfileColor(isNightMode())));
 		defaultApplicationMode.setSummary(summary);
 	}
 
@@ -181,7 +182,7 @@ public class GlobalSettingsFragment extends BaseSettingsFragment
 		externalStorageDir.setIcon(getActiveIcon(R.drawable.ic_action_folder));
 
 		DataStorageHelper holder = new DataStorageHelper(app);
-		DataStorageMenuItem currentStorage = holder.getCurrentStorage();
+		StorageItem currentStorage = holder.getCurrentStorage();
 		long totalUsed = app.getSettings().OSMAND_USAGE_SPACE.get();
 		if (totalUsed > 0) {
 			String[] usedMemoryFormats = new String[] {
@@ -212,6 +213,20 @@ public class GlobalSettingsFragment extends BaseSettingsFragment
 	private void setupDialogsAndNotificationsPref() {
 		Preference dialogsAndNotifications = (Preference) findPreference(DIALOGS_AND_NOTIFICATIONS_PREF_ID);
 		dialogsAndNotifications.setIcon(getPersistentPrefIcon(R.drawable.ic_action_notification));
+		if (getSettings() == null) {
+			return;
+		}
+		boolean showStartupMessages = !getSettings().DO_NOT_SHOW_STARTUP_MESSAGES.get();
+		boolean showDownloadMapDialog = getSettings().SHOW_DOWNLOAD_MAP_DIALOG.get();
+		String summary;
+		if (showStartupMessages && showDownloadMapDialog) {
+			summary = getString(R.string.shared_string_all);
+		} else if (showStartupMessages || showDownloadMapDialog) {
+			summary = getString(R.string.ltr_or_rtl_combine_via_slash, "1", "2");
+		} else {
+			summary = getString(R.string.shared_string_disabled);
+		}
+		dialogsAndNotifications.setSummary(summary);
 	}
 
 	private void setupEnableProxyPref() {

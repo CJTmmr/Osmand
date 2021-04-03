@@ -317,7 +317,7 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 			}
 		}
 
-		private String formatDateTime(Context ctx, long dateTime) {
+		public static String formatDateTime(Context ctx, long dateTime) {
 			DateFormat dateFormat = android.text.format.DateFormat.getMediumDateFormat(ctx);
 			DateFormat timeFormat = android.text.format.DateFormat.getTimeFormat(ctx);
 			return dateFormat.format(dateTime) + " " + timeFormat.format(dateTime);
@@ -678,7 +678,7 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 			public boolean onContextMenuClick(ArrayAdapter<ContextMenuItem> adapter, int itemId, int pos, boolean isChecked, int[] viewCoordinates) {
 				if (itemId == R.string.layer_recordings) {
 					SHOW_RECORDINGS.set(!SHOW_RECORDINGS.get());
-					adapter.getItem(pos).setColorRes(SHOW_RECORDINGS.get() ?
+					adapter.getItem(pos).setColor(app, SHOW_RECORDINGS.get() ?
 							R.color.osmand_orange : ContextMenuItem.INVALID_ID);
 					adapter.notifyDataSetChanged();
 					updateLayers(mapView, mapActivity);
@@ -690,7 +690,7 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 				.setId(RECORDING_LAYER)
 				.setSelected(SHOW_RECORDINGS.get())
 				.setIcon(R.drawable.ic_action_micro_dark)
-				.setColor(SHOW_RECORDINGS.get() ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
+				.setColor(mapActivity, SHOW_RECORDINGS.get() ? R.color.osmand_orange : ContextMenuItem.INVALID_ID)
 				.setItemDeleteAction(makeDeleteAction(SHOW_RECORDINGS))
 				.setListener(listener).createItem());
 	}
@@ -777,19 +777,21 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 		if (mapInfoLayer != null) {
 			recordControl = new TextInfoWidget(activity) {
 
+				private Integer cachedAction;
 				private Boolean cachedRecording;
 
 				@Override
 				public boolean updateInfo(DrawSettings drawSettings) {
 					boolean recording = isRecording();
-					if (!Algorithms.objectEquals(recording, cachedRecording)) {
+					Integer action = AV_DEFAULT_ACTION.get();
+					if (!Algorithms.objectEquals(recording, cachedRecording) || !Algorithms.objectEquals(action, cachedAction)) {
+						cachedAction = action;
 						cachedRecording = recording;
 						if (recording) {
 							setText(app.getString(R.string.shared_string_control_stop), null);
 							setIcons(R.drawable.widget_icon_av_active, R.drawable.widget_icon_av_active_night);
 						} else {
 							setText(app.getString(R.string.shared_string_control_start), null);
-							Integer action = AV_DEFAULT_ACTION.get();
 							switch (action) {
 								case AV_DEFAULT_ACTION_VIDEO:
 									setIcons(R.drawable.widget_av_video_day, R.drawable.widget_av_video_night);
@@ -807,7 +809,7 @@ public class AudioVideoNotesPlugin extends OsmandPlugin {
 						}
 					}
 					return false;
-				};
+				}
 			};
 			recordControl.setOnClickListener(new View.OnClickListener() {
 				@Override

@@ -515,6 +515,10 @@ public class EditPoiDialogFragment extends BaseOsmAndDialogFragment {
 					entity.putTagNoLC(poiType.getOsmTag2(), poiType.getOsmValue2());
 					entity.removeTag(Entity.REMOVE_TAG_PREFIX + poiType.getOsmTag2());
 				}
+				if (poiType.getEditOsmTag2() != null) {
+					entity.putTagNoLC(poiType.getEditOsmTag2(), poiType.getEditOsmValue2());
+					entity.removeTag(Entity.REMOVE_TAG_PREFIX + poiType.getEditOsmTag2());
+				}
 			} else if (!Algorithms.isEmpty(poiTypeTag)) {
 				PoiCategory category = editPoiData.getPoiCategory();
 				if (category != null) {
@@ -542,6 +546,7 @@ public class EditPoiDialogFragment extends BaseOsmAndDialogFragment {
 									mapActivity.getContextMenu().showOrUpdate(
 											new LatLon(point.getLatitude(), point.getLongitude()),
 											plugin.getOsmEditsLayer(mapActivity).getObjectName(point), point);
+									mapActivity.getMapLayers().getContextMenuLayer().updateContextMenu();
 								}
 							}
 
@@ -869,6 +874,7 @@ public class EditPoiDialogFragment extends BaseOsmAndDialogFragment {
 										mapActivity.getContextMenu().showOrUpdate(
 												new LatLon(point.getLatitude(), point.getLongitude()),
 												plugin.getOsmEditsLayer(mapActivity).getObjectName(point), point);
+										mapActivity.getMapLayers().getContextMenuLayer().updateContextMenu();
 									}
 								} else {
 									Toast.makeText(activity, R.string.poi_remove_success, Toast.LENGTH_LONG)

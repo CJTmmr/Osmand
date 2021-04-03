@@ -3,26 +3,23 @@ package net.osmand.plus.track;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.internal.FlowLayout;
-
-import net.osmand.AndroidUtils;
 import net.osmand.PlatformUtil;
 import net.osmand.plus.OsmandApplication;
 import net.osmand.plus.R;
 import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.routepreparationmenu.cards.BaseCard;
+import net.osmand.plus.settings.backend.ApplicationMode;
+import net.osmand.plus.settings.backend.ListStringPreference;
 import net.osmand.plus.track.CustomColorBottomSheet.ColorPickerListener;
+import net.osmand.plus.widgets.FlowLayout;
+import net.osmand.plus.widgets.FlowLayout.LayoutParams;
 import net.osmand.util.Algorithms;
 
 import org.apache.commons.logging.Log;
@@ -33,16 +30,19 @@ import java.util.List;
 public class ColorsCard extends BaseCard implements ColorPickerListener {
 
 	public static final int MAX_CUSTOM_COLORS = 6;
-	public static final int MINIMUM_CONTRAST_RATIO = 3;
+	public static final double MINIMUM_CONTRAST_RATIO = 1.5;
 
 	private static final Log log = PlatformUtil.getLog(TrackColoringCard.class);
 
 	public static final int INVALID_VALUE = -1;
 
-	private Fragment targetFragment;
+	private final Fragment targetFragment;
 
-	private List<Integer> colors;
-	private List<Integer> customColors;
+	private ApplicationMode appMode;
+	private ListStringPreference colorsListPreference;
+
+	private final List<Integer> colors;
+	private final List<Integer> customColors;
 
 	private int selectedColor;
 
@@ -51,12 +51,19 @@ public class ColorsCard extends BaseCard implements ColorPickerListener {
 		return R.layout.colors_card;
 	}
 
-	public ColorsCard(MapActivity mapActivity, int selectedColor, Fragment targetFragment, List<Integer> colors) {
+	public ColorsCard(MapActivity mapActivity,
+	                  int selectedColor,
+	                  Fragment targetFragment,
+	                  List<Integer> colors,
+	                  ListStringPreference colorsListPreference,
+	                  ApplicationMode appMode) {
 		super(mapActivity);
 		this.targetFragment = targetFragment;
 		this.selectedColor = selectedColor;
 		this.colors = colors;
-		customColors = getCustomColors(app);
+		this.colorsListPreference = colorsListPreference;
+		this.customColors = getCustomColors(colorsListPreference, appMode);
+		this.appMode = appMode;
 	}
 
 	public int getSelectedColor() {
@@ -65,6 +72,7 @@ public class ColorsCard extends BaseCard implements ColorPickerListener {
 
 	public void setSelectedColor(int selectedColor) {
 		this.selectedColor = selectedColor;
+		updateContent();
 	}
 
 	@Override
@@ -88,35 +96,41 @@ public class ColorsCard extends BaseCard implements ColorPickerListener {
 	@Override
 	protected void updateContent() {
 		createColorSelector();
-		updateColorSelector(selectedColor, view);
+		updateColorSelector(selectedColor);
 	}
 
 	private void createColorSelector() {
-		FlowLayout selectColor = view.findViewById(R.id.select_color);
-		selectColor.removeAllViews();
+		FlowLayout selectCustomColor = view.findViewById(R.id.select_custom_color);
+		selectCustomColor.removeAllViews();
+		selectCustomColor.setHorizontalAutoSpacing(true);
+		int minimalPaddingBetweenIcon = app.getResources().getDimensionPixelSize(R.dimen.favorites_select_icon_button_right_padding);
 
 		for (int color : customColors) {
-			selectColor.addView(createColorItemView(color, selectColor, true));
+			selectCustomColor.addView(createColorItemView(color, selectCustomColor, true), new LayoutParams(minimalPaddingBetweenIcon, 0));
 		}
 		if (customColors.size() < 6) {
-			selectColor.addView(createAddCustomColorItemView(selectColor));
+			selectCustomColor.addView(createAddCustomColorItemView(selectCustomColor), new LayoutParams(minimalPaddingBetweenIcon, 0));
 		}
-		selectColor.addView(createDividerView(selectColor));
+
+		FlowLayout selectDefaultColor = view.findViewById(R.id.select_default_color);
+		selectDefaultColor.removeAllViews();
+		selectDefaultColor.setHorizontalAutoSpacing(true);
 
 		for (int color : colors) {
-			selectColor.addView(createColorItemView(color, selectColor, false));
+			selectDefaultColor.addView(createColorItemView(color, selectDefaultColor, false), new LayoutParams(minimalPaddingBetweenIcon, 0));
 		}
-		updateColorSelector(selectedColor, selectColor);
+		updateColorSelector(selectedColor);
 	}
 
-	private void updateColorSelector(int color, View rootView) {
-		View oldColor = rootView.findViewWithTag(selectedColor);
+	private void updateColorSelector(int color) {
+		View oldColor = view.findViewWithTag(selectedColor);
 		if (oldColor != null) {
 			oldColor.findViewById(R.id.outline).setVisibility(View.INVISIBLE);
 			ImageView icon = oldColor.findViewById(R.id.icon);
-			icon.setImageDrawable(UiUtilities.tintDrawable(icon.getDrawable(), R.color.icon_color_default_light));
+			icon.setImageDrawable(UiUtilities.tintDrawable(icon.getDrawable(),
+					getResolvedColor(nightMode ? R.color.icon_color_default_dark : R.color.icon_color_default_light)));
 		}
-		View newColor = rootView.findViewWithTag(color);
+		View newColor = view.findViewWithTag(color);
 		if (newColor != null) {
 			newColor.findViewById(R.id.outline).setVisibility(View.VISIBLE);
 		}
@@ -130,7 +144,11 @@ public class ColorsCard extends BaseCard implements ColorPickerListener {
 		Drawable transparencyIcon = getTransparencyIcon(app, color);
 		Drawable colorIcon = app.getUIUtilities().getPaintedIcon(R.drawable.bg_point_circle, color);
 		Drawable layeredIcon = UiUtilities.getLayeredIcon(transparencyIcon, colorIcon);
-		double contrastRatio = ColorUtils.calculateContrast(color, ContextCompat.getColor(app, nightMode ? R.color.card_and_list_background_dark : R.color.card_and_list_background_light));
+		int listBgColorId = nightMode ?
+				R.color.card_and_list_background_dark :
+				R.color.card_and_list_background_light;
+		int listBgColor = getResolvedColor(listBgColorId);
+		double contrastRatio = ColorUtils.calculateContrast(color, listBgColor);
 		if (contrastRatio < MINIMUM_CONTRAST_RATIO) {
 			backgroundCircle.setBackgroundResource(nightMode ? R.drawable.circle_contour_bg_dark : R.drawable.circle_contour_bg_light);
 		}
@@ -138,7 +156,7 @@ public class ColorsCard extends BaseCard implements ColorPickerListener {
 		backgroundCircle.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				updateColorSelector(color, rootView);
+				updateColorSelector(color);
 				selectedColor = color;
 
 				CardListener listener = getListener();
@@ -188,18 +206,7 @@ public class ColorsCard extends BaseCard implements ColorPickerListener {
 		return colorItemView;
 	}
 
-	private View createDividerView(FlowLayout rootView) {
-		LayoutInflater themedInflater = UiUtilities.getInflater(view.getContext(), nightMode);
-		View divider = themedInflater.inflate(R.layout.simple_divider_item, rootView, false);
-
-		LinearLayout dividerContainer = new LinearLayout(view.getContext());
-		dividerContainer.addView(divider);
-		dividerContainer.setPadding(0, AndroidUtils.dpToPx(app, 1), 0, AndroidUtils.dpToPx(app, 5));
-
-		return dividerContainer;
-	}
-
-	private View createCircleView(ViewGroup rootView) {
+	private View createCircleView(FlowLayout rootView) {
 		LayoutInflater themedInflater = UiUtilities.getInflater(view.getContext(), nightMode);
 		View circleView = themedInflater.inflate(R.layout.point_editor_button, rootView, false);
 		ImageView outline = circleView.findViewById(R.id.outline);
@@ -215,9 +222,18 @@ public class ColorsCard extends BaseCard implements ColorPickerListener {
 		return app.getUIUtilities().getPaintedIcon(R.drawable.ic_bg_transparency, transparencyColor);
 	}
 
-	public static List<Integer> getCustomColors(@NonNull OsmandApplication app) {
+	public static List<Integer> getCustomColors(ListStringPreference colorsListPreference) {
+		return getCustomColors(colorsListPreference, null);
+	}
+
+	public static List<Integer> getCustomColors(ListStringPreference colorsListPreference, ApplicationMode appMode) {
 		List<Integer> colors = new ArrayList<>();
-		List<String> colorNames = app.getSettings().CUSTOM_TRACK_COLORS.getStringsList();
+		List<String> colorNames;
+		if (appMode == null) {
+			colorNames = colorsListPreference.getStringsList();
+		} else {
+			colorNames = colorsListPreference.getStringsListForProfile(appMode);
+		}
 		if (colorNames != null) {
 			for (String colorHex : colorNames) {
 				try {
@@ -233,12 +249,24 @@ public class ColorsCard extends BaseCard implements ColorPickerListener {
 		return colors;
 	}
 
+	public int getIndexOfSelectedColor() {
+		return customColors.indexOf(selectedColor);
+	}
+
+	public boolean isBaseColor(int color) {
+		return colors.contains(color);
+	}
+
 	private void saveCustomColors() {
 		List<String> colorNames = new ArrayList<>();
 		for (Integer color : customColors) {
 			String colorHex = Algorithms.colorToString(color);
 			colorNames.add(colorHex);
 		}
-		app.getSettings().CUSTOM_TRACK_COLORS.setStringsList(colorNames);
+		if (appMode == null) {
+			colorsListPreference.setStringsList(colorNames);
+		} else {
+			colorsListPreference.setStringsListForProfile(appMode, colorNames);
+		}
 	}
 }

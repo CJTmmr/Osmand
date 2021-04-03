@@ -2,10 +2,10 @@ package net.osmand.plus.settings.bottomsheets;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -19,7 +19,7 @@ import net.osmand.plus.base.MenuBottomSheetDialogFragment;
 import net.osmand.plus.base.bottomsheetmenu.BaseBottomSheetItem;
 import net.osmand.plus.base.bottomsheetmenu.BottomSheetItemWithCompoundButton;
 import net.osmand.plus.base.bottomsheetmenu.simpleitems.DividerSpaceItem;
-import net.osmand.plus.base.bottomsheetmenu.simpleitems.LongDescriptionItem;
+import net.osmand.plus.base.bottomsheetmenu.simpleitems.ShortDescriptionItem;
 import net.osmand.plus.base.bottomsheetmenu.simpleitems.TitleItem;
 import net.osmand.plus.routepreparationmenu.RouteOptionsBottomSheet;
 import net.osmand.plus.settings.backend.ApplicationMode;
@@ -66,6 +66,7 @@ public class ElevationDateBottomSheet extends MenuBottomSheetDialogFragment {
 	private int checkedColor;
 	private int uncheckedColor;
 	private int disabledColor;
+	@ColorInt
 	private int appModeColor;
 
 	@Override
@@ -102,7 +103,7 @@ public class ElevationDateBottomSheet extends MenuBottomSheetDialogFragment {
 
 		on = getString(R.string.shared_string_enabled);
 		off = getString(R.string.shared_string_disabled);
-		appModeColor = appMode.getIconColorInfo().getColor(nightMode);
+		appModeColor = appMode.getProfileColor(nightMode);
 		activeColor = AndroidUtils.resolveAttribute(themedCtx, R.attr.active_color_basic);
 		disabledColor = AndroidUtils.resolveAttribute(themedCtx, android.R.attr.textColorSecondary);
 		checkedColor = (nightMode ? app.getResources().getColor(R.color.text_color_primary_dark) : app.getResources().getColor(R.color.text_color_primary_light));
@@ -115,8 +116,7 @@ public class ElevationDateBottomSheet extends MenuBottomSheetDialogFragment {
 
 		int contentPaddingSmall = getResources().getDimensionPixelSize(R.dimen.content_padding_small);
 		items.add(new DividerSpaceItem(app, contentPaddingSmall));
-		items.add(new LongDescriptionItem(getString(R.string.elevation_data)));
-		items.add(new DividerSpaceItem(app, contentPaddingSmall));
+		items.add(new ShortDescriptionItem((getString(R.string.routing_attr_height_obstacles_description))));
 
 		createReliefFactorButtons(themedCtx);
 	}
@@ -124,7 +124,7 @@ public class ElevationDateBottomSheet extends MenuBottomSheetDialogFragment {
 	private void createUseHeightButton(Context context) {
 		boolean checked = useHeightPref.getModeValue(appMode);
 		useHeightButton = (BottomSheetItemWithCompoundButton) new BottomSheetItemWithCompoundButton.Builder()
-				.setCompoundButtonColorId(appModeColor)
+				.setCompoundButtonColor(appModeColor)
 				.setChecked(checked)
 				.setTitle(checked ? on : off)
 				.setTitleColorId(checked ? activeColor : disabledColor)
@@ -255,7 +255,7 @@ public class ElevationDateBottomSheet extends MenuBottomSheetDialogFragment {
 				fragment.appMode = appMode;
 				fragment.setUsedOnMap(usedOnMap);
 				fragment.setTargetFragment(target, 0);
-				fragment.show(fm, ScreenTimeoutBottomSheet.TAG);
+				fragment.show(fm, ElevationDateBottomSheet.TAG);
 			}
 		} catch (RuntimeException e) {
 			LOG.error("showInstance", e);
