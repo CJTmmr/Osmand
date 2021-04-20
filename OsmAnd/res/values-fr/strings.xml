@@ -301,8 +301,8 @@
     <string name="error_reading_gpx">Impossible de lire les données GPX.</string>
     <string name="vector_data">Cartes vectorielles OSM</string>
     <string name="transport_context_menu">Recherche de transport pour cet arrêt</string>
-    <string name="poi_context_menu_modify">Modifier point d\'intérêt</string>
-    <string name="poi_context_menu_delete">Supprimer point d\'intérêt</string>
+    <string name="poi_context_menu_modify">Modifier le point d\'intérêt</string>
+    <string name="poi_context_menu_delete">Supprimer le point d\'intérêt</string>
     <string name="rotate_map_compass_opt">D\'après la boussole</string>
     <string name="rotate_map_bearing_opt">Dans la direction du déplacement</string>
     <string name="rotate_map_none_opt">Aucune rotation (nord toujours en haut)</string>
@@ -4015,9 +4015,9 @@
     <string name="track_recording_title">Enregistrement de la trace arrêté</string>
     <string name="select_segments">Sélectionnez les segments</string>
     <string name="update_frequency">Fréquence de mise à jour</string>
-    <string name="live_update_frequency_week_variant">Les cartes seront vérifiées chaque semaine. La prochaine vérification de mise à jour s\'effectuera à %1$s dans %2$s.</string>
-    <string name="live_update_frequency_day_variant">Les cartes seront vérifiées tous les jours. La prochaine vérification de mise à jour s\'effectuera à %1$s dans %2$s.</string>
-    <string name="live_update_frequency_hour_variant">Les cartes seront vérifiées toutes les heures. La prochaine vérification de mise à jour s\'effectuera à %1$s dans %2$s.</string>
+    <string name="live_update_frequency_week_variant">Les cartes seront vérifiées chaque semaine. La prochaine vérification de mise à jour s\'effectuera le %1$s dans %2$s.</string>
+    <string name="live_update_frequency_day_variant">Les cartes seront vérifiées tous les jours. La prochaine vérification de mise à jour s\'effectuera le %1$s dans %2$s.</string>
+    <string name="live_update_frequency_hour_variant">Les cartes seront vérifiées toutes les heures. La prochaine vérification de mise à jour s\'effectuera le %1$s dans %2$s.</string>
     <string name="delete_updates">Supprimer les mises à jour</string>
     <string name="purchases">Achats</string>
     <string name="select_category_descr">Sélectionnez la catégorie ou ajoutez-en une nouvelle</string>
@@ -4075,5 +4075,4 @@
     <string name="exit_number">Numéro de sortie</string>
     <string name="announce_when_exceeded">Annoncer en cas de dépassement</string>
     <string name="output">Sortie</string>
-    <string name="map_quick_action_pattern">%1$s → …</string>
 </resources>
