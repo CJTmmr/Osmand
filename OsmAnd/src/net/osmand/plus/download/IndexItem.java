@@ -176,7 +176,7 @@ public class IndexItem extends DownloadItem implements Comparable<IndexItem> {
 	}
 	
 	public String getRemoteDate(DateFormat dateFormat) {
-		if(timestamp <= 0) {
+		if (timestamp <= 0) {
 			return "";
 		}
 		return dateFormat.format(new Date(timestamp));
@@ -233,6 +233,9 @@ public class IndexItem extends DownloadItem implements Comparable<IndexItem> {
 	@Nullable
 	@Override
 	public String getAdditionalDescription(Context ctx) {
+		if (getType() == DownloadActivityType.SRTM_COUNTRY_FILE) {
+			return SrtmDownloadItem.getAbbreviationInScopes(ctx, this);
+		}
 		return null;
 	}
 	
@@ -251,7 +254,6 @@ public class IndexItem extends DownloadItem implements Comparable<IndexItem> {
 		public boolean isAsset;
 		public String assetName;
 		public DownloadActivityType type;
-		
 
 		public DownloadEntry() {
 		}
@@ -263,5 +265,4 @@ public class IndexItem extends DownloadItem implements Comparable<IndexItem> {
 			isAsset = true;
 		}
 	}
-
 }

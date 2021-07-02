@@ -15,6 +15,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import net.osmand.AndroidUtils;
+import net.osmand.FileUtils;
 import net.osmand.GPXUtilities.GPXFile;
 import net.osmand.GPXUtilities.Metadata;
 import net.osmand.plus.GpxSelectionHelper.SelectedGpxFile;
@@ -23,7 +24,7 @@ import net.osmand.plus.UiUtilities;
 import net.osmand.plus.activities.MapActivity;
 import net.osmand.plus.helpers.AndroidUiHelper;
 import net.osmand.plus.myplaces.SegmentActionsListener;
-import net.osmand.plus.routepreparationmenu.cards.BaseCard;
+import net.osmand.plus.routepreparationmenu.cards.MapBaseCard;
 import net.osmand.util.Algorithms;
 
 import static net.osmand.AndroidUtils.dpToPx;
@@ -35,7 +36,7 @@ import static net.osmand.plus.track.OptionsCard.EDIT_BUTTON_INDEX;
 import static net.osmand.plus.track.OptionsCard.SHOW_ON_MAP_BUTTON_INDEX;
 import static net.osmand.plus.wikipedia.WikiArticleHelper.getFirstParagraph;
 
-public class OverviewCard extends BaseCard {
+public class OverviewCard extends MapBaseCard {
 
 	private View showButton;
 	private View appearanceButton;
@@ -50,7 +51,8 @@ public class OverviewCard extends BaseCard {
 		return blockStatisticsBuilder;
 	}
 
-	public OverviewCard(@NonNull MapActivity mapActivity, @NonNull SegmentActionsListener actionsListener, SelectedGpxFile selectedGpxFile) {
+	public OverviewCard(@NonNull MapActivity mapActivity, @NonNull SegmentActionsListener actionsListener,
+	                    SelectedGpxFile selectedGpxFile) {
 		super(mapActivity);
 		this.actionsListener = actionsListener;
 		this.selectedGpxFile = selectedGpxFile;
@@ -75,14 +77,16 @@ public class OverviewCard extends BaseCard {
 		directionsButton = view.findViewById(R.id.directions_button);
 		description = view.findViewById(R.id.description);
 		RecyclerView blocksView = view.findViewById(R.id.recycler_overview);
-		blockStatisticsBuilder.setBlocksView(blocksView);
+		blockStatisticsBuilder.setBlocksView(blocksView, true);
 
 		setupDescription();
 		initShowButton(iconColorDef, iconColorPres);
-		initAppearanceButton(iconColorDef, iconColorPres);
-		if (fileAvailable) {
-			initEditButton(iconColorDef, iconColorPres);
-			initDirectionsButton(iconColorDef, iconColorPres);
+		if (!FileUtils.isTempFile(app, gpxFile.path)) {
+			initAppearanceButton(iconColorDef, iconColorPres);
+			if (fileAvailable) {
+				initEditButton(iconColorDef, iconColorPres);
+				initDirectionsButton(iconColorDef, iconColorPres);
+			}
 		}
 		blockStatisticsBuilder.initStatBlocks(actionsListener, getActiveColor());
 
@@ -97,7 +101,13 @@ public class OverviewCard extends BaseCard {
 
 	@DrawableRes
 	private int getActiveShowHideIcon() {
-		return isGpxFileSelected(app, getGPXFile()) ? R.drawable.ic_action_view : R.drawable.ic_action_hide;
+		int icon;
+		if (!FileUtils.isTempFile(app, getGPXFile().path)) {
+			icon = isGpxFileSelected(app, getGPXFile()) ? R.drawable.ic_action_view : R.drawable.ic_action_hide;
+		} else {
+			icon = R.drawable.ic_action_gsave_dark;
+		}
+		return icon;
 	}
 
 	private void initShowButton(final int iconColorDef, final int iconColorPres) {

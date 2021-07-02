@@ -20,6 +20,7 @@ import android.widget.ScrollView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
+import androidx.annotation.DimenRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -144,7 +145,16 @@ public abstract class MenuBottomSheetDialogFragment extends BottomSheetDialogFra
 
 	@ColorRes
 	protected int getActiveColorId() {
+		return getActiveColorId(nightMode);
+	}
+
+	@ColorRes
+	protected static int getActiveColorId(boolean nightMode) {
 		return nightMode ? R.color.osmand_orange : R.color.color_myloc_distance;
+	}
+
+	public int getDimen(@DimenRes int id) {
+		return getResources().getDimensionPixelSize(id);
 	}
 
 	@ColorInt

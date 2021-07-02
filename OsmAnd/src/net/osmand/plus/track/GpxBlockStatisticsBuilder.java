@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
@@ -81,8 +82,24 @@ public class GpxBlockStatisticsBuilder {
 		this.blocksClickable = blocksClickable;
 	}
 
-	public void setBlocksView(RecyclerView blocksView) {
+	public void setBlocksView(final RecyclerView blocksView, boolean isParentExpandable) {
 		this.blocksView = blocksView;
+		if (isParentExpandable) {
+			blocksView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+				@Override
+				public void onGlobalLayout() {
+					if (blocksView.getHeight() != 0) {
+						ViewTreeObserver obs = blocksView.getViewTreeObserver();
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+							obs.removeOnGlobalLayoutListener(this);
+						} else {
+							obs.removeGlobalOnLayoutListener(this);
+						}
+						blocksView.setMinimumHeight(blocksView.getHeight());
+					}
+				}
+			});
+		}
 	}
 
 	public void setTabItem(GPXTabItemType tabItem) {
@@ -91,7 +108,7 @@ public class GpxBlockStatisticsBuilder {
 
 	@Nullable
 	public GpxDisplayItem getDisplayItem(GPXFile gpxFile) {
-		return gpxFile.tracks.size() > 0 ? GpxUiHelper.makeGpxDisplayItem(app, gpxFile) : null;
+		return gpxFile.tracks.size() > 0 ? GpxUiHelper.makeGpxDisplayItem(app, gpxFile, false) : null;
 	}
 
 	private GPXFile getGPXFile() {

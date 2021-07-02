@@ -82,7 +82,6 @@ import net.osmand.plus.activities.search.SearchActivity;
 import net.osmand.plus.base.BaseOsmAndFragment;
 import net.osmand.plus.base.FailSafeFuntions;
 import net.osmand.plus.base.MapViewTrackingUtilities;
-import net.osmand.plus.chooseplan.OsmLiveGoneDialog;
 import net.osmand.plus.dashboard.DashBaseFragment;
 import net.osmand.plus.dashboard.DashboardOnMap;
 import net.osmand.plus.dialogs.CrashBottomSheetDialogFragment;
@@ -141,6 +140,7 @@ import net.osmand.plus.settings.fragments.BaseSettingsFragment;
 import net.osmand.plus.settings.fragments.BaseSettingsFragment.SettingsScreenType;
 import net.osmand.plus.settings.fragments.ConfigureProfileFragment;
 import net.osmand.plus.settings.fragments.RouteLineAppearanceFragment;
+import net.osmand.plus.settings.fragments.VoiceLanguageBottomSheetFragment;
 import net.osmand.plus.track.TrackAppearanceFragment;
 import net.osmand.plus.track.TrackMenuFragment;
 import net.osmand.plus.views.AddGpxPointBottomSheetHelper.NewGpxPoint;
@@ -431,6 +431,11 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			findViewById(R.id.init_progress).setVisibility(View.VISIBLE);
 			initListener = new AppInitializeListener() {
 				boolean openGlSetup = false;
+
+				@Override
+				public void onStart(AppInitializer init) {
+
+				}
 
 				@Override
 				public void onProgress(AppInitializer init, InitEvents event) {
@@ -1203,7 +1208,8 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 					if (gpxFile.showCurrentTrack) {
 						selectedGpxFile = app.getSavingTrackHelper().getCurrentTrack();
 					} else {
-						selectedGpxFile = app.getSelectedGpxHelper().getSelectedFileByPath(gpxFile.path);
+						selectedGpxFile = app.getSelectedGpxHelper()
+								.selectGpxFile(gpxFile, true, false, false, false, false);
 					}
 
 					TrackAppearanceFragment.showInstance(this, selectedGpxFile, null);
@@ -1797,10 +1803,10 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 
 	// DownloadEvents
 	@Override
-	public void newDownloadIndexes() {
+	public void onUpdatedIndexesList() {
 		for (Fragment fragment : getSupportFragmentManager().getFragments()) {
 			if (fragment instanceof DownloadEvents) {
-				((DownloadEvents) fragment).newDownloadIndexes();
+				((DownloadEvents) fragment).onUpdatedIndexesList();
 			}
 		}
 		if (dashboardOnMap.isVisible()) {
@@ -2098,6 +2104,10 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	}
 
 	public void showQuickSearch(Object object) {
+		showQuickSearch(object, null);
+	}
+
+	public void showQuickSearch(Object object, @Nullable LatLon latLon) {
 		hideVisibleMenu();
 		QuickSearchDialogFragment fragment = getQuickSearchDialogFragment();
 		if (fragment != null) {
@@ -2105,7 +2115,7 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 			refreshMap();
 		}
 		QuickSearchDialogFragment.showInstance(this, "", object,
-				QuickSearchType.REGULAR, QuickSearchTab.CATEGORIES, null);
+				QuickSearchType.REGULAR, QuickSearchTab.CATEGORIES, latLon);
 	}
 
 	public void showQuickSearch(ShowQuickSearchMode mode, boolean showCategories) {
@@ -2353,9 +2363,6 @@ public class MapActivity extends OsmandActionBarActivity implements DownloadEven
 	@Override
 	public void onInAppPurchaseGetItems() {
 		DiscountHelper.checkAndDisplay(this);
-		if (!isFirstScreenShowing() && OsmLiveGoneDialog.shouldShowDialog(app)) {
-			OsmLiveGoneDialog.showInstance(app, getSupportFragmentManager());
-		}
 	}
 
 	public enum ShowQuickSearchMode {

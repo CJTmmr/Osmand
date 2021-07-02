@@ -79,18 +79,17 @@ import net.osmand.plus.quickaction.QuickActionRegistry;
 import net.osmand.plus.rastermaps.OsmandRasterMapsPlugin;
 import net.osmand.plus.routing.IRoutingDataUpdateListener;
 import net.osmand.plus.routing.RouteCalculationResult.NextDirectionInfo;
-import net.osmand.plus.routing.RouteDirectionInfo;
 import net.osmand.plus.routing.RoutingHelper;
-import net.osmand.plus.routing.RoutingHelperUtils;
 import net.osmand.plus.routing.VoiceRouter;
 import net.osmand.plus.settings.backend.ApplicationMode;
 import net.osmand.plus.settings.backend.ApplicationMode.ApplicationModeBean;
 import net.osmand.plus.settings.backend.ExportSettingsType;
 import net.osmand.plus.settings.backend.OsmAndAppCustomization;
 import net.osmand.plus.settings.backend.OsmandSettings;
-import net.osmand.plus.settings.backend.backup.ProfileSettingsItem;
+import net.osmand.plus.settings.backend.backup.FileSettingsHelper;
 import net.osmand.plus.settings.backend.backup.SettingsHelper;
-import net.osmand.plus.settings.backend.backup.SettingsItem;
+import net.osmand.plus.settings.backend.backup.items.ProfileSettingsItem;
+import net.osmand.plus.settings.backend.backup.items.SettingsItem;
 import net.osmand.plus.views.OsmandMapLayer;
 import net.osmand.plus.views.OsmandMapTileView;
 import net.osmand.plus.views.layers.AidlMapLayer;
@@ -115,7 +114,6 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -142,14 +140,6 @@ import static net.osmand.aidlapi.OsmandAidlConstants.COPY_FILE_UNSUPPORTED_FILE_
 import static net.osmand.aidlapi.OsmandAidlConstants.COPY_FILE_WRITE_LOCK_ERROR;
 import static net.osmand.aidlapi.OsmandAidlConstants.OK_RESPONSE;
 import static net.osmand.plus.FavouritesDbHelper.FILE_TO_SAVE;
-import static net.osmand.plus.helpers.ExternalApiHelper.PARAM_NT_DIRECTION_ANGLE;
-import static net.osmand.plus.helpers.ExternalApiHelper.PARAM_NT_DIRECTION_LANES;
-import static net.osmand.plus.helpers.ExternalApiHelper.PARAM_NT_DIRECTION_NAME;
-import static net.osmand.plus.helpers.ExternalApiHelper.PARAM_NT_DIRECTION_POSSIBLY_LEFT;
-import static net.osmand.plus.helpers.ExternalApiHelper.PARAM_NT_DIRECTION_POSSIBLY_RIGHT;
-import static net.osmand.plus.helpers.ExternalApiHelper.PARAM_NT_DIRECTION_TURN;
-import static net.osmand.plus.helpers.ExternalApiHelper.PARAM_NT_DISTANCE;
-import static net.osmand.plus.helpers.ExternalApiHelper.PARAM_NT_IMMINENT;
 import static net.osmand.plus.settings.backend.backup.SettingsHelper.REPLACE_KEY;
 import static net.osmand.plus.settings.backend.backup.SettingsHelper.SILENT_IMPORT_KEY;
 
@@ -1816,48 +1806,24 @@ public class OsmandAidlApi {
 		}
 
 		int leftTime = 0;
-		long arrivalTime = 0;
 		int leftDistance = 0;
+		long arrivalTime = 0;
 		Bundle turnInfo = null;
+		ALatLon destinationLocation = null;
 
 		RoutingHelper routingHelper = app.getRoutingHelper();
 		if (routingHelper.isRouteCalculated()) {
+			LatLon latLon = routingHelper.getFinalLocation();
+			destinationLocation = new ALatLon(latLon.getLatitude(), latLon.getLongitude());
+
 			leftTime = routingHelper.getLeftTime();
-			arrivalTime = leftTime + System.currentTimeMillis() / 1000;
 			leftDistance = routingHelper.getLeftDistance();
-
-			NextDirectionInfo directionInfo = routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(), true);
-			turnInfo = new Bundle();
-			if (directionInfo.distanceTo > 0) {
-				updateTurnInfo("next_", turnInfo, directionInfo);
-				directionInfo = routingHelper.getNextRouteDirectionInfoAfter(directionInfo, new NextDirectionInfo(), true);
-				if (directionInfo.distanceTo > 0) {
-					updateTurnInfo("after_next", turnInfo, directionInfo);
-				}
-			}
-			routingHelper.getNextRouteDirectionInfo(new NextDirectionInfo(), false);
-			if (directionInfo.distanceTo > 0) {
-				updateTurnInfo("no_speak_next_", turnInfo, directionInfo);
-			}
+			arrivalTime = leftTime + System.currentTimeMillis() / 1000;
+			turnInfo = ExternalApiHelper.getRouteDirectionsInfo(app);
 		}
-		return new AppInfoParams(lastKnownLocation, mapLocation, turnInfo, leftTime, leftDistance, arrivalTime, mapVisible);
-	}
-
-	private void updateTurnInfo(String prefix, Bundle bundle, NextDirectionInfo ni) {
-		bundle.putInt(prefix + PARAM_NT_DISTANCE, ni.distanceTo);
-		bundle.putInt(prefix + PARAM_NT_IMMINENT, ni.imminent);
-		if (ni.directionInfo != null && ni.directionInfo.getTurnType() != null) {
-			TurnType tt = ni.directionInfo.getTurnType();
-			RouteDirectionInfo a = ni.directionInfo;
-			bundle.putString(prefix + PARAM_NT_DIRECTION_NAME, RoutingHelperUtils.formatStreetName(a.getStreetName(), a.getRef(), a.getDestinationName(), ""));
-			bundle.putString(prefix + PARAM_NT_DIRECTION_TURN, tt.toXmlString());
-			bundle.putFloat(prefix + PARAM_NT_DIRECTION_ANGLE, tt.getTurnAngle());
-			bundle.putBoolean(prefix + PARAM_NT_DIRECTION_POSSIBLY_LEFT, tt.isPossibleLeftTurn());
-			bundle.putBoolean(prefix + PARAM_NT_DIRECTION_POSSIBLY_RIGHT, tt.isPossibleRightTurn());
-			if (tt.getLanes() != null) {
-				bundle.putString(prefix + PARAM_NT_DIRECTION_LANES, Arrays.toString(tt.getLanes()));
-			}
-		}
+		AppInfoParams params = new AppInfoParams(lastKnownLocation, mapLocation, turnInfo, leftTime, leftDistance, arrivalTime, mapVisible);
+		params.setDestinationLocation(destinationLocation);
+		return params;
 	}
 
 	boolean search(final String searchQuery, final int searchType, final double latitude, final double longitude,
@@ -1866,9 +1832,14 @@ public class OsmandAidlApi {
 			return false;
 		}
 		if (app.isApplicationInitializing()) {
-			app.getAppInitializer().addListener(new AppInitializer.AppInitializeListener() {
+			app.getAppInitializer().addListener(new AppInitializeListener() {
 				@Override
-				public void onProgress(AppInitializer init, AppInitializer.InitEvents event) {
+				public void onStart(AppInitializer init) {
+
+				}
+
+				@Override
+				public void onProgress(AppInitializer init, InitEvents event) {
 				}
 
 				@Override
@@ -1885,6 +1856,11 @@ public class OsmandAidlApi {
 	boolean registerForOsmandInitialization(final OsmandAppInitCallback callback) {
 		if (app.isApplicationInitializing()) {
 			app.getAppInitializer().addListener(new AppInitializeListener() {
+				@Override
+				public void onStart(AppInitializer init) {
+
+				}
+
 				@Override
 				public void onProgress(AppInitializer init, InitEvents event) {
 				}
@@ -2255,9 +2231,14 @@ public class OsmandAidlApi {
 		};
 
 		if (app.isApplicationInitializing()) {
-			app.getAppInitializer().addListener(new AppInitializer.AppInitializeListener() {
+			app.getAppInitializer().addListener(new AppInitializeListener() {
 				@Override
-				public void onProgress(AppInitializer init, AppInitializer.InitEvents event) {
+				public void onStart(AppInitializer init) {
+
+				}
+
+				@Override
+				public void onProgress(AppInitializer init, InitEvents event) {
 				}
 
 				@Override
@@ -2377,8 +2358,8 @@ public class OsmandAidlApi {
 			settingsItems.add(new ProfileSettingsItem(app, appMode));
 			File exportDir = app.getSettings().getExternalStorageDirectory();
 			String fileName = appMode.toHumanString();
-			SettingsHelper settingsHelper = app.getSettingsHelper();
-			settingsItems.addAll(settingsHelper.getFilteredSettingsItems(settingsTypes, false, true));
+			FileSettingsHelper settingsHelper = app.getFileSettingsHelper();
+			settingsItems.addAll(settingsHelper.getFilteredSettingsItems(settingsTypes, false, true, false));
 			settingsHelper.exportSettings(exportDir, fileName, null, settingsItems, true);
 			return true;
 		}
